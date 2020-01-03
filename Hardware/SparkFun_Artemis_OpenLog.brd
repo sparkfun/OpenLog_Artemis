@@ -43,7 +43,7 @@
 <layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
 <layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
 <layer number="50" name="dxf" color="7" fill="1" visible="no" active="yes"/>
 <layer number="51" name="tDocu" color="6" fill="1" visible="yes" active="yes"/>
 <layer number="52" name="bDocu" color="7" fill="1" visible="no" active="yes"/>
@@ -170,7 +170,7 @@
 <wire x1="27.94" y1="30.48" x2="30.48" y2="27.94" width="0.2032" layer="20" curve="-90"/>
 <wire x1="30.48" y1="27.94" x2="30.48" y2="2.54" width="0.2032" layer="20"/>
 <wire x1="30.48" y1="2.54" x2="27.94" y2="0" width="0.2032" layer="20" curve="-90"/>
-<text x="6.35" y="3.175" size="1.016" layer="16" font="vector" ratio="20" rot="MR0" align="center">x02</text>
+<text x="6.35" y="3.175" size="1.016" layer="16" font="vector" ratio="20" rot="MR0" align="center">x03</text>
 <dimension x1="30.48" y1="2.54" x2="1.27" y2="2.54" x3="15.875" y3="-6.35" textsize="0.8128" textratio="15" layer="47" dtype="horizontal" unit="inch" precision="3"/>
 <dimension x1="30.48" y1="2.54" x2="27.94" y2="2.54" x3="29.21" y3="-1.27" textsize="0.8128" textratio="15" layer="47" dtype="horizontal" unit="inch" precision="3"/>
 <dimension x1="27.94" y1="2.54" x2="3.81" y2="2.54" x3="15.875" y3="-3.81" textsize="0.8128" textratio="15" layer="47" dtype="horizontal" unit="inch" precision="3"/>
@@ -247,23 +247,6 @@ You are welcome to use this library for commercial purposes. For attribution, we
 <wire x1="-0.9262" y1="0.4262" x2="-0.9262" y2="-0.4262" width="0.05" layer="39"/>
 <wire x1="-0.9262" y1="-0.4262" x2="0.9262" y2="-0.4262" width="0.05" layer="39"/>
 <wire x1="0.9262" y1="-0.4262" x2="0.9262" y2="0.4262" width="0.05" layer="39"/>
-</package>
-<package name="0402">
-<description>&lt;p&gt;&lt;b&gt;Generic 1005 (0402) package&lt;/b&gt;&lt;/p&gt;
-&lt;p&gt;0.2mm courtyard excess rounded to nearest 0.05mm.&lt;/p&gt;</description>
-<wire x1="-0.2704" y1="0.2286" x2="0.2704" y2="0.2286" width="0.1524" layer="51"/>
-<wire x1="0.2704" y1="-0.2286" x2="-0.2704" y2="-0.2286" width="0.1524" layer="51"/>
-<wire x1="-1.2" y1="0.65" x2="1.2" y2="0.65" width="0.0508" layer="39"/>
-<wire x1="1.2" y1="0.65" x2="1.2" y2="-0.65" width="0.0508" layer="39"/>
-<wire x1="1.2" y1="-0.65" x2="-1.2" y2="-0.65" width="0.0508" layer="39"/>
-<wire x1="-1.2" y1="-0.65" x2="-1.2" y2="0.65" width="0.0508" layer="39"/>
-<smd name="1" x="-0.58" y="0" dx="0.85" dy="0.9" layer="1"/>
-<smd name="2" x="0.58" y="0" dx="0.85" dy="0.9" layer="1"/>
-<text x="0" y="0.762" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center">&gt;NAME</text>
-<text x="0" y="-0.762" size="0.6096" layer="27" font="vector" ratio="20" align="top-center">&gt;VALUE</text>
-<rectangle x1="-0.554" y1="-0.3048" x2="-0.254" y2="0.3048" layer="51"/>
-<rectangle x1="0.2588" y1="-0.3048" x2="0.5588" y2="0.3048" layer="51"/>
-<rectangle x1="-0.1999" y1="-0.3" x2="0.1999" y2="0.3" layer="35"/>
 </package>
 <package name="0603">
 <description>&lt;p&gt;&lt;b&gt;Generic 1608 (0603) package&lt;/b&gt;&lt;/p&gt;
@@ -631,6 +614,13 @@ You are welcome to use this library for commercial purposes. For attribution, we
 <vertex x="0.1794" y="-0.4331"/>
 </polygon>
 </package>
+<package name="FIDUCIAL-1X2">
+<description>&lt;h3&gt;Fiducial - Circle, 1mm&lt;/h3&gt;
+&lt;p&gt;Point-of-reference for pick-and-place machines and other optical instruments.&lt;/p&gt;
+&lt;p&gt;Devices using:
+&lt;ul&gt;&lt;li&gt;FIDUCIAL&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;</description>
+<smd name="1" x="0" y="0" dx="1" dy="1" layer="1" roundness="100" cream="no"/>
+</package>
 <package name="CREATIVE_COMMONS">
 <description>&lt;h3&gt;Creative Commons License Template&lt;/h3&gt;
 &lt;p&gt;CC BY-SA 4.0 License with &lt;a href="https://creativecommons.org/licenses/by-sa/4.0/"&gt;link to license&lt;/a&gt; and placeholder for designer name.&lt;/p&gt;
@@ -640,13 +630,6 @@ You are welcome to use this library for commercial purposes. For attribution, we
 <text x="-20.32" y="5.08" size="1.778" layer="51" font="vector">Released under the Creative Commons Attribution Share-Alike 4.0 License</text>
 <text x="0" y="2.54" size="1.778" layer="51" font="vector"> https://creativecommons.org/licenses/by-sa/4.0/</text>
 <text x="11.43" y="0" size="1.778" layer="51" font="vector">Designed by:</text>
-</package>
-<package name="FIDUCIAL-1X2">
-<description>&lt;h3&gt;Fiducial - Circle, 1mm&lt;/h3&gt;
-&lt;p&gt;Point-of-reference for pick-and-place machines and other optical instruments.&lt;/p&gt;
-&lt;p&gt;Devices using:
-&lt;ul&gt;&lt;li&gt;FIDUCIAL&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;</description>
-<smd name="1" x="0" y="0" dx="1" dy="1" layer="1" roundness="100" cream="no"/>
 </package>
 </packages>
 </library>
@@ -5185,10 +5168,6 @@ high temperature heat resistance.
 <attribute name="PROD_ID" value="RES-14342" x="12.7" y="11.43" size="1.778" layer="28" font="vector" ratio="15" rot="MR90" display="off"/>
 <attribute name="VALUE" x="11.938" y="11.43" size="0.6096" layer="28" font="vector" ratio="20" rot="MR90" align="top-center"/>
 </element>
-<element name="FRAME1" library="SparkFun-Aesthetics" package="CREATIVE_COMMONS" value="FRAME-LETTER" x="49.53" y="-17.78" smashed="yes" rot="MR0">
-<attribute name="DESIGNER" value="" x="49.53" y="-17.78" size="1.778" layer="28" rot="MR0" display="off"/>
-<attribute name="REV" value="" x="49.53" y="-17.78" size="1.778" layer="28" rot="MR0" display="off"/>
-</element>
 <element name="FD4" library="SparkFun-Aesthetics" package="FIDUCIAL-1X2" value="FIDUCIAL1X2" x="26.035" y="0.889" smashed="yes" rot="MR0"/>
 <element name="FD2" library="SparkFun-Aesthetics" package="FIDUCIAL-1X2" value="FIDUCIAL1X2" x="5.08" y="29.21" smashed="yes" rot="MR0"/>
 <element name="FD1" library="SparkFun-Aesthetics" package="FIDUCIAL-1X2" value="FIDUCIAL1X2" x="29.21" y="5.08" smashed="yes"/>
@@ -5198,12 +5177,12 @@ high temperature heat resistance.
 <attribute name="PROD_ID" value="XTAL-13062" x="21.59" y="0" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="VALUE" x="16.51" y="16.891" size="0.6096" layer="27" font="vector" ratio="20" rot="R180" align="top-center"/>
 </element>
-<element name="C29" library="SparkFun-Capacitors" package="0402" value="15pF" x="13.843" y="15.24" smashed="yes" rot="R90">
+<element name="C29" library="SparkFun-Capacitors" package="0402-TIGHT" value="15pF" x="13.843" y="15.24" smashed="yes" rot="R90">
 <attribute name="NAME" x="13.081" y="15.24" size="0.6096" layer="25" font="vector" ratio="20" rot="R90" align="bottom-center"/>
 <attribute name="PROD_ID" value="CAP-13063" x="3.683" y="5.08" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="VALUE" x="13.843" y="13.716" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
 </element>
-<element name="C30" library="SparkFun-Capacitors" package="0402" value="15pF" x="19.05" y="15.113" smashed="yes" rot="R90">
+<element name="C30" library="SparkFun-Capacitors" package="0402-TIGHT" value="15pF" x="19.05" y="15.113" smashed="yes" rot="R90">
 <attribute name="NAME" x="18.288" y="15.113" size="0.6096" layer="25" font="vector" ratio="20" rot="R90" align="bottom-center"/>
 <attribute name="PROD_ID" value="CAP-13063" x="12.7" y="1.143" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="VALUE" x="19.177" y="12.954" size="0.6096" layer="27" font="vector" ratio="20" rot="R180" align="top-center"/>
@@ -5437,12 +5416,12 @@ high temperature heat resistance.
 <attribute name="PROD_ID" value="RES-14341" x="16.51" y="22.352" size="1.778" layer="28" font="vector" ratio="15" rot="MR180" display="off"/>
 <attribute name="VALUE" x="25.4" y="25.654" size="0.6096" layer="28" font="vector" ratio="20" rot="MR180" align="top-center"/>
 </element>
-<element name="J11" library="SparkFun-Connectors" package="JST04_1MM_RA" value="QWIIC_RIGHT_ANGLE" x="25.4" y="11.43" smashed="yes" rot="R90">
+<element name="J11" library="SparkFun-Connectors" package="JST04_1MM_RA" value="" x="25.4" y="11.43" smashed="yes" rot="R90">
 <attribute name="NAME" x="25.527" y="14.351" size="0.6096" layer="25" font="vector" ratio="20" rot="R180"/>
 <attribute name="PROD_ID" value="CONN-13694" x="25.4" y="11.43" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="VALUE" value="QWIIC_RIGHT_ANGLE" x="25.4" y="11.43" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="U$1" library="qwiic#logo#jpg" package="QWIIC#LOGO#JPG" value="" x="28.067" y="7.112" smashed="yes"/>
+<element name="U$1" library="qwiic#logo#jpg" package="QWIIC#LOGO#JPG" value="" x="27.94" y="15.875" smashed="yes"/>
 <element name="U3" library="SparkFun-IC-Power" package="SOT23-5" value="AP2112K" x="10.16" y="10.16" smashed="yes" rot="MR90">
 <attribute name="NAME" x="12.319" y="9.271" size="0.4064" layer="26" rot="MR90"/>
 <attribute name="PROD_ID" value="VREG-12457" x="10.16" y="10.16" size="1.778" layer="28" font="vector" ratio="15" rot="MR90" display="off"/>
@@ -5488,7 +5467,7 @@ high temperature heat resistance.
 <element name="U$7" library="buzzard_labels (12)" package="TX3" value="" x="17.272" y="9.144" smashed="yes"/>
 <element name="U$9" library="buzzard_labels (13)" package="ARTEMIS13" value="" x="5.334" y="16.764" smashed="yes"/>
 <element name="U$28" library="buzzard_labels (13)" package="OPENLOG12" value="" x="4.953" y="15.367" smashed="yes"/>
-<element name="U$32" library="buzzard_labels (13)" package="RST9" value="" x="25.654" y="16.891" smashed="yes"/>
+<element name="U$32" library="buzzard_labels (13)" package="RST9" value="" x="25.654" y="23.876" smashed="yes"/>
 <element name="U$33" library="buzzard_labels (13)" package="VIN8" value="" x="3.048" y="6.731" smashed="yes" rot="MR90"/>
 <element name="J4" library="SparkFun-Connectors" package="1X06_NO_SILK" value="" x="1.27" y="11.43" smashed="yes" rot="R90">
 <attribute name="NAME" x="-0.127" y="10.16" size="0.6096" layer="25" font="vector" ratio="20" rot="R90"/>
@@ -5512,7 +5491,7 @@ high temperature heat resistance.
 </element>
 <element name="U$6" library="SparkX" package="SPARKX-SMALL" value="SPARKX-LOGO3" x="20.32" y="7.62" smashed="yes"/>
 <element name="U$8" library="buzzard_labels (15)" package="LED0" value="" x="6.731" y="13.335" smashed="yes"/>
-<element name="BT1" library="SparkFun-Batteries" package="ML414H_IV01E" value="ML414H_IV01E_BATTERY" x="23.749" y="23.876" smashed="yes" rot="R180">
+<element name="BT1" library="SparkFun-Batteries" package="ML414H_IV01E" value="ML414H" x="23.749" y="23.876" smashed="yes" rot="R180">
 <attribute name="NAME" x="24.765" y="20.955" size="0.381" layer="25" rot="R180"/>
 <attribute name="PROD_ID" value="BATT-14267" x="23.749" y="23.876" size="1.778" layer="27" font="vector" ratio="15" rot="R180" display="off"/>
 <attribute name="VALUE" x="24.765" y="27.178" size="0.381" layer="27" rot="R180"/>
@@ -5522,15 +5501,10 @@ high temperature heat resistance.
 <attribute name="PROD_ID" value="DIO-14072" x="23.876" y="20.32" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
 <attribute name="VALUE" x="23.876" y="19.558" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
 </element>
-<element name="R1" library="SparkFun-Resistors" package="0402-TIGHT" value="1k" x="25.908" y="19.558" smashed="yes" rot="R270">
-<attribute name="NAME" x="26.47" y="19.558" size="0.6096" layer="25" font="vector" ratio="20" rot="R270" align="bottom-center"/>
-<attribute name="PROD_ID" value="RES-14342" x="25.908" y="19.558" size="1.778" layer="27" font="vector" ratio="15" rot="R270" display="off"/>
-<attribute name="VALUE" x="25.346" y="19.558" size="0.6096" layer="27" font="vector" ratio="20" rot="R270" align="top-center"/>
-</element>
-<element name="D4" library="SparkFun-DiscreteSemi" package="SOD-323" value="3A/10V/280mV" x="23.876" y="18.796" smashed="yes">
-<attribute name="NAME" x="23.876" y="19.558" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
-<attribute name="PROD_ID" value="DIO-14072" x="23.876" y="18.796" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
-<attribute name="VALUE" x="23.876" y="18.034" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
+<element name="R1" library="SparkFun-Resistors" package="0402-TIGHT" value="1k" x="25.908" y="19.812" smashed="yes" rot="R270">
+<attribute name="NAME" x="26.47" y="19.812" size="0.6096" layer="25" font="vector" ratio="20" rot="R270" align="bottom-center"/>
+<attribute name="PROD_ID" value="RES-14342" x="25.908" y="19.812" size="1.778" layer="27" font="vector" ratio="15" rot="R270" display="off"/>
+<attribute name="VALUE" x="25.346" y="19.812" size="0.6096" layer="27" font="vector" ratio="20" rot="R270" align="top-center"/>
 </element>
 <element name="U1" library="SparkFun-IC-Power" package="SOT23-3" value="3.2V Supervisor" x="22.987" y="28.321" smashed="yes" rot="R270">
 <attribute name="NAME" x="22.987" y="30.226" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
@@ -5552,6 +5526,25 @@ high temperature heat resistance.
 <attribute name="NAME" x="22.225" y="16.002" size="0.6096" layer="25" font="vector" ratio="20" rot="R90" align="bottom-center"/>
 <attribute name="PROD_ID" value="TRAN-14388" x="23.876" y="16.002" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
 <attribute name="VALUE" x="25.527" y="16.002" size="0.6096" layer="27" font="vector" ratio="20" rot="R90" align="top-center"/>
+</element>
+<element name="FRAME1" library="SparkFun-Aesthetics" package="CREATIVE_COMMONS" value="FRAME-LEDGER" x="19.05" y="-26.67" smashed="yes">
+<attribute name="DESIGNER" value="" x="19.05" y="-26.67" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
+<attribute name="REV" value="" x="19.05" y="-26.67" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
+</element>
+<element name="D6" library="SparkFun-DiscreteSemi" package="SOD-323" value="1A/23V/620mV" x="23.876" y="18.669" smashed="yes">
+<attribute name="NAME" x="23.876" y="19.431" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
+<attribute name="PROD_ID" value="DIO-11623" x="23.876" y="18.669" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
+<attribute name="VALUE" x="23.876" y="17.907" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
+</element>
+<element name="C5" library="SparkFun-Capacitors" package="0603" value="10uF" x="27.94" y="7.112" smashed="yes">
+<attribute name="NAME" x="27.94" y="7.874" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
+<attribute name="PROD_ID" value="CAP-11015" x="27.94" y="7.112" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
+<attribute name="VALUE" x="27.94" y="6.35" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
+</element>
+<element name="C6" library="SparkFun-Capacitors" package="0402-TIGHT" value="1.0uF" x="27.94" y="5.969" smashed="yes">
+<attribute name="NAME" x="27.94" y="6.531" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
+<attribute name="PROD_ID" value="CAP-12417" x="27.94" y="5.969" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
+<attribute name="VALUE" x="27.94" y="5.407" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
 </element>
 </elements>
 <signals>
@@ -5629,13 +5622,9 @@ high temperature heat resistance.
 <via x="4.064" y="5.207" extent="1-16" drill="0.3048"/>
 <via x="21.336" y="2.032" extent="1-16" drill="0.3048"/>
 <via x="17.018" y="8.636" extent="1-16" drill="0.3048"/>
-<via x="25.908" y="6.858" extent="1-16" drill="0.3048"/>
-<via x="28.321" y="7.493" extent="1-16" drill="0.3048"/>
+<via x="25.781" y="7.493" extent="1-16" drill="0.3048"/>
 <via x="26.162" y="17.272" extent="1-16" drill="0.3048"/>
 <via x="6.096" y="26.162" extent="1-16" drill="0.3048"/>
-<wire x1="20.574" y1="14.39" x2="19.9" y2="14.39" width="0.1524" layer="1"/>
-<wire x1="19.757" y1="14.533" x2="19.05" y2="14.533" width="0.1524" layer="1"/>
-<wire x1="19.9" y1="14.39" x2="19.757" y2="14.533" width="0.1524" layer="1"/>
 <via x="16.891" y="7.366" extent="1-16" drill="0.3048"/>
 <wire x1="26.67" y1="23.36" x2="26.67" y2="24.13" width="0.1524" layer="16"/>
 <via x="19.812" y="13.335" extent="1-16" drill="0.3048"/>
@@ -5668,6 +5657,9 @@ high temperature heat resistance.
 <via x="22.987" y="7.747" extent="1-16" drill="0.3048"/>
 <via x="22.733" y="10.287" extent="1-16" drill="0.3048"/>
 <via x="23.876" y="10.287" extent="1-16" drill="0.3048"/>
+<contactref element="C5" pad="2"/>
+<contactref element="C6" pad="2"/>
+<via x="29.845" y="6.985" extent="1-16" drill="0.3048"/>
 </signal>
 <signal name="3.3V">
 <contactref element="R22" pad="2"/>
@@ -5677,7 +5669,6 @@ high temperature heat resistance.
 <contactref element="U10" pad="10"/>
 <contactref element="R24" pad="2"/>
 <contactref element="R25" pad="2"/>
-<contactref element="R28" pad="2"/>
 <contactref element="J14" pad="1"/>
 <contactref element="C54" pad="1"/>
 <contactref element="U14" pad="1"/>
@@ -5706,8 +5697,6 @@ high temperature heat resistance.
 <via x="27.432" y="10.668" extent="1-16" drill="0.3048"/>
 <wire x1="27.432" y1="10.668" x2="27.495" y2="10.605" width="0.1524" layer="16"/>
 <wire x1="27.495" y1="10.605" x2="27.495" y2="9.54" width="0.1524" layer="16"/>
-<wire x1="18.923" y1="9.4996" x2="18.923" y2="8.247" width="0.1524" layer="16"/>
-<wire x1="19.05" y1="8.12" x2="18.923" y2="8.247" width="0.1524" layer="16"/>
 <via x="18.923" y="9.4996" extent="1-16" drill="0.3048"/>
 <wire x1="15.24" y1="10.93" x2="15.24" y2="9.398" width="0.1524" layer="16"/>
 <wire x1="19.812" y1="9.525" x2="20.193" y2="9.525" width="0.3048" layer="1"/>
@@ -5753,8 +5742,6 @@ high temperature heat resistance.
 <contactref element="J4" pad="5"/>
 <wire x1="1.27" y1="21.59" x2="4.445" y2="21.59" width="0.1524" layer="1"/>
 <wire x1="4.445" y1="24.13" x2="4.445" y2="21.59" width="0.1524" layer="1"/>
-<contactref element="R1" pad="2"/>
-<contactref element="D4" pad="A"/>
 <contactref element="U1" pad="3"/>
 <wire x1="29.21" y1="24.63" x2="28.3682875" y2="24.63" width="0.1524" layer="16"/>
 <wire x1="28.3682875" y1="24.63" x2="28.1062875" y2="24.892" width="0.1524" layer="16"/>
@@ -5763,9 +5750,6 @@ high temperature heat resistance.
 <wire x1="20.574" y1="10.93" x2="20.058" y2="10.93" width="0.1524" layer="16"/>
 <wire x1="20.058" y1="10.93" x2="19.812" y2="11.176" width="0.1524" layer="16"/>
 <wire x1="19.812" y1="11.176" x2="19.812" y2="11.43" width="0.1524" layer="16"/>
-<wire x1="25.026" y1="18.796" x2="25.392" y2="18.796" width="0.1524" layer="1"/>
-<wire x1="25.654" y1="19.058" x2="25.392" y2="18.796" width="0.1524" layer="1"/>
-<wire x1="25.654" y1="19.058" x2="25.908" y2="19.058" width="0.1524" layer="1"/>
 <wire x1="24.087" y1="28.321" x2="24.9742" y2="28.321" width="0.1524" layer="1"/>
 <wire x1="24.9936" y1="28.3016" x2="24.9742" y2="28.321" width="0.1524" layer="1"/>
 <via x="24.9936" y="28.3016" extent="1-16" drill="0.3048"/>
@@ -5776,22 +5760,12 @@ high temperature heat resistance.
 <wire x1="5.715" y1="24.765" x2="5.08" y2="24.765" width="0.1524" layer="1"/>
 <wire x1="5.08" y1="24.765" x2="4.445" y2="24.13" width="0.1524" layer="1"/>
 <wire x1="26.67" y1="24.892" x2="27.051" y2="24.892" width="0.1524" layer="1"/>
-<wire x1="25.026" y1="18.796" x2="23.8792" y2="18.796" width="0.1524" layer="1"/>
-<contactref element="Q4" pad="3"/>
 <wire x1="27.432" y1="8.509" x2="27.432" y2="10.668" width="0.3048" layer="1"/>
 <wire x1="20.7264" y1="8.9916" x2="22.98849375" y2="8.9916" width="0.3048" layer="1"/>
 <wire x1="27.432" y1="10.668" x2="27.432" y2="11.20289375" width="0.3048" layer="1"/>
 <wire x1="27.432" y1="11.20289375" x2="27.3304" y2="11.30449375" width="0.3048" layer="1"/>
-<wire x1="27.3304" y1="13.14418125" x2="27.3304" y2="11.30449375" width="0.3048" layer="1"/>
-<wire x1="23.876" y1="17.102" x2="23.876" y2="18.0306" width="0.1524" layer="1"/>
-<wire x1="23.876" y1="18.0306" x2="23.8792" y2="18.0338" width="0.1524" layer="1"/>
-<wire x1="23.8792" y1="18.0338" x2="23.8792" y2="18.796" width="0.1524" layer="1"/>
-<wire x1="25.5308" y1="14.94378125" x2="27.3304" y2="13.14418125" width="0.3048" layer="1"/>
-<wire x1="25.5308" y1="14.94378125" x2="25.5308" y2="16.7602" width="0.3048" layer="1"/>
-<wire x1="25.189" y1="17.102" x2="23.876" y2="17.102" width="0.3048" layer="1"/>
-<wire x1="25.5308" y1="16.7602" x2="25.189" y2="17.102" width="0.3048" layer="1"/>
-<wire x1="23.5966" y1="22.13105625" x2="24.1046" y2="21.62305625" width="0.1524" layer="1"/>
-<wire x1="23.5966" y1="22.13105625" x2="23.5966" y2="22.9616" width="0.1524" layer="1"/>
+<wire x1="27.3304" y1="13.39818125" x2="27.3304" y2="11.30449375" width="0.3048" layer="1"/>
+<wire x1="23.5966" y1="22.51205625" x2="23.5966" y2="22.9616" width="0.1524" layer="1"/>
 <wire x1="23.5966" y1="22.9616" x2="24.003" y2="23.368" width="0.1524" layer="1"/>
 <wire x1="25.146" y1="23.368" x2="26.67" y2="24.892" width="0.1524" layer="1"/>
 <wire x1="24.003" y1="23.368" x2="25.146" y2="23.368" width="0.1524" layer="1"/>
@@ -5802,11 +5776,26 @@ high temperature heat resistance.
 <wire x1="23.9776" y1="8.6614" x2="24.384" y2="8.255" width="0.3048" layer="1"/>
 <wire x1="24.384" y1="8.255" x2="27.178" y2="8.255" width="0.3048" layer="1"/>
 <wire x1="27.178" y1="8.255" x2="27.432" y2="8.509" width="0.3048" layer="1"/>
-<wire x1="23.8792" y1="19.13065625" x2="23.8792" y2="18.796" width="0.1524" layer="1"/>
-<wire x1="24.1046" y1="21.62305625" x2="24.1046" y2="20.71874375" width="0.1524" layer="1"/>
-<wire x1="23.8792" y1="19.13065625" x2="23.6728" y2="19.33705625" width="0.1524" layer="1"/>
-<wire x1="23.6728" y1="19.33705625" x2="23.6728" y2="20.28694375" width="0.1524" layer="1"/>
-<wire x1="23.6728" y1="20.28694375" x2="24.1046" y2="20.71874375" width="0.1524" layer="1"/>
+<wire x1="26.1882875" y1="18.669" x2="26.543" y2="19.0237125" width="0.1524" layer="1"/>
+<wire x1="26.543" y1="20.6002875" x2="25.5786875" y2="21.5646" width="0.1524" layer="1"/>
+<wire x1="25.5786875" y1="21.5646" x2="24.54405625" y2="21.5646" width="0.1524" layer="1"/>
+<wire x1="26.543" y1="19.0237125" x2="26.543" y2="20.6002875" width="0.1524" layer="1"/>
+<wire x1="24.54405625" y1="21.5646" x2="23.5966" y2="22.51205625" width="0.1524" layer="1"/>
+<contactref element="D6" pad="A"/>
+<contactref element="Q4" pad="2"/>
+<contactref element="C5" pad="1"/>
+<contactref element="C6" pad="1"/>
+<wire x1="25.026" y1="16.009" x2="25.026" y2="18.669" width="0.1524" layer="1"/>
+<wire x1="24.826" y1="15.002" x2="24.826" y2="15.809" width="0.1524" layer="1"/>
+<wire x1="24.826" y1="15.809" x2="25.026" y2="16.009" width="0.1524" layer="1"/>
+<wire x1="25.026" y1="18.669" x2="26.1882875" y2="18.669" width="0.1524" layer="1"/>
+<wire x1="24.826" y1="15.002" x2="25.72658125" y2="15.002" width="0.3048" layer="1"/>
+<wire x1="25.72658125" y1="15.002" x2="27.3304" y2="13.39818125" width="0.3048" layer="1"/>
+<wire x1="27.09" y1="7.112" x2="27.09" y2="8.167" width="0.3048" layer="1"/>
+<wire x1="27.09" y1="8.167" x2="27.178" y2="8.255" width="0.3048" layer="1"/>
+<wire x1="27.44" y1="5.969" x2="27.44" y2="6.342" width="0.3048" layer="1"/>
+<wire x1="27.09" y1="6.692" x2="27.09" y2="7.112" width="0.3048" layer="1"/>
+<wire x1="27.44" y1="6.342" x2="27.09" y2="6.692" width="0.3048" layer="1"/>
 </signal>
 <signal name="VIN">
 <contactref element="U3" pad="1"/>
@@ -5942,19 +5931,18 @@ high temperature heat resistance.
 <via x="20.819215625" y="24.028153125" extent="1-16" drill="0.3048"/>
 <wire x1="20.819215625" y1="24.028153125" x2="20.819215625" y2="24.257" width="0.1524" layer="1"/>
 <wire x1="21.1582" y1="12.88545625" x2="20.0406" y2="14.00305625" width="0.1524" layer="16"/>
-<wire x1="20.0406" y1="14.00305625" x2="20.0406" y2="20.32" width="0.1524" layer="16"/>
 <wire x1="21.1582" y1="10.7188" x2="21.1582" y2="12.88545625" width="0.1524" layer="16"/>
 <wire x1="23.368" y1="8.509" x2="21.1582" y2="10.7188" width="0.1524" layer="16"/>
-<wire x1="20.0406" y1="20.32" x2="19.685" y2="20.6756" width="0.1524" layer="16"/>
-<wire x1="19.685" y1="24.638" x2="18.1828" y2="26.1402" width="0.1524" layer="16"/>
-<wire x1="19.685" y1="20.6756" x2="19.685" y2="24.638" width="0.1524" layer="16"/>
-<wire x1="18.1828" y1="26.1402" x2="18.1828" y2="26.2856" width="0.1524" layer="16"/>
 <via x="18.1828" y="26.2856" extent="1-16" drill="0.3048"/>
 <wire x1="18.1828" y1="26.2856" x2="18.1828" y2="25.4" width="0.1524" layer="1"/>
 <wire x1="18.1828" y1="25.4" x2="18.1828" y2="25.17545625" width="0.1524" layer="1"/>
 <wire x1="18.94" y1="25.4" x2="18.1828" y2="25.4" width="0.1524" layer="1"/>
 <wire x1="20.5156" y1="24.560615625" x2="20.819215625" y2="24.257" width="0.1524" layer="1"/>
 <wire x1="20.5156" y1="24.9504" x2="20.5156" y2="24.560615625" width="0.1524" layer="1"/>
+<wire x1="20.0406" y1="21.15894375" x2="19.3548" y2="21.84474375" width="0.1524" layer="16"/>
+<wire x1="19.3548" y1="25.1136" x2="18.1828" y2="26.2856" width="0.1524" layer="16"/>
+<wire x1="20.0406" y1="14.00305625" x2="20.0406" y2="21.15894375" width="0.1524" layer="16"/>
+<wire x1="19.3548" y1="21.84474375" x2="19.3548" y2="25.1136" width="0.1524" layer="16"/>
 </signal>
 <signal name="ARTEMIS_RX0">
 <contactref element="U8" pad="RXI-0"/>
@@ -5976,13 +5964,20 @@ high temperature heat resistance.
 <wire x1="17.526" y1="13.589" x2="17.526" y2="13.58134375" width="0.1524" layer="16"/>
 <wire x1="17.526" y1="13.58134375" x2="17.8054" y2="13.30194375" width="0.1524" layer="16"/>
 <wire x1="17.8054" y1="13.30194375" x2="17.8054" y2="11.12445625" width="0.1524" layer="16"/>
-<wire x1="17.526" y1="13.589" x2="18.2626" y2="14.3256" width="0.1524" layer="16"/>
-<wire x1="18.2626" y1="14.3256" x2="18.2626" y2="23.876" width="0.1524" layer="16"/>
-<wire x1="18.2626" y1="23.876" x2="17.2163" y2="24.9223" width="0.1524" layer="16"/>
+<wire x1="17.526" y1="13.589" x2="17.526" y2="16.002" width="0.1524" layer="16"/>
+<wire x1="17.907" y1="16.383" x2="17.526" y2="16.002" width="0.1524" layer="16"/>
 <wire x1="17.2163" y1="24.9223" x2="17.1753" y2="24.9223" width="0.1524" layer="16"/>
 <via x="17.1753" y="24.9223" extent="1-16" drill="0.3048"/>
 <wire x1="17.1753" y1="24.9223" x2="17.399" y2="25.146" width="0.1524" layer="1"/>
 <wire x1="17.399" y1="25.146" x2="17.399" y2="27.686" width="0.1524" layer="1"/>
+<wire x1="18.1356" y1="24.003" x2="17.2163" y2="24.9223" width="0.1524" layer="16"/>
+<wire x1="18.1356" y1="21.844" x2="18.1356" y2="24.003" width="0.1524" layer="16"/>
+<wire x1="17.907" y1="16.383" x2="17.907" y2="16.89865625" width="0.1524" layer="16"/>
+<wire x1="17.907" y1="16.89865625" x2="18.1864" y2="17.17805625" width="0.1524" layer="16"/>
+<wire x1="18.1864" y1="17.17805625" x2="18.1864" y2="17.7546" width="0.1524" layer="16"/>
+<wire x1="18.1864" y1="17.7546" x2="18.034" y2="17.907" width="0.1524" layer="16"/>
+<wire x1="18.034" y1="17.907" x2="18.034" y2="21.7424" width="0.1524" layer="16"/>
+<wire x1="18.034" y1="21.7424" x2="18.1356" y2="21.844" width="0.1524" layer="16"/>
 </signal>
 <signal name="ARTEMIS_TX0">
 <contactref element="U8" pad="TXO-0"/>
@@ -5993,7 +5988,6 @@ high temperature heat resistance.
 <wire x1="14.19025625" y1="25.9" x2="14.38405625" y2="25.7062" width="0.1524" layer="1"/>
 <wire x1="14.38405625" y1="25.7062" x2="16.4578" y2="25.7062" width="0.1524" layer="1"/>
 <wire x1="16.4578" y1="25.7062" x2="16.637" y2="25.527" width="0.1524" layer="1"/>
-<wire x1="18.0086" y1="10.16" x2="18.5674" y2="10.7188" width="0.1524" layer="16"/>
 <via x="18.0086" y="10.16" extent="1-16" drill="0.3048"/>
 <wire x1="18.0086" y1="10.16" x2="18.657" y2="10.16" width="0.1524" layer="1"/>
 <wire x1="18.657" y1="10.16" x2="19.05" y2="10.553" width="0.1524" layer="1"/>
@@ -6004,19 +5998,27 @@ high temperature heat resistance.
 <wire x1="15.0368" y1="4.57125625" x2="15.0368" y2="7.8402" width="0.1524" layer="16"/>
 <wire x1="15.0368" y1="7.8402" x2="17.0518" y2="9.8552" width="0.1524" layer="16"/>
 <wire x1="17.32494375" y1="25.527" x2="16.637" y2="25.527" width="0.1524" layer="16"/>
-<wire x1="18.5674" y1="10.7188" x2="18.5674" y2="24.28454375" width="0.1524" layer="16"/>
-<wire x1="18.5674" y1="24.28454375" x2="17.32494375" y2="25.527" width="0.1524" layer="16"/>
+<wire x1="18.4404" y1="24.41154375" x2="17.32494375" y2="25.527" width="0.1524" layer="16"/>
+<wire x1="18.4404" y1="21.717" x2="18.4404" y2="24.41154375" width="0.1524" layer="16"/>
+<wire x1="18.0086" y1="10.16" x2="18.0086" y2="10.8966" width="0.1524" layer="16"/>
+<wire x1="18.0086" y1="10.8966" x2="18.1102" y2="10.9982" width="0.1524" layer="16"/>
+<wire x1="18.1102" y1="10.9982" x2="18.1102" y2="16.15514375" width="0.1524" layer="16"/>
+<wire x1="18.1102" y1="16.15514375" x2="18.4912" y2="16.53614375" width="0.1524" layer="16"/>
+<wire x1="18.4912" y1="16.53614375" x2="18.4912" y2="17.88085625" width="0.1524" layer="16"/>
+<wire x1="18.3388" y1="21.6154" x2="18.4404" y2="21.717" width="0.1524" layer="16"/>
+<wire x1="18.4912" y1="17.88085625" x2="18.3388" y2="18.03325625" width="0.1524" layer="16"/>
+<wire x1="18.3388" y1="18.03325625" x2="18.3388" y2="21.6154" width="0.1524" layer="16"/>
 </signal>
 <signal name="ARTEMIS_D33">
 <contactref element="U8" pad="~AD33/SWO"/>
 <contactref element="J14" pad="6"/>
 <wire x1="6.985" y1="22.225" x2="11.43" y2="22.225" width="0.1524" layer="16"/>
 <via x="15.24" y="20.574" extent="1-16" drill="0.3048"/>
-<wire x1="14.57194375" y1="20.2946" x2="14.85134375" y2="20.574" width="0.1524" layer="16"/>
+<wire x1="14.69894375" y1="20.4216" x2="14.85134375" y2="20.574" width="0.1524" layer="16"/>
 <wire x1="14.85134375" y1="20.574" x2="15.24" y2="20.574" width="0.1524" layer="16"/>
-<wire x1="13.3604" y1="20.2946" x2="14.57194375" y2="20.2946" width="0.1524" layer="16"/>
+<wire x1="13.2334" y1="20.4216" x2="14.69894375" y2="20.4216" width="0.1524" layer="16"/>
 <wire x1="15.24" y1="20.574" x2="15.24" y2="19.7" width="0.1524" layer="1"/>
-<wire x1="11.43" y1="22.225" x2="13.3604" y2="20.2946" width="0.1524" layer="16"/>
+<wire x1="11.43" y1="22.225" x2="13.2334" y2="20.4216" width="0.1524" layer="16"/>
 </signal>
 <signal name="ARTEMIS_SWDCK">
 <contactref element="U8" pad="SWDCK"/>
@@ -6038,11 +6040,10 @@ high temperature heat resistance.
 <wire x1="10.74" y1="26.9" x2="7.81" y2="26.9" width="0.1524" layer="1"/>
 <wire x1="7.81" y1="26.9" x2="7.62" y2="27.09" width="0.1524" layer="1"/>
 <via x="16.256" y="26.392" extent="1-16" drill="0.3048"/>
-<wire x1="18.923" y1="10.87194375" x2="20.01594375" y2="9.779" width="0.1524" layer="16"/>
+<wire x1="20.01594375" y1="9.779" x2="18.923" y2="10.87194375" width="0.1524" layer="16"/>
 <wire x1="21.59" y1="8.12" x2="21.59" y2="8.382" width="0.1524" layer="16"/>
 <wire x1="20.193" y1="9.779" x2="20.01594375" y2="9.779" width="0.1524" layer="16"/>
 <wire x1="21.59" y1="8.382" x2="20.193" y2="9.779" width="0.1524" layer="16"/>
-<wire x1="18.923" y1="10.87194375" x2="18.923" y2="24.36" width="0.1524" layer="16"/>
 <wire x1="10.74" y1="26.9" x2="10.8114" y2="26.8286" width="0.1524" layer="1"/>
 <wire x1="10.8114" y1="26.8286" x2="11.9346875" y2="26.8286" width="0.1524" layer="1"/>
 <wire x1="12.1172875" y1="26.646" x2="14.76505625" y2="26.646" width="0.1524" layer="1"/>
@@ -6050,39 +6051,43 @@ high temperature heat resistance.
 <wire x1="14.76505625" y1="26.646" x2="15.01905625" y2="26.9" width="0.1524" layer="1"/>
 <wire x1="16.256" y1="26.392" x2="15.748" y2="26.9" width="0.1524" layer="1"/>
 <wire x1="15.748" y1="26.9" x2="15.01905625" y2="26.9" width="0.1524" layer="1"/>
-<wire x1="18.923" y1="24.36" x2="17.4512" y2="25.8318" width="0.1524" layer="16"/>
 <wire x1="17.08654375" y1="25.8318" x2="16.85794375" y2="26.0604" width="0.1524" layer="16"/>
 <wire x1="16.85794375" y1="26.0604" x2="16.5876" y2="26.0604" width="0.1524" layer="16"/>
 <wire x1="16.5876" y1="26.0604" x2="16.256" y2="26.392" width="0.1524" layer="16"/>
 <wire x1="17.4512" y1="25.8318" x2="17.08654375" y2="25.8318" width="0.1524" layer="16"/>
+<wire x1="18.923" y1="10.87194375" x2="18.923" y2="13.76605625" width="0.1524" layer="16"/>
+<wire x1="18.923" y1="13.76605625" x2="19.431" y2="14.27405625" width="0.1524" layer="16"/>
+<wire x1="19.431" y1="20.90643125" x2="18.7452" y2="21.59223125" width="0.1524" layer="16"/>
+<wire x1="18.7452" y1="24.5378" x2="17.4512" y2="25.8318" width="0.1524" layer="16"/>
+<wire x1="19.431" y1="14.27405625" x2="19.431" y2="20.90643125" width="0.1524" layer="16"/>
+<wire x1="18.7452" y1="21.59223125" x2="18.7452" y2="24.5378" width="0.1524" layer="16"/>
 </signal>
 <signal name="N$20">
 <contactref element="Y3" pad="P$2"/>
 <contactref element="C29" pad="2"/>
 <contactref element="U8" pad="XO"/>
-<wire x1="15.26" y1="15.24" x2="15.26" y2="16.403" width="0.1524" layer="1"/>
-<wire x1="13.843" y1="15.82" x2="15.185" y2="15.82" width="0.1524" layer="1"/>
-<wire x1="15.185" y1="15.82" x2="15.24" y2="15.875" width="0.1524" layer="1"/>
-<wire x1="15.24" y1="15.875" x2="15.26" y2="15.855" width="0.1524" layer="1"/>
-<wire x1="15.26" y1="15.855" x2="15.26" y2="15.24" width="0.1524" layer="1"/>
 <wire x1="17.24" y1="19.7" x2="17.24" y2="18.383" width="0.1524" layer="1"/>
-<wire x1="17.24" y1="18.383" x2="15.26" y2="16.403" width="0.1524" layer="1"/>
+<wire x1="15.26" y1="16.403" x2="17.24" y2="18.383" width="0.1524" layer="1"/>
+<wire x1="15.26" y1="15.24" x2="15.26" y2="15.621" width="0.1524" layer="1"/>
+<wire x1="15.26" y1="15.621" x2="15.26" y2="16.403" width="0.1524" layer="1"/>
+<wire x1="13.843" y1="15.74" x2="15.141" y2="15.74" width="0.1524" layer="1"/>
+<wire x1="15.141" y1="15.74" x2="15.26" y2="15.621" width="0.1524" layer="1"/>
 </signal>
 <signal name="N$21">
 <contactref element="Y3" pad="P$1"/>
 <contactref element="C30" pad="2"/>
 <contactref element="U8" pad="XI"/>
-<wire x1="17.74" y1="15.748" x2="17.74" y2="15.494" width="0.1524" layer="1"/>
 <wire x1="17.74" y1="15.494" x2="17.74" y2="15.26" width="0.1524" layer="1"/>
 <wire x1="17.74" y1="15.26" x2="17.76" y2="15.24" width="0.1524" layer="1"/>
-<wire x1="19.05" y1="15.693" x2="18.995" y2="15.748" width="0.1524" layer="1"/>
-<wire x1="18.995" y1="15.748" x2="17.74" y2="15.748" width="0.1524" layer="1"/>
 <wire x1="17.74" y1="18.9" x2="17.74" y2="18.36734375" width="0.1524" layer="1"/>
 <wire x1="17.74" y1="18.36734375" x2="17.1196" y2="17.74694375" width="0.1524" layer="1"/>
 <wire x1="17.1196" y1="17.74694375" x2="17.1196" y2="17.1704" width="0.1524" layer="1"/>
 <wire x1="17.1196" y1="17.1704" x2="17.78" y2="16.51" width="0.1524" layer="1"/>
-<wire x1="17.78" y1="16.51" x2="17.78" y2="15.534" width="0.1524" layer="1"/>
+<wire x1="17.78" y1="16.51" x2="17.78" y2="15.621" width="0.1524" layer="1"/>
+<wire x1="17.78" y1="15.621" x2="17.78" y2="15.534" width="0.1524" layer="1"/>
 <wire x1="17.78" y1="15.534" x2="17.74" y2="15.494" width="0.1524" layer="1"/>
+<wire x1="19.05" y1="15.613" x2="17.788" y2="15.613" width="0.1524" layer="1"/>
+<wire x1="17.788" y1="15.613" x2="17.78" y2="15.621" width="0.1524" layer="1"/>
 </signal>
 <signal name="ARTEMIS_D29">
 <contactref element="U8" pad="~AD29"/>
@@ -6117,11 +6122,10 @@ high temperature heat resistance.
 <signal name="ARTEMIS_~AD13/RX1">
 <contactref element="U8" pad="~AD13"/>
 <contactref element="J4" pad="2"/>
-<wire x1="14.24" y1="19.7" x2="14.1686" y2="19.6286" width="0.1524" layer="1"/>
-<wire x1="14.1686" y1="19.6286" x2="14.1686" y2="18.5053125" width="0.1524" layer="1"/>
-<wire x1="14.1686" y1="18.5053125" x2="12.5034875" y2="16.8402" width="0.1524" layer="1"/>
 <wire x1="4.1402" y1="16.8402" x2="1.27" y2="13.97" width="0.1524" layer="1"/>
 <wire x1="12.5034875" y1="16.8402" x2="4.1402" y2="16.8402" width="0.1524" layer="1"/>
+<wire x1="14.24" y1="19.7" x2="14.24" y2="18.5767125" width="0.1524" layer="1"/>
+<wire x1="14.24" y1="18.5767125" x2="12.5034875" y2="16.8402" width="0.1524" layer="1"/>
 </signal>
 <signal name="STATLED">
 <contactref element="U8" pad="~D19"/>
@@ -6131,7 +6135,9 @@ high temperature heat resistance.
 <wire x1="22.098" y1="15.875" x2="21.33065625" y2="16.64234375" width="0.1524" layer="16"/>
 <wire x1="21.25065625" y1="20.4" x2="21.33065625" y2="20.32" width="0.1524" layer="1"/>
 <via x="21.33065625" y="20.32" extent="1-16" drill="0.3048"/>
-<wire x1="18.94" y1="20.4" x2="21.25065625" y2="20.4" width="0.1524" layer="1"/>
+<wire x1="18.94" y1="20.4" x2="20.32" y2="20.4" width="0.1524" layer="1"/>
+<wire x1="20.32" y1="20.4" x2="21.25065625" y2="20.4" width="0.1524" layer="1"/>
+<wire x1="20.32" y1="20.4" x2="20.32" y2="20.4" width="0.1524" layer="1"/>
 </signal>
 <signal name="ARTEMIS_D31">
 <contactref element="U8" pad="~AD31"/>
@@ -6159,7 +6165,7 @@ high temperature heat resistance.
 <wire x1="9.0599" y1="7.5" x2="9.21" y2="7.6501" width="0.1524" layer="16"/>
 <wire x1="1.27" y1="7.112" x2="1.27" y2="6.35" width="0.1524" layer="1"/>
 <wire x1="9.21" y1="7.6501" x2="9.591" y2="7.6501" width="0.3048" layer="16"/>
-<wire x1="10.16" y1="8.2191" x2="9.591" y2="7.6501" width="0.3048" layer="16"/>
+<wire x1="9.591" y1="7.6501" x2="10.16" y2="8.2191" width="0.3048" layer="16"/>
 <wire x1="10.16" y1="10.414" x2="10.16" y2="8.2191" width="0.3048" layer="16"/>
 <wire x1="10.16" y1="10.414" x2="10.287" y2="10.541" width="0.3048" layer="16"/>
 <via x="10.287" y="10.541" extent="1-16" drill="0.3048"/>
@@ -6294,7 +6300,6 @@ high temperature heat resistance.
 <wire x1="12.9286" y1="25.4254" x2="12.47905625" y2="25.4254" width="0.1524" layer="1"/>
 <wire x1="13.5208" y1="24.8332" x2="14.33523125" y2="24.8332" width="0.1524" layer="1"/>
 <wire x1="13.5208" y1="24.8332" x2="12.9286" y2="25.4254" width="0.1524" layer="1"/>
-<via x="20.574" y="25.675571875" extent="1-16" drill="0.3048"/>
 <wire x1="14.33523125" y1="24.8332" x2="14.36123125" y2="24.8072" width="0.1524" layer="1"/>
 <via x="14.36123125" y="24.8072" extent="1-16" drill="0.3048"/>
 <wire x1="14.36123125" y1="24.8072" x2="14.478" y2="24.92396875" width="0.1524" layer="16"/>
@@ -6302,25 +6307,23 @@ high temperature heat resistance.
 <wire x1="14.478" y1="25.654" x2="13.6398" y2="26.4922" width="0.1524" layer="16"/>
 <wire x1="13.6398" y1="26.4922" x2="13.6398" y2="27.6536" width="0.1524" layer="16"/>
 <wire x1="13.6398" y1="27.6536" x2="14.0038" y2="28.0176" width="0.1524" layer="16"/>
-<wire x1="20.8204" y1="25.429171875" x2="20.574" y2="25.675571875" width="0.1524" layer="1"/>
 <wire x1="16.24685625" y1="28.0176" x2="14.0038" y2="28.0176" width="0.1524" layer="16"/>
-<wire x1="20.574" y1="25.675571875" x2="20.574" y2="26.28816875" width="0.1524" layer="16"/>
-<wire x1="20.574" y1="26.28816875" x2="19.73496875" y2="27.1272" width="0.1524" layer="16"/>
-<wire x1="19.73496875" y1="27.1272" x2="17.13725625" y2="27.1272" width="0.1524" layer="16"/>
+<wire x1="17.13725625" y1="27.1272" x2="19.35396875" y2="27.1272" width="0.1524" layer="16"/>
 <wire x1="17.13725625" y1="27.1272" x2="16.24685625" y2="28.0176" width="0.1524" layer="16"/>
-<wire x1="22.2974" y1="14.4056" x2="22.2974" y2="16.20905625" width="0.1524" layer="1"/>
-<wire x1="23.0124" y1="16.92405625" x2="22.2974" y2="16.20905625" width="0.1524" layer="1"/>
-<wire x1="25.4" y1="12.93" x2="23.773" y2="12.93" width="0.1524" layer="1"/>
-<wire x1="23.773" y1="12.93" x2="22.2974" y2="14.4056" width="0.1524" layer="1"/>
-<wire x1="20.8204" y1="24.7813125" x2="20.8204" y2="25.429171875" width="0.1524" layer="1"/>
-<wire x1="23.7998" y1="21.4968" x2="21.4376" y2="23.859" width="0.1524" layer="1"/>
-<wire x1="21.4376" y1="23.859" x2="21.4376" y2="24.1641125" width="0.1524" layer="1"/>
-<wire x1="21.4376" y1="24.1641125" x2="20.8204" y2="24.7813125" width="0.1524" layer="1"/>
-<wire x1="23.7998" y1="21.4968" x2="23.7998" y2="20.95574375" width="0.1524" layer="1"/>
-<wire x1="23.2696" y1="18.2863125" x2="23.0124" y2="18.0291125" width="0.1524" layer="1"/>
-<wire x1="23.2696" y1="20.42554375" x2="23.2696" y2="18.2863125" width="0.1524" layer="1"/>
-<wire x1="23.7998" y1="20.95574375" x2="23.2696" y2="20.42554375" width="0.1524" layer="1"/>
-<wire x1="23.0124" y1="18.0291125" x2="23.0124" y2="16.92405625" width="0.1524" layer="1"/>
+<wire x1="24.257" y1="12.93" x2="25.4" y2="12.93" width="0.1524" layer="1"/>
+<wire x1="19.35396875" y1="27.1272" x2="19.9644" y2="26.51676875" width="0.1524" layer="16"/>
+<wire x1="19.9644" y1="26.51676875" x2="19.9644" y2="22.1996" width="0.1524" layer="16"/>
+<wire x1="19.9644" y1="22.1996" x2="20.447" y2="21.717" width="0.1524" layer="16"/>
+<wire x1="21.844" y1="21.717" x2="20.447" y2="21.717" width="0.1524" layer="16"/>
+<via x="22.733" y="17.653" extent="1-16" drill="0.3048"/>
+<wire x1="22.733" y1="17.01034375" x2="22.733" y2="17.653" width="0.1524" layer="1"/>
+<wire x1="23.5546" y1="16.18874375" x2="22.733" y2="17.01034375" width="0.1524" layer="1"/>
+<wire x1="23.5546" y1="13.6324" x2="24.257" y2="12.93" width="0.1524" layer="1"/>
+<wire x1="23.5546" y1="16.18874375" x2="23.5546" y2="13.6324" width="0.1524" layer="1"/>
+<wire x1="22.733" y1="17.653" x2="22.733" y2="18.23794375" width="0.1524" layer="16"/>
+<wire x1="22.733" y1="18.23794375" x2="22.987" y2="18.49194375" width="0.1524" layer="16"/>
+<wire x1="22.987" y1="18.49194375" x2="22.987" y2="20.574" width="0.1524" layer="16"/>
+<wire x1="22.987" y1="20.574" x2="21.844" y2="21.717" width="0.1524" layer="16"/>
 </signal>
 <signal name="SDA">
 <contactref element="U8" pad="D9"/>
@@ -6332,9 +6335,7 @@ high temperature heat resistance.
 <via x="20.574" y="10.16" extent="1-16" drill="0.3048"/>
 <wire x1="20.066" y1="10.16" x2="19.2278" y2="10.9982" width="0.1524" layer="16"/>
 <wire x1="21.2598" y1="9.4742" x2="20.574" y2="10.16" width="0.1524" layer="1"/>
-<wire x1="19.2278" y1="10.9982" x2="19.2278" y2="24.48625625" width="0.1524" layer="16"/>
 <wire x1="16.22294375" y1="27.1794" x2="14.478" y2="27.1794" width="0.1524" layer="16"/>
-<wire x1="19.2278" y1="24.48625625" x2="17.57745625" y2="26.1366" width="0.1524" layer="16"/>
 <wire x1="17.26574375" y1="26.1366" x2="16.22294375" y2="27.1794" width="0.1524" layer="16"/>
 <wire x1="17.57745625" y1="26.1366" x2="17.26574375" y2="26.1366" width="0.1524" layer="16"/>
 <wire x1="22.932275" y1="9.4742" x2="21.2598" y2="9.4742" width="0.1524" layer="1"/>
@@ -6342,6 +6343,16 @@ high temperature heat resistance.
 <wire x1="23.2664" y1="11.3284" x2="23.2664" y2="9.808325" width="0.1524" layer="1"/>
 <wire x1="23.868" y1="11.93" x2="23.2664" y2="11.3284" width="0.1524" layer="1"/>
 <wire x1="23.2664" y1="9.808325" x2="22.932275" y2="9.4742" width="0.1524" layer="1"/>
+<wire x1="19.2278" y1="10.9982" x2="19.2278" y2="13.6398" width="0.1524" layer="16"/>
+<wire x1="19.2278" y1="13.6398" x2="19.7358" y2="14.1478" width="0.1524" layer="16"/>
+<wire x1="19.7358" y1="14.1478" x2="19.7358" y2="21.0326875" width="0.1524" layer="16"/>
+<wire x1="19.7358" y1="21.0326875" x2="19.05" y2="21.7184875" width="0.1524" layer="16"/>
+<wire x1="19.05" y1="21.7184875" x2="19.05" y2="24.13" width="0.1524" layer="16"/>
+<wire x1="19.05" y1="24.13" x2="19.05" y2="24.511" width="0.1524" layer="16"/>
+<wire x1="19.05" y1="24.511" x2="19.05" y2="24.892" width="0.1524" layer="16"/>
+<wire x1="18.1898" y1="25.7522" x2="17.96185625" y2="25.7522" width="0.1524" layer="16"/>
+<wire x1="17.96185625" y1="25.7522" x2="17.57745625" y2="26.1366" width="0.1524" layer="16"/>
+<wire x1="19.05" y1="24.892" x2="18.1898" y2="25.7522" width="0.1524" layer="16"/>
 </signal>
 <signal name="ICM_PWR">
 <contactref element="U8" pad="~D22"/>
@@ -6353,19 +6364,18 @@ high temperature heat resistance.
 <wire x1="8.87225625" y1="15.22225625" x2="7.62" y2="13.97" width="0.1524" layer="16"/>
 <via x="7.62" y="13.97" extent="1-16" drill="0.3048"/>
 <wire x1="16.0516875" y1="2.6416" x2="24.53565625" y2="2.6416" width="0.1524" layer="1"/>
-<wire x1="24.53565625" y1="2.6416" x2="25.8318" y2="3.93774375" width="0.1524" layer="1"/>
-<wire x1="25.8318" y1="3.93774375" x2="25.8318" y2="5.6134" width="0.1524" layer="1"/>
-<wire x1="25.8318" y1="5.6134" x2="27.2034" y2="6.985" width="0.1524" layer="1"/>
-<via x="27.2034" y="6.985" extent="1-16" drill="0.3048"/>
-<wire x1="27.2034" y1="6.985" x2="27.2034" y2="7.0104" width="0.1524" layer="16"/>
-<wire x1="27.495" y1="7.302" x2="27.495" y2="8.24" width="0.1524" layer="16"/>
-<wire x1="27.2034" y1="7.0104" x2="27.495" y2="7.302" width="0.1524" layer="16"/>
 <wire x1="16.0516875" y1="2.6416" x2="14.2482875" y2="4.445" width="0.1524" layer="1"/>
 <wire x1="14.2482875" y1="4.445" x2="8.13565625" y2="4.445" width="0.1524" layer="1"/>
 <wire x1="8.13565625" y1="4.445" x2="7.2136" y2="5.36705625" width="0.1524" layer="1"/>
 <wire x1="7.62" y1="13.97" x2="7.62" y2="10.53334375" width="0.1524" layer="1"/>
 <wire x1="7.62" y1="10.53334375" x2="7.2136" y2="10.12694375" width="0.1524" layer="1"/>
 <wire x1="7.2136" y1="10.12694375" x2="7.2136" y2="5.36705625" width="0.1524" layer="1"/>
+<wire x1="24.53565625" y1="2.6416" x2="26.543" y2="4.64894375" width="0.1524" layer="1"/>
+<wire x1="26.543" y1="4.64894375" x2="26.543" y2="4.953" width="0.1524" layer="1"/>
+<via x="26.543" y="4.953" extent="1-16" drill="0.3048"/>
+<wire x1="27.495" y1="5.827" x2="26.621" y2="4.953" width="0.1524" layer="16"/>
+<wire x1="26.543" y1="4.953" x2="26.621" y2="4.953" width="0.1524" layer="16"/>
+<wire x1="27.495" y1="5.827" x2="27.495" y2="8.24" width="0.1524" layer="16"/>
 </signal>
 <signal name="ARTEMIS_D16">
 <contactref element="U8" pad="AD16"/>
@@ -6389,18 +6399,22 @@ high temperature heat resistance.
 <wire x1="16.1206" y1="27.7128" x2="14.13005625" y2="27.7128" width="0.1524" layer="16"/>
 <wire x1="17.011" y1="26.8224" x2="19.2277125" y2="26.8224" width="0.1524" layer="16"/>
 <wire x1="17.011" y1="26.8224" x2="16.1206" y2="27.7128" width="0.1524" layer="16"/>
-<wire x1="19.2277125" y1="26.8224" x2="20.0406" y2="26.0095125" width="0.1524" layer="16"/>
-<wire x1="20.0406" y1="26.0095125" x2="20.0406" y2="21.971" width="0.1524" layer="16"/>
-<wire x1="20.0406" y1="21.971" x2="20.6502" y2="21.3614" width="0.1524" layer="16"/>
-<wire x1="21.6973625" y1="21.3614" x2="20.6502" y2="21.3614" width="0.1524" layer="16"/>
-<wire x1="22.64481875" y1="17.098525" x2="23.7744" y2="15.96894375" width="0.1524" layer="16"/>
-<wire x1="22.64481875" y1="17.098525" x2="22.64481875" y2="20.41394375" width="0.1524" layer="16"/>
-<wire x1="22.64481875" y1="20.41394375" x2="21.6973625" y2="21.3614" width="0.1524" layer="16"/>
-<wire x1="23.7744" y1="15.3924" x2="23.7744" y2="15.96894375" width="0.1524" layer="16"/>
+<wire x1="19.2277125" y1="26.8224" x2="19.6596" y2="26.3905125" width="0.1524" layer="16"/>
+<wire x1="19.6596" y1="26.3905125" x2="19.6596" y2="21.971" width="0.1524" layer="16"/>
+<wire x1="19.6596" y1="21.971" x2="20.2692" y2="21.3614" width="0.1524" layer="16"/>
+<wire x1="21.6973625" y1="21.3614" x2="20.2692" y2="21.3614" width="0.1524" layer="16"/>
 <wire x1="24.13" y1="11.38" x2="23.545" y2="11.38" width="0.1524" layer="16"/>
 <wire x1="23.1014" y1="11.8236" x2="23.1014" y2="14.7194" width="0.1524" layer="16"/>
 <wire x1="23.545" y1="11.38" x2="23.1014" y2="11.8236" width="0.1524" layer="16"/>
 <wire x1="23.1014" y1="14.7194" x2="23.7744" y2="15.3924" width="0.1524" layer="16"/>
+<wire x1="23.7744" y1="15.9766" x2="23.0124" y2="16.7386" width="0.1524" layer="16"/>
+<wire x1="23.0124" y1="16.7386" x2="22.76605625" y2="16.7386" width="0.1524" layer="16"/>
+<wire x1="22.76605625" y1="16.7386" x2="22.16221875" y2="17.3424375" width="0.1524" layer="16"/>
+<wire x1="22.16221875" y1="18.09821875" x2="22.6822" y2="18.6182" width="0.1524" layer="16"/>
+<wire x1="23.7744" y1="15.3924" x2="23.7744" y2="15.9766" width="0.1524" layer="16"/>
+<wire x1="22.16221875" y1="17.3424375" x2="22.16221875" y2="18.09821875" width="0.1524" layer="16"/>
+<wire x1="22.6822" y1="18.6182" x2="22.6822" y2="20.3765625" width="0.1524" layer="16"/>
+<wire x1="22.6822" y1="20.3765625" x2="21.6973625" y2="21.3614" width="0.1524" layer="16"/>
 </signal>
 <signal name="SCK">
 <contactref element="J17" pad="SCLK"/>
@@ -6419,11 +6433,9 @@ high temperature heat resistance.
 <wire x1="14.63805625" y1="21.1074" x2="15.7226" y2="21.1074" width="0.1524" layer="16"/>
 <wire x1="15.7226" y1="21.1074" x2="16.002" y2="20.828" width="0.1524" layer="16"/>
 <wire x1="16.002" y1="20.828" x2="16.002" y2="17.907" width="0.1524" layer="16"/>
-<wire x1="26.67" y1="4.6667125" x2="22.9106875" y2="0.9074" width="0.1524" layer="16"/>
-<wire x1="26.67" y1="11.38" x2="26.67" y2="4.6667125" width="0.1524" layer="16"/>
 <wire x1="16.7286" y1="1.8134" x2="16.7286" y2="1.89034375" width="0.1524" layer="16"/>
 <wire x1="14.3002" y1="4.31874375" x2="14.3002" y2="6.7175125" width="0.1524" layer="16"/>
-<wire x1="22.9106875" y1="0.9074" x2="17.6346" y2="0.9074" width="0.1524" layer="16"/>
+<wire x1="17.6346" y1="0.9074" x2="22.9106875" y2="0.9074" width="0.1524" layer="16"/>
 <wire x1="17.6346" y1="0.9074" x2="16.7286" y2="1.8134" width="0.1524" layer="16"/>
 <wire x1="16.7286" y1="1.89034375" x2="14.3002" y2="4.31874375" width="0.1524" layer="16"/>
 <via x="12.954" y="8.6614" extent="1-16" drill="0.3048"/>
@@ -6439,6 +6451,10 @@ high temperature heat resistance.
 <via x="10.033" y="15.24" extent="1-16" drill="0.3048"/>
 <wire x1="10.033" y1="15.24" x2="11.938" y2="17.145" width="0.1524" layer="16"/>
 <wire x1="11.938" y1="17.145" x2="15.24" y2="17.145" width="0.1524" layer="16"/>
+<wire x1="22.9106875" y1="0.9074" x2="25.4" y2="3.3967125" width="0.1524" layer="16"/>
+<wire x1="25.4" y1="6.35" x2="26.67" y2="7.62" width="0.1524" layer="16"/>
+<wire x1="26.67" y1="7.62" x2="26.67" y2="11.38" width="0.1524" layer="16"/>
+<wire x1="25.4" y1="3.3967125" x2="25.4" y2="6.35" width="0.1524" layer="16"/>
 </signal>
 <signal name="MISO">
 <contactref element="J17" pad="DO"/>
@@ -6561,7 +6577,6 @@ high temperature heat resistance.
 <wire x1="28.313" y1="21.082" x2="28.44" y2="20.955" width="0.1524" layer="16"/>
 <wire x1="24.9" y1="23.96" x2="24.9" y2="22.098" width="0.1524" layer="16"/>
 <wire x1="24.9" y1="22.098" x2="24.9" y2="21.336" width="0.1524" layer="16"/>
-<wire x1="28.444" y1="20.951" x2="28.44" y2="20.955" width="0.1524" layer="16"/>
 <via x="28.321" y="20.066" extent="1-16" drill="0.3048"/>
 <wire x1="24.13" y1="9.39" x2="24.28" y2="9.54" width="0.1524" layer="16"/>
 <wire x1="24.28" y1="9.54" x2="25.845" y2="9.54" width="0.1524" layer="16"/>
@@ -6578,9 +6593,9 @@ high temperature heat resistance.
 <wire x1="28.829" y1="15.748" x2="28.948" y2="15.748" width="0.1524" layer="16"/>
 <wire x1="29.71" y1="13.97" x2="29.71" y2="14.986" width="0.1524" layer="16"/>
 <wire x1="28.948" y1="15.748" x2="29.71" y2="14.986" width="0.1524" layer="16"/>
-<wire x1="28.321" y1="20.066" x2="27.4762875" y2="20.066" width="0.1524" layer="1"/>
-<wire x1="27.4762875" y1="20.066" x2="25.4442875" y2="22.098" width="0.1524" layer="1"/>
-<wire x1="24.9" y1="22.098" x2="25.4442875" y2="22.098" width="0.1524" layer="1"/>
+<wire x1="28.321" y1="20.066" x2="27.7302875" y2="20.066" width="0.1524" layer="1"/>
+<wire x1="27.7302875" y1="20.066" x2="25.6982875" y2="22.098" width="0.1524" layer="1"/>
+<wire x1="24.9" y1="22.098" x2="25.6982875" y2="22.098" width="0.1524" layer="1"/>
 <via x="24.9" y="22.098" extent="1-16" drill="0.3048"/>
 <wire x1="28.321" y1="20.066" x2="28.956" y2="20.066" width="0.1524" layer="16"/>
 <wire x1="28.956" y1="20.066" x2="29.845" y2="19.177" width="0.1524" layer="16"/>
@@ -6649,12 +6664,12 @@ high temperature heat resistance.
 <wire x1="29.21" y1="12.75" x2="29.21" y2="11.049" width="0.1524" layer="16"/>
 <wire x1="29.21" y1="11.049" x2="29.21" y2="10.66" width="0.1524" layer="16"/>
 <wire x1="29.21" y1="10.66" x2="29.71" y2="10.16" width="0.1524" layer="16"/>
-<via x="27.94" y="11.557" extent="1-16" drill="0.3048"/>
-<wire x1="27.94" y1="11.4917125" x2="28.3853125" y2="11.0464" width="0.1524" layer="16"/>
-<wire x1="27.94" y1="11.4917125" x2="27.94" y2="11.557" width="0.1524" layer="16"/>
+<via x="28.067" y="13.081" extent="1-16" drill="0.3048"/>
+<wire x1="28.067" y1="11.3647125" x2="28.3853125" y2="11.0464" width="0.1524" layer="16"/>
+<wire x1="28.067" y1="11.3647125" x2="28.067" y2="13.081" width="0.1524" layer="16"/>
 <wire x1="29.2074" y1="11.0464" x2="29.21" y2="11.049" width="0.1524" layer="16"/>
 <wire x1="28.3853125" y1="11.0464" x2="29.2074" y2="11.0464" width="0.1524" layer="16"/>
-<wire x1="27.813" y1="11.684" x2="27.813" y2="14.8912875" width="0.1524" layer="1"/>
+<wire x1="27.813" y1="13.335" x2="27.813" y2="14.8912875" width="0.1524" layer="1"/>
 <wire x1="27.813" y1="14.8912875" x2="28.1363125" y2="15.2146" width="0.1524" layer="1"/>
 <wire x1="28.1363125" y1="15.2146" x2="29.04994375" y2="15.2146" width="0.1524" layer="1"/>
 <wire x1="29.04994375" y1="15.2146" x2="29.4894" y2="15.65405625" width="0.1524" layer="1"/>
@@ -6674,7 +6689,7 @@ high temperature heat resistance.
 <wire x1="23.4738875" y1="29.5846" x2="22.5316875" y2="28.6424" width="0.1524" layer="1"/>
 <wire x1="21.2046" y1="28.6424" x2="20.447" y2="29.4" width="0.1524" layer="1"/>
 <wire x1="22.5316875" y1="28.6424" x2="21.2046" y2="28.6424" width="0.1524" layer="1"/>
-<wire x1="27.94" y1="11.557" x2="27.813" y2="11.684" width="0.1524" layer="1"/>
+<wire x1="28.067" y1="13.081" x2="27.813" y2="13.335" width="0.1524" layer="1"/>
 <via x="28.956" y="25.692" extent="1-16" drill="0.3048"/>
 <wire x1="27.11154375" y1="25.7556" x2="28.1048" y2="25.7556" width="0.1524" layer="16"/>
 <wire x1="28.1048" y1="25.7556" x2="28.1684" y2="25.692" width="0.1524" layer="16"/>
@@ -6725,41 +6740,60 @@ high temperature heat resistance.
 <contactref element="R1" pad="1"/>
 <contactref element="D3" pad="A"/>
 <wire x1="25.026" y1="20.32" x2="25.273" y2="20.32" width="0.1524" layer="1"/>
-<wire x1="25.535" y1="20.058" x2="25.908" y2="20.058" width="0.1524" layer="1"/>
-<wire x1="25.273" y1="20.32" x2="25.535" y2="20.058" width="0.1524" layer="1"/>
-<wire x1="25.026" y1="20.32" x2="24.518" y2="19.812" width="0.1524" layer="1"/>
-<wire x1="24.518" y1="19.812" x2="24.2062" y2="19.812" width="0.1524" layer="1"/>
-<via x="24.2062" y="19.812" extent="1-16" drill="0.3048"/>
+<wire x1="25.281" y1="20.312" x2="25.908" y2="20.312" width="0.1524" layer="1"/>
+<wire x1="25.273" y1="20.32" x2="25.281" y2="20.312" width="0.1524" layer="1"/>
+<wire x1="25.026" y1="20.32" x2="24.899" y2="20.447" width="0.1524" layer="1"/>
+<wire x1="24.899" y1="20.447" x2="24.0792" y2="20.447" width="0.1524" layer="1"/>
+<via x="24.0792" y="20.447" extent="1-16" drill="0.3048"/>
 <wire x1="21.727" y1="21.981" x2="21.727" y2="21.844" width="0.1524" layer="1"/>
-<wire x1="21.6662" y1="22.352" x2="20.574" y2="22.352" width="0.1524" layer="16"/>
+<wire x1="22.1742" y1="22.352" x2="20.574" y2="22.352" width="0.1524" layer="16"/>
 <via x="20.574" y="22.352" extent="1-16" drill="0.3048"/>
 <wire x1="20.574" y1="22.352" x2="21.356" y2="22.352" width="0.1524" layer="1"/>
 <wire x1="21.356" y1="22.352" x2="21.727" y2="21.981" width="0.1524" layer="1"/>
-<wire x1="24.2062" y1="19.812" x2="21.6662" y2="22.352" width="0.1524" layer="16"/>
+<wire x1="24.0792" y1="20.447" x2="22.1742" y2="22.352" width="0.1524" layer="16"/>
 </signal>
 <signal name="VCC_1">
 <contactref element="D3" pad="C"/>
-<contactref element="D4" pad="C"/>
 <contactref element="U8" pad="VDD@37"/>
 <contactref element="U8" pad="VDD@36"/>
 <contactref element="C32" pad="1"/>
 <contactref element="C33" pad="1"/>
 <contactref element="C31" pad="2"/>
-<wire x1="22.726" y1="20.32" x2="22.726" y2="18.796" width="0.1524" layer="1"/>
 <wire x1="19.55" y1="17.399" x2="19.55" y2="16.637" width="0.1524" layer="1"/>
 <wire x1="18.74" y1="18.9" x2="18.74" y2="19.454" width="0.1524" layer="1"/>
 <wire x1="18.74" y1="19.454" x2="18.494" y2="19.7" width="0.1524" layer="1"/>
-<wire x1="18.494" y1="19.7" x2="18.24" y2="19.7" width="0.1524" layer="1"/>
+<wire x1="18.494" y1="19.7" x2="18.415" y2="19.7" width="0.1524" layer="1"/>
+<wire x1="18.415" y1="19.7" x2="18.24" y2="19.7" width="0.1524" layer="1"/>
 <wire x1="18.74" y1="18.9" x2="18.74" y2="18.598" width="0.1524" layer="1"/>
 <wire x1="18.74" y1="18.598" x2="19.05" y2="18.288" width="0.1524" layer="1"/>
 <wire x1="19.05" y1="18.288" x2="19.558" y2="18.288" width="0.1524" layer="1"/>
-<wire x1="19.558" y1="18.288" x2="21.717" y2="18.288" width="0.1524" layer="1"/>
-<wire x1="22.225" y1="18.796" x2="22.726" y2="18.796" width="0.1524" layer="1"/>
-<wire x1="21.717" y1="18.288" x2="22.225" y2="18.796" width="0.1524" layer="1"/>
+<wire x1="21.717" y1="18.288" x2="19.558" y2="18.288" width="0.1524" layer="1"/>
 <wire x1="19.55" y1="17.399" x2="19.55" y2="18.28" width="0.1524" layer="1"/>
 <wire x1="19.55" y1="18.28" x2="19.558" y2="18.288" width="0.1524" layer="1"/>
 <wire x1="20.574" y1="16.09" x2="20.027" y2="16.637" width="0.1524" layer="1"/>
 <wire x1="20.027" y1="16.637" x2="19.55" y2="16.637" width="0.1524" layer="1"/>
+<contactref element="R28" pad="2"/>
+<contactref element="R1" pad="2"/>
+<wire x1="25.908" y1="19.312" x2="25.5632875" y2="19.312" width="0.1524" layer="1"/>
+<wire x1="25.5632875" y1="19.312" x2="25.4356875" y2="19.4396" width="0.1524" layer="1"/>
+<wire x1="24.52981875" y1="19.4396" x2="25.4356875" y2="19.4396" width="0.1524" layer="1"/>
+<contactref element="D6" pad="C"/>
+<wire x1="22.726" y1="20.32" x2="22.726" y2="18.669" width="0.1524" layer="1"/>
+<wire x1="22.726" y1="18.669" x2="23.75921875" y2="18.669" width="0.1524" layer="1"/>
+<wire x1="23.75921875" y1="18.669" x2="24.52981875" y2="19.4396" width="0.1524" layer="1"/>
+<wire x1="22.726" y1="18.669" x2="22.098" y2="18.669" width="0.1524" layer="1"/>
+<wire x1="22.098" y1="18.669" x2="21.717" y2="18.288" width="0.1524" layer="1"/>
+<wire x1="19.05" y1="8.12" x2="19.05" y2="8.87225625" width="0.1524" layer="16"/>
+<wire x1="19.05" y1="8.87225625" x2="19.4564" y2="9.27865625" width="0.1524" layer="16"/>
+<wire x1="19.4564" y1="9.27865625" x2="19.4564" y2="9.9074875" width="0.1524" layer="16"/>
+<wire x1="19.4564" y1="9.9074875" x2="18.6182" y2="10.7456875" width="0.1524" layer="16"/>
+<wire x1="18.6182" y1="10.7456875" x2="18.6182" y2="13.8923125" width="0.1524" layer="16"/>
+<wire x1="18.6182" y1="13.8923125" x2="18.99994375" y2="14.27405625" width="0.1524" layer="16"/>
+<wire x1="18.99994375" y1="14.27405625" x2="18.99994375" y2="19.64045625" width="0.1524" layer="16"/>
+<wire x1="18.99994375" y1="19.64045625" x2="18.8976" y2="19.7428" width="0.1524" layer="16"/>
+<via x="18.8976" y="19.7428" extent="1-16" drill="0.3048"/>
+<wire x1="18.8976" y1="19.7428" x2="18.8548" y2="19.7" width="0.1524" layer="1"/>
+<wire x1="18.8548" y1="19.7" x2="18.494" y2="19.7" width="0.1524" layer="1"/>
 </signal>
 <signal name="!POWER_LOSS!">
 <contactref element="U1" pad="2"/>
@@ -6773,8 +6807,9 @@ high temperature heat resistance.
 <wire x1="22.926" y1="15.002" x2="22.926" y2="15.941" width="0.1524" layer="1"/>
 <wire x1="22.926" y1="15.941" x2="22.987" y2="16.002" width="0.1524" layer="1"/>
 <via x="22.987" y="16.002" extent="1-16" drill="0.3048"/>
-<wire x1="22.987" y1="16.002" x2="22.11141875" y2="16.87758125" width="0.1524" layer="16"/>
-<wire x1="22.11141875" y1="16.87758125" x2="22.11141875" y2="19.558" width="0.1524" layer="16"/>
+<wire x1="22.987" y1="16.002" x2="21.85741875" y2="17.13158125" width="0.1524" layer="16"/>
+<wire x1="21.85741875" y1="19.304" x2="22.11141875" y2="19.558" width="0.1524" layer="16"/>
+<wire x1="21.85741875" y1="19.304" x2="21.85741875" y2="17.13158125" width="0.1524" layer="16"/>
 <via x="22.11141875" y="19.558" extent="1-16" drill="0.3048"/>
 <wire x1="21.86405625" y1="19.8053625" x2="22.11141875" y2="19.558" width="0.1524" layer="1"/>
 <wire x1="21.86405625" y1="20.54094375" x2="21.86405625" y2="19.8053625" width="0.1524" layer="1"/>
@@ -6783,11 +6818,16 @@ high temperature heat resistance.
 </signal>
 <signal name="N$5">
 <contactref element="J11" pad="2"/>
-<contactref element="Q4" pad="2"/>
 <wire x1="25.4" y1="10.93" x2="26.297" y2="10.93" width="0.3048" layer="1"/>
-<wire x1="26.297" y1="10.93" x2="26.67" y2="11.303" width="0.3048" layer="1"/>
-<wire x1="26.67" y1="11.303" x2="26.67" y2="13.158" width="0.3048" layer="1"/>
-<wire x1="26.67" y1="13.158" x2="24.826" y2="15.002" width="0.3048" layer="1"/>
+<wire x1="26.297" y1="10.93" x2="26.797" y2="11.43" width="0.3048" layer="1"/>
+<wire x1="26.797" y1="11.43" x2="26.797" y2="12.93905" width="0.3048" layer="1"/>
+<contactref element="Q4" pad="3"/>
+<wire x1="26.797" y1="12.93905" x2="25.63905" y2="14.097" width="0.3048" layer="1"/>
+<wire x1="24.003" y1="16.54081875" x2="23.876" y2="16.66781875" width="0.3048" layer="1"/>
+<wire x1="23.876" y1="16.66781875" x2="23.876" y2="17.102" width="0.3048" layer="1"/>
+<wire x1="24.44995" y1="14.097" x2="24.003" y2="14.54395" width="0.3048" layer="1"/>
+<wire x1="24.003" y1="14.54395" x2="24.003" y2="16.54081875" width="0.3048" layer="1"/>
+<wire x1="25.63905" y1="14.097" x2="24.44995" y2="14.097" width="0.3048" layer="1"/>
 </signal>
 </signals>
 <mfgpreviewcolors>
@@ -6797,6 +6837,34 @@ high temperature heat resistance.
 <mfgpreviewcolor name="coppercolor" color="0xFFFFBF00"/>
 <mfgpreviewcolor name="substratecolor" color="0xFF786E46"/>
 </mfgpreviewcolors>
+<errors>
+<approved hash="5,1,8904bb13c73c152b"/>
+<approved hash="5,1,a7c195d215fdc7ee"/>
+<approved hash="5,16,c67934d4ed3bdaeb"/>
+<approved hash="5,16,b9e33c47cf6efe10"/>
+<approved hash="5,16,b9050ed2b1bf7f37"/>
+<approved hash="5,16,b7b92a9d3c048be7"/>
+<approved hash="5,16,4ef89fd40febefcb"/>
+<approved hash="5,16,be7e828ad5792783"/>
+<approved hash="5,16,b0dfd03bc58897e7"/>
+<approved hash="5,16,2bdef512f7b5d9a8"/>
+<approved hash="5,16,f4a3919ba4a769f5"/>
+<approved hash="5,16,4b5a0b6d71c5f9e7"/>
+<approved hash="5,16,4fba343e4a66f8f6"/>
+<approved hash="5,16,f5dee39116c453fa"/>
+<approved hash="5,16,bff6abdfc21ef439"/>
+<approved hash="5,16,4625f7f52a32359c"/>
+<approved hash="5,16,a90785600b765297"/>
+<approved hash="5,16,929e41cac8a32fe9"/>
+<approved hash="5,16,bae3b5d3f3c6e7f6"/>
+<approved hash="5,16,fc6a07080bc905de"/>
+<approved hash="5,16,67503ca342c8c238"/>
+<approved hash="5,16,1553bcb78018b52a"/>
+<approved hash="5,16,3c1f088403d5ad15"/>
+<approved hash="5,16,9430ab253c89670c"/>
+<approved hash="5,16,9430ab253c89670c"/>
+<approved hash="5,16,c032d20eaed06bb5"/>
+</errors>
 </board>
 </drawing>
 <compatibility>
