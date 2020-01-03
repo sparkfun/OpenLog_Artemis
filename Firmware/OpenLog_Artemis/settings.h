@@ -65,7 +65,8 @@ struct struct_settings {
   bool correctForDST = false;
   bool americanDateStyle = true;
   bool hour24Style = true;
-  int serialBaudRate = 9600;
+  int serialTerminalBaudRate = 115200;
+  int serialLogBaudRate = 9600;
   bool showHelperText = true;
   bool logA11 = false;
   bool logA12 = false;

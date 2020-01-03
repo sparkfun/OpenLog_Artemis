@@ -10,7 +10,7 @@ void loadSettings()
     //Record default settings
     recordSettings();
 
-    Serial.println("Default settings applied");
+    //Serial.println("Default settings applied");
   }
 
   //Read current settings
@@ -22,8 +22,8 @@ void loadSettings()
 
   recordSettings();
 
-  Serial.print("Size of settings: ");
-  Serial.println(sizeof(settings));
+  //Serial.print("Size of settings: ");
+  //Serial.println(sizeof(settings));
 }
 
 void recordSettings()

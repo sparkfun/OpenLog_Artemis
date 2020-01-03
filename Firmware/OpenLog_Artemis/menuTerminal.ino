@@ -9,19 +9,23 @@ void menuLogRate()
     if (settings.enableTerminalOutput == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("2) Set log rate: ");
+    Serial.print("2) Set serial baud rate: ");
+    Serial.print(settings.serialTerminalBaudRate);
+    Serial.println(" bps");
+
+    Serial.print("3) Set log rate: ");
     if (settings.logMaxRate == true) Serial.println("Max rate enabled");
     else Serial.println(settings.recordPerSecond);
 
-    Serial.print("3) Max log rate: ");
+    Serial.print("4) Max log rate: ");
     if (settings.logMaxRate == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("4) Log actual Hertz: ");
+    Serial.print("5) Log actual Hertz: ");
     if (settings.logHertz == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("5) Print column titles: ");
+    Serial.print("6) Print column titles: ");
     if (settings.showHelperText == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
@@ -33,6 +37,22 @@ void menuLogRate()
       settings.enableTerminalOutput ^= 1;
     else if (incoming == '2')
     {
+      Serial.print("Enter baud rate (1200 to 500000): ");
+      int newBaud = getNumber(10); //Timeout after 10 seconds
+      if (newBaud < 1200 || newBaud > 500000)
+      {
+        Serial.println("Error: baud rate out of range");
+      }
+      else
+      {
+        settings.serialTerminalBaudRate = newBaud;
+        recordSettings();
+        Serial.printf("Terminal now set at %dbps. Please reset device and open terminal at new baud rate. Freezing...\n", settings.serialTerminalBaudRate);
+        while(1);
+      }
+    }
+    else if (incoming == '3')
+    {
       Serial.print("How many readings per second would you like to log? : ");
       int tempRPS = getNumber(10); //Timeout after 10 seconds
       if (tempRPS < 1 || tempRPS > 1000)
@@ -40,7 +60,7 @@ void menuLogRate()
       else
         settings.recordPerSecond = tempRPS;
     }
-    else if (incoming == '3')
+    else if (incoming == '4')
     {
       if (settings.logMaxRate == false)
       {
@@ -66,9 +86,9 @@ void menuLogRate()
       else
         settings.logMaxRate = false;
     }
-    else if (incoming == '4')
-      settings.logHertz ^= 1;
     else if (incoming == '5')
+      settings.logHertz ^= 1;
+    else if (incoming == '6')
       settings.showHelperText ^= 1;
     else if (incoming == 'x')
       return;

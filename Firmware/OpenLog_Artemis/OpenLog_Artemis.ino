@@ -29,6 +29,8 @@
   Setup a sleep timer, wake up ever 5 seconds, power up Qwiic, take reading, power down I2C bus, sleep.
   Could you store the date from the RTC because it won't change that much?
   Allow user to set the avg amount on NAU7802
+  COnfigure output baud rate
+  
 
   Eval how long it takes to boot (SD, log creation, IMU begin, etc)
 
@@ -155,15 +157,15 @@ bool helperTextPrinted = false; //Print the column headers only once
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 void setup() {
-  Serial.begin(115200);
-  delay(10);
-  Serial.println();
-  Serial.println("Artemis OpenLog");
-
   pinMode(statLED, OUTPUT);
   digitalWrite(statLED, LOW);
 
   loadSettings();
+
+  Serial.begin(settings.serialTerminalBaudRate);
+  delay(10);
+  Serial.println();
+  Serial.println("Artemis OpenLog");
 
   pinMode(QWIIC_PWR, OUTPUT);
   qwiicPowerOn();
@@ -175,7 +177,7 @@ void setup() {
 
   analogReadResolution(14); //Increase from default of 10
 
-  //settings.serialBaudRate = 115200;
+  //settings.serialLogBaudRate = 115200;
   //myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
 
   beginSD();
@@ -375,7 +377,7 @@ void beginSerialLogging()
 
     //pinMode(13, INPUT);
 
-    SerialLog.begin(settings.serialBaudRate);
+    SerialLog.begin(settings.serialLogBaudRate);
 
     msg("Serial logging online");
     online.serialLogging = true;

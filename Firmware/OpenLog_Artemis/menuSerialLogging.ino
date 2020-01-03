@@ -14,7 +14,7 @@ void menuSerialLogging()
     if (settings.logSerial == true)
     {
       Serial.print("2) Set serial baud rate: ");
-      Serial.print(settings.serialBaudRate);
+      Serial.print(settings.serialLogBaudRate);
       Serial.println(" bps");
     }
 
@@ -55,8 +55,8 @@ void menuSerialLogging()
         }
         else
         {
-          settings.serialBaudRate = newBaud;
-          SerialLog.begin(settings.serialBaudRate);
+          settings.serialLogBaudRate = newBaud;
+          SerialLog.begin(settings.serialLogBaudRate);
         }
       }
       else if (incoming == 'x')
