@@ -388,6 +388,49 @@ void menuConfigure_uBlox()
 
 void menuConfigure_MCP9600()
 {
-  Serial.println("Configure thermo");
-  delay(1000);
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure MCP9600 Thermocouple Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_MCP9600.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_MCP9600.log == true)
+    {
+      Serial.print("2) Log Thermocouple Temperature: ");
+      if (settings.sensor_MCP9600.logTemp == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Ambient Temperature: ");
+      if (settings.sensor_MCP9600.logAmbientTemp == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+
+    if (incoming == '1')
+      settings.sensor_MCP9600.log ^= 1;
+    else if (settings.sensor_MCP9600.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_MCP9600.logTemp ^= 1;
+      else if (incoming == '3')
+        settings.sensor_MCP9600.logAmbientTemp ^= 1;
+      else if (incoming == 'x')
+        return;
+      else if (incoming == 255)
+        return;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      return;
+    else if (incoming == 255)
+      return;
+    else
+      printUnknown(incoming);
+  }
 }

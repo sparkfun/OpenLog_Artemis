@@ -24,7 +24,7 @@ void beginSensors()
   {
     if (nauScale.begin(qwiic) == true) //Wire port
     {
-      nauScale.setSampleRate(NAU7802_SPS_40); //Sample rate can be set to 10, 20, 40, 80, or 320Hz
+      nauScale.setSampleRate(NAU7802_SPS_320); //Sample rate can be set to 10, 20, 40, 80, or 320Hz
 
       //Setup scale with stored values
       nauScale.setCalibrationFactor(settings.sensor_NAU7802.calibrationFactor);
@@ -57,6 +57,24 @@ void beginSensors()
     }
     else
       msg("uBlox GPS failed to respond. Check wiring and I2C address of module with uCenter.");
+  }
+
+  if (qwiicAvailable.MCP9600 && settings.sensor_MCP9600.log && !qwiicOnline.MCP9600)
+  {
+    if (thermoSensor.begin(0x66, qwiic) == true) //Address, Wire port
+    {
+      //set the resolution on the ambient (cold) junction
+      Ambient_Resolution ambientRes = RES_ZERO_POINT_0625; //_25 and _0625
+      thermoSensor.setAmbientResolution(ambientRes);
+
+      Thermocouple_Resolution thermocoupleRes = RES_14_BIT; //12, 14, 16, and 18
+      thermoSensor.setThermocoupleResolution(thermocoupleRes);
+
+      qwiicOnline.MCP9600 = true;
+      msg("MCP9600 Online");
+    }
+    else
+      msg("MCP9600 failed to respond. Check wiring and address jumper.");
   }
 
   //  if (settings.logVL53L1X)
@@ -239,7 +257,7 @@ void getData()
   {
     if (settings.sensor_NAU7802.log)
     {
-      float currentWeight = nauScale.getWeight();
+      float currentWeight = nauScale.getWeight(false, 4); //Do not allow negative weights, take average of 4
       static char weight[30];
       sprintf(weight, "%.*f", settings.sensor_NAU7802.decimalPlaces, currentWeight);
 
@@ -249,6 +267,22 @@ void getData()
     }
   }
 
+  if (qwiicOnline.MCP9600 && settings.sensor_MCP9600.log)
+  {
+    if (settings.sensor_MCP9600.logTemp)
+    {
+      outputData += thermoSensor.getThermocoupleTemp();
+      outputData += ",";
+      helperText += "thermo_degC,";
+    }
+    if (settings.sensor_MCP9600.logAmbientTemp)
+    {
+      outputData += thermoSensor.getAmbientTemp();
+      outputData += ",";
+      helperText += "thermo_ambientDegC,";
+    }
+  }
+  
   if (qwiicOnline.uBlox && settings.sensor_uBlox.log)
   {
     //Calling getPVT returns true if there actually is a fresh navigation solution available.
@@ -386,7 +420,7 @@ void determineMaxI2CSpeed()
 {
   uint32_t maxSpeed = 400000; //Assume 400kHz
 
-  if(qwiicAvailable.MCP9600 == true && settings.sensor_MCP9600.log == true)
+  if (qwiicAvailable.MCP9600 == true && settings.sensor_MCP9600.log == true)
   {
     maxSpeed = 100000;
   }

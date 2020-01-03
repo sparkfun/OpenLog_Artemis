@@ -15,6 +15,7 @@ struct struct_NAU7802 {
 struct struct_MCP9600 {
   bool log = true;
   bool logTemp = true;
+  bool logAmbientTemp = true;
 };
 
 struct struct_uBlox {

@@ -28,6 +28,7 @@
   Allow user to export the current settings to a settings.txt file that the can use to setup other OpenLogs
   Setup a sleep timer, wake up ever 5 seconds, power up Qwiic, take reading, power down I2C bus, sleep.
   Could you store the date from the RTC because it won't change that much?
+  Allow user to set the avg amount on NAU7802
 
   Eval how long it takes to boot (SD, log creation, IMU begin, etc)
 
@@ -188,6 +189,8 @@ void setup() {
   measurementStartTime = millis();
 
   if (settings.logMaxRate == true) Serial.println("Logging analog pins at max data rate");
+
+  //qwiic.setClock(400000);
 }
 
 void loop() {
