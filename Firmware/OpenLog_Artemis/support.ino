@@ -1,48 +1,93 @@
 
-
-//Handle errors by printing the error type and blinking LEDs in certain way
-//The function will never exit - it loops forever inside blinkError
-void systemError(byte errorType)
+//Option not known
+void printUnknown(uint8_t unknownChoice)
 {
-  Serial.print(F("Error "));
-  switch (errorType)
-  {
-    case ERROR_CARD_INIT:
-      Serial.print(F("card.init"));
-      blinkError(ERROR_SD_INIT);
-      break;
-    case ERROR_VOLUME_INIT:
-      Serial.print(F("volume.init"));
-      blinkError(ERROR_SD_INIT);
-      break;
-    case ERROR_ROOT_INIT:
-      Serial.print(F("root.init"));
-      blinkError(ERROR_SD_INIT);
-      break;
-    case ERROR_FILE_OPEN:
-      Serial.print(F("file.open"));
-      blinkError(ERROR_SD_INIT);
-      break;
-  }
+  Serial.print("Unknown choice: ");
+  Serial.write(unknownChoice);
+  Serial.println();
+}
+void printUnknown(int unknownValue)
+{
+  Serial.print("Unknown value: ");
+  Serial.write(unknownValue);
+  Serial.println();
 }
 
-//Blinks the status LEDs to indicate a type of error
-void blinkError(byte ERROR_TYPE) {
-  while (1) {
-    for (int x = 0 ; x < ERROR_TYPE ; x++) {
-      digitalWrite(statLED, HIGH);
-      delay(200);
-      digitalWrite(statLED, LOW);
-      delay(200);
+//Blocking wait for user input
+void waitForInput()
+{
+  delay(10); //Wait for any incoming chars to hit buffer
+  while (Serial.available() > 0) Serial.read(); //Clear buffer
+  while (Serial.available() == 0);
+}
+
+//Get single byte from user
+//Waits for and returns the character that the user provides
+//Returns 255 if user does not respond in a certain amount time
+byte getByteChoice(int numberOfSeconds)
+{
+  delay(10); //Wait for any incoming chars to hit buffer
+  while (Serial.available() > 0) Serial.read(); //Clear buffer
+
+  long startTime = millis();
+  while (Serial.available() == 0)
+  {
+    if ( (millis() - startTime) / 1000 >= numberOfSeconds)
+    {
+      Serial.println("No user input recieved.");
+      return (255); //Timeout. No user input.
     }
 
-    delay(2000);
+    delay(10);
   }
+
+  return (Serial.read());
 }
 
-//Print a message both to terminal and to log
-void msg(const char * message)
+//Get a string/value from user, remove all non-numeric values
+//Returns 255 is user presses 'x' or input times out
+int getNumber(int numberOfSeconds)
 {
-  Serial.println(message);
-  workingFile.println(message);
+  delay(10); //Wait for any incoming chars to hit buffer
+  while (Serial.available() > 0) Serial.read(); //Clear buffer
+
+  //Get input from user
+  char cleansed[20];
+
+  long startTime = millis();
+  int spot = 0;
+  while (spot < 20 - 1) //Leave room for terminating \0
+  {
+    while (Serial.available() == 0) //Wait for user input
+    {
+      if ( (millis() - startTime) / 1000 >= numberOfSeconds)
+      {
+        Serial.println("No user input recieved.");
+        return (255); //Timeout. No user input.
+      }
+    }
+
+    byte incoming = Serial.read();
+    if (incoming == '\n' || incoming == '\r')
+    {
+      Serial.println();
+      break;
+    }
+
+    if (isDigit(incoming) == true)
+    {
+      Serial.write(incoming); //Echo user's typing
+      cleansed[spot++] = (char)incoming;
+    }
+
+    if (spot == 0 && incoming == 'x')
+    {
+      return (255);
+    }
+  }
+
+  cleansed[spot] = '\0';
+
+  String tempValue = cleansed;
+  return (tempValue.toInt());
 }
