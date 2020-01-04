@@ -10,12 +10,24 @@ struct struct_NAU7802 {
   float calibrationFactor = 0; //Value used to convert the load cell reading to lbs or kg
   long zeroOffset = 1000; //Zero value that is found when scale is tared. Default to 1000 so we don't get inf.
   int decimalPlaces = 2;
+  int averageAmount = 4; //Number of readings to take per getWeight call
 };
 
 struct struct_MCP9600 {
   bool log = true;
   bool logTemp = true;
   bool logAmbientTemp = true;
+};
+
+struct struct_VCNL4040 {
+  bool log = true;
+  bool logProximity = true;
+  bool logAmbientLight = true;
+  int LEDCurrent = 200; //Highest LED current
+  int IRDutyCycle = 40; //Highest duty cycle
+  int proximityIntegrationTime = 8;
+  int ambientIntegrationTime = 80;
+  int resolution = 16; //Set to 16 bit output
 };
 
 struct struct_uBlox {
@@ -45,6 +57,7 @@ struct struct_BH1749NUC {
 };
 
 struct struct_settings {
+  int sizeOfSettings = 0;
   int nextSerialLogNumber = 1;
   int nextDataLogNumber = 1;
   unsigned int recordPerSecond = 10;
@@ -80,6 +93,7 @@ struct struct_settings {
   struct_NAU7802 sensor_NAU7802;
   struct_MCP9600 sensor_MCP9600;
   struct_BH1749NUC sensor_BH1749NUC;
+  struct_VCNL4040 sensor_VCNL4040;
 } settings;
 
 struct struct_online {
@@ -96,6 +110,7 @@ struct struct_QwiicSensors {
   bool NAU7802;
   bool uBlox;
   bool VL53L1X;
+  bool VCNL4040;
 };
 
 struct_QwiicSensors qwiicAvailable = {
@@ -105,6 +120,7 @@ struct_QwiicSensors qwiicAvailable = {
   .NAU7802 = false,
   .uBlox = false,
   .VL53L1X = false,
+  .VCNL4040 = false,
 };
 
 struct_QwiicSensors qwiicOnline = {
@@ -114,4 +130,5 @@ struct_QwiicSensors qwiicOnline = {
   .NAU7802 = false,
   .uBlox = false,
   .VL53L1X = false,
+  .VCNL4040 = false,
 };

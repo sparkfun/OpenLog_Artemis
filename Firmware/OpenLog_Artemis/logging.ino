@@ -25,7 +25,7 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
     if (sd.exists(newFileName) == false) break; //File name not found so we will use it.
 
     //File exists so open and see if it is empty. If so, use it.
-    newFile = sd.open(newFileName, FILE_READ);
+    newFile = sd.open(newFileName, O_READ);
     if (newFile.size() == 0) break; // File is empty so we will use it.
 
     newFile.close(); // Close this existing file we just opened.

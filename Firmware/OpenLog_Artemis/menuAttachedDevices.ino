@@ -38,11 +38,15 @@ void menuAttachedDevices()
       functionPointers[availableDevices - 1] = menuConfigure_uBlox;
       Serial.printf("%d) uBlox GPS Receiver\n", availableDevices++);
     }
-
     if (qwiicAvailable.MCP9600)
     {
       functionPointers[availableDevices - 1] = menuConfigure_MCP9600;
       Serial.printf("%d) MCP9600 Thermocouple Amplifier\n", availableDevices++);
+    }
+    if (qwiicAvailable.VCNL4040)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_VCNL4040;
+      Serial.printf("%d) VCNL4040 Proximity Sensor\n", availableDevices++);
     }
 
     Serial.println("x) Exit");
@@ -96,7 +100,7 @@ bool detectQwiicDevices()
 #define ADR_UBLOX 0x42
 #define ADR_LPS25HB_2 0x5C
 #define ADR_LPS25HB_1 0x5D
-#define ADR_MCP9600_2 0x60
+//0x60: MCP9600_2 and VCNL4040
 #define ADR_MCP9600_1 0x66
 
 //Given an address, see if it repsonds as we would expect
@@ -119,6 +123,13 @@ bool testDevice(uint8_t i2cAddress)
       if (thermoSensor.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
         if (thermoSensor.isConnected() == true)
           qwiicAvailable.MCP9600 = true;
+      break;
+    case 0x60:
+//      if (thermoSensor.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
+//        if (thermoSensor.isConnected() == true)
+//          qwiicAvailable.MCP9600 = true;
+      if (proximitySensor_VCNL4040.begin(qwiic) == true) //Wire port. Checks ID so should avoid collision with MCP9600
+        qwiicAvailable.VCNL4040 = true;
       break;
     case ADR_BH1749NUC_1:
       if (rgb.begin(BH1749NUC_ADDRESS_DEFAULT, qwiic) == BH1749NUC_SUCCESS) //Address, Wire port
@@ -207,6 +218,7 @@ void menuConfigure_NAU7802()
       Serial.printf("\tWeight currently on scale: %f\n", nauScale.getWeight());
 
       Serial.printf("3) Number of decimal places: %d\n", settings.sensor_NAU7802.decimalPlaces);
+      Serial.printf("4) Average number of readings to take per weight read: %d\n", settings.sensor_NAU7802.averageAmount);
     }
 
     Serial.println("x) Exit");
@@ -258,6 +270,19 @@ void menuConfigure_NAU7802()
         else
         {
           settings.sensor_NAU7802.decimalPlaces = places;
+        }
+      }
+      else if (incoming == '4')
+      {
+        Serial.print("Enter number of readings to take per weight read (1 to 10): ");
+        int amt = getNumber(10);
+        if (amt < 1 || amt > 10)
+        {
+          Serial.println("Error: Average number of readings out of range");
+        }
+        else
+        {
+          settings.sensor_NAU7802.averageAmount = amt;
         }
       }
       else if (incoming == 'x')
@@ -419,6 +444,106 @@ void menuConfigure_MCP9600()
         settings.sensor_MCP9600.logTemp ^= 1;
       else if (incoming == '3')
         settings.sensor_MCP9600.logAmbientTemp ^= 1;
+      else if (incoming == 'x')
+        return;
+      else if (incoming == 255)
+        return;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      return;
+    else if (incoming == 255)
+      return;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_VCNL4040()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure VCNL4040 Proximity Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_VCNL4040.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_VCNL4040.log == true)
+    {
+      Serial.print("2) Log Proximity: ");
+      if (settings.sensor_VCNL4040.logProximity == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Ambient Light: ");
+      if (settings.sensor_VCNL4040.logAmbientLight == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.printf("4) Set LED Current: %d\n", settings.sensor_VCNL4040.LEDCurrent);
+      Serial.printf("5) Set IR Duty Cycle: %d\n", settings.sensor_VCNL4040.IRDutyCycle);
+      Serial.printf("6) Set Proximity Integration Time: %d\n", settings.sensor_VCNL4040.proximityIntegrationTime);
+      Serial.printf("7) Set Ambient Integration Time: %d\n", settings.sensor_VCNL4040.ambientIntegrationTime);
+      Serial.printf("8) Set Resolution (bits): %d\n", settings.sensor_VCNL4040.resolution);
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+
+    if (incoming == '1')
+      settings.sensor_VCNL4040.log ^= 1;
+    else if (settings.sensor_VCNL4040.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_VCNL4040.logProximity ^= 1;
+      else if (incoming == '3')
+        settings.sensor_VCNL4040.logAmbientLight ^= 1;
+      else if (incoming == '4')
+      {
+        Serial.print("Enter current (mA) for IR LED drive (50 to 200mA): ");
+        int amt = getNumber(10); //10 second timeout
+        if (amt < 50 || amt > 200)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_VCNL4040.LEDCurrent = amt;
+      }
+      else if (incoming == '5')
+      {
+        Serial.print("Enter IR Duty Cycle (40 to 320): ");
+        int amt = getNumber(10); //10 second timeout
+        if (amt < 40 || amt > 320)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_VCNL4040.IRDutyCycle = amt;
+      }
+      else if (incoming == '6')
+      {
+        Serial.print("Enter Proximity Integration Time (1 to 8): ");
+        int amt = getNumber(10); //10 second timeout
+        if (amt < 1 || amt > 8)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_VCNL4040.proximityIntegrationTime = amt;
+      }
+      else if (incoming == '7')
+      {
+        Serial.print("Enter Ambient Light Integration Time (80 to 640ms): ");
+        int amt = getNumber(10); //10 second timeout
+        if (amt < 80 || amt > 640)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_VCNL4040.ambientIntegrationTime = amt;
+      }
+      else if (incoming == '8')
+      {
+        Serial.print("Enter Proximity Resolution (12 or 16 bit): ");
+        int amt = getNumber(10); //10 second timeout
+        if (amt == 12 || amt == 16)
+          settings.sensor_VCNL4040.resolution = amt;
+        else
+          Serial.println("Error: Out of range");
+      }
       else if (incoming == 'x')
         return;
       else if (incoming == 255)

@@ -1,5 +1,5 @@
 /*
-  Skimmer Alert System
+  OpenLog Artemis
   By: Nathan Seidle
   SparkFun Electronics
   Date: November 26th, 2019
@@ -22,26 +22,17 @@
   Enable/disable time stamping of incoming serial
   Toggle LED on serial data recording vs sensor recording
   If VCC is detected as dropping below 3V (diode drop from batt backup) then go into shutdown
-  (done) reset all settings to default
   Check out the file creation. Use FILE_WRITE instead of the O_s. Might go faster without append...
   Support multiples of a given sensor. How to support two MCP9600s attached at the same time?
   Allow user to export the current settings to a settings.txt file that the can use to setup other OpenLogs
   Setup a sleep timer, wake up ever 5 seconds, power up Qwiic, take reading, power down I2C bus, sleep.
   Could you store the date from the RTC because it won't change that much?
-  Allow user to set the avg amount on NAU7802
-  COnfigure output baud rate
-  
-
   Eval how long it takes to boot (SD, log creation, IMU begin, etc)
+  Allow user to decrease I2C speed on GPS to increase reliability
 
   What about changing units? mm of distance vs ft or inches? Leave it up to post processing?
-  GPS: Record bare NMEA over I2C?
-  GPS: Turn on off SIV, date/time, etc.
-  enable logging of SIV from GPS
 
   Python/windows program to load new hex files
-
-  Add MOSFET control of I2C 3.3V line to turn off the bus if needed
 
   What happens when user enables analog on pin 12/tx and keeps serial on pin 13/rx and then changes baud rate? Does analog still work?
   What happens when user enables serial on 13/rx then enables analog read on pin 12/tx? Does analog still work?
@@ -59,13 +50,6 @@
 
   We need to call startSensors at the exit of main menu
   If a device is available, logging, and not online, then start/online it.
-
-  We need a function that determines the max I2C speed. MCP9600 is 100kHz.
-  Call at end of startSensors.
-  Max speed is 400kHz. If MCP9600 is online, set max to 100kHz.
-
-
-
 */
 
 
@@ -98,6 +82,7 @@ TwoWire qwiic(1); //Will use pads 8/9
 SdFat sd;
 File sensorDataFile; //File that all sensor data is written to
 File serialDataFile; //File that all incoming serial data is written to
+File settingsFile; //File containing the settings struct in binary
 bool newSerialData = false;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -144,6 +129,10 @@ SFEVL53L1X distanceSensor;
 
 #include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
 SFE_UBLOX_GPS myGPS;
+
+#include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
+VCNL4040 proximitySensor_VCNL4040;
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Global variables
@@ -154,6 +143,7 @@ String outputData;
 unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
 unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
 bool helperTextPrinted = false; //Print the column headers only once
+unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 void setup() {
@@ -193,6 +183,8 @@ void setup() {
   if (settings.logMaxRate == true) Serial.println("Logging analog pins at max data rate");
 
   //qwiic.setClock(400000);
+  recordSettingsToFile();
+  
 }
 
 void loop() {
@@ -276,7 +268,7 @@ void beginSD()
     {
       if (sd.begin(SD_CONFIG_MAX_SPEED) == false) //Very Fast SdFat Beta (dedicated SPI, no IMU)
       {
-        Serial.println("SD init failed. Is card present? Formatted?");
+        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
         online.microSD = false;
         return;
       }
@@ -285,7 +277,7 @@ void beginSD()
     {
       if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
       {
-        Serial.println("SD init failed. Is card present? Formatted?");
+        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
         online.microSD = false;
         return;
       }
@@ -298,6 +290,8 @@ void beginSD()
       online.microSD = false;
       return;
     }
+
+    Serial.println("SD card online");
 
     // O_CREAT - create the file if it does not exist
     // O_APPEND - seek to the end of the file prior to each write
@@ -313,7 +307,7 @@ void beginSD()
 
     online.microSD = true;
 
-    msg("SD card online");
+    sensorDataFile.println("SD card online");
   }
   else
   {

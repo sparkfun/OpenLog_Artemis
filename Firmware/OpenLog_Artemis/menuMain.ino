@@ -73,12 +73,14 @@ void menuMain()
       printUnknown(incoming);
   }
 
-  measurementStartTime = millis(); //Update time
-  measurementCount = 0;
-
   recordSettings(); //Once all menus have exited, record the new settings to EEPROM
 
   beginSensors(); //Once all menus have exited, start any sensors that are available, logging, but not yet online/begun.
 
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
+
+  //Reset measurements
+  measurementStartTime = millis(); //Update time
+  measurementCount = 0;
+  totalCharactersPrinted = 0;  
 }

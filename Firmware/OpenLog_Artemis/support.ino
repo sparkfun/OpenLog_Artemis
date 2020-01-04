@@ -26,12 +26,24 @@ void waitForInput()
 //Returns 255 if user does not respond in a certain amount time
 byte getByteChoice(int numberOfSeconds)
 {
-  delay(10); //Wait for any incoming chars to hit buffer
+  Serial.flush();
+  delay(50); //Wait for any incoming chars to hit buffer
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   long startTime = millis();
-  while (Serial.available() == 0)
+  byte incoming;
+  while (1)
   {
+    if(Serial.available() > 0)
+    {
+      incoming = Serial.read();
+      Serial.print("byte: 0x");
+      Serial.println(incoming, HEX);
+      if(incoming >= 'a' && incoming <= 'z') break;
+      if(incoming >= 'A' && incoming <= 'Z') break;
+      if(incoming >= '0' && incoming <= '9') break;
+    }
+    
     if ( (millis() - startTime) / 1000 >= numberOfSeconds)
     {
       Serial.println("No user input recieved.");
@@ -41,7 +53,7 @@ byte getByteChoice(int numberOfSeconds)
     delay(10);
   }
 
-  return (Serial.read());
+  return (incoming);
 }
 
 //Get a string/value from user, remove all non-numeric values

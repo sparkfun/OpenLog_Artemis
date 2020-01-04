@@ -53,10 +53,13 @@ void menuLogRate()
     }
     else if (incoming == '3')
     {
-      Serial.print("How many readings per second would you like to log? : ");
+      int maxOutputRate = settings.serialTerminalBaudRate / 10 / (totalCharactersPrinted / measurementCount);
+      maxOutputRate = (maxOutputRate * 90) / 100; //Fudge reduction of 10%
+      
+      Serial.printf("How many readings per second would you like to log? (Current max is %d): ", maxOutputRate);
       int tempRPS = getNumber(10); //Timeout after 10 seconds
-      if (tempRPS < 1 || tempRPS > 1000)
-        Serial.println("Error: RPS out of range");
+      if (tempRPS < 1 || tempRPS > maxOutputRate)
+        Serial.println("Error: Readings Per Second out of range");
       else
         settings.recordPerSecond = tempRPS;
     }

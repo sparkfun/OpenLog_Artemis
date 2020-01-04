@@ -77,6 +77,25 @@ void beginSensors()
       msg("MCP9600 failed to respond. Check wiring and address jumper.");
   }
 
+  if (qwiicAvailable.VCNL4040 && settings.sensor_VCNL4040.log && !qwiicOnline.VCNL4040)
+  {
+    if (proximitySensor_VCNL4040.begin(qwiic) == true) //Wire port
+    {
+      proximitySensor_VCNL4040.powerOnAmbient(); //Turn on ambient sensing
+
+      proximitySensor_VCNL4040.setLEDCurrent(settings.sensor_VCNL4040.LEDCurrent);
+      proximitySensor_VCNL4040.setIRDutyCycle(settings.sensor_VCNL4040.IRDutyCycle);
+      proximitySensor_VCNL4040.setProxIntegrationTime(settings.sensor_VCNL4040.proximityIntegrationTime);
+      proximitySensor_VCNL4040.setProxResolution(settings.sensor_VCNL4040.resolution);
+      proximitySensor_VCNL4040.setAmbientIntegrationTime(settings.sensor_VCNL4040.ambientIntegrationTime);
+
+      qwiicOnline.VCNL4040 = true;
+      msg("VCNL4040 Online");
+    }
+    else
+      msg("VCNL4040 failed to respond. Check wiring.");
+  }
+
   //  if (settings.logVL53L1X)
   //  {
   //    if (distanceSensor.begin() == 0) //Begin returns 0 on a good init.
@@ -257,7 +276,7 @@ void getData()
   {
     if (settings.sensor_NAU7802.log)
     {
-      float currentWeight = nauScale.getWeight(false, 4); //Do not allow negative weights, take average of 4
+      float currentWeight = nauScale.getWeight(false, settings.sensor_NAU7802.averageAmount); //Do not allow negative weights, take average of X readings
       static char weight[30];
       sprintf(weight, "%.*f", settings.sensor_NAU7802.decimalPlaces, currentWeight);
 
@@ -282,7 +301,7 @@ void getData()
       helperText += "thermo_ambientDegC,";
     }
   }
-  
+
   if (qwiicOnline.uBlox && settings.sensor_uBlox.log)
   {
     //Calling getPVT returns true if there actually is a fresh navigation solution available.
@@ -380,6 +399,22 @@ void getData()
     //    }
   }
 
+  if (qwiicOnline.VCNL4040 && settings.sensor_VCNL4040.log)
+  {
+    if (settings.sensor_VCNL4040.logProximity)
+    {
+      outputData += proximitySensor_VCNL4040.getProximity();
+      outputData += ",";
+      helperText += "prox(no unit),";
+    }
+    if (settings.sensor_VCNL4040.logAmbientLight)
+    {
+      outputData += proximitySensor_VCNL4040.getAmbient();
+      outputData += ",";
+      helperText += "ambient_lux,";
+    }
+  }
+
   //  if (qwiicOnline.VL53L1X)
   //  {
   //    distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
@@ -404,6 +439,7 @@ void getData()
   outputData += '\n';
   helperText += '\n';
 
+  totalCharactersPrinted += outputData.length();
 
   if (settings.showHelperText == true)
   {
