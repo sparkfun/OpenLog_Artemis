@@ -4,7 +4,7 @@ void menuAttachedDevices()
 {
   while (1)
   {
-    //TODO - Power on Qwiic BUS
+    //TODO - Power on Qwiic Bus
 
     Serial.println();
     Serial.println("Menu: Configure Attached Devices");
@@ -48,12 +48,15 @@ void menuAttachedDevices()
       functionPointers[availableDevices - 1] = menuConfigure_VCNL4040;
       Serial.printf("%d) VCNL4040 Proximity Sensor\n", availableDevices++);
     }
+    if (qwiicAvailable.VL53L1X)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_VL53L1X;
+      Serial.printf("%d) VL53L1X Distance Sensor\n", availableDevices++);
+    }
 
     Serial.println("x) Exit");
 
     byte incoming = getByteChoice(10); //Timeout after 10 seconds
-
-    //TODO if user enables the MCP9600, go to 100kHz max I2C speed
 
     if (incoming >= '1' && incoming < ('1' + availableDevices - 1))
     {
@@ -72,8 +75,6 @@ void menuAttachedDevices()
 bool detectQwiicDevices()
 {
   bool somethingDetected = false;
-
-  //Serial.println("Scanning Qwiic bus");
 
   qwiic.setClock(100000); //During detection, go slow
 
@@ -95,12 +96,11 @@ bool detectQwiicDevices()
 
 // Available Qwiic devices
 #define ADR_NAU7802 0x2A
-#define ADR_BH1749NUC_2 0x38
-#define ADR_BH1749NUC_1 0x39
+#define ADR_VL53L1X 0x29
 #define ADR_UBLOX 0x42
 #define ADR_LPS25HB_2 0x5C
 #define ADR_LPS25HB_1 0x5D
-//0x60: MCP9600_2 and VCNL4040
+//0x60: VCNL4040 and MCP9600_2
 #define ADR_MCP9600_1 0x66
 
 //Given an address, see if it repsonds as we would expect
@@ -125,15 +125,11 @@ bool testDevice(uint8_t i2cAddress)
           qwiicAvailable.MCP9600 = true;
       break;
     case 0x60:
-//      if (thermoSensor.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
-//        if (thermoSensor.isConnected() == true)
-//          qwiicAvailable.MCP9600 = true;
+      //      if (thermoSensor.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
+      //        if (thermoSensor.isConnected() == true)
+      //          qwiicAvailable.MCP9600 = true;
       if (proximitySensor_VCNL4040.begin(qwiic) == true) //Wire port. Checks ID so should avoid collision with MCP9600
         qwiicAvailable.VCNL4040 = true;
-      break;
-    case ADR_BH1749NUC_1:
-      if (rgb.begin(BH1749NUC_ADDRESS_DEFAULT, qwiic) == BH1749NUC_SUCCESS) //Address, Wire port
-        qwiicAvailable.BH1749NUC = true;
       break;
     case ADR_NAU7802:
       if (nauScale.begin(qwiic) == true) //Wire port
@@ -142,6 +138,10 @@ bool testDevice(uint8_t i2cAddress)
     case ADR_UBLOX:
       if (myGPS.begin(qwiic, ADR_UBLOX) == true) //Wire port, address
         qwiicAvailable.uBlox = true;
+      break;
+    case ADR_VL53L1X:
+      if (distanceSensor_VL53L1X.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
+        qwiicAvailable.VL53L1X = true;
       break;
     default:
       Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
@@ -185,19 +185,21 @@ void menuConfigure_LPS25HB()
       else if (incoming == '3')
         settings.sensor_LPS25HB.logTemp ^= 1;
       else if (incoming == 'x')
-        return;
+        break;
       else if (incoming == 255)
-        return;
+        break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
-      return;
+      break;
     else if (incoming == 255)
-      return;
+      break;
     else
       printUnknown(incoming);
   }
+
+  qwiicOnline.LPS25HB = false; //Mark as offline so it will be started with new settings
 }
 void menuConfigure_NAU7802()
 {
@@ -286,19 +288,21 @@ void menuConfigure_NAU7802()
         }
       }
       else if (incoming == 'x')
-        return;
+        break;
       else if (incoming == 255)
-        return;
+        break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
-      return;
+      break;
     else if (incoming == 255)
-      return;
+      break;
     else
       printUnknown(incoming);
   }
+
+  qwiicOnline.NAU7802 = false; //Mark as offline so it will be started with new settings
 }
 
 void menuConfigure_uBlox()
@@ -400,15 +404,17 @@ void menuConfigure_uBlox()
       else if (incoming == 13)
         settings.sensor_uBlox.logiTOW ^= 1;
       else if (incoming == 255) //getNumber() will return 255 if 'x' is pressed
-        return;
+        break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 255) //getNumber() will return 255 if 'x' is pressed
-      return;
+      break;
     else
       printUnknown(incoming);
   }
+
+  qwiicOnline.uBlox = false; //Mark as offline so it will be started with new settings
 }
 
 void menuConfigure_MCP9600()
@@ -445,19 +451,21 @@ void menuConfigure_MCP9600()
       else if (incoming == '3')
         settings.sensor_MCP9600.logAmbientTemp ^= 1;
       else if (incoming == 'x')
-        return;
+        break;
       else if (incoming == 255)
-        return;
+        break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
-      return;
+      break;
     else if (incoming == 255)
-      return;
+      break;
     else
       printUnknown(incoming);
   }
+
+  qwiicOnline.MCP9600 = false; //Mark as offline so it will be started with new settings
 }
 
 void menuConfigure_VCNL4040()
@@ -545,17 +553,137 @@ void menuConfigure_VCNL4040()
           Serial.println("Error: Out of range");
       }
       else if (incoming == 'x')
-        return;
+        break;
       else if (incoming == 255)
-        return;
+        break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
-      return;
+      break;
     else if (incoming == 255)
-      return;
+      break;
     else
       printUnknown(incoming);
   }
+
+  qwiicOnline.VCNL4040 = false; //Mark as offline so it will be started with new settings
+}
+
+//There is short and long range mode
+//The Intermeasurement period seems to set the timing budget (PLL of the device)
+//Setting the Intermeasurement period too short causes the device to freeze up
+//The intermeasurement period that gets written as X gets read as X+1 so we get X and write X-1.
+void menuConfigure_VL53L1X()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure VL53L1X Distance Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_VL53L1X.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_VL53L1X.log == true)
+    {
+      Serial.print("2) Log Distance: ");
+      if (settings.sensor_VL53L1X.logDistance == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Range Status: ");
+      if (settings.sensor_VL53L1X.logRangeStatus == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("4) Log Signal Rate: ");
+      if (settings.sensor_VL53L1X.logSignalRate == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("5) Set Distance Mode: ");
+      if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
+        Serial.print("Short");
+      else
+        Serial.print("Long");
+      Serial.println();
+
+      Serial.printf("6) Set Intermeasurement Period: %d ms\n",settings.sensor_VL53L1X.intermeasurementPeriod);
+      Serial.printf("7) Set Offset: %d mm\n", settings.sensor_VL53L1X.offset);
+      Serial.printf("8) Set Cross Talk (counts per second): %d cps\n", settings.sensor_VL53L1X.crosstalk);
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+
+    if (incoming == '1')
+      settings.sensor_VL53L1X.log ^= 1;
+    else if (settings.sensor_VL53L1X.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_VL53L1X.logDistance ^= 1;
+      else if (incoming == '3')
+        settings.sensor_VL53L1X.logRangeStatus ^= 1;
+      else if (incoming == '4')
+        settings.sensor_VL53L1X.logSignalRate ^= 1;
+      else if (incoming == '5')
+      {
+        if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
+          settings.sensor_VL53L1X.distanceMode = VL53L1X_DISTANCE_MODE_LONG;
+        else
+          settings.sensor_VL53L1X.distanceMode = VL53L1X_DISTANCE_MODE_SHORT;
+
+        //Error check
+        if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_LONG && settings.sensor_VL53L1X.intermeasurementPeriod < 140)
+        {
+          settings.sensor_VL53L1X.intermeasurementPeriod = 140;
+          Serial.println("Intermeasurement Period increased to 140ms");
+        }
+      }
+      else if (incoming == '6')
+      {
+        int min = 20;
+        if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_LONG)
+          min = 140;
+
+
+        Serial.printf("Set timing budget (%d to 1000ms): ", min);
+        int amt = getNumber(10); //10 second timeout
+        if (amt < min || amt > 1000)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_VL53L1X.intermeasurementPeriod = amt;
+      }
+      else if (incoming == '7')
+      {
+        Serial.print("Set Offset in mm (0 to 4000mm): ");
+        int amt = getNumber(10); //10 second timeout
+        if (amt < 0 || amt > 4000)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_VL53L1X.offset = amt;
+      }
+      else if (incoming == '8')
+      {
+        Serial.print("Set Crosstalk in Counts Per Second: ");
+        int amt = getNumber(10); //10 second timeout
+        if (amt < 0 || amt > 4000)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_VL53L1X.crosstalk = amt;
+      }
+      else if (incoming == 'x')
+        break;
+      else if (incoming == 255)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == 255)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.VL53L1X = false; //Mark as offline so it will be started with new settings
 }

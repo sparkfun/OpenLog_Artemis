@@ -96,14 +96,31 @@ void beginSensors()
       msg("VCNL4040 failed to respond. Check wiring.");
   }
 
-  //  if (settings.logVL53L1X)
-  //  {
-  //    if (distanceSensor.begin() == 0) //Begin returns 0 on a good init.
-  //      qwiicOnline.VL53L1X = true;
-  //    else
-  //      msg("VL53L1X failed to respond. Check wiring.");
-  //  }
-  //
+  if (qwiicAvailable.VL53L1X && settings.sensor_VL53L1X.log && !qwiicOnline.VL53L1X)
+  {
+    if (distanceSensor_VL53L1X.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
+    {
+      if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
+        distanceSensor_VL53L1X.setDistanceModeShort();
+      else
+        distanceSensor_VL53L1X.setDistanceModeLong();
+
+      distanceSensor_VL53L1X.setIntermeasurementPeriod(settings.sensor_VL53L1X.intermeasurementPeriod - 1);
+      distanceSensor_VL53L1X.setXTalk(settings.sensor_VL53L1X.crosstalk);
+      distanceSensor_VL53L1X.setOffset(settings.sensor_VL53L1X.offset);
+
+      distanceSensor_VL53L1X.startRanging(); //Write configuration bytes to initiate measurement
+
+      Serial.printf("inter period: %d\n", distanceSensor_VL53L1X.getIntermeasurementPeriod());
+      Serial.printf("xtalk: %d\n", distanceSensor_VL53L1X.getXTalk());
+      Serial.printf("offset: %d\n", distanceSensor_VL53L1X.getOffset());
+
+      qwiicOnline.VL53L1X = true;
+      msg("VL53L1X Online");
+    }
+    else
+      msg("VX53L1X failed to respond. Check wiring.");
+  }
 }
 
 //Query each enabled sensor for it's most recent data
@@ -128,8 +145,7 @@ void getData()
           sprintf(rtcDate, "%02d/%02d/20%02d", myRTC.month, myRTC.dayOfMonth, myRTC.year);
         else
           sprintf(rtcDate, "%02d/%02d/20%02d", myRTC.dayOfMonth, myRTC.month, myRTC.year);
-        outputData += String(rtcDate);
-        outputData += ",";
+        outputData += String(rtcDate) + ",";
         helperText += "rtcDate,";
       }
 
@@ -140,8 +156,7 @@ void getData()
         if (adjustedHour > 12) adjustedHour -= 12;
       }
       sprintf(rtcTime, "%02d:%02d:%02d.%02d", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-      outputData += String(rtcTime);
-      outputData += ",";
+      outputData += String(rtcTime) + ",";
       helperText += "rtcTime,";
     } //end if use RTC for timestamp
     else //Use GPS for timestamp
@@ -260,14 +275,12 @@ void getData()
   {
     if (settings.sensor_LPS25HB.logPressure)
     {
-      outputData += pressureSensor.getPressure_hPa();
-      outputData += ",";
+      outputData += (String)pressureSensor.getPressure_hPa() + ",";
       helperText += "pressure_hPa,";
     }
     if (settings.sensor_LPS25HB.logTemp)
     {
-      outputData += pressureSensor.getTemperature_degC();
-      outputData += ",";
+      outputData += (String)pressureSensor.getTemperature_degC() + ",";
       helperText += "pressure_degC,";
     }
   }
@@ -278,10 +291,9 @@ void getData()
     {
       float currentWeight = nauScale.getWeight(false, settings.sensor_NAU7802.averageAmount); //Do not allow negative weights, take average of X readings
       static char weight[30];
-      sprintf(weight, "%.*f", settings.sensor_NAU7802.decimalPlaces, currentWeight);
+      sprintf(weight, "%.*f,", settings.sensor_NAU7802.decimalPlaces, currentWeight);
 
       outputData += weight;
-      outputData += ",";
       helperText += "weight(no unit),";
     }
   }
@@ -290,14 +302,12 @@ void getData()
   {
     if (settings.sensor_MCP9600.logTemp)
     {
-      outputData += thermoSensor.getThermocoupleTemp();
-      outputData += ",";
+      outputData += (String)thermoSensor.getThermocoupleTemp() + ",";
       helperText += "thermo_degC,";
     }
     if (settings.sensor_MCP9600.logAmbientTemp)
     {
-      outputData += thermoSensor.getAmbientTemp();
-      outputData += ",";
+      outputData += (String)thermoSensor.getAmbientTemp() + ",";
       helperText += "thermo_ambientDegC,";
     }
   }
@@ -316,8 +326,7 @@ void getData()
         sprintf(gpsDate, "%02d/%02d/%d", myGPS.getMonth(), myGPS.getDay(), myGPS.getYear());
       else
         sprintf(gpsDate, "%02d/%02d/%d", myGPS.getDay(), myGPS.getMonth(), myGPS.getYear());
-      outputData += String(gpsDate);
-      outputData += ",";
+      outputData += String(gpsDate) + ",";
       helperText += "gps_Date,";
     }
     if (settings.sensor_uBlox.logTime)
@@ -329,69 +338,58 @@ void getData()
         if (adjustedHour > 12) adjustedHour -= 12;
       }
       sprintf(gpsTime, "%02d:%02d:%02d.%03d", adjustedHour, myGPS.getMinute(), myGPS.getSecond(), myGPS.getMillisecond());
-      outputData += String(gpsTime);
-      outputData += ",";
+      outputData += String(gpsTime) + ",";
       helperText += "gps_Time,";
     }
     if (settings.sensor_uBlox.logPosition)
     {
-      outputData += myGPS.getLatitude();
-      outputData += ",";
-      outputData += myGPS.getLongitude();
-      outputData += ",";
+      outputData += myGPS.getLatitude() + ",";
+      outputData += myGPS.getLongitude() + ",";
       helperText += "gps_Lat,gps_Long,";
     }
     if (settings.sensor_uBlox.logAltitude)
     {
-      outputData += myGPS.getAltitude();
-      outputData += ",";
+      outputData += myGPS.getAltitude() + ",";
       helperText += "gps_Alt,";
     }
     if (settings.sensor_uBlox.logAltitudeMSL)
     {
-      outputData += myGPS.getAltitudeMSL();
-      outputData += ",";
+      outputData += myGPS.getAltitudeMSL() + ",";
+      helperText += "gps_AltMSL,";
     }
     if (settings.sensor_uBlox.logSIV)
     {
-      outputData += myGPS.getSIV();
-      outputData += ",";
+      outputData += myGPS.getSIV() + ",";
       helperText += "gps_SIV,";
     }
     if (settings.sensor_uBlox.logFixType)
     {
-      outputData += myGPS.getFixType();
-      outputData += ",";
+      outputData += myGPS.getFixType() + ",";
       helperText += "gps_FixType,";
     }
     if (settings.sensor_uBlox.logCarrierSolution)
     {
-      outputData += myGPS.getCarrierSolutionType(); //0=No solution, 1=Float solution, 2=Fixed solution. Useful when querying module to see if it has high-precision RTK fix.
-      outputData += ",";
+      outputData += myGPS.getCarrierSolutionType() + ","; //0=No solution, 1=Float solution, 2=Fixed solution. Useful when querying module to see if it has high-precision RTK fix.
       helperText += "gps_CarrierSolution,";
     }
     if (settings.sensor_uBlox.logGroundSpeed)
     {
-      outputData += myGPS.getGroundSpeed();
-      outputData += ",";
+      outputData += myGPS.getGroundSpeed() + ",";
       helperText += "gps_GroundSpeed,";
     }
     if (settings.sensor_uBlox.logHeadingOfMotion)
     {
-      outputData += myGPS.getHeading();
-      outputData += ",";
+      outputData += myGPS.getHeading() + ",";
       helperText += "gps_Heading,";
     }
     if (settings.sensor_uBlox.logpDOP)
     {
-      outputData += myGPS.getPDOP();
-      outputData += ",";
+      outputData += myGPS.getPDOP() + ",";
       helperText += "gps_pDOP,";
     }
     if (settings.sensor_uBlox.logiTOW)
     {
-      outputData += myGPS.getTimeOfWeek();
-      outputData += ",";
+      outputData += myGPS.getTimeOfWeek() + ",";
       helperText += "gps_iTOW,";
     }
 
@@ -403,27 +401,34 @@ void getData()
   {
     if (settings.sensor_VCNL4040.logProximity)
     {
-      outputData += proximitySensor_VCNL4040.getProximity();
-      outputData += ",";
+      outputData += proximitySensor_VCNL4040.getProximity() + ",";
       helperText += "prox(no unit),";
     }
     if (settings.sensor_VCNL4040.logAmbientLight)
     {
-      outputData += proximitySensor_VCNL4040.getAmbient();
-      outputData += ",";
+      outputData += proximitySensor_VCNL4040.getAmbient() + ",";
       helperText += "ambient_lux,";
     }
   }
 
-  //  if (qwiicOnline.VL53L1X)
-  //  {
-  //    distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
-  //    int distance = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
-  //    distanceSensor.stopRanging();
-  //
-  //    outputData += distance; //mm
-  //    outputData += ",";
-  //  }
+  if (qwiicOnline.VL53L1X && settings.sensor_VL53L1X.log)
+  {
+    if (settings.sensor_VL53L1X.logDistance)
+    {
+      outputData += (String)distanceSensor_VL53L1X.getDistance() + ",";
+      helperText += "distance_mm,";
+    }
+    if (settings.sensor_VL53L1X.logRangeStatus)
+    {
+      outputData += (String)distanceSensor_VL53L1X.getRangeStatus() + ",";
+      helperText += "distance_rangeStatus(0=good),";
+    }
+    if (settings.sensor_VL53L1X.logSignalRate)
+    {
+      outputData += (String)distanceSensor_VL53L1X.getSignalRate() + ",";
+      helperText += "distance_signalRate,";
+    }
+  }
 
   if (settings.logHertz)
   {
@@ -431,8 +436,7 @@ void getData()
     //number of updates we've completed.
     float actualRate = measurementCount * 1000.0 / (millis() - measurementStartTime);
 
-    outputData += actualRate; //Hz
-    outputData += ",";
+    outputData += (String)actualRate + ","; //Hz
     helperText += "output_Hz,";
   }
 

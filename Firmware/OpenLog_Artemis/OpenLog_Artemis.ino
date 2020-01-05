@@ -30,6 +30,10 @@
   Eval how long it takes to boot (SD, log creation, IMU begin, etc)
   Allow user to decrease I2C speed on GPS to increase reliability
 
+
+  The Qwiic device settings menus don't change the devices directly. These are set at the exit of the main menu
+  when sensors are begun().
+
   What about changing units? mm of distance vs ft or inches? Leave it up to post processing?
 
   Python/windows program to load new hex files
@@ -121,11 +125,8 @@ MCP9600 thermoSensor;
 #include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
 NAU7802 nauScale;
 
-#include <SparkFun_BH1749NUC_Arduino_Library.h>
-BH1749NUC rgb;
-
 #include "SparkFun_VL53L1X.h" //Click here to get the library: http://librarymanager/All#SparkFun_VL53L1X
-SFEVL53L1X distanceSensor;
+SFEVL53L1X distanceSensor_VL53L1X(qwiic);
 
 #include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
 SFE_UBLOX_GPS myGPS;

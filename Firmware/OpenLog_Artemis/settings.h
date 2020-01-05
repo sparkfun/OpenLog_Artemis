@@ -46,14 +46,17 @@ struct struct_uBlox {
   bool logiTOW = false;
 };
 
+#define VL53L1X_DISTANCE_MODE_SHORT 0
+#define VL53L1X_DISTANCE_MODE_LONG 1
 struct struct_VL53L1X {
   bool log = true;
   bool logDistance = true;
-};
-
-struct struct_BH1749NUC {
-  bool log = true;
-  bool logRed = true;
+  bool logRangeStatus = true;
+  bool logSignalRate = false;
+  byte distanceMode = VL53L1X_DISTANCE_MODE_LONG;
+  int intermeasurementPeriod = 140; //ms
+  int offset = 0; //In mm
+  int crosstalk = 0;
 };
 
 struct struct_settings {
@@ -92,7 +95,6 @@ struct struct_settings {
   struct_VL53L1X sensor_VL53L1X;
   struct_NAU7802 sensor_NAU7802;
   struct_MCP9600 sensor_MCP9600;
-  struct_BH1749NUC sensor_BH1749NUC;
   struct_VCNL4040 sensor_VCNL4040;
 } settings;
 
