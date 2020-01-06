@@ -149,6 +149,8 @@ unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate 
 unsigned long startTime = 0;
 
 void setup() {
+  startTime = micros();
+  
   pinMode(statLED, OUTPUT);
   digitalWrite(statLED, LOW);
 
@@ -158,13 +160,9 @@ void setup() {
 
   SPI.begin(); //Needed if SD is disabled
 
-  //startTime = micros();
   beginSD(); //285 - 293ms
-  //Serial.printf("beginSD time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
-  startTime = micros();
-  loadSettings(); //50ms
-  Serial.printf("loadSettings time: %.02f ms\n", (micros() - startTime) / 1000.0);
+  loadSettings(); //50 - 250ms
 
   Serial.begin(settings.serialTerminalBaudRate);
   Serial.println("Artemis OpenLog");
@@ -173,30 +171,23 @@ void setup() {
 
   analogReadResolution(14); //Increase from default of 10
 
-  //settings.serialLogBaudRate = 115200;
   //myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
 
-  startTime = micros();
-  beginDataLogging(); //361 - 416ms
-  Serial.printf("beginDataLogging time: %.02f ms\n", (micros() - startTime) / 1000.0);
+  beginDataLogging(); //180ms
 
-  startTime = micros();
   beginSerialLogging(); //20 - 99ms
-  Serial.printf("beginSerialLogging time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
-  startTime = micros();
   beginIMU(); //61ms
-  Serial.printf("beginIMU time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
-  startTime = micros();
   beginSensors(); //159 - 865ms but varies based on number of devices attached
-  Serial.printf("beginSensors time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
   measurementStartTime = millis();
 
   if (settings.logMaxRate == true) Serial.println("Logging analog pins at max data rate");
 
   if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
+
+  Serial.printf("Setup time: %.02f ms\n", (micros() - startTime) / 1000.0);
 }
 
 void loop() {
@@ -276,8 +267,6 @@ void beginQwiic()
   pinMode(QWIIC_PWR, OUTPUT);
   qwiicPowerOn();
   qwiic.begin();
-  qwiic.setPullups(0); //Disable pullups
-  //qwiic.setPullups(24); //Set pullups to 24k
 }
 
 void beginSD()
@@ -376,13 +365,13 @@ void beginDataLogging()
     // O_CREAT - create the file if it does not exist
     // O_APPEND - seek to the end of the file prior to each write
     // O_WRITE - open for write
-
     if (sensorDataFile.open(findNextAvailableLog(settings.nextDataLogNumber, "dataLog"), O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create sensor data file");
       online.dataLogging = false;
       return;
     }
+
     msg("Data logging online");
     online.dataLogging = true;
   }

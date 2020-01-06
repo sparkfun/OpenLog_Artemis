@@ -35,7 +35,7 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
   newFile.close(); //Close this new file we just opened
 
   newFileNumber++; //Increment so the next power up uses the next file #
-  recordSettings(); //Record new file number to EEPROM
+  recordSettings(); //Record new file number to EEPROM and to config file
 
   Serial.print(F("Created log file: "));
   Serial.println(newFileName);

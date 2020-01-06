@@ -77,6 +77,7 @@ bool detectQwiicDevices()
   bool somethingDetected = false;
 
   qwiic.setClock(100000); //During detection, go slow
+  qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
@@ -90,6 +91,8 @@ bool detectQwiicDevices()
         somethingDetected = true;
     }
   }
+
+  if (somethingDetected) qwiic.setPullups(0); //We've detected something on the bus so disable pullups
 
   return (somethingDetected);
 }
