@@ -86,7 +86,6 @@ TwoWire qwiic(1); //Will use pads 8/9
 SdFat sd;
 File sensorDataFile; //File that all sensor data is written to
 File serialDataFile; //File that all incoming serial data is written to
-File settingsFile; //File containing the settings struct in binary
 bool newSerialData = false;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -147,45 +146,57 @@ bool helperTextPrinted = false; //Print the column headers only once
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+unsigned long startTime = 0;
+
 void setup() {
   pinMode(statLED, OUTPUT);
   digitalWrite(statLED, LOW);
 
-  loadSettings();
-
-  Serial.begin(settings.serialTerminalBaudRate);
+  Serial.begin(115200); //Default for initial debug messages if necessary
   delay(10);
   Serial.println();
-  Serial.println("Artemis OpenLog");
-
-  pinMode(QWIIC_PWR, OUTPUT);
-  qwiicPowerOn();
-  qwiic.begin();
-  //qwiic.setPullups(24); //Set pullups to 24k
-  qwiic.setPullups(0); //Disable pullups
 
   SPI.begin(); //Needed if SD is disabled
+
+  //startTime = micros();
+  beginSD(); //285 - 293ms
+  //Serial.printf("beginSD time: %.02f ms\n", (micros() - startTime) / 1000.0);
+
+  startTime = micros();
+  loadSettings(); //50ms
+  Serial.printf("loadSettings time: %.02f ms\n", (micros() - startTime) / 1000.0);
+
+  Serial.begin(settings.serialTerminalBaudRate);
+  Serial.println("Artemis OpenLog");
+
+  beginQwiic();
 
   analogReadResolution(14); //Increase from default of 10
 
   //settings.serialLogBaudRate = 115200;
   //myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
 
-  beginSD();
+  startTime = micros();
+  beginDataLogging(); //361 - 416ms
+  Serial.printf("beginDataLogging time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
-  beginSerialLogging();
+  startTime = micros();
+  beginSerialLogging(); //20 - 99ms
+  Serial.printf("beginSerialLogging time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
-  beginIMU();
+  startTime = micros();
+  beginIMU(); //61ms
+  Serial.printf("beginIMU time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
-  beginSensors();
+  startTime = micros();
+  beginSensors(); //159 - 865ms but varies based on number of devices attached
+  Serial.printf("beginSensors time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
   measurementStartTime = millis();
 
   if (settings.logMaxRate == true) Serial.println("Logging analog pins at max data rate");
 
-  //qwiic.setClock(400000);
-  recordSettingsToFile();
-  
+  if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
 }
 
 void loop() {
@@ -234,19 +245,22 @@ void loop() {
       Serial.print(outputData); //Print to terminal
 
     //Record to SD
-    if (settings.enableSD && online.microSD)
+    if (settings.logData == true)
     {
-      char temp[512];
-      outputData.toCharArray(temp, 512); //Convert string to char array so sdfat can record it
-      sensorDataFile.write(temp, strlen(temp)); //Record the buffer to the card
-
-      //Force sync every 500ms
-      if (millis() - lastDataLogSyncTime > 500)
+      if (settings.enableSD && online.microSD)
       {
-        lastDataLogSyncTime = millis();
-        digitalWrite(statLED, HIGH);
-        sensorDataFile.sync();
-        digitalWrite(statLED, LOW);
+        char temp[512];
+        outputData.toCharArray(temp, 512); //Convert string to char array so sdfat can record it
+        sensorDataFile.write(temp, strlen(temp)); //Record the buffer to the card
+
+        //Force sync every 500ms
+        if (millis() - lastDataLogSyncTime > 500)
+        {
+          lastDataLogSyncTime = millis();
+          digitalWrite(statLED, HIGH);
+          sensorDataFile.sync();
+          digitalWrite(statLED, LOW);
+        }
       }
     }
 
@@ -257,6 +271,15 @@ void loop() {
   }
 }
 
+void beginQwiic()
+{
+  pinMode(QWIIC_PWR, OUTPUT);
+  qwiicPowerOn();
+  qwiic.begin();
+  qwiic.setPullups(0); //Disable pullups
+  //qwiic.setPullups(24); //Set pullups to 24k
+}
+
 void beginSD()
 {
   if (settings.enableSD == true)
@@ -265,24 +288,27 @@ void beginSD()
     pinMode(SD_POWER, OUTPUT);
     digitalWrite(SD_POWER, HIGH);
 
-    if (settings.logMaxRate == true)
+    //We can get faster SPI transfer rates if we have only one device enabled on the SPI bus
+    //But we have a chicken and egg problem: We need to load settings before we enable SD, but we
+    //need the SD to load the settings file. For now, we will disable the logMaxRate option.
+    //    if (settings.logMaxRate == true)
+    //    {
+    //      if (sd.begin(SD_CONFIG_MAX_SPEED) == false) //Very Fast SdFat Beta (dedicated SPI, no IMU)
+    //      {
+    //        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
+    //        online.microSD = false;
+    //        return;
+    //      }
+    //    }
+    //    else
+    //    {
+    if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
     {
-      if (sd.begin(SD_CONFIG_MAX_SPEED) == false) //Very Fast SdFat Beta (dedicated SPI, no IMU)
-      {
-        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
-        online.microSD = false;
-        return;
-      }
+      Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
+      online.microSD = false;
+      return;
     }
-    else
-    {
-      if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
-      {
-        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
-        online.microSD = false;
-        return;
-      }
-    }
+    //    }
 
     if (sd.chdir() == false)
     {
@@ -292,23 +318,8 @@ void beginSD()
       return;
     }
 
-    Serial.println("SD card online");
-
-    // O_CREAT - create the file if it does not exist
-    // O_APPEND - seek to the end of the file prior to each write
-    // O_WRITE - open for write
-
-    if (sensorDataFile.open(findNextAvailableLog(settings.nextDataLogNumber, "dataLog"), O_CREAT | O_APPEND | O_WRITE) == false)
-    {
-      Serial.println("Failed to create sensor data file");
-      //systemError(ERROR_FILE_OPEN);
-      online.microSD = false;
-      return;
-    }
-
+    msg("SD card online");
     online.microSD = true;
-
-    sensorDataFile.println("SD card online");
   }
   else
   {
@@ -355,6 +366,39 @@ void beginIMU()
 
     msg("IMU disabled");
     online.IMU = false;
+  }
+}
+
+void beginDataLogging()
+{
+  if (online.microSD == true && settings.logData == true)
+  {
+    // O_CREAT - create the file if it does not exist
+    // O_APPEND - seek to the end of the file prior to each write
+    // O_WRITE - open for write
+
+    if (sensorDataFile.open(findNextAvailableLog(settings.nextDataLogNumber, "dataLog"), O_CREAT | O_APPEND | O_WRITE) == false)
+    {
+      Serial.println("Failed to create sensor data file");
+      online.dataLogging = false;
+      return;
+    }
+    msg("Data logging online");
+    online.dataLogging = true;
+  }
+  else if (settings.logData == false && online.microSD == true)
+  {
+    msg("Data logging disabled");
+    online.dataLogging = false;
+  }
+  else if (online.microSD == false)
+  {
+    Serial.println("Data logging disabled because microSD offline");
+    online.serialLogging = false;
+  }
+  else
+  {
+    Serial.println("Unknown microSD state");
   }
 }
 

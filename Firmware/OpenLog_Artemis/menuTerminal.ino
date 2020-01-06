@@ -5,27 +5,31 @@ void menuLogRate()
     Serial.println();
     Serial.println("Menu: Configure Terminal Output");
 
-    Serial.print("1) Terminal Output: ");
+    Serial.print("1) Log Sensor Data to microSD: ");
+    if (settings.logData == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    Serial.print("2) Log Sensor Data to Terminal: ");
     if (settings.enableTerminalOutput == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("2) Set serial baud rate: ");
+    Serial.print("3) Set Serial Baud Rate: ");
     Serial.print(settings.serialTerminalBaudRate);
     Serial.println(" bps");
 
-    Serial.print("3) Set log rate: ");
+    Serial.print("4) Set Log Rate: ");
     if (settings.logMaxRate == true) Serial.println("Max rate enabled");
     else Serial.println(settings.recordPerSecond);
 
-    Serial.print("4) Max log rate: ");
+    Serial.print("5) Enable maximum logging: ");
     if (settings.logMaxRate == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("5) Log actual Hertz: ");
+    Serial.print("6) Output Actual Hertz: ");
     if (settings.logHertz == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("6) Print column titles: ");
+    Serial.print("7) Output Column Titles: ");
     if (settings.showHelperText == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
@@ -34,8 +38,10 @@ void menuLogRate()
     byte incoming = getByteChoice(10); //Timeout after 10 seconds
 
     if (incoming == '1')
-      settings.enableTerminalOutput ^= 1;
+      settings.logData ^= 1;
     else if (incoming == '2')
+      settings.enableTerminalOutput ^= 1;
+    else if (incoming == '3')
     {
       Serial.print("Enter baud rate (1200 to 500000): ");
       int newBaud = getNumber(10); //Timeout after 10 seconds
@@ -51,7 +57,7 @@ void menuLogRate()
         while(1);
       }
     }
-    else if (incoming == '3')
+    else if (incoming == '4')
     {
       int maxOutputRate = settings.serialTerminalBaudRate / 10 / (totalCharactersPrinted / measurementCount);
       maxOutputRate = (maxOutputRate * 90) / 100; //Fudge reduction of 10%
@@ -63,7 +69,7 @@ void menuLogRate()
       else
         settings.recordPerSecond = tempRPS;
     }
-    else if (incoming == '4')
+    else if (incoming == '5')
     {
       if (settings.logMaxRate == false)
       {
@@ -89,9 +95,9 @@ void menuLogRate()
       else
         settings.logMaxRate = false;
     }
-    else if (incoming == '5')
-      settings.logHertz ^= 1;
     else if (incoming == '6')
+      settings.logHertz ^= 1;
+    else if (incoming == '7')
       settings.showHelperText ^= 1;
     else if (incoming == 'x')
       return;

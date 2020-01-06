@@ -58,6 +58,8 @@ void menuMain()
       if (bContinue == 'y')
       {
         EEPROM.erase();
+        if (sd.exists("OLA_settings.cfg"))
+          sd.remove("OLA_settings.cfg");
 
         Serial.println("Settings erased. Please reset OpenLog Artemis...");
         while (1);
@@ -74,6 +76,7 @@ void menuMain()
   }
 
   recordSettings(); //Once all menus have exited, record the new settings to EEPROM
+  recordSettingsToFile();
 
   beginSensors(); //Once all menus have exited, start any sensors that are available, logging, but not yet online/begun.
 

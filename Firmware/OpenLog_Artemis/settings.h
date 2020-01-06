@@ -44,6 +44,7 @@ struct struct_uBlox {
   bool logHeadingOfMotion = true;
   bool logpDOP = true;
   bool logiTOW = false;
+  int i2cSpeed = 100000; //Default to 100kHz for least number of CRC issues
 };
 
 #define VL53L1X_DISTANCE_MODE_SHORT 0
@@ -70,6 +71,7 @@ struct struct_settings {
   bool enableSD = true;
   bool enableTerminalOutput = true;
   bool logDate = true;
+  bool logData = true;
   bool logSerial = true;
   bool logIMUAccel = true;
   bool logIMUGyro = true;
@@ -100,6 +102,7 @@ struct struct_settings {
 
 struct struct_online {
   bool microSD = false;
+  bool dataLogging = false;
   bool serialLogging = false;
   bool IMU = false;
 } online;

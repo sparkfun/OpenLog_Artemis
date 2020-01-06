@@ -368,6 +368,7 @@ void menuConfigure_uBlox()
       if (settings.sensor_uBlox.logiTOW == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
+      Serial.printf("14) Set I2C Interface Speed: %d\n", settings.sensor_uBlox.i2cSpeed);
     }
     Serial.println("x) Exit");
 
@@ -403,6 +404,13 @@ void menuConfigure_uBlox()
         settings.sensor_uBlox.logpDOP ^= 1;
       else if (incoming == 13)
         settings.sensor_uBlox.logiTOW ^= 1;
+      else if (incoming == 14)
+      {
+        if (settings.sensor_uBlox.i2cSpeed == 100000)
+          settings.sensor_uBlox.i2cSpeed = 400000;
+        else
+          settings.sensor_uBlox.i2cSpeed = 100000;
+      }
       else if (incoming == 255) //getNumber() will return 255 if 'x' is pressed
         break;
       else
@@ -606,7 +614,7 @@ void menuConfigure_VL53L1X()
         Serial.print("Long");
       Serial.println();
 
-      Serial.printf("6) Set Intermeasurement Period: %d ms\n",settings.sensor_VL53L1X.intermeasurementPeriod);
+      Serial.printf("6) Set Intermeasurement Period: %d ms\n", settings.sensor_VL53L1X.intermeasurementPeriod);
       Serial.printf("7) Set Offset: %d mm\n", settings.sensor_VL53L1X.offset);
       Serial.printf("8) Set Cross Talk (counts per second): %d cps\n", settings.sensor_VL53L1X.crosstalk);
     }

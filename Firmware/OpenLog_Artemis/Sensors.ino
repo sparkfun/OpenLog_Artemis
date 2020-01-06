@@ -111,10 +111,6 @@ void beginSensors()
 
       distanceSensor_VL53L1X.startRanging(); //Write configuration bytes to initiate measurement
 
-      Serial.printf("inter period: %d\n", distanceSensor_VL53L1X.getIntermeasurementPeriod());
-      Serial.printf("xtalk: %d\n", distanceSensor_VL53L1X.getXTalk());
-      Serial.printf("offset: %d\n", distanceSensor_VL53L1X.getOffset());
-
       qwiicOnline.VL53L1X = true;
       msg("VL53L1X Online");
     }
@@ -343,57 +339,57 @@ void getData()
     }
     if (settings.sensor_uBlox.logPosition)
     {
-      outputData += myGPS.getLatitude() + ",";
-      outputData += myGPS.getLongitude() + ",";
+      outputData += (String)myGPS.getLatitude() + ",";
+      outputData += (String)myGPS.getLongitude() + ",";
       helperText += "gps_Lat,gps_Long,";
     }
     if (settings.sensor_uBlox.logAltitude)
     {
-      outputData += myGPS.getAltitude() + ",";
+      outputData += (String)myGPS.getAltitude() + ",";
       helperText += "gps_Alt,";
     }
     if (settings.sensor_uBlox.logAltitudeMSL)
     {
-      outputData += myGPS.getAltitudeMSL() + ",";
+      outputData += (String)myGPS.getAltitudeMSL() + ",";
       helperText += "gps_AltMSL,";
     }
     if (settings.sensor_uBlox.logSIV)
     {
-      outputData += myGPS.getSIV() + ",";
+      outputData += (String)myGPS.getSIV() + ",";
       helperText += "gps_SIV,";
     }
     if (settings.sensor_uBlox.logFixType)
     {
-      outputData += myGPS.getFixType() + ",";
+      outputData += (String)myGPS.getFixType() + ",";
       helperText += "gps_FixType,";
     }
     if (settings.sensor_uBlox.logCarrierSolution)
     {
-      outputData += myGPS.getCarrierSolutionType() + ","; //0=No solution, 1=Float solution, 2=Fixed solution. Useful when querying module to see if it has high-precision RTK fix.
+      outputData += (String)myGPS.getCarrierSolutionType() + ","; //0=No solution, 1=Float solution, 2=Fixed solution. Useful when querying module to see if it has high-precision RTK fix.
       helperText += "gps_CarrierSolution,";
     }
     if (settings.sensor_uBlox.logGroundSpeed)
     {
-      outputData += myGPS.getGroundSpeed() + ",";
+      outputData += (String)myGPS.getGroundSpeed() + ",";
       helperText += "gps_GroundSpeed,";
     }
     if (settings.sensor_uBlox.logHeadingOfMotion)
     {
-      outputData += myGPS.getHeading() + ",";
+      outputData += (String)myGPS.getHeading() + ",";
       helperText += "gps_Heading,";
     }
     if (settings.sensor_uBlox.logpDOP)
     {
-      outputData += myGPS.getPDOP() + ",";
+      outputData += (String)myGPS.getPDOP() + ",";
       helperText += "gps_pDOP,";
     }
     if (settings.sensor_uBlox.logiTOW)
     {
-      outputData += myGPS.getTimeOfWeek() + ",";
+      outputData += (String)myGPS.getTimeOfWeek() + ",";
       helperText += "gps_iTOW,";
     }
 
-    myGPS.flushPVT(); //Mark all PVT dat
+    myGPS.flushPVT(); //Mark all PVT data as used
     //    }
   }
 
@@ -401,12 +397,12 @@ void getData()
   {
     if (settings.sensor_VCNL4040.logProximity)
     {
-      outputData += proximitySensor_VCNL4040.getProximity() + ",";
+      outputData += (String)proximitySensor_VCNL4040.getProximity() + ",";
       helperText += "prox(no unit),";
     }
     if (settings.sensor_VCNL4040.logAmbientLight)
     {
-      outputData += proximitySensor_VCNL4040.getAmbient() + ",";
+      outputData += (String)proximitySensor_VCNL4040.getAmbient() + ",";
       helperText += "ambient_lux,";
     }
   }
@@ -461,9 +457,9 @@ void determineMaxI2CSpeed()
   uint32_t maxSpeed = 400000; //Assume 400kHz
 
   if (qwiicAvailable.MCP9600 == true && settings.sensor_MCP9600.log == true)
-  {
     maxSpeed = 100000;
-  }
+  else if (settings.sensor_uBlox.i2cSpeed == 100000)
+    maxSpeed = 100000;
 
   qwiic.setClock(maxSpeed);
 }
