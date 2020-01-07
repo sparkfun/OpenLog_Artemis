@@ -60,6 +60,17 @@ struct struct_VL53L1X {
   int crosstalk = 0;
 };
 
+#define TMP1117_MODE_CONTINUOUS 0
+#define TMP1117_MODE_SHUTDOWN 1
+#define TMP1117_MODE_ONESHOT 2
+struct struct_TMP117 {
+  bool log = true;
+  bool logTemp = true;
+  int conversionMode = TMP1117_MODE_CONTINUOUS;
+  int conversionAverageMode = 0; //Setup for 15.5ms reads
+  int conversionCycle = 0;
+};
+
 struct struct_settings {
   int sizeOfSettings = 0;
   int nextSerialLogNumber = 1;
@@ -98,6 +109,7 @@ struct struct_settings {
   struct_NAU7802 sensor_NAU7802;
   struct_MCP9600 sensor_MCP9600;
   struct_VCNL4040 sensor_VCNL4040;
+  struct_TMP117 sensor_TMP117;
 } settings;
 
 struct struct_online {
@@ -116,6 +128,7 @@ struct struct_QwiicSensors {
   bool uBlox;
   bool VL53L1X;
   bool VCNL4040;
+  bool TMP117;
 };
 
 struct_QwiicSensors qwiicAvailable = {
@@ -126,6 +139,7 @@ struct_QwiicSensors qwiicAvailable = {
   .uBlox = false,
   .VL53L1X = false,
   .VCNL4040 = false,
+  .TMP117 = false,
 };
 
 struct_QwiicSensors qwiicOnline = {
@@ -136,4 +150,5 @@ struct_QwiicSensors qwiicOnline = {
   .uBlox = false,
   .VL53L1X = false,
   .VCNL4040 = false,
+  .TMP117 = false,
 };

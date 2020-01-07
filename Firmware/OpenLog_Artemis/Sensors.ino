@@ -117,6 +117,21 @@ void beginSensors()
     else
       msg("VX53L1X failed to respond. Check wiring.");
   }
+
+  if (qwiicAvailable.TMP117 && settings.sensor_TMP117.log && !qwiicOnline.TMP117)
+  {
+    if (tempSensor_TMP117.begin(0x48, qwiic) == true) //Address, Wire port
+    {
+      tempSensor_TMP117.setConversionAverageMode(settings.sensor_TMP117.conversionAverageMode);
+      tempSensor_TMP117.setConversionCycleBit(settings.sensor_TMP117.conversionCycle);
+      tempSensor_TMP117.setContinuousConversionMode();
+
+      qwiicOnline.TMP117 = true;
+      msg("TMP117 Online");
+    }
+    else
+      msg("TMP117 failed to respond. Check wiring and address jumpers.");
+  }
 }
 
 //Query each enabled sensor for it's most recent data
@@ -423,6 +438,15 @@ void getData()
     {
       outputData += (String)distanceSensor_VL53L1X.getSignalRate() + ",";
       helperText += "distance_signalRate,";
+    }
+  }
+
+  if (qwiicOnline.TMP117 && settings.sensor_TMP117.log)
+  {
+    if (settings.sensor_TMP117.logTemp)
+    {
+      outputData += (String)tempSensor_TMP117.readTempC() + ",";
+      helperText += "temp_degC,";
     }
   }
 

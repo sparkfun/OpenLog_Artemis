@@ -53,6 +53,11 @@ void menuAttachedDevices()
       functionPointers[availableDevices - 1] = menuConfigure_VL53L1X;
       Serial.printf("%d) VL53L1X Distance Sensor\n", availableDevices++);
     }
+    if (qwiicAvailable.TMP117)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_TMP117;
+      Serial.printf("%d) TMP117 Precision Temperature Sensor\n", availableDevices++);
+    }
 
     Serial.println("x) Exit");
 
@@ -101,6 +106,7 @@ bool detectQwiicDevices()
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
 #define ADR_UBLOX 0x42
+#define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_LPS25HB_2 0x5C
 #define ADR_LPS25HB_1 0x5D
 //0x60: VCNL4040 and MCP9600_2
@@ -145,6 +151,10 @@ bool testDevice(uint8_t i2cAddress)
     case ADR_VL53L1X:
       if (distanceSensor_VL53L1X.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
         qwiicAvailable.VL53L1X = true;
+      break;
+    case ADR_TMP117:
+      if (tempSensor_TMP117.begin(ADR_TMP117, qwiic) == true) //Adr, Wire port
+        qwiicAvailable.TMP117 = true;
       break;
     default:
       Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
@@ -697,4 +707,33 @@ void menuConfigure_VL53L1X()
   }
 
   qwiicOnline.VL53L1X = false; //Mark as offline so it will be started with new settings
+}
+
+
+void menuConfigure_TMP117()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure TMP117 Precision Temperature Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_TMP117.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+
+    if (incoming == '1')
+      settings.sensor_TMP117.log ^= 1;
+    else if (incoming == 'x')
+      break;
+    else if (incoming == 255)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.TMP117 = false; //Mark as offline so it will be started with new settings
 }

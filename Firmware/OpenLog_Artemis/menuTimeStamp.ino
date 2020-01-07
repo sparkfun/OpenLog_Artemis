@@ -22,10 +22,14 @@ void menuTimeStamp()
 
     Serial.println("1) Manually set RTC date");
     Serial.println("2) Manually set RTC time");
-    Serial.print("3) Synchronize RTC to GPS");
+    Serial.print("3) Synchronize RTC to GPS: ");
     if (qwiicOnline.uBlox == false)
     {
-      Serial.println(": GPS offline");
+      Serial.println("GPS offline");
+    }
+    else
+    {
+      Serial.println("TODO");
     }
 
     Serial.print("4) Use GPS as timestamp source: ");
@@ -107,7 +111,7 @@ void menuTimeStamp()
         uint8_t year, month, day;
         uint8_t hour, minute, second;
 
-        //Get time from cell module
+        //Get time from GPS module
         //lte.clock(&year, &month, &day, &hour, &minute, &second, &timezone);
 
         //myRTC.setTime(hour, minute, second, 0, day, month, year); //Manually set RTC

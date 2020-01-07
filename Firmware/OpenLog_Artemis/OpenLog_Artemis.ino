@@ -133,6 +133,9 @@ SFE_UBLOX_GPS myGPS;
 #include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
 VCNL4040 proximitySensor_VCNL4040;
 
+#include <SparkFun_TMP117.h> //Click here to get the library: http://librarymanager/All#SparkFun_TMP117
+TMP117 tempSensor_TMP117;
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Global variables
