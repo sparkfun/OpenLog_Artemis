@@ -18,7 +18,7 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
 #include <SdFat.h> //We do not use the built-in SD.h file because it calls Serial.print
-#define SD_CHIP_SELECT 10
+#define SD_CHIP_SELECT 18
 
 SdFat sd;
 SdFile workingFile; //File that all data is written to

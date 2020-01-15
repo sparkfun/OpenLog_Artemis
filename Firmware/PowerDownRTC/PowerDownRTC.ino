@@ -15,6 +15,8 @@ APM3_RTC myRTC; //Create instance of RTC class
 #ifdef VERSION_X02
 const byte PIN_POWER_LOSS = 3;
 
+const byte LOGIC_DEBUG = 11;
+
 const byte PIN_QWIIC_PWR = 18;
 const byte PIN_ICM_PWR = 22;
 const byte PIN_MICROSD_PWR = 23;
@@ -31,8 +33,8 @@ void setup()
   Serial.begin(115200);
   Serial.println("SparkFun RTC Example");
 
-  //pinMode(PIN_POWER_LOSS, INPUT);
-  pinMode(PIN_POWER_LOSS, INPUT_PULLUP);
+  pinMode(PIN_POWER_LOSS, INPUT);
+  //pinMode(PIN_POWER_LOSS, INPUT_PULLUP);
   pinMode(PIN_QWIIC_PWR, OUTPUT);
   pinMode(PIN_ICM_PWR, OUTPUT);
   pinMode(PIN_MICROSD_PWR, OUTPUT);
@@ -41,15 +43,24 @@ void setup()
   digitalWrite(PIN_ICM_PWR, LOW);
   digitalWrite(PIN_MICROSD_PWR, LOW);
 
-  pinMode(11, OUTPUT);
+  pinMode(LOGIC_DEBUG, OUTPUT);
 
-  digitalWrite(11, HIGH);
+  digitalWrite(LOGIC_DEBUG, HIGH);
   delay(50);
-  digitalWrite(11, LOW);
+  digitalWrite(LOGIC_DEBUG, LOW);
 
-  setupADCTimer();
+  //setupADCTimer();
   //attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, CHANGE);
-  //attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
+  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
+
+  myRTC.getTime();
+  Serial.printf(" %02d:", myRTC.hour);
+  Serial.printf("%02d:", myRTC.minute);
+  Serial.printf("%02d", myRTC.seconds);
+  Serial.printf(" %02d/", myRTC.month);
+  Serial.printf("%02d/", myRTC.dayOfMonth);
+  Serial.printf("%02d", myRTC.year);
+  Serial.println();
 
   Serial.println("d) Display time");
   Serial.println("s) Set RTC to compiler macro");
@@ -100,11 +111,11 @@ void loop()
     else if (choice == 'q')
     {
       Serial.println("Toggle Qwiic Power");
-      if(digitalRead(PIN_QWIIC_PWR) == HIGH)
+      if (digitalRead(PIN_QWIIC_PWR) == HIGH)
         digitalWrite(PIN_QWIIC_PWR, LOW);
       else
         digitalWrite(PIN_QWIIC_PWR, HIGH);
-    
+
     }
     while (Serial.available()) Serial.read();
   }
@@ -116,15 +127,15 @@ void loop()
 
 void powerDown()
 {
-  //This function takes 0.4296ms to run including GPIO setting
-  //This puts the apoolo3 into 2.6uA, 2.36ua
+  //This function takes 100us to run including GPIO setting
+  //This puts the apollo3 into 2.6uA, 2.36ua
 
   //int startTicks = micros(); //sysTicks();
-  //digitalWrite(11, HIGH);
+  digitalWrite(LOGIC_DEBUG, HIGH);
 
-  digitalWrite(PIN_QWIIC_PWR, LOW);
-  digitalWrite(PIN_ICM_PWR, LOW);
-  digitalWrite(PIN_MICROSD_PWR, LOW);
+//  digitalWrite(PIN_QWIIC_PWR, LOW);
+//  digitalWrite(PIN_ICM_PWR, LOW);
+//  digitalWrite(PIN_MICROSD_PWR, LOW);
 
   //Turn off ADC
   power_adc_disable();
@@ -174,7 +185,7 @@ void powerDown()
   PWRCTRL->MEMPWDINSLEEP_b.SRAMPWDSLP = PWRCTRL_MEMPWDINSLEEP_SRAMPWDSLP_ALLBUTLOWER32K;
 
   Serial.end(); //Disable Serial
-  //digitalWrite(11, LOW);
+  digitalWrite(LOGIC_DEBUG, LOW);
 
   am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
 }

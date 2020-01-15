@@ -78,8 +78,11 @@ TwoWire qwiic(1); //Will use pads 8/9
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
 #include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed
+
+//x02+ Hardware
 #define SD_CHIP_SELECT 10
 #define SD_POWER 23
+
 #define SD_CONFIG SdSpiConfig(SD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 #define SD_CONFIG_MAX_SPEED SdSpiConfig(SD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 
