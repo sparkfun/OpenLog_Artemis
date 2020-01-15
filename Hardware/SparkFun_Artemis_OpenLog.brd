@@ -5506,9 +5506,9 @@ high temperature heat resistance.
 <attribute name="PROD_ID" value="RES-14342" x="25.908" y="19.812" size="1.778" layer="27" font="vector" ratio="15" rot="R270" display="off"/>
 <attribute name="VALUE" x="25.346" y="19.812" size="0.6096" layer="27" font="vector" ratio="20" rot="R270" align="top-center"/>
 </element>
-<element name="U1" library="SparkFun-IC-Power" package="SOT23-3" value="3.2V Supervisor" x="22.987" y="28.321" smashed="yes" rot="R270">
+<element name="U1" library="SparkFun-IC-Power" package="SOT23-3" value="3.0V Supervisor" x="22.987" y="28.321" smashed="yes" rot="R270">
 <attribute name="NAME" x="22.987" y="30.226" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
-<attribute name="PROD_ID" value="IC-14745" x="22.987" y="28.321" size="1.778" layer="27" font="vector" ratio="15" rot="R270" display="off"/>
+<attribute name="PROD_ID" value="IC-14809" x="22.987" y="28.321" size="1.778" layer="27" font="vector" ratio="15" rot="R270" display="off"/>
 <attribute name="VALUE" x="22.987" y="25.781" size="0.6096" layer="27" font="vector" ratio="20" align="bottom-center"/>
 </element>
 <element name="J3" library="SparkFun-Connectors" package="1X02_NO_SILK" value="" x="5.08" y="12.7" smashed="yes" rot="R270">
