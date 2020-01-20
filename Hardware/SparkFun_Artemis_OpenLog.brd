@@ -170,7 +170,7 @@
 <wire x1="27.94" y1="30.48" x2="30.48" y2="27.94" width="0.2032" layer="20" curve="-90"/>
 <wire x1="30.48" y1="27.94" x2="30.48" y2="2.54" width="0.2032" layer="20"/>
 <wire x1="30.48" y1="2.54" x2="27.94" y2="0" width="0.2032" layer="20" curve="-90"/>
-<text x="6.35" y="3.175" size="1.016" layer="16" font="vector" ratio="20" rot="MR0" align="center">x03</text>
+<text x="6.35" y="3.175" size="1.016" layer="16" font="vector" ratio="20" rot="MR0" align="center">x04</text>
 <dimension x1="30.48" y1="2.54" x2="1.27" y2="2.54" x3="15.875" y3="-6.35" textsize="0.8128" textratio="15" layer="47" dtype="horizontal" unit="inch" precision="3"/>
 <dimension x1="30.48" y1="2.54" x2="27.94" y2="2.54" x3="29.21" y3="-1.27" textsize="0.8128" textratio="15" layer="47" dtype="horizontal" unit="inch" precision="3"/>
 <dimension x1="27.94" y1="2.54" x2="3.81" y2="2.54" x3="15.875" y3="-3.81" textsize="0.8128" textratio="15" layer="47" dtype="horizontal" unit="inch" precision="3"/>

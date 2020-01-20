@@ -15249,7 +15249,7 @@ LED indicator.</text>
 or measure power</text>
 <text x="48.514" y="271.526" size="2.54" layer="97" font="vector" align="center">USB-to-Serial Converter</text>
 <text x="221.234" y="197.866" size="2.54" layer="97" font="vector" align="center">Bootloader Reset Circuit</text>
-<text x="335.28" y="190.5" size="2.54" layer="97" align="center">μSD</text>
+<text x="347.98" y="195.58" size="2.54" layer="97" align="center">μSD</text>
 <text x="243.84" y="40.64" size="2.54" layer="97" font="vector" align="center">ICM-20948 IMU</text>
 <text x="208.28" y="81.28" size="2.54" layer="97" font="vector" align="center">Voltage Regulator</text>
 <text x="243.84" y="134.62" size="2.54" layer="97" font="vector" align="center">Level Shifting</text>
