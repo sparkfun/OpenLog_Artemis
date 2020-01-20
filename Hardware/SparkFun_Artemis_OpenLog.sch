@@ -10282,7 +10282,7 @@ ranging from 2.3V to 6.0V in increments of 0.1V.&lt;/p&gt;</description>
 </connects>
 <technologies>
 <technology name="">
-<attribute name="PROD_ID" value="IC-14745" constant="no"/>
+<attribute name="PROD_ID" value="IC-14809" constant="no"/>
 </technology>
 </technologies>
 </device>
@@ -15196,7 +15196,7 @@ Battery Characteristics:
 <part name="SUPPLY8" library="SparkFun-PowerSymbols" deviceset="VCC_1" device=""/>
 <part name="SUPPLY9" library="SparkFun-PowerSymbols" deviceset="VCC_1" device=""/>
 <part name="SUPPLY10" library="SparkFun-PowerSymbols" deviceset="VCC_1" device=""/>
-<part name="U1" library="SparkFun-IC-Power" deviceset="V_SUPERVISOR" device="" value="3.2V Supervisor"/>
+<part name="U1" library="SparkFun-IC-Power" deviceset="V_SUPERVISOR" device="" value="3.0V Supervisor"/>
 <part name="GND8" library="SparkFun-PowerSymbols" deviceset="GND" device=""/>
 <part name="SUPPLY4" library="SparkFun-PowerSymbols" deviceset="3.3V" device=""/>
 <part name="J3" library="SparkFun-Connectors" deviceset="CONN_02" device="1X02_NO_SILK"/>
@@ -15212,6 +15212,8 @@ Battery Characteristics:
 <part name="C6" library="SparkFun-Capacitors" deviceset="1.0UF" device="-0402T-16V-10%" value="1.0uF"/>
 <part name="SUPPLY13" library="SparkFun-PowerSymbols" deviceset="3.3V" device=""/>
 <part name="GND9" library="SparkFun-PowerSymbols" deviceset="GND" device=""/>
+<part name="Q2" library="SparkFun-DiscreteSemi" deviceset="MOSFET_PCH" device="-DMG2305UX-7" value="20V/4.2A/52mΩ/1.4W"/>
+<part name="SUPPLY15" library="SparkFun-PowerSymbols" deviceset="3.3V" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -15247,7 +15249,7 @@ LED indicator.</text>
 or measure power</text>
 <text x="48.514" y="271.526" size="2.54" layer="97" font="vector" align="center">USB-to-Serial Converter</text>
 <text x="221.234" y="197.866" size="2.54" layer="97" font="vector" align="center">Bootloader Reset Circuit</text>
-<text x="30.48" y="205.74" size="2.54" layer="97" align="center">μSD</text>
+<text x="335.28" y="190.5" size="2.54" layer="97" align="center">μSD</text>
 <text x="243.84" y="40.64" size="2.54" layer="97" font="vector" align="center">ICM-20948 IMU</text>
 <text x="208.28" y="81.28" size="2.54" layer="97" font="vector" align="center">Voltage Regulator</text>
 <text x="243.84" y="134.62" size="2.54" layer="97" font="vector" align="center">Level Shifting</text>
@@ -15257,7 +15259,7 @@ or measure power</text>
 <wire x1="297.18" y1="144.78" x2="320.04" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 <text x="130.302" y="202.946" size="2.54" layer="97" font="vector" rot="R180" align="center">Qwiic</text>
 <text x="149.86" y="101.6" size="1.27" layer="91">x01 Pins:</text>
-<text x="152.4" y="96.52" size="1.27" layer="91">ICM_CS: 18</text>
+<text x="149.86" y="96.52" size="1.27" layer="91">x02 x03:</text>
 <text x="152.4" y="99.06" size="1.27" layer="91">ICM_CS: 18</text>
 <text x="51.054" y="162.306" size="2.54" layer="97" font="vector" align="center">RTC Battery</text>
 <text x="179.578" y="215.9" size="1.778" layer="97" font="vector">Optional External Switch</text>
@@ -15271,6 +15273,9 @@ or measure power</text>
 <wire x1="297.18" y1="144.78" x2="297.18" y2="210.82" width="0.254" layer="97" style="longdash"/>
 <text x="33.528" y="139.192" size="1.27" layer="91" rot="R90">300uA</text>
 <text x="9.652" y="137.922" size="1.27" layer="91" rot="R90">0.65uA / 0.3V drop at 10mA</text>
+<text x="452.12" y="162.56" size="1.27" layer="91">add mosfet power to SD card</text>
+<text x="152.4" y="93.98" size="1.27" layer="91">SD_PWR: 23</text>
+<text x="149.86" y="91.44" size="1.27" layer="91">x04:</text>
 </plain>
 <instances>
 <instance part="LOGO2" gate="G$1" x="391.16" y="45.72" smashed="yes"/>
@@ -15494,19 +15499,19 @@ or measure power</text>
 <instance part="GND69" gate="1" x="58.42" y="5.08" smashed="yes">
 <attribute name="VALUE" x="58.42" y="4.826" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="GND72" gate="1" x="35.56" y="172.72" smashed="yes">
-<attribute name="VALUE" x="35.56" y="172.466" size="1.778" layer="96" align="top-center"/>
+<instance part="GND72" gate="1" x="340.36" y="157.48" smashed="yes">
+<attribute name="VALUE" x="340.36" y="157.226" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="J17" gate="J1" x="45.72" y="187.96" smashed="yes">
-<attribute name="NAME" x="40.64" y="203.708" size="1.778" layer="95"/>
-<attribute name="VALUE" x="40.64" y="172.72" size="1.778" layer="96"/>
+<instance part="J17" gate="J1" x="350.52" y="172.72" smashed="yes">
+<attribute name="NAME" x="345.44" y="188.468" size="1.778" layer="95"/>
+<attribute name="VALUE" x="345.44" y="157.48" size="1.778" layer="96"/>
 </instance>
-<instance part="C46" gate="G$1" x="22.86" y="182.88" smashed="yes">
-<attribute name="NAME" x="24.384" y="185.801" size="1.778" layer="95" font="vector"/>
-<attribute name="VALUE" x="24.384" y="180.721" size="1.778" layer="96" font="vector"/>
+<instance part="C46" gate="G$1" x="327.66" y="167.64" smashed="yes">
+<attribute name="NAME" x="329.184" y="170.561" size="1.778" layer="95" font="vector"/>
+<attribute name="VALUE" x="329.184" y="165.481" size="1.778" layer="96" font="vector"/>
 </instance>
-<instance part="GND73" gate="1" x="22.86" y="175.26" smashed="yes">
-<attribute name="VALUE" x="22.86" y="175.006" size="1.778" layer="96" align="top-center"/>
+<instance part="GND73" gate="1" x="327.66" y="160.02" smashed="yes">
+<attribute name="VALUE" x="327.66" y="159.766" size="1.778" layer="96" align="top-center"/>
 </instance>
 <instance part="U13" gate="G$1" x="243.84" y="22.86" smashed="yes">
 <attribute name="NAME" x="231.14" y="33.274" size="1.778" layer="95" font="vector"/>
@@ -15811,6 +15816,13 @@ or measure power</text>
 <instance part="GND9" gate="1" x="160.02" y="177.8" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="160.02" y="177.546" size="1.778" layer="96" rot="MR0" align="top-center"/>
 </instance>
+<instance part="Q2" gate="G$1" x="325.12" y="185.42" smashed="yes" rot="MR180">
+<attribute name="NAME" x="330.2" y="190.5" size="1.778" layer="95" font="vector" rot="MR180"/>
+<attribute name="VALUE" x="330.2" y="193.04" size="1.778" layer="96" font="vector" rot="MR180"/>
+</instance>
+<instance part="SUPPLY15" gate="G$1" x="327.66" y="193.04" smashed="yes">
+<attribute name="VALUE" x="327.66" y="195.834" size="1.778" layer="96" align="bottom-center"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -15913,18 +15925,18 @@ or measure power</text>
 </segment>
 <segment>
 <pinref part="GND72" gate="1" pin="GND"/>
-<wire x1="38.1" y1="180.34" x2="35.56" y2="180.34" width="0.1524" layer="91"/>
-<wire x1="35.56" y1="180.34" x2="35.56" y2="177.8" width="0.1524" layer="91"/>
-<wire x1="35.56" y1="177.8" x2="35.56" y2="175.26" width="0.1524" layer="91"/>
-<wire x1="38.1" y1="177.8" x2="35.56" y2="177.8" width="0.1524" layer="91"/>
-<junction x="35.56" y="177.8"/>
+<wire x1="342.9" y1="165.1" x2="340.36" y2="165.1" width="0.1524" layer="91"/>
+<wire x1="340.36" y1="165.1" x2="340.36" y2="162.56" width="0.1524" layer="91"/>
+<wire x1="340.36" y1="162.56" x2="340.36" y2="160.02" width="0.1524" layer="91"/>
+<wire x1="342.9" y1="162.56" x2="340.36" y2="162.56" width="0.1524" layer="91"/>
+<junction x="340.36" y="162.56"/>
 <pinref part="J17" gate="J1" pin="GND"/>
 <pinref part="J17" gate="J1" pin="SHIELD"/>
 </segment>
 <segment>
 <pinref part="C46" gate="G$1" pin="2"/>
 <pinref part="GND73" gate="1" pin="GND"/>
-<wire x1="22.86" y1="177.8" x2="22.86" y2="180.34" width="0.1524" layer="91"/>
+<wire x1="327.66" y1="162.56" x2="327.66" y2="165.1" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C51" gate="G$1" pin="2"/>
@@ -16143,6 +16155,11 @@ or measure power</text>
 <pinref part="C6" gate="G$1" pin="1"/>
 <pinref part="SUPPLY13" gate="G$1" pin="3.3V"/>
 <wire x1="160.02" y1="193.04" x2="160.02" y2="190.5" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="Q2" gate="G$1" pin="S"/>
+<pinref part="SUPPLY15" gate="G$1" pin="3.3V"/>
+<wire x1="327.66" y1="193.04" x2="327.66" y2="190.5" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="VIN" class="0">
@@ -16581,8 +16598,8 @@ or measure power</text>
 </net>
 <net name="MOSI" class="0">
 <segment>
-<wire x1="38.1" y1="195.58" x2="35.56" y2="195.58" width="0.1524" layer="91"/>
-<label x="35.56" y="195.58" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="342.9" y1="180.34" x2="340.36" y2="180.34" width="0.1524" layer="91"/>
+<label x="340.36" y="180.34" size="1.27" layer="95" rot="R180" xref="yes"/>
 <pinref part="J17" gate="J1" pin="DI"/>
 </segment>
 <segment>
@@ -16598,8 +16615,8 @@ or measure power</text>
 </net>
 <net name="SCK" class="0">
 <segment>
-<wire x1="38.1" y1="190.5" x2="35.56" y2="190.5" width="0.1524" layer="91"/>
-<label x="35.56" y="190.5" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="342.9" y1="175.26" x2="340.36" y2="175.26" width="0.1524" layer="91"/>
+<label x="340.36" y="175.26" size="1.27" layer="95" rot="R180" xref="yes"/>
 <pinref part="J17" gate="J1" pin="SCK"/>
 </segment>
 <segment>
@@ -16615,8 +16632,8 @@ or measure power</text>
 </net>
 <net name="MISO" class="0">
 <segment>
-<wire x1="38.1" y1="187.96" x2="35.56" y2="187.96" width="0.1524" layer="91"/>
-<label x="35.56" y="187.96" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="342.9" y1="172.72" x2="340.36" y2="172.72" width="0.1524" layer="91"/>
+<label x="340.36" y="172.72" size="1.27" layer="95" rot="R180" xref="yes"/>
 <pinref part="J17" gate="J1" pin="DO"/>
 </segment>
 <segment>
@@ -16637,8 +16654,8 @@ or measure power</text>
 <net name="MICROSD_!CS!" class="0">
 <segment>
 <pinref part="J17" gate="J1" pin="CS"/>
-<wire x1="38.1" y1="198.12" x2="35.56" y2="198.12" width="0.1524" layer="91"/>
-<label x="35.56" y="198.12" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="342.9" y1="182.88" x2="340.36" y2="182.88" width="0.1524" layer="91"/>
+<label x="340.36" y="182.88" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="U8" gate="U1" pin="(MOSI1/TX1/PDMCLK)D10"/>
@@ -16863,18 +16880,14 @@ or measure power</text>
 </net>
 <net name="MICROSD_PWR" class="0">
 <segment>
-<wire x1="38.1" y1="193.04" x2="22.86" y2="193.04" width="0.1524" layer="91"/>
-<pinref part="J17" gate="J1" pin="VCC"/>
-<label x="20.32" y="193.04" size="1.27" layer="95" rot="R180" xref="yes"/>
-<pinref part="C46" gate="G$1" pin="1"/>
-<wire x1="22.86" y1="193.04" x2="20.32" y2="193.04" width="0.1524" layer="91"/>
-<wire x1="22.86" y1="187.96" x2="22.86" y2="193.04" width="0.1524" layer="91"/>
-<junction x="22.86" y="193.04"/>
+<pinref part="Q2" gate="G$1" pin="G"/>
+<wire x1="320.04" y1="187.96" x2="317.5" y2="187.96" width="0.1524" layer="91"/>
+<label x="317.5" y="187.96" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
-<pinref part="U8" gate="U1" pin="(I2SWCLK/CMPOUT)~D23"/>
-<wire x1="129.54" y1="48.26" x2="132.08" y2="48.26" width="0.1524" layer="91"/>
-<label x="132.08" y="48.26" size="1.27" layer="95" xref="yes"/>
+<pinref part="U8" gate="U1" pin="(ADCD1N/RX1/PDMDATA)D15"/>
+<wire x1="129.54" y1="60.96" x2="132.08" y2="60.96" width="0.1524" layer="91"/>
+<label x="132.08" y="60.96" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -16960,6 +16973,17 @@ or measure power</text>
 <wire x1="134.62" y1="180.34" x2="137.16" y2="180.34" width="0.1524" layer="91"/>
 <pinref part="Q4" gate="G$1" pin="D"/>
 <wire x1="137.16" y1="190.5" x2="137.16" y2="180.34" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="SD_PWR" class="0">
+<segment>
+<wire x1="342.9" y1="177.8" x2="327.66" y2="177.8" width="0.1524" layer="91"/>
+<pinref part="J17" gate="J1" pin="VCC"/>
+<pinref part="C46" gate="G$1" pin="1"/>
+<wire x1="327.66" y1="172.72" x2="327.66" y2="177.8" width="0.1524" layer="91"/>
+<junction x="327.66" y="177.8"/>
+<pinref part="Q2" gate="G$1" pin="D"/>
+<wire x1="327.66" y1="180.34" x2="327.66" y2="177.8" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
