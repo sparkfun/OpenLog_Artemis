@@ -160,6 +160,7 @@ void setup() {
   startTime = micros();
 
   //If 3.3V rail drops below 3V, system will enter low power mode and maintain RTC
+  pinMode(PIN_POWER_LOSS, INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
 
   pinMode(PIN_STAT_LED, OUTPUT);
@@ -351,7 +352,7 @@ void beginIMU()
     digitalWrite(PIN_IMU_POWER, LOW);
     delay(10); //10 is fine
     digitalWrite(PIN_IMU_POWER, HIGH);
-    delay(25); //Allow ICM to come online. Typical is 11ms. Max is 100ms.
+    delay(25); //Allow ICM to come online. Typical is 11ms. Max is 100ms. https://cdn.sparkfun.com/assets/7/f/e/c/d/DS-000189-ICM-20948-v1.3.pdf
 
     myICM.begin(PIN_IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
     if (myICM.status != ICM_20948_Stat_Ok)

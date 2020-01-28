@@ -4,36 +4,28 @@
 //This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
 void powerDown()
 {
-  //int startTicks = micros(); //sysTicks();
-  digitalWrite(PIN_LOGIC_DEBUG, HIGH);
+  //digitalWrite(LOGIC_DEBUG, HIGH);
 
-  //  digitalWrite(PIN_QWIIC_PWR, LOW);
-  //  digitalWrite(PIN_ICM_PWR, LOW);
-  //  digitalWrite(PIN_MICROSD_PWR, LOW);
+  //Force the peripherals off
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
-  //Turn off ADC
-  power_adc_disable();
+  digitalWrite(PIN_QWIIC_PWR, HIGH); //HIGH = Off
+  digitalWrite(PIN_IMU_POWER, LOW);
+  digitalWrite(PIN_MICROSD_POWER, LOW);
 
-  // Initialize for low power in the power control block
-  am_hal_pwrctrl_low_power_init();
+  //The supervisor circuit tends to wake us from sleep if it
+  //remains as an interrupt
+  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
-  // Stop the XTAL.
-  //This stops the RTC from running
-  //am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_XTAL_STOP, 0);
-
-  // Disable the RTC.
-  //am_hal_rtc_osc_disable();
-
-  // Disabling the debugger GPIOs saves about 1.2 uA total:
-  am_hal_gpio_pinconfig(20 /* SWDCLK */, g_AM_HAL_GPIO_DISABLE);
-  am_hal_gpio_pinconfig(21 /* SWDIO */, g_AM_HAL_GPIO_DISABLE);
-
-  // These two GPIOs are critical: the TX/RX connections between the Artemis module and the CH340 on the Blackboard
-  // are prone to backfeeding each other. To stop this from happening, we must reconfigure those pins as GPIOs
-  // and then disable them completely:
-  am_hal_gpio_pinconfig(48 /* TXO-0 */, g_AM_HAL_GPIO_DISABLE);
-  am_hal_gpio_pinconfig(49 /* RXI-0 */, g_AM_HAL_GPIO_DISABLE);
-
+  // Disable the GPIOs
   for (int x = 0 ; x < 50 ; x++)
     am_hal_gpio_pinconfig(x , g_AM_HAL_GPIO_DISABLE);
 
@@ -58,8 +50,7 @@ void powerDown()
   // Power down SRAM
   PWRCTRL->MEMPWDINSLEEP_b.SRAMPWDSLP = PWRCTRL_MEMPWDINSLEEP_SRAMPWDSLP_ALLBUTLOWER32K;
 
-  Serial.end(); //Disable Serial
-  digitalWrite(PIN_LOGIC_DEBUG, LOW);
+  //digitalWrite(LOGIC_DEBUG, LOW);
 
   am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
 }

@@ -10,17 +10,13 @@
 #include "RTC.h" //Include RTC library included with the Aruino_Apollo3 core
 APM3_RTC myRTC; //Create instance of RTC class
 
-#define VERSION_X02
-
-#ifdef VERSION_X02
 const byte PIN_POWER_LOSS = 3;
 
 const byte LOGIC_DEBUG = 11;
 
-const byte PIN_QWIIC_PWR = 18;
-const byte PIN_ICM_PWR = 22;
-const byte PIN_MICROSD_PWR = 23;
-#endif
+const byte PIN_QWIIC_POWER = 18;
+const byte PIN_IMU_POWER = 22;
+const byte PIN_MICROSD_POWER = 15;
 
 //uint32_t msToSleep = 10; //This is the user editable number of ms to sleep between RTC checks
 ////#define TIMER_FREQ 3000000L //Counter/Timer 6 will use the HFRC oscillator of 3MHz
@@ -29,29 +25,25 @@ const byte PIN_MICROSD_PWR = 23;
 
 void setup()
 {
-  //powerDown();
+  pinMode(PIN_POWER_LOSS, INPUT);
+  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
+
   Serial.begin(115200);
   Serial.println("SparkFun RTC Example");
 
-  pinMode(PIN_POWER_LOSS, INPUT);
-  //pinMode(PIN_POWER_LOSS, INPUT_PULLUP);
-  pinMode(PIN_QWIIC_PWR, OUTPUT);
-  pinMode(PIN_ICM_PWR, OUTPUT);
-  pinMode(PIN_MICROSD_PWR, OUTPUT);
+  pinMode(PIN_QWIIC_POWER, OUTPUT);
+  pinMode(PIN_IMU_POWER, OUTPUT);
+  pinMode(PIN_MICROSD_POWER, OUTPUT);
 
-  digitalWrite(PIN_QWIIC_PWR, LOW);
-  digitalWrite(PIN_ICM_PWR, LOW);
-  digitalWrite(PIN_MICROSD_PWR, LOW);
+  digitalWrite(PIN_QWIIC_POWER, LOW);
+  digitalWrite(PIN_IMU_POWER, LOW);
+  digitalWrite(PIN_MICROSD_POWER, LOW);
 
   pinMode(LOGIC_DEBUG, OUTPUT);
 
   digitalWrite(LOGIC_DEBUG, HIGH);
   delay(50);
   digitalWrite(LOGIC_DEBUG, LOW);
-
-  //setupADCTimer();
-  //attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
 
   myRTC.getTime();
   Serial.printf(" %02d:", myRTC.hour);
@@ -112,55 +104,65 @@ void loop()
     else if (choice == 'q')
     {
       Serial.println("Toggle Qwiic Power");
-      if (digitalRead(PIN_QWIIC_PWR) == HIGH)
+      if (digitalRead(PIN_QWIIC_POWER) == HIGH)
       {
-        digitalWrite(PIN_QWIIC_PWR, LOW);
+        digitalWrite(PIN_QWIIC_POWER, LOW);
         Serial.println("Qwiic Power On / Pin Low");
       }
       else
       {
-        digitalWrite(PIN_QWIIC_PWR, HIGH);
+        digitalWrite(PIN_QWIIC_POWER, HIGH);
         Serial.println("Qwiic Power Off / Pin High");
       }
     }
     else if (choice == 'm')
     {
       Serial.println("Toggle microSD Power");
-      if (digitalRead(PIN_MICROSD_PWR) == HIGH)
+      if (digitalRead(PIN_MICROSD_POWER) == HIGH)
       {
-        digitalWrite(PIN_MICROSD_PWR, LOW);
+        digitalWrite(PIN_MICROSD_POWER, LOW);
         Serial.println("microSD Off / Pin Low");
       }
       else
       {
-        digitalWrite(PIN_MICROSD_PWR, HIGH);
+        digitalWrite(PIN_MICROSD_POWER, HIGH);
         Serial.println("microSD On / Pin High");
       }
     }    while (Serial.available()) Serial.read();
   }
-
-  //  //  Serial.printf(" Day of week: %d =", myRTC.weekday);
-  //  //  Serial.printf(" %s", myRTC.textWeekday);
-
 }
 
+//Power down the entire system but maintain running of RTC
+//This function takes 100us to run including GPIO setting
+//This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
 void powerDown()
 {
-  //This function takes 100us to run including GPIO setting
-  //This puts the apollo3 into 2.6uA, 2.36ua
+  //digitalWrite(LOGIC_DEBUG, HIGH);
 
-  //int startTicks = micros(); //sysTicks();
-  digitalWrite(LOGIC_DEBUG, HIGH);
+  //Force the peripherals off
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
-//  digitalWrite(PIN_QWIIC_PWR, LOW);
-//  digitalWrite(PIN_ICM_PWR, LOW);
-//  digitalWrite(PIN_MICROSD_PWR, LOW);
+  digitalWrite(PIN_QWIIC_POWER, HIGH); //HIGH = Off
+  digitalWrite(PIN_IMU_POWER, LOW);
+  digitalWrite(PIN_MICROSD_POWER, LOW);
+
+  //The supervisor circuit tends to wake us from sleep if it
+  //remains as an interrupt
+  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
   //Turn off ADC
-  power_adc_disable();
+  //power_adc_disable();
 
   // Initialize for low power in the power control block
-  am_hal_pwrctrl_low_power_init();
+  //am_hal_pwrctrl_low_power_init();
 
   // Stop the XTAL.
   //This stops the RTC from running
@@ -170,14 +172,14 @@ void powerDown()
   //am_hal_rtc_osc_disable();
 
   // Disabling the debugger GPIOs saves about 1.2 uA total:
-  am_hal_gpio_pinconfig(20 /* SWDCLK */, g_AM_HAL_GPIO_DISABLE);
-  am_hal_gpio_pinconfig(21 /* SWDIO */, g_AM_HAL_GPIO_DISABLE);
+  //  am_hal_gpio_pinconfig(20 /* SWDCLK */, g_AM_HAL_GPIO_DISABLE);
+  //  am_hal_gpio_pinconfig(21 /* SWDIO */, g_AM_HAL_GPIO_DISABLE);
 
   // These two GPIOs are critical: the TX/RX connections between the Artemis module and the CH340 on the Blackboard
   // are prone to backfeeding each other. To stop this from happening, we must reconfigure those pins as GPIOs
   // and then disable them completely:
-  am_hal_gpio_pinconfig(48 /* TXO-0 */, g_AM_HAL_GPIO_DISABLE);
-  am_hal_gpio_pinconfig(49 /* RXI-0 */, g_AM_HAL_GPIO_DISABLE);
+  //  am_hal_gpio_pinconfig(48 /* TXO-0 */, g_AM_HAL_GPIO_DISABLE);
+  //  am_hal_gpio_pinconfig(49 /* RXI-0 */, g_AM_HAL_GPIO_DISABLE);
 
   for (int x = 0 ; x < 50 ; x++)
     am_hal_gpio_pinconfig(x , g_AM_HAL_GPIO_DISABLE);
@@ -203,8 +205,8 @@ void powerDown()
   // Power down SRAM
   PWRCTRL->MEMPWDINSLEEP_b.SRAMPWDSLP = PWRCTRL_MEMPWDINSLEEP_SRAMPWDSLP_ALLBUTLOWER32K;
 
-  Serial.end(); //Disable Serial
-  digitalWrite(LOGIC_DEBUG, LOW);
+  //Serial.end(); //Disable Serial
+  //digitalWrite(LOGIC_DEBUG, LOW);
 
   am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
 }

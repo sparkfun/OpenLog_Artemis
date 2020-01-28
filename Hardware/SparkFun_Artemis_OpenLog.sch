@@ -15276,6 +15276,8 @@ or measure power</text>
 0.3V drop at 10mA</text>
 <text x="152.4" y="93.98" size="1.27" layer="91">SD_PWR: 23</text>
 <text x="149.86" y="91.44" size="1.27" layer="91">x04:</text>
+<text x="25.4" y="119.38" size="1.778" layer="97">~20 minute charge time</text>
+<text x="25.4" y="121.92" size="1.778" layer="97">1mAhr Capacity</text>
 </plain>
 <instances>
 <instance part="LOGO2" gate="G$1" x="391.16" y="45.72" smashed="yes"/>
