@@ -490,9 +490,9 @@ void determineMaxI2CSpeed()
 
 void qwiicPowerOn()
 {
-  digitalWrite(QWIIC_PWR, HIGH);
+  digitalWrite(PIN_QWIIC_PWR, LOW);
 }
 void qwiicPowerOff()
 {
-  digitalWrite(QWIIC_PWR, LOW);
+  digitalWrite(PIN_QWIIC_PWR, HIGH);
 }

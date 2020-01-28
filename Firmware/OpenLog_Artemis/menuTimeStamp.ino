@@ -20,9 +20,10 @@ void menuTimeStamp()
     sprintf(rtcTime, "%02d:%02d:%02d.%02d", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
     Serial.println((String)rtcTime);
 
-    Serial.println("1) Manually set RTC date");
-    Serial.println("2) Manually set RTC time");
-    Serial.print("3) Synchronize RTC to GPS: ");
+    Serial.println("1) Set RTC to compiler time");
+    Serial.println("2) Manually set RTC date");
+    Serial.println("3) Manually set RTC time");
+    Serial.print("4) Synchronize RTC to GPS: ");
     if (qwiicOnline.uBlox == false)
     {
       Serial.println("GPS offline");
@@ -32,7 +33,7 @@ void menuTimeStamp()
       Serial.println("TODO");
     }
 
-    Serial.print("4) Use GPS as timestamp source: ");
+    Serial.print("5) Use GPS as timestamp source: ");
     if (qwiicOnline.uBlox)
     {
       if (settings.getRTCfromGPS == true) Serial.println("Enabled");
@@ -41,22 +42,22 @@ void menuTimeStamp()
     else
       Serial.println("GPS offline");
 
-    Serial.print("5) Log date: ");
+    Serial.print("6) Log date: ");
     if (settings.logDate == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("6) Toggle date style: ");
+    Serial.print("7) Toggle date style: ");
     if (settings.americanDateStyle == true) Serial.println("mm/dd/yyyy");
     else Serial.println("dd/mm/yyyy");
 
-    Serial.print("7) Toggle time style: ");
+    Serial.print("8) Toggle time style: ");
     if (settings.hour24Style == true) Serial.println("24 hour");
     else Serial.println("12 hour");
 
-    Serial.print("8) Local offset from GPS UTC: ");
+    Serial.print("9) Local offset from GPS UTC: ");
     Serial.println(settings.localUTCOffset);
 
-    Serial.print("9) Correct for USA based DST using GPS UTC Date/Time: ");
+    Serial.print("10) Correct for USA based DST using GPS UTC Date/Time: ");
     if (qwiicOnline.uBlox)
     {
       if (settings.correctForDST == true) Serial.println("Enabled");
@@ -67,9 +68,14 @@ void menuTimeStamp()
 
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    int incoming = getNumber(10); //Timeout after 10 seconds
 
-    if (incoming == '1')
+    if (incoming == 1)
+    {
+      myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
+      Serial.println("RTC set to compiler time");
+    }
+    else if (incoming == 2)
     {
       myRTC.getTime();
       int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds;
@@ -86,7 +92,7 @@ void menuTimeStamp()
 
       myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
     }
-    else if (incoming == '2')
+    else if (incoming == 3)
     {
       myRTC.getTime();
       int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds;
@@ -102,7 +108,7 @@ void menuTimeStamp()
 
       myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
     }
-    else if (incoming == '3')
+    else if (incoming == 4)
     {
       if (qwiicOnline.uBlox == false)
         Serial.println("Error: GPS offline");
@@ -119,15 +125,15 @@ void menuTimeStamp()
         Serial.println("RTC synchronized to GPS");
       }
     }
-    else if (incoming == '4')
+    else if (incoming == 5)
       settings.getRTCfromGPS ^= 1;
-    else if (incoming == '5')
+    else if (incoming == 6)
       settings.logDate ^= 1;
-    else if (incoming == '6')
+    else if (incoming == 7)
       settings.americanDateStyle ^= 1;
-    else if (incoming == '7')
+    else if (incoming == 8)
       settings.hour24Style ^= 1;
-    else if (incoming == '8')
+    else if (incoming == 9)
     {
       Serial.print("Enter the local hour offset from UTC (-12 to 14): ");
       int offset = getNumber(10); //Timeout after 10 seconds
@@ -136,7 +142,7 @@ void menuTimeStamp()
       else
         settings.localUTCOffset = offset;
     }
-    else if (incoming == '9')
+    else if (incoming == 10)
       settings.correctForDST ^= 1;
     else if (incoming == 'x')
       return;

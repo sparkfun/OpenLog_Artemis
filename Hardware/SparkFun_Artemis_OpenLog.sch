@@ -15224,7 +15224,7 @@ Iout (max): 600mA
 Vin (max): 6.5V
 Vdrop (max): 250mV
 Iq: 55uA</text>
-<text x="421.64" y="7.62" size="2.54" layer="94">x02</text>
+<text x="421.64" y="7.62" size="2.54" layer="94">x04</text>
 <text x="355.6" y="11.43" size="2.54" layer="94">N. Seidle</text>
 <wire x1="0" y1="210.82" x2="111.76" y2="210.82" width="0.254" layer="97" style="longdash"/>
 <wire x1="111.76" y1="210.82" x2="111.76" y2="279.4" width="0.254" layer="97" style="longdash"/>
@@ -15241,7 +15241,7 @@ LED indicator.</text>
 <text x="160.02" y="223.52" size="1.778" layer="97" rot="MR0" align="top-left">Charge current: 450mA
 (1000V/Rprog)</text>
 <text x="129.794" y="153.416" size="2.54" layer="97" align="center">SWD Program/Debug Interface</text>
-<text x="88.9" y="106.68" size="2.54" layer="97" align="center">Artemis (Apollo3)</text>
+<text x="88.9" y="106.68" size="2.54" layer="97" align="center">Artemis</text>
 <text x="83.82" y="96.52" size="1.778" layer="97">Artemis VCC Range:
 1.76-3.6V</text>
 <text x="228.854" y="263.906" size="2.54" layer="97" font="vector" align="center">Linear 3.3V</text>
@@ -15249,7 +15249,7 @@ LED indicator.</text>
 or measure power</text>
 <text x="48.514" y="271.526" size="2.54" layer="97" font="vector" align="center">USB-to-Serial Converter</text>
 <text x="221.234" y="197.866" size="2.54" layer="97" font="vector" align="center">Bootloader Reset Circuit</text>
-<text x="347.98" y="195.58" size="2.54" layer="97" align="center">μSD</text>
+<text x="342.9" y="198.12" size="2.54" layer="97" align="center">μSD</text>
 <text x="243.84" y="40.64" size="2.54" layer="97" font="vector" align="center">ICM-20948 IMU</text>
 <text x="208.28" y="81.28" size="2.54" layer="97" font="vector" align="center">Voltage Regulator</text>
 <text x="243.84" y="134.62" size="2.54" layer="97" font="vector" align="center">Level Shifting</text>
@@ -15271,9 +15271,9 @@ or measure power</text>
 <wire x1="60.96" y1="167.64" x2="170.18" y2="167.64" width="0.254" layer="97" style="longdash"/>
 <wire x1="60.96" y1="167.64" x2="60.96" y2="210.82" width="0.254" layer="97" style="longdash"/>
 <wire x1="297.18" y1="144.78" x2="297.18" y2="210.82" width="0.254" layer="97" style="longdash"/>
-<text x="33.528" y="139.192" size="1.27" layer="91" rot="R90">300uA</text>
-<text x="9.652" y="137.922" size="1.27" layer="91" rot="R90">0.65uA / 0.3V drop at 10mA</text>
-<text x="452.12" y="162.56" size="1.27" layer="91">add mosfet power to SD card</text>
+<text x="33.02" y="132.08" size="1.778" layer="97" rot="R90">300uA Leakage</text>
+<text x="12.7" y="139.7" size="1.778" layer="97" rot="R90">0.65uA Leakage
+0.3V drop at 10mA</text>
 <text x="152.4" y="93.98" size="1.27" layer="91">SD_PWR: 23</text>
 <text x="149.86" y="91.44" size="1.27" layer="91">x04:</text>
 </plain>
@@ -15506,12 +15506,12 @@ or measure power</text>
 <attribute name="NAME" x="345.44" y="188.468" size="1.778" layer="95"/>
 <attribute name="VALUE" x="345.44" y="157.48" size="1.778" layer="96"/>
 </instance>
-<instance part="C46" gate="G$1" x="327.66" y="167.64" smashed="yes">
-<attribute name="NAME" x="329.184" y="170.561" size="1.778" layer="95" font="vector"/>
-<attribute name="VALUE" x="329.184" y="165.481" size="1.778" layer="96" font="vector"/>
+<instance part="C46" gate="G$1" x="325.12" y="167.64" smashed="yes">
+<attribute name="NAME" x="326.644" y="170.561" size="1.778" layer="95" font="vector"/>
+<attribute name="VALUE" x="326.644" y="165.481" size="1.778" layer="96" font="vector"/>
 </instance>
-<instance part="GND73" gate="1" x="327.66" y="160.02" smashed="yes">
-<attribute name="VALUE" x="327.66" y="159.766" size="1.778" layer="96" align="top-center"/>
+<instance part="GND73" gate="1" x="325.12" y="160.02" smashed="yes">
+<attribute name="VALUE" x="325.12" y="159.766" size="1.778" layer="96" align="top-center"/>
 </instance>
 <instance part="U13" gate="G$1" x="243.84" y="22.86" smashed="yes">
 <attribute name="NAME" x="231.14" y="33.274" size="1.778" layer="95" font="vector"/>
@@ -15729,7 +15729,7 @@ or measure power</text>
 </instance>
 <instance part="D3" gate="G$1" x="25.4" y="142.24" smashed="yes" rot="R90">
 <attribute name="NAME" x="28.448" y="139.7" size="1.778" layer="95" font="vector" rot="R90"/>
-<attribute name="VALUE" x="31.242" y="152.4" size="1.778" layer="96" font="vector" rot="R270" align="top-left"/>
+<attribute name="VALUE" x="30.48" y="132.08" size="1.778" layer="96" font="vector" rot="MR90" align="top-left"/>
 </instance>
 <instance part="R1" gate="G$1" x="17.78" y="142.24" smashed="yes" rot="MR90">
 <attribute name="NAME" x="19.304" y="142.24" size="1.778" layer="95" font="vector" rot="MR90" align="bottom-center"/>
@@ -15794,7 +15794,7 @@ or measure power</text>
 </instance>
 <instance part="D6" gate="G$1" x="17.78" y="154.94" smashed="yes" rot="R270">
 <attribute name="NAME" x="14.224" y="156.718" size="1.778" layer="95" font="vector" rot="R270"/>
-<attribute name="VALUE" x="13.716" y="162.052" size="1.778" layer="96" font="vector" rot="R270" align="top-left"/>
+<attribute name="VALUE" x="7.62" y="139.7" size="1.778" layer="96" font="vector" rot="MR90" align="top-left"/>
 </instance>
 <instance part="C5" gate="G$1" x="149.86" y="185.42" smashed="yes">
 <attribute name="NAME" x="151.384" y="188.341" size="1.778" layer="95" font="vector"/>
@@ -15816,12 +15816,12 @@ or measure power</text>
 <instance part="GND9" gate="1" x="160.02" y="177.8" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="160.02" y="177.546" size="1.778" layer="96" rot="MR0" align="top-center"/>
 </instance>
-<instance part="Q2" gate="G$1" x="325.12" y="185.42" smashed="yes" rot="MR180">
-<attribute name="NAME" x="330.2" y="190.5" size="1.778" layer="95" font="vector" rot="MR180"/>
-<attribute name="VALUE" x="330.2" y="193.04" size="1.778" layer="96" font="vector" rot="MR180"/>
+<instance part="Q2" gate="G$1" x="322.58" y="185.42" smashed="yes" rot="MR180">
+<attribute name="NAME" x="327.66" y="190.5" size="1.778" layer="95" font="vector" rot="MR180"/>
+<attribute name="VALUE" x="327.66" y="193.04" size="1.778" layer="96" font="vector" rot="MR180"/>
 </instance>
-<instance part="SUPPLY15" gate="G$1" x="327.66" y="193.04" smashed="yes">
-<attribute name="VALUE" x="327.66" y="195.834" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY15" gate="G$1" x="325.12" y="193.04" smashed="yes">
+<attribute name="VALUE" x="325.12" y="195.834" size="1.778" layer="96" align="bottom-center"/>
 </instance>
 </instances>
 <busses>
@@ -15936,7 +15936,7 @@ or measure power</text>
 <segment>
 <pinref part="C46" gate="G$1" pin="2"/>
 <pinref part="GND73" gate="1" pin="GND"/>
-<wire x1="327.66" y1="162.56" x2="327.66" y2="165.1" width="0.1524" layer="91"/>
+<wire x1="325.12" y1="162.56" x2="325.12" y2="165.1" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C51" gate="G$1" pin="2"/>
@@ -16159,7 +16159,7 @@ or measure power</text>
 <segment>
 <pinref part="Q2" gate="G$1" pin="S"/>
 <pinref part="SUPPLY15" gate="G$1" pin="3.3V"/>
-<wire x1="327.66" y1="193.04" x2="327.66" y2="190.5" width="0.1524" layer="91"/>
+<wire x1="325.12" y1="193.04" x2="325.12" y2="190.5" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="VIN" class="0">
@@ -16881,8 +16881,8 @@ or measure power</text>
 <net name="MICROSD_PWR" class="0">
 <segment>
 <pinref part="Q2" gate="G$1" pin="G"/>
-<wire x1="320.04" y1="187.96" x2="317.5" y2="187.96" width="0.1524" layer="91"/>
-<label x="317.5" y="187.96" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="317.5" y1="187.96" x2="314.96" y2="187.96" width="0.1524" layer="91"/>
+<label x="314.96" y="187.96" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="U8" gate="U1" pin="(ADCD1N/RX1/PDMDATA)D15"/>
@@ -16977,13 +16977,13 @@ or measure power</text>
 </net>
 <net name="SD_PWR" class="0">
 <segment>
-<wire x1="342.9" y1="177.8" x2="327.66" y2="177.8" width="0.1524" layer="91"/>
+<wire x1="342.9" y1="177.8" x2="325.12" y2="177.8" width="0.1524" layer="91"/>
 <pinref part="J17" gate="J1" pin="VCC"/>
 <pinref part="C46" gate="G$1" pin="1"/>
-<wire x1="327.66" y1="172.72" x2="327.66" y2="177.8" width="0.1524" layer="91"/>
-<junction x="327.66" y="177.8"/>
+<wire x1="325.12" y1="172.72" x2="325.12" y2="177.8" width="0.1524" layer="91"/>
+<junction x="325.12" y="177.8"/>
 <pinref part="Q2" gate="G$1" pin="D"/>
-<wire x1="327.66" y1="180.34" x2="327.66" y2="177.8" width="0.1524" layer="91"/>
+<wire x1="325.12" y1="180.34" x2="325.12" y2="177.8" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>

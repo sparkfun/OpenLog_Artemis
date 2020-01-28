@@ -29,6 +29,8 @@
   Could you store the date from the RTC because it won't change that much?
   Eval how long it takes to boot (SD, log creation, IMU begin, etc)
   Allow user to decrease I2C speed on GPS to increase reliability
+  Control Qwiic power from...
+  SPI port on exposed pins?
 
 
   The Qwiic device settings menus don't change the devices directly. These are set at the exit of the main menu
@@ -59,14 +61,15 @@
 
 #include "settings.h"
 
-const byte statLED = 19;
+const byte PIN_STAT_LED = 19;
+const byte PIN_POWER_LOSS = 3;
+const byte PIN_LOGIC_DEBUG = 11; //TODO remove from production
 
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "Wire.h"
 TwoWire qwiic(1); //Will use pads 8/9
-//#define qwiic Wire
-#define QWIIC_PWR 18 //X02
+const byte PIN_QWIIC_PWR = 18;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //EEPROM for storing settings
@@ -80,11 +83,11 @@ TwoWire qwiic(1); //Will use pads 8/9
 #include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed
 
 //x02+ Hardware
-#define SD_CHIP_SELECT 10
-#define SD_POWER 23
+const byte PIN_MICROSD_CHIP_SELECT = 10;
+const byte PIN_MICROSD_POWER = 23;
 
-#define SD_CONFIG SdSpiConfig(SD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
-#define SD_CONFIG_MAX_SPEED SdSpiConfig(SD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
+#define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
+#define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 
 SdFat sd;
 File sensorDataFile; //File that all sensor data is written to
@@ -108,11 +111,9 @@ const int MAX_IDLE_TIME_MSEC = 500;
 //Add ICM IMU interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
-//#define IMU_CHIP_SELECT 18 //X01
-#define IMU_CHIP_SELECT 44 //X02
-#define IMU_POWER 22
-//#define IMU_INT 17 //X01
-#define IMU_INT 37 //X02
+const byte PIN_IMU_CHIP_SELECT = 44;
+const byte PIN_IMU_POWER = 22;
+const byte PIN_IMU_INT = 37;
 ICM_20948_SPI myICM;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -156,9 +157,12 @@ unsigned long startTime = 0;
 
 void setup() {
   startTime = micros();
-  
-  pinMode(statLED, OUTPUT);
-  digitalWrite(statLED, LOW);
+
+  //If 3.3V rail drops below 3V, system will enter low power mode and maintain RTC
+  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
+
+  pinMode(PIN_STAT_LED, OUTPUT);
+  digitalWrite(PIN_STAT_LED, LOW);
 
   Serial.begin(115200); //Default for initial debug messages if necessary
   delay(10);
@@ -254,34 +258,40 @@ void loop() {
         if (millis() - lastDataLogSyncTime > 500)
         {
           lastDataLogSyncTime = millis();
-          digitalWrite(statLED, HIGH);
+          digitalWrite(PIN_STAT_LED, HIGH);
           sensorDataFile.sync();
-          digitalWrite(statLED, LOW);
+          digitalWrite(PIN_STAT_LED, LOW);
         }
       }
     }
 
-    //    if (digitalRead(statLED) == HIGH)
-    //      digitalWrite(statLED, LOW);
+    //    if (digitalRead(PIN_STAT_LED) == HIGH)
+    //      digitalWrite(PIN_STAT_LED, LOW);
     //    else
-    //      digitalWrite(statLED, HIGH);
+    //      digitalWrite(PIN_STAT_LED, HIGH);
   }
 }
 
 void beginQwiic()
 {
-  pinMode(QWIIC_PWR, OUTPUT);
+  pinMode(PIN_QWIIC_PWR, OUTPUT);
   qwiicPowerOn();
   qwiic.begin();
 }
 
 void beginSD()
 {
+  pinMode(PIN_MICROSD_POWER, OUTPUT);
+  pinMode(PIN_MICROSD_CHIP_SELECT, OUTPUT);
+
   if (settings.enableSD == true)
   {
     //Power up SD
-    pinMode(SD_POWER, OUTPUT);
-    digitalWrite(SD_POWER, HIGH);
+    sdPowerOn();
+
+    //Max power up time is 250ms: https://www.kingston.com/datasheets/SDCIT-specsheet-64gb_en.pdf
+    //Max current is 200mA average across 1s, peak 300mA
+    delay(10);
 
     //We can get faster SPI transfer rates if we have only one device enabled on the SPI bus
     //But we have a chicken and egg problem: We need to load settings before we enable SD, but we
@@ -299,9 +309,14 @@ void beginSD()
     //    {
     if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
     {
-      Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
-      online.microSD = false;
-      return;
+      delay(250); //Give SD more time to power up, then try again
+      if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
+      {
+        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
+        digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH);
+        online.microSD = false;
+        return;
+      }
     }
     //    }
 
@@ -319,13 +334,11 @@ void beginSD()
   else
   {
     //Power down SD
-    pinMode(SD_POWER, OUTPUT);
-    //digitalWrite(SD_POWER, LOW); //Unfortunately it seems powering down SD with card in place causes IMU to fail to init
-    digitalWrite(SD_POWER, HIGH);
+    //sdPowerOff(); //Unfortunately it seems powering down SD with card in place causes IMU to fail to init
+    sdPowerOn();
 
     //Be sure SD is deselected
-    pinMode(SD_CHIP_SELECT, OUTPUT);
-    digitalWrite(SD_CHIP_SELECT, HIGH);
+    digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH);
     Serial.println("SD offline/disabled");
     online.microSD = false;
   }
@@ -336,10 +349,12 @@ void beginIMU()
   if (settings.enableIMU == true && settings.logMaxRate == false)
   {
     //Power up ICM
-    pinMode(IMU_POWER, OUTPUT);
-    digitalWrite(IMU_POWER, HIGH);
+    pinMode(PIN_IMU_POWER, OUTPUT);
+    digitalWrite(PIN_IMU_POWER, HIGH);
 
-    myICM.begin(IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
+    delay(10); //Allow ICM to come online
+
+    myICM.begin(PIN_IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
     if (myICM.status != ICM_20948_Stat_Ok) {
       msg("ICM-20948 failed to init.");
       online.IMU = false;
@@ -352,12 +367,12 @@ void beginIMU()
   else
   {
     //Power down IMU
-    pinMode(IMU_POWER, OUTPUT);
-    digitalWrite(IMU_POWER, LOW);
+    pinMode(PIN_IMU_POWER, OUTPUT);
+    digitalWrite(PIN_IMU_POWER, LOW);
 
     //Be sure IMU is deselected
-    pinMode(IMU_CHIP_SELECT, OUTPUT);
-    digitalWrite(IMU_CHIP_SELECT, HIGH);
+    pinMode(PIN_IMU_CHIP_SELECT, OUTPUT);
+    digitalWrite(PIN_IMU_CHIP_SELECT, HIGH);
 
     msg("IMU disabled");
     online.IMU = false;
