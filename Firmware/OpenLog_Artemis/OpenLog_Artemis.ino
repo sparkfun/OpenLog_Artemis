@@ -84,7 +84,8 @@ const byte PIN_QWIIC_PWR = 18;
 
 //x02+ Hardware
 const byte PIN_MICROSD_CHIP_SELECT = 10;
-const byte PIN_MICROSD_POWER = 23;
+const byte PIN_MICROSD_POWER = 23; //x03
+//const byte PIN_MICROSD_POWER = 15; //x04
 
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 #define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
@@ -180,8 +181,6 @@ void setup() {
   beginQwiic();
 
   analogReadResolution(14); //Increase from default of 10
-
-  //myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
 
   beginDataLogging(); //180ms
 
@@ -283,10 +282,10 @@ void beginSD()
 {
   pinMode(PIN_MICROSD_POWER, OUTPUT);
   pinMode(PIN_MICROSD_CHIP_SELECT, OUTPUT);
+  digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
 
   if (settings.enableSD == true)
   {
-    //Power up SD
     sdPowerOn();
 
     //Max power up time is 250ms: https://www.kingston.com/datasheets/SDCIT-specsheet-64gb_en.pdf
@@ -313,7 +312,7 @@ void beginSD()
       if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
       {
         Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
-        digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH);
+        digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
         online.microSD = false;
         return;
       }
@@ -333,12 +332,8 @@ void beginSD()
   }
   else
   {
-    //Power down SD
-    //sdPowerOff(); //Unfortunately it seems powering down SD with card in place causes IMU to fail to init
-    sdPowerOn();
+    sdPowerOff();
 
-    //Be sure SD is deselected
-    digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH);
     Serial.println("SD offline/disabled");
     online.microSD = false;
   }
@@ -346,19 +341,37 @@ void beginSD()
 
 void beginIMU()
 {
+  pinMode(PIN_IMU_POWER, OUTPUT);
+  pinMode(PIN_IMU_CHIP_SELECT, OUTPUT);
+  digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
+
   if (settings.enableIMU == true && settings.logMaxRate == false)
   {
-    //Power up ICM
-    pinMode(PIN_IMU_POWER, OUTPUT);
+    //Reset ICM by power cycling it
+    digitalWrite(PIN_IMU_POWER, LOW);
+    delay(10); //10 is fine
     digitalWrite(PIN_IMU_POWER, HIGH);
-
-    delay(10); //Allow ICM to come online
+    delay(25); //Allow ICM to come online. Typical is 11ms. Max is 100ms.
 
     myICM.begin(PIN_IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
-    if (myICM.status != ICM_20948_Stat_Ok) {
-      msg("ICM-20948 failed to init.");
-      online.IMU = false;
-      return;
+    if (myICM.status != ICM_20948_Stat_Ok)
+    {
+      //Try one more time with longer wait
+
+      //Reset ICM by power cycling it
+      digitalWrite(PIN_IMU_POWER, LOW);
+      delay(10); //10 is fine
+      digitalWrite(PIN_IMU_POWER, HIGH);
+      delay(100); //Allow ICM to come online. Typical is 11ms. Max is 100ms.
+
+      myICM.begin(PIN_IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
+      if (myICM.status != ICM_20948_Stat_Ok)
+      {
+        digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
+        msg("ICM-20948 failed to init.");
+        online.IMU = false;
+        return;
+      }
     }
 
     online.IMU = true;
@@ -367,12 +380,7 @@ void beginIMU()
   else
   {
     //Power down IMU
-    pinMode(PIN_IMU_POWER, OUTPUT);
     digitalWrite(PIN_IMU_POWER, LOW);
-
-    //Be sure IMU is deselected
-    pinMode(PIN_IMU_CHIP_SELECT, OUTPUT);
-    digitalWrite(PIN_IMU_CHIP_SELECT, HIGH);
 
     msg("IMU disabled");
     online.IMU = false;
