@@ -2,6 +2,7 @@
 //Power down the entire system but maintain running of RTC
 //This function takes 100us to run including GPIO setting
 //This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
+//With leakage across the 3.3V protection diode, it's approx 3.00uA.
 void powerDown()
 {
   //digitalWrite(LOGIC_DEBUG, HIGH);

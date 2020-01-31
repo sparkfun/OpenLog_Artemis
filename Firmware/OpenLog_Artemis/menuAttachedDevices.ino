@@ -1,3 +1,18 @@
+/*
+ To add a new sensor to the system:
+
+ Add the library and the class constructor in OpenLog_Artemis
+ Add a struct_MCP9600 to settings.h - This will define what settings for the sensor we will control
+ Add a 'struct_CCS811 sensor_CCS811;' line to struct_settings{} in settings.h - This will put the sensor settings into NVM
+ Add device to the struct_QwiicSensors, qwiicAvailable, and qwiicOnline structs in settings.h - This will let OpenLog know it's online and such
+ Add device to menuAttachedDevices list
+ Add the device's I2C address to the detectQwiicDevices function - Make sure the device is properly recognized with a whoami function (ideally)
+ Create a menuConfigure_LPS25HB() function int menuAttachedDevices - This is the config menu. Add all the features you want the user to be able to control
+ Add a startup function for this sensor in Sensors - This will notify the user at startup if sensor is detect and made online.
+ Add a harvesting function in Sensors - Get the data from the device
+ */
+
+
 #define MAX_NUMBER_OF_QWIIC_DEVICES 30
 
 void menuAttachedDevices()
@@ -58,6 +73,16 @@ void menuAttachedDevices()
       functionPointers[availableDevices - 1] = menuConfigure_TMP117;
       Serial.printf("%d) TMP117 Precision Temperature Sensor\n", availableDevices++);
     }
+    if (qwiicAvailable.CCS811)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_CCS811;
+      Serial.printf("%d) CCS811 tVOC and CO2 Sensor\n", availableDevices++);
+    }
+    if (qwiicAvailable.BME280)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_BME280;
+      Serial.printf("%d) BME280 Pressure/Humidity/Temp (PHT) Sensor\n", availableDevices++);
+    }
 
     Serial.println("x) Exit");
 
@@ -107,10 +132,14 @@ bool detectQwiicDevices()
 #define ADR_VL53L1X 0x29
 #define ADR_UBLOX 0x42
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
+#define ADR_CCS811_2 0x5A
+#define ADR_CCS811_1 0x5B
 #define ADR_LPS25HB_2 0x5C
 #define ADR_LPS25HB_1 0x5D
-//0x60: VCNL4040 and MCP9600_2
+#define ADR_VCNL4040_OR_MCP9600 0x60
 #define ADR_MCP9600_1 0x66
+#define ADR_BME280_2 0x76
+#define ADR_BME280_1 0x77
 
 //Given an address, see if it repsonds as we would expect
 //Returns false if I2C address is not known
@@ -133,7 +162,7 @@ bool testDevice(uint8_t i2cAddress)
         if (thermoSensor.isConnected() == true)
           qwiicAvailable.MCP9600 = true;
       break;
-    case 0x60:
+    case ADR_VCNL4040_OR_MCP9600:
       //      if (thermoSensor.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
       //        if (thermoSensor.isConnected() == true)
       //          qwiicAvailable.MCP9600 = true;
@@ -155,6 +184,14 @@ bool testDevice(uint8_t i2cAddress)
     case ADR_TMP117:
       if (tempSensor_TMP117.begin(ADR_TMP117, qwiic) == true) //Adr, Wire port
         qwiicAvailable.TMP117 = true;
+      break;
+    case ADR_CCS811_1:
+      if (vocSensor_CCS811.begin(qwiic) == true) //Wire port
+        qwiicAvailable.CCS811 = true;
+      break;
+    case ADR_BME280_1:
+      if (phtSensor_BME280.beginI2C(qwiic) == true) //Wire port
+        qwiicAvailable.BME280 = true;
       break;
     default:
       Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
@@ -214,6 +251,7 @@ void menuConfigure_LPS25HB()
 
   qwiicOnline.LPS25HB = false; //Mark as offline so it will be started with new settings
 }
+
 void menuConfigure_NAU7802()
 {
   while (1)
@@ -736,4 +774,118 @@ void menuConfigure_TMP117()
   }
 
   qwiicOnline.TMP117 = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_CCS811()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure CCS811 tVOC and CO2 Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_CCS811.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_CCS811.log == true)
+    {
+      Serial.print("2) Log tVOC: ");
+      if (settings.sensor_CCS811.logTVOC == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log CO2: ");
+      if (settings.sensor_CCS811.logCO2 == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+
+    if (incoming == '1')
+      settings.sensor_CCS811.log ^= 1;
+    else if (settings.sensor_CCS811.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_CCS811.logTVOC ^= 1;
+      else if (incoming == '3')
+        settings.sensor_CCS811.logCO2 ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == 255)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == 255)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.CCS811 = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_BME280()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure BME280 Pressure/Humidity/Temperature Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_BME280.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_BME280.log == true)
+    {
+      Serial.print("2) Log Pressure: ");
+      if (settings.sensor_BME280.logPressure == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Humidity: ");
+      if (settings.sensor_BME280.logHumidity == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("4) Log Altitude: ");
+      if (settings.sensor_BME280.logAltitude == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+          Serial.print("5) Log Temperature: ");
+      if (settings.sensor_BME280.logTemp == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+}
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+
+    if (incoming == '1')
+      settings.sensor_BME280.log ^= 1;
+    else if (settings.sensor_BME280.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_BME280.logPressure ^= 1;
+      else if (incoming == '3')
+        settings.sensor_BME280.logHumidity ^= 1;
+      else if (incoming == '4')
+        settings.sensor_BME280.logAltitude ^= 1;
+      else if (incoming == '5')
+        settings.sensor_BME280.logTemp ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == 255)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == 255)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.BME280 = false; //Mark as offline so it will be started with new settings
 }

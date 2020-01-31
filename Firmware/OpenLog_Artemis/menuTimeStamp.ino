@@ -20,130 +20,155 @@ void menuTimeStamp()
     sprintf(rtcTime, "%02d:%02d:%02d.%02d", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
     Serial.println((String)rtcTime);
 
-    Serial.println("1) Set RTC to compiler time");
-    Serial.println("2) Manually set RTC date");
-    Serial.println("3) Manually set RTC time");
-    Serial.print("4) Synchronize RTC to GPS: ");
-    if (qwiicOnline.uBlox == false)
-    {
-      Serial.println("GPS offline");
-    }
-    else
-    {
-      Serial.println("TODO");
-    }
-
-    Serial.print("5) Use GPS as timestamp source: ");
-    if (qwiicOnline.uBlox)
-    {
-      if (settings.getRTCfromGPS == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-    }
-    else
-      Serial.println("GPS offline");
-
-    Serial.print("6) Log date: ");
+    Serial.println("1) Log Date");
     if (settings.logDate == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("7) Toggle date style: ");
-    if (settings.americanDateStyle == true) Serial.println("mm/dd/yyyy");
-    else Serial.println("dd/mm/yyyy");
+    Serial.println("2) Log Time");
+    if (settings.logTime == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
 
-    Serial.print("8) Toggle time style: ");
-    if (settings.hour24Style == true) Serial.println("24 hour");
-    else Serial.println("12 hour");
-
-    Serial.print("9) Local offset from GPS UTC: ");
-    Serial.println(settings.localUTCOffset);
-
-    Serial.print("10) Correct for USA based DST using GPS UTC Date/Time: ");
-    if (qwiicOnline.uBlox)
+    if (settings.logDate == true && settings.logTime == true)
     {
+      Serial.println("3) Set RTC to compiler macro time");
+    }
+
+    if (settings.logDate == true)
+    {
+      Serial.println("4) Manually set RTC date");
+
+      Serial.print("5) Toggle date style: ");
+      if (settings.americanDateStyle == true) Serial.println("mm/dd/yyyy");
+      else Serial.println("dd/mm/yyyy");
+    }
+
+    if (settings.logTime == true)
+    {
+      Serial.println("6) Manually set RTC time");
+
+      Serial.print("7) Toggle time style: ");
+      if (settings.hour24Style == true) Serial.println("24 hour");
+      else Serial.println("12 hour");
+    }
+
+    if (settings.logDate == true && settings.logTime == true)
+    {
+      Serial.print("8) Correct time/date using USA Daylight Savings Time rules: ");
       if (settings.correctForDST == true) Serial.println("Enabled");
       else Serial.println("Disabled");
     }
-    else
-      Serial.println("GPS offline");
+
+    //    Serial.print("4) Synchronize RTC to GPS: ");
+    //    if (qwiicOnline.uBlox == false)
+    //    {
+    //      Serial.println("GPS offline");
+    //    }
+    //    else
+    //    {
+    //      Serial.println("TODO");
+    //    }
+
+    //    Serial.print("5) Use GPS as timestamp source: ");
+    //    if (qwiicOnline.uBlox)
+    //    {
+    //      if (settings.getRTCfromGPS == true) Serial.println("Enabled");
+    //      else Serial.println("Disabled");
+    //    }
+    //    else
+    //      Serial.println("GPS offline");
+
+    //    Serial.print("9) Local offset from GPS UTC: ");
+    //    Serial.println(settings.localUTCOffset);
+    //
 
     Serial.println("x) Exit");
 
     int incoming = getNumber(10); //Timeout after 10 seconds
 
     if (incoming == 1)
-    {
-      myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
-      Serial.println("RTC set to compiler time");
-    }
+      settings.logDate ^= 1;
     else if (incoming == 2)
+      settings.logTime ^= 1;
+
+    if (settings.logDate == true && settings.logTime == true)
     {
-      myRTC.getTime();
-      int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds;
-
-      Serial.print("Enter current two digit year: ");
-      yy = getNumber(10); //Timeout after 10 seconds
-      if (yy > 2000 && yy < 2100) yy -= 2000;
-
-      Serial.print("Enter current month (1 to 12): ");
-      mm = getNumber(10); //Timeout after 10 seconds
-
-      Serial.print("Enter current day (1 to 31): ");
-      dd = getNumber(10); //Timeout after 10 seconds
-
-      myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
-    }
-    else if (incoming == 3)
-    {
-      myRTC.getTime();
-      int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds;
-
-      Serial.print("Enter current hour (0 to 23): ");
-      h = getNumber(10); //Timeout after 10 seconds
-
-      Serial.print("Enter current minute (0 to 59): ");
-      m = getNumber(10); //Timeout after 10 seconds
-
-      Serial.print("Enter current second (0 to 59): ");
-      s = getNumber(10); //Timeout after 10 seconds
-
-      myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
-    }
-    else if (incoming == 4)
-    {
-      if (qwiicOnline.uBlox == false)
-        Serial.println("Error: GPS offline");
-      else
+      //Options 3 and 8
+      if (incoming == 3)
       {
-        uint8_t year, month, day;
-        uint8_t hour, minute, second;
-
-        //Get time from GPS module
-        //lte.clock(&year, &month, &day, &hour, &minute, &second, &timezone);
-
-        //myRTC.setTime(hour, minute, second, 0, day, month, year); //Manually set RTC
-
-        Serial.println("RTC synchronized to GPS");
+        myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
+        Serial.println("RTC set to compiler time");
+      }
+      else if (incoming == 8)
+      {
+        settings.correctForDST ^= 1;
       }
     }
-    else if (incoming == 5)
-      settings.getRTCfromGPS ^= 1;
-    else if (incoming == 6)
-      settings.logDate ^= 1;
-    else if (incoming == 7)
-      settings.americanDateStyle ^= 1;
-    else if (incoming == 8)
-      settings.hour24Style ^= 1;
-    else if (incoming == 9)
+
+    if (settings.logDate == true)
     {
-      Serial.print("Enter the local hour offset from UTC (-12 to 14): ");
-      int offset = getNumber(10); //Timeout after 10 seconds
-      if (offset < -12 || offset > 14)
-        Serial.println("Error: Offset is out of range");
-      else
-        settings.localUTCOffset = offset;
+      //4 and 5
+      if (incoming == 4) //Manually set RTC date
+      {
+        myRTC.getTime();
+        int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds;
+
+        Serial.print("Enter current two digit year: ");
+        yy = getNumber(10); //Timeout after 10 seconds
+        if (yy > 2000 && yy < 2100) yy -= 2000;
+
+        Serial.print("Enter current month (1 to 12): ");
+        mm = getNumber(10); //Timeout after 10 seconds
+
+        Serial.print("Enter current day (1 to 31): ");
+        dd = getNumber(10); //Timeout after 10 seconds
+
+        myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
+      }
+      else if (incoming == 5)
+      {
+        settings.americanDateStyle ^= 1;
+      }
     }
-    else if (incoming == 10)
-      settings.correctForDST ^= 1;
+
+    if (settings.logTime == true)
+    {
+      //6 and 7
+      if (incoming == 6) //Manually set time
+      {
+        myRTC.getTime();
+        int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds;
+
+        Serial.print("Enter current hour (0 to 23): ");
+        h = getNumber(10); //Timeout after 10 seconds
+
+        Serial.print("Enter current minute (0 to 59): ");
+        m = getNumber(10); //Timeout after 10 seconds
+
+        Serial.print("Enter current second (0 to 59): ");
+        s = getNumber(10); //Timeout after 10 seconds
+
+        myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
+      }
+      else if(incoming == 7)
+      {
+        settings.hour24Style ^= 1;
+      }
+    }
+
+
+    //GPS functions not yet implemented
+//    else if (incoming == 5)
+//      settings.getRTCfromGPS ^= 1;
+//    else if (incoming == 9)
+//    {
+//      Serial.print("Enter the local hour offset from UTC (-12 to 14): ");
+//      int offset = getNumber(10); //Timeout after 10 seconds
+//      if (offset < -12 || offset > 14)
+//        Serial.println("Error: Offset is out of range");
+//      else
+//        settings.localUTCOffset = offset;
+//    }
+
     else if (incoming == 'x')
       return;
     else if (incoming == 255)

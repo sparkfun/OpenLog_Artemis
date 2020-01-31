@@ -132,6 +132,28 @@ void beginSensors()
     else
       msg("TMP117 failed to respond. Check wiring and address jumpers.");
   }
+
+  if (qwiicAvailable.CCS811 && settings.sensor_CCS811.log && !qwiicOnline.CCS811)
+  {
+    if (vocSensor_CCS811.begin(qwiic) == true) //Wire port
+    {
+      qwiicOnline.CCS811 = true;
+      msg("CCS811 Online");
+    }
+    else
+      msg("CCS811 failed to respond. Check wiring and address jumpers. Adr must be 0x5B.");
+  }
+
+  if (qwiicAvailable.BME280 && settings.sensor_BME280.log && !qwiicOnline.BME280)
+  {
+    if (phtSensor_BME280.beginI2C(qwiic) == true) //Wire port
+    {
+      qwiicOnline.BME280 = true;
+      msg("BME280 Online");
+    }
+    else
+      msg("BME280 failed to respond. Check wiring and address jumpers. Adr must be 0x77.");
+  }
 }
 
 //Query each enabled sensor for it's most recent data
@@ -160,15 +182,18 @@ void getData()
         helperText += "rtcDate,";
       }
 
-      char rtcTime[12]; //09:14:37.41
-      int adjustedHour = myRTC.hour;
-      if (settings.hour24Style == false)
+      if (settings.logTime)
       {
-        if (adjustedHour > 12) adjustedHour -= 12;
+        char rtcTime[12]; //09:14:37.41
+        int adjustedHour = myRTC.hour;
+        if (settings.hour24Style == false)
+        {
+          if (adjustedHour > 12) adjustedHour -= 12;
+        }
+        sprintf(rtcTime, "%02d:%02d:%02d.%02d", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+        outputData += String(rtcTime) + ",";
+        helperText += "rtcTime,";
       }
-      sprintf(rtcTime, "%02d:%02d:%02d.%02d", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-      outputData += String(rtcTime) + ",";
-      helperText += "rtcTime,";
     } //end if use RTC for timestamp
     else //Use GPS for timestamp
     {
@@ -446,6 +471,51 @@ void getData()
     if (settings.sensor_TMP117.logTemp)
     {
       outputData += (String)tempSensor_TMP117.readTempC() + ",";
+      helperText += "temp_degC,";
+    }
+  }
+
+  if (qwiicOnline.CCS811 && settings.sensor_CCS811.log)
+  {
+    //if (vocSensor_CCS811.dataAvailable())
+    //{
+    //Get data regardless of if it is new or not
+    //Sensor will have new data every 1 second
+    vocSensor_CCS811.readAlgorithmResults();
+
+    if (settings.sensor_CCS811.logTVOC)
+    {
+      outputData += (String)vocSensor_CCS811.getTVOC() + ",";
+      helperText += "tvoc_ppb,";
+    }
+    if (settings.sensor_CCS811.logCO2)
+    {
+      outputData += (String)vocSensor_CCS811.getCO2() + ",";
+      helperText += "co2_ppm,";
+    }
+    //}
+  }
+
+  if (qwiicOnline.BME280 && settings.sensor_BME280.log)
+  {
+    if (settings.sensor_BME280.logPressure)
+    {
+      outputData += (String)phtSensor_BME280.readFloatPressure() + ",";
+      helperText += "pressure_Pa,";
+    }
+    if (settings.sensor_BME280.logHumidity)
+    {
+      outputData += (String)phtSensor_BME280.readFloatHumidity() + ",";
+      helperText += "humidity_%,";
+    }
+    if (settings.sensor_BME280.logAltitude)
+    {
+      outputData += (String)phtSensor_BME280.readFloatAltitudeMeters() + ",";
+      helperText += "altitude_m,";
+    }
+    if (settings.sensor_BME280.logTemp)
+    {
+      outputData += (String)phtSensor_BME280.readTempC() + ",";
       helperText += "temp_degC,";
     }
   }

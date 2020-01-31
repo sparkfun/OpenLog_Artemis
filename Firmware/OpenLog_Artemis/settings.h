@@ -71,6 +71,21 @@ struct struct_TMP117 {
   int conversionCycle = 0;
 };
 
+struct struct_CCS811 {
+  bool log = true;
+  bool logTVOC = true;
+  bool logCO2 = true;
+};
+
+struct struct_BME280 {
+  bool log = true;
+  bool logHumidity = true;
+  bool logPressure = true;
+  bool logAltitude = true;
+  bool logTemp = true;
+};
+
+//This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
   int sizeOfSettings = 0;
   int nextSerialLogNumber = 1;
@@ -82,6 +97,7 @@ struct struct_settings {
   bool enableSD = true;
   bool enableTerminalOutput = true;
   bool logDate = true;
+  bool logTime = true;
   bool logData = true;
   bool logSerial = true;
   bool logIMUAccel = true;
@@ -110,8 +126,11 @@ struct struct_settings {
   struct_MCP9600 sensor_MCP9600;
   struct_VCNL4040 sensor_VCNL4040;
   struct_TMP117 sensor_TMP117;
+  struct_CCS811 sensor_CCS811;
+  struct_BME280 sensor_BME280;
 } settings;
 
+//These are the devices on board OpenLog that may be on or offline.
 struct struct_online {
   bool microSD = false;
   bool dataLogging = false;
@@ -119,7 +138,7 @@ struct struct_online {
   bool IMU = false;
 } online;
 
-//Add a new sensor here and the two structs below
+//These structs define supported sensors and if they are available and online(started).
 struct struct_QwiicSensors {
   bool LPS25HB;
   bool MCP9600;
@@ -129,6 +148,8 @@ struct struct_QwiicSensors {
   bool VL53L1X;
   bool VCNL4040;
   bool TMP117;
+  bool CCS811;
+  bool BME280;
 };
 
 struct_QwiicSensors qwiicAvailable = {
@@ -140,6 +161,8 @@ struct_QwiicSensors qwiicAvailable = {
   .VL53L1X = false,
   .VCNL4040 = false,
   .TMP117 = false,
+  .CCS811 = false,
+  .BME280 = false,
 };
 
 struct_QwiicSensors qwiicOnline = {
@@ -151,4 +174,6 @@ struct_QwiicSensors qwiicOnline = {
   .VL53L1X = false,
   .VCNL4040 = false,
   .TMP117 = false,
+  .CCS811 = false,
+  .BME280 = false,
 };

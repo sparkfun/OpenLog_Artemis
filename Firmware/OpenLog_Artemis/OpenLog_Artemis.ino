@@ -21,22 +21,20 @@
   (done) Auto number the datalog and serial log file names
   Enable/disable time stamping of incoming serial
   Toggle LED on serial data recording vs sensor recording
-  If VCC is detected as dropping below 3V (diode drop from batt backup) then go into shutdown
+  (done) If VCC is detected as dropping below 3V (diode drop from batt backup) then go into shutdown
   Check out the file creation. Use FILE_WRITE instead of the O_s. Might go faster without append...
   Support multiples of a given sensor. How to support two MCP9600s attached at the same time?
   Allow user to export the current settings to a settings.txt file that the can use to setup other OpenLogs
   Setup a sleep timer, wake up ever 5 seconds, power up Qwiic, take reading, power down I2C bus, sleep.
   Could you store the date from the RTC because it won't change that much?
-  Eval how long it takes to boot (SD, log creation, IMU begin, etc)
+  (done) Eval how long it takes to boot (SD, log creation, IMU begin, etc)
   Allow user to decrease I2C speed on GPS to increase reliability
   Control Qwiic power from...
-  SPI port on exposed pins?
 
+  Allow user to control local time stamp with GPS UTC offset
 
   The Qwiic device settings menus don't change the devices directly. These are set at the exit of the main menu
   when sensors are begun().
-
-  What about changing units? mm of distance vs ft or inches? Leave it up to post processing?
 
   Python/windows program to load new hex files
 
@@ -46,18 +44,6 @@
   Max rates:
   ~1140Hz for 3 channel analog, max data rate
 */
-
-
-/*
-  Sensors could be detected at power on
-  We then begin sensors
-  But user could then run 6) detect sensors.
-  So when do we run Begin on sensors?
-
-  We need to call startSensors at the exit of main menu
-  If a device is available, logging, and not online, then start/online it.
-*/
-
 
 #include "settings.h"
 
@@ -140,6 +126,14 @@ VCNL4040 proximitySensor_VCNL4040;
 
 #include <SparkFun_TMP117.h> //Click here to get the library: http://librarymanager/All#SparkFun_TMP117
 TMP117 tempSensor_TMP117;
+
+#include "SparkFunCCS811.h" //Click here to get the library: http://librarymanager/All#SparkFun_CCS811
+#define CCS811_ADDR 0x5B //Default I2C Address
+//#define CCS811_ADDR 0x5A //Alternate I2C Address
+CCS811 vocSensor_CCS811(CCS811_ADDR);
+
+#include "SparkFunBME280.h" //Click here to get the library: http://librarymanager/All#SparkFun_BME280
+BME280 phtSensor_BME280;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
