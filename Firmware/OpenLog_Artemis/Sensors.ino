@@ -154,6 +154,20 @@ void beginSensors()
     else
       msg("BME280 failed to respond. Check wiring and address jumpers. Adr must be 0x77.");
   }
+
+  if (qwiicAvailable.SGP30 && settings.sensor_SGP30.log && !qwiicOnline.SGP30)
+  {
+    if (vocSensor_SGP30.begin(qwiic) == true) //Wire port
+    {
+      //Initializes sensor for air quality readings
+      vocSensor_SGP30.initAirQuality();
+
+      qwiicOnline.SGP30 = true;
+      msg("SGP30 Online");
+    }
+    else
+      msg("SGP30 failed to respond. Check wiring.");
+  }
 }
 
 //Query each enabled sensor for it's most recent data
@@ -517,6 +531,22 @@ void getData()
     {
       outputData += (String)phtSensor_BME280.readTempC() + ",";
       helperText += "temp_degC,";
+    }
+  }
+
+  if (qwiicOnline.SGP30 && settings.sensor_SGP30.log)
+  {
+    vocSensor_SGP30.measureAirQuality();
+
+    if (settings.sensor_SGP30.logTVOC)
+    {
+      outputData += (String)vocSensor_SGP30.TVOC + ",";
+      helperText += "tvoc_ppb,";
+    }
+    if (settings.sensor_SGP30.logCO2)
+    {
+      outputData += (String)vocSensor_SGP30.CO2 + ",";
+      helperText += "co2_ppm,";
     }
   }
 

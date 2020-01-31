@@ -1,8 +1,8 @@
 void loadSettings()
 {
   //First load any settings from NVM
-  //After, we'll load settings from (if) available config file
-  //We'll then re-record settings so that the settings file over-rides internal NVM settings
+  //After, we'll load settings from config file if available
+  //We'll then re-record settings so that the settings from the file over-rides internal NVM settings
 
   //Check to see if EEPROM is blank
   uint32_t testRead = 0;

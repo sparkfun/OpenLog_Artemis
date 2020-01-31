@@ -85,6 +85,12 @@ struct struct_BME280 {
   bool logTemp = true;
 };
 
+struct struct_SGP30 {
+  bool log = true;
+  bool logTVOC = true;
+  bool logCO2 = true;
+};
+
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
   int sizeOfSettings = 0;
@@ -128,6 +134,7 @@ struct struct_settings {
   struct_TMP117 sensor_TMP117;
   struct_CCS811 sensor_CCS811;
   struct_BME280 sensor_BME280;
+  struct_SGP30 sensor_SGP30;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
@@ -150,6 +157,7 @@ struct struct_QwiicSensors {
   bool TMP117;
   bool CCS811;
   bool BME280;
+  bool SGP30;
 };
 
 struct_QwiicSensors qwiicAvailable = {
@@ -163,6 +171,7 @@ struct_QwiicSensors qwiicAvailable = {
   .TMP117 = false,
   .CCS811 = false,
   .BME280 = false,
+  .SGP30 = false,
 };
 
 struct_QwiicSensors qwiicOnline = {
@@ -176,4 +185,5 @@ struct_QwiicSensors qwiicOnline = {
   .TMP117 = false,
   .CCS811 = false,
   .BME280 = false,
+  .SGP30 = false,
 };

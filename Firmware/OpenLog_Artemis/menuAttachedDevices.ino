@@ -83,6 +83,11 @@ void menuAttachedDevices()
       functionPointers[availableDevices - 1] = menuConfigure_BME280;
       Serial.printf("%d) BME280 Pressure/Humidity/Temp (PHT) Sensor\n", availableDevices++);
     }
+    if (qwiicAvailable.SGP30)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_SGP30;
+      Serial.printf("%d) SGP30 tVOC and CO2 Sensor\n", availableDevices++);
+    }
 
     Serial.println("x) Exit");
 
@@ -107,7 +112,11 @@ bool detectQwiicDevices()
   bool somethingDetected = false;
 
   qwiic.setClock(100000); //During detection, go slow
-  qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+
+  qwiic.setPullups(1); //Set pullups to 1k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+
+  //Setting the Pullups to 24k causes the SGP30 to fail to detect.
+//  qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
@@ -132,6 +141,7 @@ bool detectQwiicDevices()
 #define ADR_VL53L1X 0x29
 #define ADR_UBLOX 0x42
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
+#define ADR_SGP30 0x58
 #define ADR_CCS811_2 0x5A
 #define ADR_CCS811_1 0x5B
 #define ADR_LPS25HB_2 0x5C
@@ -192,6 +202,10 @@ bool testDevice(uint8_t i2cAddress)
     case ADR_BME280_1:
       if (phtSensor_BME280.beginI2C(qwiic) == true) //Wire port
         qwiicAvailable.BME280 = true;
+      break;
+    case ADR_SGP30:
+      if (vocSensor_SGP30.begin(qwiic) == true) //Wire port
+        qwiicAvailable.SGP30 = true;
       break;
     default:
       Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
@@ -888,4 +902,55 @@ void menuConfigure_BME280()
   }
 
   qwiicOnline.BME280 = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_SGP30()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure SGP30 tVOC and CO2 Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_SGP30.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_SGP30.log == true)
+    {
+      Serial.print("2) Log tVOC: ");
+      if (settings.sensor_SGP30.logTVOC == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log CO2: ");
+      if (settings.sensor_SGP30.logCO2 == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+
+    if (incoming == '1')
+      settings.sensor_SGP30.log ^= 1;
+    else if (settings.sensor_SGP30.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_SGP30.logTVOC ^= 1;
+      else if (incoming == '3')
+        settings.sensor_SGP30.logCO2 ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == 255)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == 255)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.SGP30 = false; //Mark as offline so it will be started with new settings
 }
