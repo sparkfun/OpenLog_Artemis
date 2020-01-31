@@ -1,9 +1,8 @@
 void loadSettings()
 {
-  if(loadSettingsFromFile() == true)
-    recordSettings(); //Record these new settings to EEPROM and config file
-
-  //EEPROM.erase();
+  //First load any settings from NVM
+  //After, we'll load settings from (if) available config file
+  //We'll then re-record settings so that the settings file over-rides internal NVM settings
 
   //Check to see if EEPROM is blank
   uint32_t testRead = 0;
@@ -25,6 +24,10 @@ void loadSettings()
 
   //Read current settings
   EEPROM.get(0, settings);
+
+  //Load any settings from config file
+  if(loadSettingsFromFile() == true)
+    recordSettings(); //Record these new settings to EEPROM and config file
 }
 
 //Record the current settings struct to EEPROM and then to config file
@@ -60,6 +63,7 @@ void recordSettingsToFile()
     settingsFile.println("enableSD=" + (String)settings.enableSD);
     settingsFile.println("enableTerminalOutput=" + (String)settings.enableTerminalOutput);
     settingsFile.println("logDate=" + (String)settings.logDate);
+    settingsFile.println("logTime=" + (String)settings.logTime);
     settingsFile.println("logData=" + (String)settings.logData);
     settingsFile.println("logSerial=" + (String)settings.logSerial);
     settingsFile.println("logIMUAccel=" + (String)settings.logIMUAccel);
@@ -190,6 +194,8 @@ bool parseLine(char* str) {
     settings.enableTerminalOutput = d;
   else if (strcmp(settingName, "logDate") == 0)
     settings.logDate = d;
+  else if (strcmp(settingName, "logTime") == 0)
+    settings.logTime = d;
   else if (strcmp(settingName, "logData") == 0)
     settings.logData = d;
   else if (strcmp(settingName, "logSerial") == 0)

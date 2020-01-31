@@ -192,6 +192,7 @@ void setup() {
   if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
 
   Serial.printf("Setup time: %.02f ms\n", (micros() - startTime) / 1000.0);
+
 }
 
 void loop() {

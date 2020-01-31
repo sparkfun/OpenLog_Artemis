@@ -20,15 +20,15 @@ void menuTimeStamp()
     sprintf(rtcTime, "%02d:%02d:%02d.%02d", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
     Serial.println((String)rtcTime);
 
-    Serial.println("1) Log Date");
+    Serial.print("1) Log Date: ");
     if (settings.logDate == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.println("2) Log Time");
+    Serial.print("2) Log Time: ");
     if (settings.logTime == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    if (settings.logDate == true && settings.logTime == true)
+    if (settings.logDate == true || settings.logTime == true)
     {
       Serial.println("3) Set RTC to compiler macro time");
     }
@@ -51,7 +51,7 @@ void menuTimeStamp()
       else Serial.println("12 hour");
     }
 
-    if (settings.logDate == true && settings.logTime == true)
+    if (settings.logDate == true || settings.logTime == true)
     {
       Serial.print("8) Correct time/date using USA Daylight Savings Time rules: ");
       if (settings.correctForDST == true) Serial.println("Enabled");
@@ -67,7 +67,6 @@ void menuTimeStamp()
     //    {
     //      Serial.println("TODO");
     //    }
-
     //    Serial.print("5) Use GPS as timestamp source: ");
     //    if (qwiicOnline.uBlox)
     //    {
@@ -76,7 +75,6 @@ void menuTimeStamp()
     //    }
     //    else
     //      Serial.println("GPS offline");
-
     //    Serial.print("9) Local offset from GPS UTC: ");
     //    Serial.println(settings.localUTCOffset);
     //
@@ -90,7 +88,7 @@ void menuTimeStamp()
     else if (incoming == 2)
       settings.logTime ^= 1;
 
-    if (settings.logDate == true && settings.logTime == true)
+    if (settings.logDate == true || settings.logTime == true)
     {
       //Options 3 and 8
       if (incoming == 3)
@@ -155,7 +153,6 @@ void menuTimeStamp()
       }
     }
 
-
     //GPS functions not yet implemented
 //    else if (incoming == 5)
 //      settings.getRTCfromGPS ^= 1;
@@ -169,11 +166,9 @@ void menuTimeStamp()
 //        settings.localUTCOffset = offset;
 //    }
 
-    else if (incoming == 'x')
+    if (incoming == 'x')
       return;
-    else if (incoming == 255)
+    if (incoming == 255)
       return;
-    else
-      printUnknown(incoming);
   }
 }
