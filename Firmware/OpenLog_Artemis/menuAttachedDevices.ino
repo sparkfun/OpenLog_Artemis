@@ -93,6 +93,11 @@ void menuAttachedDevices()
       functionPointers[availableDevices - 1] = menuConfigure_VEML6075;
       Serial.printf("%d) VEML6075 UV Index Sensor\n", availableDevices++);
     }
+    if (qwiicAvailable.MS5637)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_MS5637;
+      Serial.printf("%d) VEML6075 UV Index Sensor\n", availableDevices++);
+    }
 
     Serial.println("x) Exit");
 
@@ -155,6 +160,7 @@ bool detectQwiicDevices()
 #define ADR_VCNL4040_OR_MCP9600 0x60
 #define ADR_MCP9600_1 0x66
 #define ADR_BME280_2 0x76
+#define ADR_MS5637 0x76
 #define ADR_BME280_1 0x77
 
 //Given an address, see if it repsonds as we would expect
@@ -164,33 +170,33 @@ bool testDevice(uint8_t i2cAddress)
   switch (i2cAddress)
   {
     case ADR_LPS25HB_1:
-      if (pressureSensor.begin(qwiic, ADR_LPS25HB_1) == true) //Wire port, Address.
-        if (pressureSensor.isConnected() == true)
+      if (pressureSensor_LPS25HB.begin(qwiic, ADR_LPS25HB_1) == true) //Wire port, Address.
+        if (pressureSensor_LPS25HB.isConnected() == true)
           qwiicAvailable.LPS25HB = true;
       break;
     case ADR_LPS25HB_2:
-      if (pressureSensor.begin(qwiic, ADR_LPS25HB_2) == true) //Wire port, Address.
-        if (pressureSensor.isConnected() == true)
+      if (pressureSensor_LPS25HB.begin(qwiic, ADR_LPS25HB_2) == true) //Wire port, Address.
+        if (pressureSensor_LPS25HB.isConnected() == true)
           qwiicAvailable.LPS25HB = true;
       break;
     case ADR_MCP9600_1:
-      if (thermoSensor.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
-        if (thermoSensor.isConnected() == true)
+      if (thermoSensor_MCP9600.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
+        if (thermoSensor_MCP9600.isConnected() == true)
           qwiicAvailable.MCP9600 = true;
       break;
     case ADR_VCNL4040_OR_MCP9600:
-      //      if (thermoSensor.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
-      //        if (thermoSensor.isConnected() == true)
+      //      if (thermoSensor_MCP9600.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
+      //        if (thermoSensor_MCP9600.isConnected() == true)
       //          qwiicAvailable.MCP9600 = true;
       if (proximitySensor_VCNL4040.begin(qwiic) == true) //Wire port. Checks ID so should avoid collision with MCP9600
         qwiicAvailable.VCNL4040 = true;
       break;
     case ADR_NAU7802:
-      if (nauScale.begin(qwiic) == true) //Wire port
+      if (loadcellSensor_NAU7802.begin(qwiic) == true) //Wire port
         qwiicAvailable.NAU7802 = true;
       break;
     case ADR_UBLOX:
-      if (myGPS.begin(qwiic, ADR_UBLOX) == true) //Wire port, address
+      if (gpsSensor_ublox.begin(qwiic, ADR_UBLOX) == true) //Wire port, address
         qwiicAvailable.uBlox = true;
       break;
     case ADR_VL53L1X:
@@ -216,6 +222,10 @@ bool testDevice(uint8_t i2cAddress)
     case ADR_VEML6075:
       if (uvSensor_VEML6075.begin(qwiic) == true) //Wire port
         qwiicAvailable.VEML6075 = true;
+      break;
+    case ADR_MS5637:
+      if (pressureSensor_MS5637.begin(qwiic) == true) //Wire port
+        qwiicAvailable.MS5637 = true;
       break;
     default:
       Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
@@ -292,7 +302,7 @@ void menuConfigure_NAU7802()
       Serial.println("2) Calibrate Scale");
       Serial.printf("\tScale calibration factor: %f\n", settings.sensor_NAU7802.calibrationFactor);
       Serial.printf("\tScale zero offset: %d\n", settings.sensor_NAU7802.zeroOffset);
-      Serial.printf("\tWeight currently on scale: %f\n", nauScale.getWeight());
+      Serial.printf("\tWeight currently on scale: %f\n", loadcellSensor_NAU7802.getWeight());
 
       Serial.printf("3) Number of decimal places: %d\n", settings.sensor_NAU7802.decimalPlaces);
       Serial.printf("4) Average number of readings to take per weight read: %d\n", settings.sensor_NAU7802.averageAmount);
@@ -317,9 +327,9 @@ void menuConfigure_NAU7802()
         Serial.println(F("Setup scale with no weight on it. Press a key when ready."));
         waitForInput();
 
-        nauScale.calculateZeroOffset(64); //Zero or Tare the scale. Average over 64 readings.
+        loadcellSensor_NAU7802.calculateZeroOffset(64); //Zero or Tare the scale. Average over 64 readings.
         Serial.print(F("New zero offset: "));
-        Serial.println(nauScale.getZeroOffset());
+        Serial.println(loadcellSensor_NAU7802.getZeroOffset());
 
         Serial.println(F("Place known weight on scale. Press a key when weight is in place and stable."));
         waitForInput();
@@ -329,10 +339,10 @@ void menuConfigure_NAU7802()
 
         //Read user input
         float weightOnScale = Serial.parseFloat();
-        nauScale.calculateCalibrationFactor(weightOnScale, 64); //Tell the library how much weight is currently on it. Average over 64 readings.
+        loadcellSensor_NAU7802.calculateCalibrationFactor(weightOnScale, 64); //Tell the library how much weight is currently on it. Average over 64 readings.
 
-        settings.sensor_NAU7802.calibrationFactor = nauScale.getCalibrationFactor();
-        settings.sensor_NAU7802.zeroOffset = nauScale.getZeroOffset();
+        settings.sensor_NAU7802.calibrationFactor = loadcellSensor_NAU7802.getCalibrationFactor();
+        settings.sensor_NAU7802.zeroOffset = loadcellSensor_NAU7802.getZeroOffset();
 
         Serial.println();
       }
@@ -1020,4 +1030,55 @@ void menuConfigure_VEML6075()
   }
 
   qwiicOnline.VEML6075 = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_MS5637()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure MS5637 Pressure Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_MS5637.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_MS5637.log == true)
+    {
+      Serial.print("2) Log Pressure: ");
+      if (settings.sensor_MS5637.logPressure == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Temperature: ");
+      if (settings.sensor_MS5637.logTemp == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+
+    if (incoming == '1')
+      settings.sensor_MS5637.log ^= 1;
+    else if (settings.sensor_MS5637.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_MS5637.logPressure ^= 1;
+      else if (incoming == '3')
+        settings.sensor_MS5637.logTemp ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == 255)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == 255)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.MS5637 = false; //Mark as offline so it will be started with new settings
 }

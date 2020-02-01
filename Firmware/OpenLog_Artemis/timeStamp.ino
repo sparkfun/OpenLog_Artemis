@@ -6,12 +6,12 @@
 //Leap year is taken into account but does not interact with DST (DST happens later in March)
 String getGPSDateTime() {
   //Get latested date/time from GPS
-  //  int year = myGPS.getYear();
-  //  int month = myGPS.getMonth();
-  //  int day = myGPS.getDay();
-  //  int hour = myGPS.getHour();
-  //  int minute = myGPS.getMinute();
-  //  int second = myGPS.getSecond();
+  //  int year = gpsSensor_ublox.getYear();
+  //  int month = gpsSensor_ublox.getMonth();
+  //  int day = gpsSensor_ublox.getDay();
+  //  int hour = gpsSensor_ublox.getHour();
+  //  int minute = gpsSensor_ublox.getMinute();
+  //  int second = gpsSensor_ublox.getSecond();
 
   int year = 19;
   int month = 1;

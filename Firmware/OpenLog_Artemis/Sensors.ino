@@ -11,7 +11,7 @@ void beginSensors()
 
   if (qwiicAvailable.LPS25HB && settings.sensor_LPS25HB.log && !qwiicOnline.LPS25HB)
   {
-    if (pressureSensor.begin(qwiic) == true) //Wire port, Address.
+    if (pressureSensor_LPS25HB.begin(qwiic) == true) //Wire port, Address.
     {
       qwiicOnline.LPS25HB = true;
       msg("LPS25HB Online");
@@ -22,13 +22,13 @@ void beginSensors()
 
   if (qwiicAvailable.NAU7802 && settings.sensor_NAU7802.log && !qwiicOnline.NAU7802)
   {
-    if (nauScale.begin(qwiic) == true) //Wire port
+    if (loadcellSensor_NAU7802.begin(qwiic) == true) //Wire port
     {
-      nauScale.setSampleRate(NAU7802_SPS_320); //Sample rate can be set to 10, 20, 40, 80, or 320Hz
+      loadcellSensor_NAU7802.setSampleRate(NAU7802_SPS_320); //Sample rate can be set to 10, 20, 40, 80, or 320Hz
 
       //Setup scale with stored values
-      nauScale.setCalibrationFactor(settings.sensor_NAU7802.calibrationFactor);
-      nauScale.setZeroOffset(settings.sensor_NAU7802.zeroOffset);
+      loadcellSensor_NAU7802.setCalibrationFactor(settings.sensor_NAU7802.calibrationFactor);
+      loadcellSensor_NAU7802.setZeroOffset(settings.sensor_NAU7802.zeroOffset);
       qwiicOnline.NAU7802 = true;
       msg("NAU7802 Online");
     }
@@ -38,19 +38,19 @@ void beginSensors()
 
   if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && !qwiicOnline.uBlox)
   {
-    if (myGPS.begin(qwiic, 0x42) == true) //Wire port, Address. Default is 0x42.
+    if (gpsSensor_ublox.begin(qwiic, 0x42) == true) //Wire port, Address. Default is 0x42.
     {
-      myGPS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+      gpsSensor_ublox.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
 
-      //myGPS.setAutoPVT(true); //Tell the GPS to "send" each solution
-      myGPS.setAutoPVT(false);
+      //gpsSensor_ublox.setAutoPVT(true); //Tell the GPS to "send" each solution
+      gpsSensor_ublox.setAutoPVT(false);
 
       if (settings.recordPerSecond <= 10)
-        myGPS.setNavigationFrequency(settings.recordPerSecond); //Set output rate equal to our query rate
+        gpsSensor_ublox.setNavigationFrequency(settings.recordPerSecond); //Set output rate equal to our query rate
       else
-        myGPS.setNavigationFrequency(10); //Max output depends on the module used.
+        gpsSensor_ublox.setNavigationFrequency(10); //Max output depends on the module used.
 
-      myGPS.saveConfiguration(); //Save the current settings to flash and BBR
+      gpsSensor_ublox.saveConfiguration(); //Save the current settings to flash and BBR
 
       qwiicOnline.uBlox = true;
       msg("uBlox GPS Online");
@@ -61,14 +61,14 @@ void beginSensors()
 
   if (qwiicAvailable.MCP9600 && settings.sensor_MCP9600.log && !qwiicOnline.MCP9600)
   {
-    if (thermoSensor.begin(0x66, qwiic) == true) //Address, Wire port
+    if (thermoSensor_MCP9600.begin(0x66, qwiic) == true) //Address, Wire port
     {
       //set the resolution on the ambient (cold) junction
       Ambient_Resolution ambientRes = RES_ZERO_POINT_0625; //_25 and _0625
-      thermoSensor.setAmbientResolution(ambientRes);
+      thermoSensor_MCP9600.setAmbientResolution(ambientRes);
 
       Thermocouple_Resolution thermocoupleRes = RES_14_BIT; //12, 14, 16, and 18
-      thermoSensor.setThermocoupleResolution(thermocoupleRes);
+      thermoSensor_MCP9600.setThermocoupleResolution(thermocoupleRes);
 
       qwiicOnline.MCP9600 = true;
       msg("MCP9600 Online");
@@ -178,6 +178,17 @@ void beginSensors()
     }
     else
       msg("VEML6075 failed to respond. Check wiring.");
+  }
+
+  if (qwiicAvailable.MS5637 && settings.sensor_MS5637.log && !qwiicOnline.MS5637)
+  {
+    if (pressureSensor_MS5637.begin(qwiic) == true) //Wire port
+    {
+      qwiicOnline.MS5637 = true;
+      msg("MS5637 Online");
+    }
+    else
+      msg("MS5637 failed to respond. Check wiring.");
   }
 }
 
@@ -336,12 +347,12 @@ void getData()
   {
     if (settings.sensor_LPS25HB.logPressure)
     {
-      outputData += (String)pressureSensor.getPressure_hPa() + ",";
+      outputData += (String)pressureSensor_LPS25HB.getPressure_hPa() + ",";
       helperText += "pressure_hPa,";
     }
     if (settings.sensor_LPS25HB.logTemp)
     {
-      outputData += (String)pressureSensor.getTemperature_degC() + ",";
+      outputData += (String)pressureSensor_LPS25HB.getTemperature_degC() + ",";
       helperText += "pressure_degC,";
     }
   }
@@ -350,7 +361,7 @@ void getData()
   {
     if (settings.sensor_NAU7802.log)
     {
-      float currentWeight = nauScale.getWeight(false, settings.sensor_NAU7802.averageAmount); //Do not allow negative weights, take average of X readings
+      float currentWeight = loadcellSensor_NAU7802.getWeight(false, settings.sensor_NAU7802.averageAmount); //Do not allow negative weights, take average of X readings
       static char weight[30];
       sprintf(weight, "%.*f,", settings.sensor_NAU7802.decimalPlaces, currentWeight);
 
@@ -363,12 +374,12 @@ void getData()
   {
     if (settings.sensor_MCP9600.logTemp)
     {
-      outputData += (String)thermoSensor.getThermocoupleTemp() + ",";
+      outputData += (String)thermoSensor_MCP9600.getThermocoupleTemp() + ",";
       helperText += "thermo_degC,";
     }
     if (settings.sensor_MCP9600.logAmbientTemp)
     {
-      outputData += (String)thermoSensor.getAmbientTemp() + ",";
+      outputData += (String)thermoSensor_MCP9600.getAmbientTemp() + ",";
       helperText += "thermo_ambientDegC,";
     }
   }
@@ -377,84 +388,84 @@ void getData()
   {
     //Calling getPVT returns true if there actually is a fresh navigation solution available.
     //getPVT will block/wait up to 1000ms to receive new data. This will affect the global reading rate.
-    //    if (myGPS.getPVT())
-    myGPS.getPVT();
+    //    if (gpsSensor_ublox.getPVT())
+    gpsSensor_ublox.getPVT();
     //    {
     if (settings.sensor_uBlox.logDate)
     {
       char gpsDate[11]; //10/12/2019
       if (settings.americanDateStyle == true)
-        sprintf(gpsDate, "%02d/%02d/%d", myGPS.getMonth(), myGPS.getDay(), myGPS.getYear());
+        sprintf(gpsDate, "%02d/%02d/%d", gpsSensor_ublox.getMonth(), gpsSensor_ublox.getDay(), gpsSensor_ublox.getYear());
       else
-        sprintf(gpsDate, "%02d/%02d/%d", myGPS.getDay(), myGPS.getMonth(), myGPS.getYear());
+        sprintf(gpsDate, "%02d/%02d/%d", gpsSensor_ublox.getDay(), gpsSensor_ublox.getMonth(), gpsSensor_ublox.getYear());
       outputData += String(gpsDate) + ",";
       helperText += "gps_Date,";
     }
     if (settings.sensor_uBlox.logTime)
     {
       char gpsTime[12]; //09:14:37.41
-      int adjustedHour = myGPS.getHour();
+      int adjustedHour = gpsSensor_ublox.getHour();
       if (settings.hour24Style == false)
       {
         if (adjustedHour > 12) adjustedHour -= 12;
       }
-      sprintf(gpsTime, "%02d:%02d:%02d.%03d", adjustedHour, myGPS.getMinute(), myGPS.getSecond(), myGPS.getMillisecond());
+      sprintf(gpsTime, "%02d:%02d:%02d.%03d", adjustedHour, gpsSensor_ublox.getMinute(), gpsSensor_ublox.getSecond(), gpsSensor_ublox.getMillisecond());
       outputData += String(gpsTime) + ",";
       helperText += "gps_Time,";
     }
     if (settings.sensor_uBlox.logPosition)
     {
-      outputData += (String)myGPS.getLatitude() + ",";
-      outputData += (String)myGPS.getLongitude() + ",";
+      outputData += (String)gpsSensor_ublox.getLatitude() + ",";
+      outputData += (String)gpsSensor_ublox.getLongitude() + ",";
       helperText += "gps_Lat,gps_Long,";
     }
     if (settings.sensor_uBlox.logAltitude)
     {
-      outputData += (String)myGPS.getAltitude() + ",";
+      outputData += (String)gpsSensor_ublox.getAltitude() + ",";
       helperText += "gps_Alt,";
     }
     if (settings.sensor_uBlox.logAltitudeMSL)
     {
-      outputData += (String)myGPS.getAltitudeMSL() + ",";
+      outputData += (String)gpsSensor_ublox.getAltitudeMSL() + ",";
       helperText += "gps_AltMSL,";
     }
     if (settings.sensor_uBlox.logSIV)
     {
-      outputData += (String)myGPS.getSIV() + ",";
+      outputData += (String)gpsSensor_ublox.getSIV() + ",";
       helperText += "gps_SIV,";
     }
     if (settings.sensor_uBlox.logFixType)
     {
-      outputData += (String)myGPS.getFixType() + ",";
+      outputData += (String)gpsSensor_ublox.getFixType() + ",";
       helperText += "gps_FixType,";
     }
     if (settings.sensor_uBlox.logCarrierSolution)
     {
-      outputData += (String)myGPS.getCarrierSolutionType() + ","; //0=No solution, 1=Float solution, 2=Fixed solution. Useful when querying module to see if it has high-precision RTK fix.
+      outputData += (String)gpsSensor_ublox.getCarrierSolutionType() + ","; //0=No solution, 1=Float solution, 2=Fixed solution. Useful when querying module to see if it has high-precision RTK fix.
       helperText += "gps_CarrierSolution,";
     }
     if (settings.sensor_uBlox.logGroundSpeed)
     {
-      outputData += (String)myGPS.getGroundSpeed() + ",";
+      outputData += (String)gpsSensor_ublox.getGroundSpeed() + ",";
       helperText += "gps_GroundSpeed,";
     }
     if (settings.sensor_uBlox.logHeadingOfMotion)
     {
-      outputData += (String)myGPS.getHeading() + ",";
+      outputData += (String)gpsSensor_ublox.getHeading() + ",";
       helperText += "gps_Heading,";
     }
     if (settings.sensor_uBlox.logpDOP)
     {
-      outputData += (String)myGPS.getPDOP() + ",";
+      outputData += (String)gpsSensor_ublox.getPDOP() + ",";
       helperText += "gps_pDOP,";
     }
     if (settings.sensor_uBlox.logiTOW)
     {
-      outputData += (String)myGPS.getTimeOfWeek() + ",";
+      outputData += (String)gpsSensor_ublox.getTimeOfWeek() + ",";
       helperText += "gps_iTOW,";
     }
 
-    myGPS.flushPVT(); //Mark all PVT data as used
+    gpsSensor_ublox.flushPVT(); //Mark all PVT data as used
     //    }
   }
 
@@ -577,6 +588,20 @@ void getData()
     {
       outputData += (String)uvSensor_VEML6075.index() + ",";
       helperText += "uvIndex,";
+    }
+  }
+
+  if (qwiicOnline.MS5637 && settings.sensor_MS5637.log)
+  {
+    if (settings.sensor_MS5637.logPressure)
+    {
+      outputData += (String)pressureSensor_MS5637.getPressure() + ",";
+      helperText += "hPa,";
+    }
+    if (settings.sensor_MS5637.logTemp)
+    {
+      outputData += (String)pressureSensor_MS5637.getTemperature() + ",";
+      helperText += "degC,";
     }
   }
 
