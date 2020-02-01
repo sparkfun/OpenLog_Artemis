@@ -168,6 +168,17 @@ void beginSensors()
     else
       msg("SGP30 failed to respond. Check wiring.");
   }
+
+  if (qwiicAvailable.VEML6075 && settings.sensor_VEML6075.log && !qwiicOnline.VEML6075)
+  {
+    if (uvSensor_VEML6075.begin(qwiic) == true) //Wire port
+    {
+      qwiicOnline.VEML6075 = true;
+      msg("VEML6075 Online");
+    }
+    else
+      msg("VEML6075 failed to respond. Check wiring.");
+  }
 }
 
 //Query each enabled sensor for it's most recent data
@@ -547,6 +558,25 @@ void getData()
     {
       outputData += (String)vocSensor_SGP30.CO2 + ",";
       helperText += "co2_ppm,";
+    }
+  }
+
+  if (qwiicOnline.VEML6075 && settings.sensor_VEML6075.log)
+  {
+    if (settings.sensor_VEML6075.logUVA)
+    {
+      outputData += (String)uvSensor_VEML6075.uva() + ",";
+      helperText += "uva,";
+    }
+    if (settings.sensor_VEML6075.logUVB)
+    {
+      outputData += (String)uvSensor_VEML6075.uvb() + ",";
+      helperText += "uvb,";
+    }
+    if (settings.sensor_VEML6075.logUVIndex)
+    {
+      outputData += (String)uvSensor_VEML6075.index() + ",";
+      helperText += "uvIndex,";
     }
   }
 

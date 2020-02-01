@@ -138,6 +138,9 @@ BME280 phtSensor_BME280;
 #include "SparkFun_SGP30_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_SGP30
 SGP30 vocSensor_SGP30;
 
+#include <SparkFun_VEML6075_Arduino_Library.h> // Click here to get the library: http://librarymanager/All#SparkFun_VEML6075
+VEML6075 uvSensor_VEML6075;
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Global variables

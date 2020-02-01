@@ -88,6 +88,11 @@ void menuAttachedDevices()
       functionPointers[availableDevices - 1] = menuConfigure_SGP30;
       Serial.printf("%d) SGP30 tVOC and CO2 Sensor\n", availableDevices++);
     }
+    if (qwiicAvailable.VEML6075)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_VEML6075;
+      Serial.printf("%d) VEML6075 UV Index Sensor\n", availableDevices++);
+    }
 
     Serial.println("x) Exit");
 
@@ -137,6 +142,7 @@ bool detectQwiicDevices()
 }
 
 // Available Qwiic devices
+#define ADR_VEML6075 0x10
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
 #define ADR_UBLOX 0x42
@@ -206,6 +212,10 @@ bool testDevice(uint8_t i2cAddress)
     case ADR_SGP30:
       if (vocSensor_SGP30.begin(qwiic) == true) //Wire port
         qwiicAvailable.SGP30 = true;
+      break;
+    case ADR_VEML6075:
+      if (uvSensor_VEML6075.begin(qwiic) == true) //Wire port
+        qwiicAvailable.VEML6075 = true;
       break;
     default:
       Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
@@ -953,4 +963,61 @@ void menuConfigure_SGP30()
   }
 
   qwiicOnline.SGP30 = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_VEML6075()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure VEML6075 UV Index Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_VEML6075.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_VEML6075.log == true)
+    {
+      Serial.print("2) Log UVA: ");
+      if (settings.sensor_VEML6075.logUVA == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log UVB: ");
+      if (settings.sensor_VEML6075.logUVB == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log UV Index: ");
+      if (settings.sensor_VEML6075.logUVIndex == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+
+    if (incoming == '1')
+      settings.sensor_VEML6075.log ^= 1;
+    else if (settings.sensor_VEML6075.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_VEML6075.logUVA ^= 1;
+      else if (incoming == '3')
+        settings.sensor_VEML6075.logUVB ^= 1;
+      else if (incoming == '3')
+        settings.sensor_VEML6075.logUVIndex ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == 255)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == 255)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.VEML6075 = false; //Mark as offline so it will be started with new settings
 }

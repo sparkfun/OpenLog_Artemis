@@ -91,6 +91,13 @@ struct struct_SGP30 {
   bool logCO2 = true;
 };
 
+struct struct_VEML6075 {
+  bool log = true;
+  bool logUVA = true;
+  bool logUVB = true;
+  bool logUVIndex = true;
+};
+
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
   int sizeOfSettings = 0;
@@ -135,6 +142,7 @@ struct struct_settings {
   struct_CCS811 sensor_CCS811;
   struct_BME280 sensor_BME280;
   struct_SGP30 sensor_SGP30;
+  struct_VEML6075 sensor_VEML6075;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
@@ -158,6 +166,7 @@ struct struct_QwiicSensors {
   bool CCS811;
   bool BME280;
   bool SGP30;
+  bool VEML6075;
 };
 
 struct_QwiicSensors qwiicAvailable = {
@@ -172,6 +181,7 @@ struct_QwiicSensors qwiicAvailable = {
   .CCS811 = false,
   .BME280 = false,
   .SGP30 = false,
+  .VEML6075 = false,
 };
 
 struct_QwiicSensors qwiicOnline = {
@@ -186,4 +196,5 @@ struct_QwiicSensors qwiicOnline = {
   .CCS811 = false,
   .BME280 = false,
   .SGP30 = false,
+  .VEML6075 = false,
 };
