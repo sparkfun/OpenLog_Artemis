@@ -192,6 +192,21 @@ bool beginSensors()
       beginSensorOutput += "MS5637 failed to respond. Check wiring.\n";
   }
 
+  if (qwiicAvailable.SCD30 && settings.sensor_SCD30.log && !qwiicOnline.SCD30)
+  {
+    if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
+    {
+      co2Sensor_SCD30.setMeasurementInterval(settings.sensor_SCD30.measurementInterval);
+      co2Sensor_SCD30.setAltitudeCompensation(settings.sensor_SCD30.altitudeCompensation);
+      co2Sensor_SCD30.setAmbientPressure(settings.sensor_SCD30.ambientPressure);
+      //co2Sensor_SCD30.setTemperatureOffset(settings.sensor_SCD30.temperatureOffset);
+
+      qwiicOnline.SCD30 = true;
+      beginSensorOutput += "SCD30 Online\n";
+    }
+    else
+      beginSensorOutput += "SCD30 failed to respond. Check wiring.\n";
+  }
   return true;
 }
 
@@ -604,6 +619,25 @@ void getData()
     if (settings.sensor_MS5637.logTemp)
     {
       outputData += (String)pressureSensor_MS5637.getTemperature() + ",";
+      helperText += "degC,";
+    }
+  }
+
+  if (qwiicOnline.SCD30 && settings.sensor_SCD30.log)
+  {
+    if (settings.sensor_SCD30.logCO2)
+    {
+      outputData += (String)co2Sensor_SCD30.getCO2() + ",";
+      helperText += "co2_ppm,";
+    }
+    if (settings.sensor_SCD30.logHumidity)
+    {
+      outputData += (String)co2Sensor_SCD30.getHumidity() + ",";
+      helperText += "humidity_%,";
+    }
+    if (settings.sensor_SCD30.logTemperature)
+    {
+      outputData += (String)co2Sensor_SCD30.getTemperature() + ",";
       helperText += "degC,";
     }
   }

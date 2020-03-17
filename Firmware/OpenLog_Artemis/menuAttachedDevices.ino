@@ -1,16 +1,16 @@
 /*
- To add a new sensor to the system:
+  To add a new sensor to the system:
 
- Add the library and the class constructor in OpenLog_Artemis
- Add a struct_MCP9600 to settings.h - This will define what settings for the sensor we will control
- Add a 'struct_CCS811 sensor_CCS811;' line to struct_settings{} in settings.h - This will put the sensor settings into NVM
- Add device to the struct_QwiicSensors, qwiicAvailable, and qwiicOnline structs in settings.h - This will let OpenLog know it's online and such
- Add device to menuAttachedDevices list
- Add the device's I2C address to the detectQwiicDevices function - Make sure the device is properly recognized with a whoami function (ideally)
- Create a menuConfigure_LPS25HB() function int menuAttachedDevices - This is the config menu. Add all the features you want the user to be able to control
- Add a startup function for this sensor in Sensors - This will notify the user at startup if sensor is detect and made online.
- Add a harvesting function in Sensors - Get the data from the device
- */
+  Add the library and the class constructor in OpenLog_Artemis
+  Add a struct_MCP9600 to settings.h - This will define what settings for the sensor we will control
+  Add a 'struct_CCS811 sensor_CCS811;' line to struct_settings{} in settings.h - This will put the sensor settings into NVM
+  Add device to the struct_QwiicSensors, qwiicAvailable, and qwiicOnline structs in settings.h - This will let OpenLog know it's online and such
+  Add device to menuAttachedDevices list
+  Add the device's I2C address to the detectQwiicDevices function - Make sure the device is properly recognized with a whoami function (ideally)
+  Create a menuConfigure_LPS25HB() function int menuAttachedDevices - This is the config menu. Add all the features you want the user to be able to control
+  Add a startup function for this sensor in Sensors - This will notify the user at startup if sensor is detect and made online.
+  Add a harvesting function in Sensors - Get the data from the device
+*/
 
 
 #define MAX_NUMBER_OF_QWIIC_DEVICES 30
@@ -96,7 +96,12 @@ void menuAttachedDevices()
     if (qwiicAvailable.MS5637)
     {
       functionPointers[availableDevices - 1] = menuConfigure_MS5637;
-      Serial.printf("%d) VEML6075 UV Index Sensor\n", availableDevices++);
+      Serial.printf("%d) MS5637 Pressure Sensor\n", availableDevices++);
+    }
+    if (qwiicAvailable.SCD30)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_SCD30;
+      Serial.printf("%d) SCD30 CO2 Sensor\n", availableDevices++);
     }
 
     Serial.println("x) Exit");
@@ -126,7 +131,7 @@ bool detectQwiicDevices()
   qwiic.setPullups(1); //Set pullups to 1k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   //Setting the Pullups to 24k causes the SGP30 to fail to detect.
-//  qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+  //  qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
@@ -158,6 +163,7 @@ bool detectQwiicDevices()
 #define ADR_LPS25HB_2 0x5C
 #define ADR_LPS25HB_1 0x5D
 #define ADR_VCNL4040_OR_MCP9600 0x60
+#define ADR_SCD30 0x61
 #define ADR_MCP9600_1 0x66
 #define ADR_BME280_2 0x76
 #define ADR_MS5637 0x76
@@ -226,6 +232,10 @@ bool testDevice(uint8_t i2cAddress)
     case ADR_MS5637:
       if (pressureSensor_MS5637.begin(qwiic) == true) //Wire port
         qwiicAvailable.MS5637 = true;
+      break;
+    case ADR_SCD30:
+      if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
+        qwiicAvailable.SCD30 = true;
       break;
     default:
       Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
@@ -886,10 +896,10 @@ void menuConfigure_BME280()
       if (settings.sensor_BME280.logAltitude == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-          Serial.print("5) Log Temperature: ");
+      Serial.print("5) Log Temperature: ");
       if (settings.sensor_BME280.logTemp == true) Serial.println("Enabled");
       else Serial.println("Disabled");
-}
+    }
     Serial.println("x) Exit");
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -1081,4 +1091,105 @@ void menuConfigure_MS5637()
   }
 
   qwiicOnline.MS5637 = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_SCD30()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure SCD30 CO2 and Humidity Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_SCD30.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_SCD30.log == true)
+    {
+      Serial.print("2) Log CO2: ");
+      if (settings.sensor_SCD30.logCO2 == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Humidity: ");
+      if (settings.sensor_SCD30.logHumidity == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("4) Log Temperature: ");
+      if (settings.sensor_SCD30.logTemperature == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.printf("5) Set Measurement Interval: %d\n", settings.sensor_SCD30.measurementInterval);
+      Serial.printf("6) Set Altitude Compensation: %d\n", settings.sensor_SCD30.altitudeCompensation);
+      Serial.printf("7) Set Ambient Pressure: %d\n", settings.sensor_SCD30.ambientPressure);
+      Serial.printf("8) Set Temperature Offset: %d\n", settings.sensor_SCD30.temperatureOffset);
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      settings.sensor_SCD30.log ^= 1;
+    else if (settings.sensor_SCD30.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_SCD30.logCO2 ^= 1;
+      else if (incoming == '3')
+        settings.sensor_SCD30.logHumidity ^= 1;
+      else if (incoming == '4')
+        settings.sensor_SCD30.logTemperature ^= 1;
+      else if (incoming == '5')
+      {
+        Serial.print("Enter the seconds between measurements (2 to 1800): ");
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt < 2 || amt > 1800)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_SCD30.measurementInterval = amt;
+      }
+      else if (incoming == '6')
+      {
+        Serial.print("Enter the Altitude Compensation in meters (0 to 10000): ");
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt < 0 || amt > 10000)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_SCD30.altitudeCompensation = amt;
+      }
+      else if (incoming == '7')
+      {
+        Serial.print("Enter Ambient Pressure in mBar (700 to 1200): ");
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt < 700 || amt > 1200)
+          Serial.println("Error: Out of range");
+        else
+          settings.sensor_SCD30.ambientPressure = amt;
+      }
+      else if (incoming == '8')
+      {
+        Serial.print("The current temperature offset read from the sensor is: ");
+        Serial.print(co2Sensor_SCD30.getTemperatureOffset(), 2);
+        Serial.println("C");
+        Serial.print("Enter new temperature offset in C (-50 to 50): ");
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt < -50 || amt > 50)
+          settings.sensor_SCD30.temperatureOffset = amt;
+        else
+          Serial.println("Error: Out of range");
+      }
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.SCD30 = false; //Mark as offline so it will be started with new settings
 }

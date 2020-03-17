@@ -66,7 +66,7 @@ const byte PIN_QWIIC_POWER = 18;
 //microSD Interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
-#include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed: https://github.com/greiman/SdFat
+#include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed: https://github.com/greiman/SdFat-beta
 
 const byte PIN_MICROSD_CHIP_SELECT = 10;
 const byte PIN_MICROSD_POWER = 15; //x04
@@ -145,6 +145,9 @@ CCS811 vocSensor_CCS811(CCS811_ADDR);
 
 #include "SparkFun_SGP30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SGP30
 SGP30 vocSensor_SGP30;
+
+#include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
+SCD30 co2Sensor_SCD30;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 

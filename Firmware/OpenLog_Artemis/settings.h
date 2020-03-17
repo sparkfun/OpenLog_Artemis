@@ -104,6 +104,17 @@ struct struct_MS5637 {
   bool logTemp = true;
 };
 
+struct struct_SCD30 {
+  bool log = true;
+  bool logCO2 = true;
+  bool logHumidity = true;
+  bool logTemperature = true;
+  int measurementInterval = 2; //2 seconds
+  int altitudeCompensation = 0; //0 m above sea level
+  int ambientPressure = 835; //mBar STP
+  int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
+};
+
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
   int sizeOfSettings = 0;
@@ -156,6 +167,7 @@ struct struct_settings {
   struct_SGP30 sensor_SGP30;
   struct_VEML6075 sensor_VEML6075;
   struct_MS5637 sensor_MS5637;
+  struct_SCD30 sensor_SCD30;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
@@ -181,6 +193,7 @@ struct struct_QwiicSensors {
   bool SGP30;
   bool VEML6075;
   bool MS5637;
+  bool SCD30;
 };
 
 struct_QwiicSensors qwiicAvailable = {
@@ -197,6 +210,7 @@ struct_QwiicSensors qwiicAvailable = {
   .SGP30 = false,
   .VEML6075 = false,
   .MS5637 = false,
+  .SCD30 = false,
 };
 
 struct_QwiicSensors qwiicOnline = {
@@ -213,4 +227,5 @@ struct_QwiicSensors qwiicOnline = {
   .SGP30 = false,
   .VEML6075 = false,
   .MS5637 = false,
+  .SCD30 = false,
 };
