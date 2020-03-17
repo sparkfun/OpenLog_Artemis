@@ -34,6 +34,8 @@
     0.188mA, no LED, no USB, SparkX SD
     0.098mA, no LEd, no USB, no SD
 
+    Can we get 90uA lower when microSD is started and stopped?
+
 
 
 */
@@ -41,13 +43,31 @@
 #include "RTC.h" //Include RTC library included with the Aruino_Apollo3 core
 APM3_RTC myRTC; //Create instance of RTC class
 
+#include <Wire.h>
+
+//microSD Interface
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#include <SPI.h>
+#include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed
+
+const byte PIN_MICROSD_CHIP_SELECT = 10;
+const byte PIN_MICROSD_POWER = 15; //x04
+
+#define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
+#define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
+
+SdFat sd;
+File sensorDataFile; //File that all sensor data is written to
+File serialDataFile; //File that all incoming serial data is written to
+
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 const byte PIN_POWER_LOSS = 3;
 
 const byte LOGIC_DEBUG = 11;
 
 const byte PIN_QWIIC_POWER = 18;
 const byte PIN_IMU_POWER = 22;
-const byte PIN_MICROSD_POWER = 15;
 
 //uint32_t msToSleep = 10; //This is the user editable number of ms to sleep between RTC checks
 ////#define TIMER_FREQ 3000000L //Counter/Timer 6 will use the HFRC oscillator of 3MHz
@@ -62,13 +82,14 @@ void setup()
   Serial.begin(115200);
   Serial.println("SparkFun RTC Example");
 
-  pinMode(PIN_QWIIC_POWER, OUTPUT);
-  pinMode(PIN_IMU_POWER, OUTPUT);
-  pinMode(PIN_MICROSD_POWER, OUTPUT);
+  Wire.begin();
 
-  digitalWrite(PIN_QWIIC_POWER, LOW);
-  digitalWrite(PIN_IMU_POWER, LOW);
-  digitalWrite(PIN_MICROSD_POWER, LOW);
+  qwiicPowerOff();
+  microSDPowerOff();
+  imuPowerOff();
+  SPI.begin(); //Needed if SD is disabled
+
+  beginSD();
 
   pinMode(LOGIC_DEBUG, OUTPUT);
 
@@ -137,20 +158,12 @@ void loop()
       Serial.println("Toggle Qwiic Power");
       if (digitalRead(PIN_QWIIC_POWER) == HIGH)
       {
-        digitalWrite(PIN_QWIIC_POWER, LOW);
+        qwiicPowerOn();
         Serial.println("Qwiic Power On / Pin Low");
       }
       else
       {
-        digitalWrite(PIN_QWIIC_POWER, HIGH);
-        pinMode(5, OUTPUT);
-        digitalWrite(5, LOW);
-        pinMode(6, OUTPUT);
-        digitalWrite(6, LOW);
-        pinMode(7, OUTPUT);
-        digitalWrite(7, LOW);
-        pinMode(10, OUTPUT);
-        digitalWrite(10, LOW);
+        qwiicPowerOff();
         Serial.println("Qwiic Power Off / Pin High");
       }
     }
@@ -159,16 +172,12 @@ void loop()
       Serial.println("Toggle microSD Power");
       if (digitalRead(PIN_MICROSD_POWER) == HIGH)
       {
-        digitalWrite(PIN_MICROSD_POWER, LOW);
-        pinMode(5, INPUT);
-        pinMode(6, INPUT);
-        pinMode(7, INPUT);
-        pinMode(10, INPUT);
+        microSDPowerOn();
         Serial.println("microSD On / Pin Low");
       }
       else
       {
-        digitalWrite(PIN_MICROSD_POWER, HIGH);
+        microSDPowerOff();
         Serial.println("microSD Off / Pin High");
       }
     }    while (Serial.available()) Serial.read();
@@ -183,58 +192,53 @@ void powerDown()
   //digitalWrite(LOGIC_DEBUG, HIGH);
 
   //Force the peripherals off
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
+  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
+  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
+  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
+  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
+  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
+  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
+  //  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
+  //  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
+  //  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
   //The supervisor circuit tends to wake us from sleep if it
   //remains as an interrupt
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
-  //Serial.flush(); //Finish any prints
+  Serial.flush(); //Finish any prints
 
-  //Wire.end(); //Power down I2C
+  Wire.end(); //Power down I2C
   //qwiic.end(); //Power down I2C
 
-  //SPI.end(); //Power down SPI
+  SPI.end(); //Power down SPI
 
   power_adc_disable(); //Power down ADC. It it started by default before setup().
 
-  //  Serial.end(); //Power down UART
-  //  Serial1.end();
+  Serial.end(); //Power down UART
+  Serial1.end();
 
   for (int x = 0 ; x < 50 ; x++)
     am_hal_gpio_pinconfig(x , g_AM_HAL_GPIO_DISABLE);
 
   //We can't leave these power control pins floating
-  pinMode(PIN_QWIIC_POWER, OUTPUT);
-  pinMode(PIN_IMU_POWER, OUTPUT);
-  pinMode(PIN_MICROSD_POWER, OUTPUT);
+  qwiicPowerOff();
+  imuPowerOff();
+  microSDPowerOff();
 
-  digitalWrite(PIN_QWIIC_POWER, HIGH); //High = off
-  digitalWrite(PIN_IMU_POWER, LOW);
-  digitalWrite(PIN_MICROSD_POWER, HIGH); //High = off
-
-const byte PIN_SPI_MISO = 6;
-const byte PIN_SPI_MOSI = 7;
-const byte PIN_SPI_SCK = 5;
-const byte PIN_SPI_CS = 10;
-
-  pinMode(PIN_SPI_CS, OUTPUT);
-  digitalWrite(PIN_SPI_CS, HIGH); //pullup the CS pin on the SD card (but only if you don’t already have a hardware pullup on your module)
-  pinMode(PIN_SPI_MOSI, OUTPUT);
-  digitalWrite(PIN_SPI_MOSI, HIGH); //pullup the MOSI pin on the SD card
-  pinMode(PIN_SPI_MISO, INPUT_PULLUP); //pullup the MISO pin on the SD card
-  pinMode(PIN_SPI_SCK, OUTPUT);
-  digitalWrite(PIN_SPI_SCK, LOW); //pull DOWN the 13scl pin on the SD card (IDLES LOW IN MODE0)
-  // NOTE: In Mode (0), the SPI interface holds the CLK line low when the bus is inactive, so DO NOT put a pullup on it.
-
+  //  const byte PIN_SPI_MISO = 6;
+  //  const byte PIN_SPI_MOSI = 7;
+  //  const byte PIN_SPI_SCK = 5;
+  //  const byte PIN_SPI_CS = 10;
+  //
+  //  pinMode(PIN_SPI_CS, OUTPUT);
+  //  digitalWrite(PIN_SPI_CS, HIGH); //pullup the CS pin on the SD card (but only if you don’t already have a hardware pullup on your module)
+  //  pinMode(PIN_SPI_MOSI, OUTPUT);
+  //  digitalWrite(PIN_SPI_MOSI, HIGH); //pullup the MOSI pin on the SD card
+  //  pinMode(PIN_SPI_MISO, INPUT_PULLUP); //pullup the MISO pin on the SD card
+  //  pinMode(PIN_SPI_SCK, OUTPUT);
+  //  digitalWrite(PIN_SPI_SCK, LOW); //pull DOWN the 13scl pin on the SD card (IDLES LOW IN MODE0)
+  //  // NOTE: In Mode (0), the SPI interface holds the CLK line low when the bus is inactive, so DO NOT put a pullup on it.
 
   // The default Arduino environment runs the System Timer (STIMER) off the 48 MHZ HFRC clock source.
   // The HFRC appears to take over 60 uA when it is running, so this is a big source of extra
@@ -262,52 +266,3 @@ const byte PIN_SPI_CS = 10;
 
   am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
 }
-
-//We use counter/timer 6 for this example but 0 to 7 are available
-//CT 7 is used for Software Serial. All CTs are used for Servo.
-//void setupADCTimer()
-//{
-//  analogReadResolution(14); //Set resolution to 14 bit
-//
-//  //Clear compare interrupt
-//  am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG); //Use CT6
-//
-//  am_hal_stimer_int_enable(AM_HAL_STIMER_INT_COMPAREG); // Enable C/T G=6
-//
-//  //Don't change from 3MHz system timer, but enable G timer
-//  am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
-//  //  am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
-//  am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
-//
-//  //Setup ISR to trigger when the number of ms have elapsed
-//  am_hal_stimer_compare_delta_set(6, sysTicksToSleep);
-//
-//  //Enable the timer interrupt in the NVIC.
-//  NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
-//}
-
-//Called once number of milliseconds has passed
-//extern "C" void am_stimer_cmpr6_isr(void)
-//{
-//  uint32_t ui32Status = am_hal_stimer_int_status_get(false);
-//  if (ui32Status & AM_HAL_STIMER_INT_COMPAREG)
-//  {
-//    am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);
-//
-//    //Reset compare value. ISR will trigger when the number of ms have elapsed
-//    am_hal_stimer_compare_delta_set(6, sysTicksToSleep);
-//
-//    int div3 = analogRead(ADC_INTERNAL_VCC_DIV3); //Read VCC across a 1/3 resistor divider
-//    float vcc = (float)div3 * 6 / 16384.0; //Convert 1/3 VCC to VCC
-//    //    Serial.print(" VCC: ");
-//    //    Serial.print(vcc, 2);
-//    //    Serial.print("V");
-//    //    Serial.println();
-//
-//    if (vcc < 3.05)
-//    {
-//      NVIC_DisableIRQ(STIMER_CMPR6_IRQn);
-//      powerDown();
-//    }
-//  }
-//}
