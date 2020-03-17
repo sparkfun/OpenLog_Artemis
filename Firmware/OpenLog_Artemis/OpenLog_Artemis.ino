@@ -12,37 +12,31 @@
   adjusted by connecting at 115200bps.
 
   TODO:
-  get time stamps from GPS
-  manual set RTC to GPS
-
-  disable local sensor logging, log only serial
-  (done) disable terminal output for max analog logging
-  (nah) Change filename(s) to record to (data vs serial logging)
-  (done) Auto number the datalog and serial log file names
+  Disable local sensor logging, log only serial
   Enable/disable time stamping of incoming serial
   Toggle LED on serial data recording vs sensor recording
-  (done) If VCC is detected as dropping below 3V (diode drop from batt backup) then go into shutdown
   Check out the file creation. Use FILE_WRITE instead of the O_s. Might go faster without append...
   Support multiples of a given sensor. How to support two MCP9600s attached at the same time?
-  Allow user to export the current settings to a settings.txt file that the can use to setup other OpenLogs
   Setup a sleep timer, wake up ever 5 seconds, power up Qwiic, take reading, power down I2C bus, sleep.
-  Could you store the date from the RTC because it won't change that much?
-  (done) Eval how long it takes to boot (SD, log creation, IMU begin, etc)
   Allow user to decrease I2C speed on GPS to increase reliability
   Control Qwiic power from...
-
+  
+  We have prelim support for DST correction. Do we want to add it? Currently removed.
+  Allow user to adjust UTC offset
+  Get time stamps from GPS
+  Manual set RTC to GPS
   Allow user to control local time stamp with GPS UTC offset
 
   The Qwiic device settings menus don't change the devices directly. These are set at the exit of the main menu
   when sensors are begun().
-
-  Python/windows program to load new hex files
 
   What happens when user enables analog on pin 12/tx and keeps serial on pin 13/rx and then changes baud rate? Does analog still work?
   What happens when user enables serial on 13/rx then enables analog read on pin 12/tx? Does analog still work?
 
   Max rates:
   ~1140Hz for 3 channel analog, max data rate
+  2/26/20 - 0.34uA at 0.25Hz, with microSD, no USB, no Qwiic
+
 */
 
 #include "settings.h"
@@ -51,11 +45,17 @@ const byte PIN_STAT_LED = 19;
 const byte PIN_POWER_LOSS = 3;
 const byte PIN_LOGIC_DEBUG = 11; //TODO remove from production
 
+enum returnStatus {
+  STATUS_GETBYTE_TIMEOUT = 255,
+  STATUS_GETNUMBER_TIMEOUT = -123455555,
+  STATUS_PRESSED_X,
+};
+
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "Wire.h"
 TwoWire qwiic(1); //Will use pads 8/9
-const byte PIN_QWIIC_PWR = 18;
+const byte PIN_QWIIC_POWER = 18;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //EEPROM for storing settings
@@ -66,12 +66,10 @@ const byte PIN_QWIIC_PWR = 18;
 //microSD Interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
-#include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed
+#include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed: https://github.com/greiman/SdFat
 
-//x02+ Hardware
 const byte PIN_MICROSD_CHIP_SELECT = 10;
-const byte PIN_MICROSD_POWER = 23; //x03
-//const byte PIN_MICROSD_POWER = 15; //x04
+const byte PIN_MICROSD_POWER = 15; //x04
 
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 #define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
@@ -79,7 +77,9 @@ const byte PIN_MICROSD_POWER = 23; //x03
 SdFat sd;
 File sensorDataFile; //File that all sensor data is written to
 File serialDataFile; //File that all incoming serial data is written to
-bool newSerialData = false;
+char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
+char serialDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Add RTC interface for Artemis
@@ -93,6 +93,7 @@ APM3_RTC myRTC; //Create instance of RTC class
 Uart SerialLog(1, 13, 12);  // Declares a Uart object called Serial1 using instance 1 of Apollo3 UART peripherals with RX on pin 13 and TX on pin 12 (note, you specify *pins* not Apollo3 pads. This uses the variant's pin map to determine the Apollo3 pad)
 unsigned long lastSeriaLogSyncTime = 0;
 const int MAX_IDLE_TIME_MSEC = 500;
+bool newSerialData = false;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Add ICM IMU interface
@@ -152,17 +153,19 @@ SGP30 vocSensor_SGP30;
 unsigned long measurementStartTime; //Used to calc the actual update rate.
 unsigned long measurementCount = 0; //Used to calc the actual update rate.
 String outputData;
+String beginSensorOutput;
 unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
 unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
 bool helperTextPrinted = false; //Print the column headers only once
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
+bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
+const uint32_t maxUsBeforeSleep = 2000000; //Number of us between readings before sleep is activated.
+const byte menuTimeout = 45; //Menus will exit/timeout after this number of seconds
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 unsigned long startTime = 0;
 
 void setup() {
-  startTime = micros();
-
   //If 3.3V rail drops below 3V, system will enter low power mode and maintain RTC
   pinMode(PIN_POWER_LOSS, INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
@@ -180,6 +183,7 @@ void setup() {
 
   loadSettings(); //50 - 250ms
 
+  Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
   Serial.println("Artemis OpenLog");
 
@@ -193,32 +197,50 @@ void setup() {
 
   beginIMU(); //61ms
 
-  beginSensors(); //159 - 865ms but varies based on number of devices attached
+  if (online.microSD == true) msg("SD card online");
+  else msg("SD card offline");
 
-  measurementStartTime = millis();
+  if (online.dataLogging == true) msg("Data logging online");
+  else msg("Datalogging offline");
+
+  if (online.serialLogging == true) msg("Serial logging online");
+  else msg("Serial logging offline");
+
+  if (online.IMU == true) msg("IMU online");
+  else msg("IMU offline");
 
   if (settings.logMaxRate == true) Serial.println("Logging analog pins at max data rate");
 
   if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
 
-  Serial.printf("Setup time: %.02f ms\n", (micros() - startTime) / 1000.0);
+  if (beginSensors() == true) Serial.println(beginSensorOutput); //159 - 865ms but varies based on number of devices attached
+  else msg("No sensors detected");
 
+  measurementStartTime = millis();
+
+  //Serial.printf("Setup time: %.02f ms\n", (micros() - startTime) / 1000.0);
+
+  //If we are immediately going to go to sleep after the first reading then
+  //first present the user with the config menu in case they need to change something
+  if (settings.usBetweenReadings >= maxUsBeforeSleep)
+  {
+    menuMain(); //Present user menu at startup to allow configuration even in LP mode
+  }
 }
 
 void loop() {
-
   if (Serial.available()) menuMain(); //Present user menu
 
   if (settings.logSerial == true && online.serialLogging == true)
   {
-    if (SerialLog.available())
+    if (SerialLog.available() > 128)
     {
-      char temp[256];
+      char temp[128];
       uint16_t counter = 0;
       while (SerialLog.available())
       {
         temp[counter++] = SerialLog.read();
-        if (counter == 512) break;
+        if (counter == 128) break;
       }
 
       serialDataFile.write(temp, counter); //Record the buffer to the card
@@ -239,10 +261,18 @@ void loop() {
     }
   }
 
-  //Is it time to get new data?
-  if (settings.logMaxRate == true || (millis() - lastReadTime) >= (1000UL / settings.recordPerSecond))
+  //micros() resets to 0 during sleep so only test if we are not sleeping
+  if (settings.usBetweenReadings < maxUsBeforeSleep)
   {
-    lastReadTime = millis();
+    if ((micros() - lastReadTime) >= settings.usBetweenReadings)
+      takeReading = true;
+  }
+
+  //Is it time to get new data?
+  if (settings.logMaxRate == true || takeReading == true)
+  {
+    takeReading = false;
+    lastReadTime = micros();
 
     getData(); //Query all enabled sensors for data
 
@@ -270,16 +300,17 @@ void loop() {
       }
     }
 
-    //    if (digitalRead(PIN_STAT_LED) == HIGH)
-    //      digitalWrite(PIN_STAT_LED, LOW);
-    //    else
-    //      digitalWrite(PIN_STAT_LED, HIGH);
+    //Go to sleep if time between readings is greater than 2 seconds
+    if (settings.usBetweenReadings > maxUsBeforeSleep)
+    {
+      goToSleep();
+    }
   }
 }
 
 void beginQwiic()
 {
-  pinMode(PIN_QWIIC_PWR, OUTPUT);
+  pinMode(PIN_QWIIC_POWER, OUTPUT);
   qwiicPowerOn();
   qwiic.begin();
 }
@@ -292,7 +323,7 @@ void beginSD()
 
   if (settings.enableSD == true)
   {
-    sdPowerOn();
+    microSDPowerOn();
 
     //Max power up time is 250ms: https://www.kingston.com/datasheets/SDCIT-specsheet-64gb_en.pdf
     //Max current is 200mA average across 1s, peak 300mA
@@ -325,22 +356,19 @@ void beginSD()
     }
     //    }
 
+    //Change to root directory. All new file creation will be in root.
     if (sd.chdir() == false)
     {
       Serial.println("SD change directory failed");
-      //systemError(ERROR_ROOT_INIT); //Change to root directory. All new file creation will be in root.
       online.microSD = false;
       return;
     }
 
-    msg("SD card online");
     online.microSD = true;
   }
   else
   {
-    sdPowerOff();
-
-    Serial.println("SD offline/disabled");
+    microSDPowerOff();
     online.microSD = false;
   }
 }
@@ -354,9 +382,9 @@ void beginIMU()
   if (settings.enableIMU == true && settings.logMaxRate == false)
   {
     //Reset ICM by power cycling it
-    digitalWrite(PIN_IMU_POWER, LOW);
+    imuPowerOff();
     delay(10); //10 is fine
-    digitalWrite(PIN_IMU_POWER, HIGH);
+    imuPowerOn();
     delay(25); //Allow ICM to come online. Typical is 11ms. Max is 100ms. https://cdn.sparkfun.com/assets/7/f/e/c/d/DS-000189-ICM-20948-v1.3.pdf
 
     myICM.begin(PIN_IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
@@ -365,9 +393,9 @@ void beginIMU()
       //Try one more time with longer wait
 
       //Reset ICM by power cycling it
-      digitalWrite(PIN_IMU_POWER, LOW);
+      imuPowerOff();
       delay(10); //10 is fine
-      digitalWrite(PIN_IMU_POWER, HIGH);
+      imuPowerOn();
       delay(100); //Allow ICM to come online. Typical is 11ms. Max is 100ms.
 
       myICM.begin(PIN_IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
@@ -375,20 +403,18 @@ void beginIMU()
       {
         digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
         msg("ICM-20948 failed to init.");
+        imuPowerOff();
         online.IMU = false;
         return;
       }
     }
 
     online.IMU = true;
-    msg("IMU online");
   }
   else
   {
     //Power down IMU
-    digitalWrite(PIN_IMU_POWER, LOW);
-
-    msg("IMU disabled");
+    imuPowerOff();
     online.IMU = false;
   }
 }
@@ -397,40 +423,50 @@ void beginDataLogging()
 {
   if (online.microSD == true && settings.logData == true)
   {
+    //If we don't have a file yet, create one. Otherwise, re-open the last used file
+    if (strlen(sensorDataFileName) == 0)
+      strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
+
     // O_CREAT - create the file if it does not exist
     // O_APPEND - seek to the end of the file prior to each write
     // O_WRITE - open for write
-    if (sensorDataFile.open(findNextAvailableLog(settings.nextDataLogNumber, "dataLog"), O_CREAT | O_APPEND | O_WRITE) == false)
+    if (sensorDataFile.open(sensorDataFileName, O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create sensor data file");
       online.dataLogging = false;
       return;
     }
 
-    msg("Data logging online");
     online.dataLogging = true;
   }
-  else if (settings.logData == false && online.microSD == true)
-  {
-    msg("Data logging disabled");
-    online.dataLogging = false;
-  }
-  else if (online.microSD == false)
-  {
-    Serial.println("Data logging disabled because microSD offline");
-    online.serialLogging = false;
-  }
   else
-  {
-    Serial.println("Unknown microSD state");
-  }
+    online.dataLogging = false;
+
+
+  //  else if (settings.logData == false && online.microSD == true)
+  //  {
+  //      online.dataLogging = false;
+  //  }
+  //  else if (online.microSD == false)
+  //  {
+  //    Serial.println("Data logging disabled because microSD offline");
+  //    online.serialLogging = false;
+  //  }
+  //  else
+  //  {
+  //    Serial.println("Unknown microSD state");
+  //  }
 }
 
 void beginSerialLogging()
 {
   if (online.microSD == true && settings.logSerial == true)
   {
-    if (serialDataFile.open(findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"), O_CREAT | O_APPEND | O_WRITE) == false)
+    //If we don't have a file yet, create one. Otherwise, re-open the last used file
+    if (strlen(serialDataFileName) == 0)
+      strcpy(serialDataFileName, findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"));
+
+    if (serialDataFile.open(serialDataFileName, O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create serial log file");
       //systemError(ERROR_FILE_OPEN);
@@ -442,21 +478,34 @@ void beginSerialLogging()
 
     SerialLog.begin(settings.serialLogBaudRate);
 
-    msg("Serial logging online");
     online.serialLogging = true;
   }
-  else if (settings.logSerial == false && online.microSD == true)
-  {
-    msg("Serial logging disabled");
-    online.serialLogging = false;
-  }
-  else if (online.microSD == false)
-  {
-    Serial.println("Serial logging disabled because microSD offline");
-    online.serialLogging = false;
-  }
   else
+    online.serialLogging = false;
+
+
+  //  else if (settings.logSerial == false && online.microSD == true)
+  //  {
+  //    msg("Serial logging disabled");
+  //    online.serialLogging = false;
+  //  }
+  //  else if (online.microSD == false)
+  //  {
+  //    Serial.println("Serial logging disabled because microSD offline");
+  //    online.serialLogging = false;
+  //  }
+  //  else
+  //  {
+  //    Serial.println("Unknown microSD state");
+  //  }
+}
+
+//Called once number of milliseconds has passed
+extern "C" void am_stimer_cmpr6_isr(void)
+{
+  uint32_t ui32Status = am_hal_stimer_int_status_get(false);
+  if (ui32Status & AM_HAL_STIMER_INT_COMPAREG)
   {
-    Serial.println("Unknown microSD state");
+    am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);
   }
 }

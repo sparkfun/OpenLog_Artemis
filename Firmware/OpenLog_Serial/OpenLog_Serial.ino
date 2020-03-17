@@ -1,134 +1,204 @@
 /*
   October 11th, 2019
 
-  Filename to record to
-  What about changing units? mm of distance vs ft or inches? Leave it up to post processing?
-  GPS: Record bare NMEA over I2C?
-  GPS: Turn on off SIV, date/time, etc.
+  Increase local serial, turn off except when syncing
+  Try better grade card
 
-  TODO:
-  Add ability to set RTC over terminal
-  Change between US date sort and world sort
-  Enable/disable DST
+  460800bps = 2.17 * 10^-6 or 2.17us per bit
+  10 bits to the byte so 21.7us per byte
+  Write takes 54.13ms or 2494 bytes
 
-  Add MOSFET control of I2C 3.3V line to turn off the bus if needed
+  16384 buffer size will allow for up to 355.532ms before bytes are dropped
 */
 
 //microSD Interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
 #include <SdFat.h> //We do not use the built-in SD.h file because it calls Serial.print
-#define SD_CHIP_SELECT 18
+
+const byte PIN_MICROSD_CHIP_SELECT = 10;
+const byte PIN_MICROSD_POWER = 15; //x04
 
 SdFat sd;
-SdFile workingFile; //File that all data is written to
-SdFile serialLog; //Record all incoming serial to this file
-char fileName[9];
+SdFile serialDataFile; //Record all incoming serial to this file
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-//Add RTC interface for Artemis
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#include "RTC.h" //Include RTC library included with the Aruino_Apollo3 core
-APM3_RTC myRTC; //Create instance of RTC class
-bool log_RTC = true;
-bool online_RTC = true; //It's always online
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-
-//Log record rate
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-bool log_Hertz = true; //Optional printing of Hz rate at end of data string
-bool online_Hertz = true; //Always online
 long overallStartTime; //Used to calc the actual update rate.
-long updateCount = 0; //Used to calc the actual update rate.
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-String outputData;
-unsigned int recordPerSecond = 2; //In Hz
-unsigned int loopDelay = 1000UL / recordPerSecond;
 
 const byte statLED = 19; //Should not be the SPI SCK pin 13 on most boards
 
-//Blinking LED error codes
-#define ERROR_SD_INIT     3
-#define ERROR_NEW_BAUD    5
-#define ERROR_CARD_INIT   6
-#define ERROR_VOLUME_INIT 7
-#define ERROR_ROOT_INIT   8
-#define ERROR_FILE_OPEN   9
+//Create UART instance for OpenLog style serial logging
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Uart SerialLog(1, 13, 12);  // Declares a Uart object called Serial1 using instance 1 of Apollo3 UART peripherals with RX on pin 13 and TX on pin 12 (note, you specify *pins* not Apollo3 pads. This uses the variant's pin map to determine the Apollo3 pad)
+unsigned long lastSeriaLogSyncTime = 0;
+const int MAX_IDLE_TIME_MSEC = 500;
+bool newSerialData = false;
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-//Uart Serial1(1, 13, 12); // RX, TX. Declares a Uart object called Serial1 using instance 1 of Apollo3 UART peripherals with RX on pin 25 and TX on pin 24 (note, you specify *pins* not Apollo3 pads. This uses the variant's pin map to determine the Apollo3 pad)
+int charsReceived = 0;
+//char incomingBuffer[256 * 8]; //94ms
+//char incomingBuffer[256 * 4]; //47ms
+char incomingBuffer[256 * 2]; //26ms
+//char incomingBuffer[256 * 1]; //25ms
+int incomingBufferSpot = 0;
 
 void setup() {
   Serial.begin(500000);
-  Serial.println();
   Serial.println("Artemis OpenLog");
 
-  Serial1.begin(115200);
+  pinMode(11, OUTPUT);
 
-  //Power up SD
-  pinMode(23, OUTPUT);
-  digitalWrite(23, HIGH);
-
-  //myRTC.setToCompilerTime(); //Easily set RTC using the system __DATE__ and __TIME__ macros from compiler
-  //myRTC.setTime(7, 28, 51, 0, 21, 10, 15); //Manually set RTC back to the future: Oct 21st, 2015 at 7:28.51 AM
+  int rate = 115200 * 4;
+  SerialLog.begin(rate);
+  Serial.print("Listening at baud rate: ");
+  Serial.println(rate);
 
   pinMode(statLED, OUTPUT);
   digitalWrite(statLED, LOW);
 
-  if (sd.begin(SD_CHIP_SELECT, SD_SCK_MHZ(24)) == false)
+  pinMode(PIN_MICROSD_CHIP_SELECT, OUTPUT);
+  digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
+
+  microSDPowerOn();
+  delay(50); //Give SD time to power up
+
+  if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false)
   {
-    //systemError(ERROR_CARD_INIT);
     Serial.println("SD init failed");
     while (1);
   }
   if (sd.chdir() == false)
   {
-    //systemError(ERROR_ROOT_INIT); //Change to root directory. All new file creation will be in root.
     Serial.println("SD chdr failed");
     while (1);
   }
 
+  char fileName[9];
   sprintf(fileName, "serLog.txt");
 
-  // O_CREAT - create the file if it does not exist
-  // O_APPEND - seek to the end of the file prior to each write
-  // O_WRITE - open for write
-  if (!serialLog.open(fileName, O_CREAT | O_APPEND | O_WRITE)) systemError(ERROR_FILE_OPEN);
+  if (sd.exists(fileName))
+  {
+    Serial.println("serLog deleted");
+    sd.remove(fileName);
+  }
+
+  if (!serialDataFile.open(fileName, O_CREAT | O_APPEND | O_WRITE))
+  {
+    Serial.println("Failed to open file");
+    while (1);
+  }
+  Serial.println("serLog created");
 
   overallStartTime = millis();
 }
 
-int total = 0;
-
-void loop() {
-  
+void loop()
+{
   //Check for incoming serial to record to serial log file
-  if (Serial1.available())
+  if (SerialLog.available())
   {
-    char temp[512];
-
-    int counter = 0;
-    while(Serial1.available())
+    while (SerialLog.available())
     {
-      temp[counter++] = Serial1.read();
-      if(counter == 512) break;
-    }
+      incomingBuffer[incomingBufferSpot++] = SerialLog.read();
+      if (incomingBufferSpot == sizeof(incomingBuffer))
+      {
+//        long startTime = micros();
+        serialDataFile.write(incomingBuffer, sizeof(incomingBuffer)); //Record the buffer to the card
+//        long endTime = micros();
 
-    total += counter;
-      
-    serialLog.write(temp, counter); //Record the buffer to the card
-    serialLog.sync();
+        incomingBufferSpot = 0;
+
+//        Serial.print("Write time (ms): ");
+//        Serial.println((endTime - startTime) / 1000.0, 2);
+      }
+
+      charsReceived++;
+    }
+    lastSeriaLogSyncTime = millis();
+    newSerialData = true;
+  }
+  else if (newSerialData == true)
+  {
+    if ((millis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
+    {
+      if (incomingBufferSpot > 0)
+      {
+        //Write the remainder of the buffer
+        serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
+        serialDataFile.sync();
+
+        incomingBufferSpot = 0;
+      }
+
+      newSerialData = false;
+      lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
+
+      Serial.println("Total chars recevied: " + (String)charsReceived);
+    }
+  }
+
+  if (Serial.available())
+  {
+    byte incoming = Serial.read();
+
+    if (incoming == '1')
+    {
+      Serial.println("Serial set to: 115200");
+      SerialLog.begin(115200);
+    }
+    else if (incoming == '2')
+    {
+      Serial.println("Serial set to: 230400");
+      SerialLog.begin(230400);
+    }
+    else if (incoming == '3')
+    {
+      Serial.println("Serial set to: 460800");
+      SerialLog.begin(460800);
+    }
+    else if (incoming == '4')
+    {
+      Serial.println("Serial set to: 921600");
+      SerialLog.begin(921600);
+    }
+    else if (incoming == '5')
+    {
+      Serial.println("Serial set to: 500000");
+      SerialLog.begin(500000);
+    }
+    else if (incoming == 'r')
+    {
+      Serial.println("Total count reset");
+      charsReceived = 0;
+    }
+    else if (incoming == '\r' || incoming == '\n')
+    {
+      //Do nothing
+    }
+    else
+    {
+      Serial.println("Not recognized");
+    }
   }
 
   //Delay until we reach the requested read rate
-  if (millis() - overallStartTime > 500)
-  {
-    overallStartTime = millis();
-    if (digitalRead(statLED) == HIGH)
-      digitalWrite(statLED, LOW);
-    else
-      digitalWrite(statLED, HIGH);
-    Serial.println("Total: " + (String)total);
-  }
+  //  if (millis() - overallStartTime > 500)
+  //  {
+  //    overallStartTime = millis();
+  //    if (digitalRead(statLED) == HIGH)
+  //      digitalWrite(statLED, LOW);
+  //    else
+  //      digitalWrite(statLED, HIGH);
+  //  }
+}
+
+void microSDPowerOn()
+{
+  pinMode(PIN_MICROSD_POWER, OUTPUT);
+  digitalWrite(PIN_MICROSD_POWER, LOW);
+}
+void microSDPowerOff()
+{
+  pinMode(PIN_MICROSD_POWER, OUTPUT);
+  digitalWrite(PIN_MICROSD_POWER, HIGH);
 }

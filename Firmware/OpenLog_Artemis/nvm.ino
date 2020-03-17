@@ -56,7 +56,11 @@ void recordSettingsToFile()
     settingsFile.println("sizeOfSettings=" + (String)settings.sizeOfSettings);
     settingsFile.println("nextSerialLogNumber=" + (String)settings.nextSerialLogNumber);
     settingsFile.println("nextDataLogNumber=" + (String)settings.nextDataLogNumber);
-    settingsFile.println("recordPerSecond=" + (String)settings.recordPerSecond);
+    
+    char temp[20];
+    sprintf(temp, "%lu", settings.usBetweenReadings);
+    settingsFile.println("usBetweenReadings=" + (String)temp);
+
     settingsFile.println("logMaxRate=" + (String)settings.logMaxRate);
     settingsFile.println("enableRTC=" + (String)settings.enableRTC);
     settingsFile.println("enableIMU=" + (String)settings.enableIMU);
@@ -121,7 +125,7 @@ bool loadSettingsFromFile()
         }
 
         if (parseLine(line) == false) {
-          Serial.print("Fail to parse setting: ");
+          Serial.print("Failed to parse setting: ");
           Serial.println(line);
         }
       }
@@ -180,8 +184,8 @@ bool parseLine(char* str) {
     settings.nextSerialLogNumber = d;
   else if (strcmp(settingName, "nextDataLogNumber") == 0)
     settings.nextDataLogNumber = d;
-  else if (strcmp(settingName, "recordPerSecond") == 0)
-    settings.recordPerSecond = d;
+  else if (strcmp(settingName, "usBetweenReadings") == 0)
+    settings.usBetweenReadings = d;
   else if (strcmp(settingName, "logMaxRate") == 0)
     settings.logMaxRate = d;
   else if (strcmp(settingName, "enableRTC") == 0)

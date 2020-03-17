@@ -55,14 +55,14 @@ String getGPSDateTime() {
 //Leap year is taken into account but does not interact with DST (DST happens later in March)
 void adjustToLocalDateTime(int &year, int &month, int &day, int &hour, int localUTCOffset) {
 
-  //Adjust UTC with local offset
+  //Apply any offset to UTC
   hour += localUTCOffset;
 
   //If the adjusted hour is outside 0 to 23, then adjust date as necessary
   correctDate(year, month, day, hour);
 
   //Should we correct for daylight savings time?
-  if (settings.correctForDST)
+  if (settings.correctForDST == true)
   {
     //Calculate DST adjustment based on date and local offset
     hour += findUSDSTadjustment(year, month, day, hour);

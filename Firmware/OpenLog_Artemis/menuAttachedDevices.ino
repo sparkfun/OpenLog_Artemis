@@ -101,7 +101,7 @@ void menuAttachedDevices()
 
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming >= '1' && incoming < ('1' + availableDevices - 1))
     {
@@ -109,7 +109,7 @@ void menuAttachedDevices()
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -258,7 +258,7 @@ void menuConfigure_LPS25HB()
     }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_LPS25HB.log ^= 1;
@@ -270,14 +270,14 @@ void menuConfigure_LPS25HB()
         settings.sensor_LPS25HB.logTemp ^= 1;
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -310,7 +310,7 @@ void menuConfigure_NAU7802()
 
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
     {
@@ -349,7 +349,7 @@ void menuConfigure_NAU7802()
       else if (incoming == '3')
       {
         Serial.print("Enter number of decimal places to print (1 to 10): ");
-        int places = getNumber(10);
+        int places = getNumber(menuTimeout);
         if (places < 1 || places > 10)
         {
           Serial.println("Error: Decimal places out of range");
@@ -362,7 +362,7 @@ void menuConfigure_NAU7802()
       else if (incoming == '4')
       {
         Serial.print("Enter number of readings to take per weight read (1 to 10): ");
-        int amt = getNumber(10);
+        int amt = getNumber(menuTimeout);
         if (amt < 1 || amt > 10)
         {
           Serial.println("Error: Average number of readings out of range");
@@ -374,14 +374,14 @@ void menuConfigure_NAU7802()
       }
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -457,7 +457,7 @@ void menuConfigure_uBlox()
     }
     Serial.println("x) Exit");
 
-    int incoming = getNumber(10); //Timeout after 10 seconds
+    int incoming = getNumber(menuTimeout); //Timeout after 10 seconds
 
     if (incoming == 1)
     {
@@ -496,12 +496,12 @@ void menuConfigure_uBlox()
         else
           settings.sensor_uBlox.i2cSpeed = 100000;
       }
-      else if (incoming == 255) //getNumber() will return 255 if 'x' is pressed
+      else if (incoming == STATUS_PRESSED_X)
         break;
       else
         printUnknown(incoming);
     }
-    else if (incoming == 255) //getNumber() will return 255 if 'x' is pressed
+    else if (incoming == STATUS_PRESSED_X)
       break;
     else
       printUnknown(incoming);
@@ -533,7 +533,7 @@ void menuConfigure_MCP9600()
     }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_MCP9600.log ^= 1;
@@ -545,14 +545,14 @@ void menuConfigure_MCP9600()
         settings.sensor_MCP9600.logAmbientTemp ^= 1;
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -590,7 +590,7 @@ void menuConfigure_VCNL4040()
     }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_VCNL4040.log ^= 1;
@@ -603,7 +603,7 @@ void menuConfigure_VCNL4040()
       else if (incoming == '4')
       {
         Serial.print("Enter current (mA) for IR LED drive (50 to 200mA): ");
-        int amt = getNumber(10); //10 second timeout
+        int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 50 || amt > 200)
           Serial.println("Error: Out of range");
         else
@@ -612,7 +612,7 @@ void menuConfigure_VCNL4040()
       else if (incoming == '5')
       {
         Serial.print("Enter IR Duty Cycle (40 to 320): ");
-        int amt = getNumber(10); //10 second timeout
+        int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 40 || amt > 320)
           Serial.println("Error: Out of range");
         else
@@ -621,7 +621,7 @@ void menuConfigure_VCNL4040()
       else if (incoming == '6')
       {
         Serial.print("Enter Proximity Integration Time (1 to 8): ");
-        int amt = getNumber(10); //10 second timeout
+        int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 1 || amt > 8)
           Serial.println("Error: Out of range");
         else
@@ -630,7 +630,7 @@ void menuConfigure_VCNL4040()
       else if (incoming == '7')
       {
         Serial.print("Enter Ambient Light Integration Time (80 to 640ms): ");
-        int amt = getNumber(10); //10 second timeout
+        int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 80 || amt > 640)
           Serial.println("Error: Out of range");
         else
@@ -639,7 +639,7 @@ void menuConfigure_VCNL4040()
       else if (incoming == '8')
       {
         Serial.print("Enter Proximity Resolution (12 or 16 bit): ");
-        int amt = getNumber(10); //10 second timeout
+        int amt = getNumber(menuTimeout); //x second timeout
         if (amt == 12 || amt == 16)
           settings.sensor_VCNL4040.resolution = amt;
         else
@@ -647,14 +647,14 @@ void menuConfigure_VCNL4040()
       }
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -705,7 +705,7 @@ void menuConfigure_VL53L1X()
     }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_VL53L1X.log ^= 1;
@@ -739,7 +739,7 @@ void menuConfigure_VL53L1X()
 
 
         Serial.printf("Set timing budget (%d to 1000ms): ", min);
-        int amt = getNumber(10); //10 second timeout
+        int amt = getNumber(menuTimeout); //x second timeout
         if (amt < min || amt > 1000)
           Serial.println("Error: Out of range");
         else
@@ -748,7 +748,7 @@ void menuConfigure_VL53L1X()
       else if (incoming == '7')
       {
         Serial.print("Set Offset in mm (0 to 4000mm): ");
-        int amt = getNumber(10); //10 second timeout
+        int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 0 || amt > 4000)
           Serial.println("Error: Out of range");
         else
@@ -757,7 +757,7 @@ void menuConfigure_VL53L1X()
       else if (incoming == '8')
       {
         Serial.print("Set Crosstalk in Counts Per Second: ");
-        int amt = getNumber(10); //10 second timeout
+        int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 0 || amt > 4000)
           Serial.println("Error: Out of range");
         else
@@ -765,14 +765,14 @@ void menuConfigure_VL53L1X()
       }
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -795,13 +795,13 @@ void menuConfigure_TMP117()
 
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_TMP117.log ^= 1;
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -833,7 +833,7 @@ void menuConfigure_CCS811()
     }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_CCS811.log ^= 1;
@@ -845,14 +845,14 @@ void menuConfigure_CCS811()
         settings.sensor_CCS811.logCO2 ^= 1;
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -892,7 +892,7 @@ void menuConfigure_BME280()
 }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_BME280.log ^= 1;
@@ -908,14 +908,14 @@ void menuConfigure_BME280()
         settings.sensor_BME280.logTemp ^= 1;
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -947,7 +947,7 @@ void menuConfigure_SGP30()
     }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_SGP30.log ^= 1;
@@ -959,14 +959,14 @@ void menuConfigure_SGP30()
         settings.sensor_SGP30.logCO2 ^= 1;
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -1002,7 +1002,7 @@ void menuConfigure_VEML6075()
     }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_VEML6075.log ^= 1;
@@ -1016,14 +1016,14 @@ void menuConfigure_VEML6075()
         settings.sensor_VEML6075.logUVIndex ^= 1;
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -1055,7 +1055,7 @@ void menuConfigure_MS5637()
     }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.sensor_MS5637.log ^= 1;
@@ -1067,14 +1067,14 @@ void menuConfigure_MS5637()
         settings.sensor_MS5637.logTemp ^= 1;
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);

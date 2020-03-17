@@ -18,7 +18,7 @@ void powerDown()
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
-  digitalWrite(PIN_QWIIC_PWR, HIGH); //HIGH = Off
+  digitalWrite(PIN_QWIIC_POWER, HIGH); //HIGH = Off
   digitalWrite(PIN_IMU_POWER, LOW);
   digitalWrite(PIN_MICROSD_POWER, LOW);
 
@@ -56,15 +56,6 @@ void powerDown()
   am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
 }
 
-void sdPowerOn()
-{
-  digitalWrite(PIN_MICROSD_POWER, HIGH);
-}
-void sdPowerOff()
-{
-  digitalWrite(PIN_MICROSD_POWER, LOW);
-}
-
 //Option not known
 void printUnknown(uint8_t unknownChoice)
 {
@@ -89,8 +80,9 @@ void waitForInput()
 
 //Get single byte from user
 //Waits for and returns the character that the user provides
-//Returns 255 if user does not respond in a certain amount time
-byte getByteChoice(int numberOfSeconds)
+//Returns STATUS_GETNUMBER_TIMEOUT if input times out
+//Returns 'x' if user presses 'x'
+uint8_t getByteChoice(int numberOfSeconds)
 {
   Serial.flush();
   delay(50); //Wait for any incoming chars to hit buffer
@@ -103,8 +95,8 @@ byte getByteChoice(int numberOfSeconds)
     if (Serial.available() > 0)
     {
       incoming = Serial.read();
-      Serial.print("byte: 0x");
-      Serial.println(incoming, HEX);
+//      Serial.print("byte: 0x");
+//      Serial.println(incoming, HEX);
       if (incoming >= 'a' && incoming <= 'z') break;
       if (incoming >= 'A' && incoming <= 'Z') break;
       if (incoming >= '0' && incoming <= '9') break;
@@ -113,7 +105,7 @@ byte getByteChoice(int numberOfSeconds)
     if ( (millis() - startTime) / 1000 >= numberOfSeconds)
     {
       Serial.println("No user input recieved.");
-      return (255); //Timeout. No user input.
+      return (STATUS_GETBYTE_TIMEOUT); //Timeout. No user input.
     }
 
     delay(10);
@@ -123,14 +115,15 @@ byte getByteChoice(int numberOfSeconds)
 }
 
 //Get a string/value from user, remove all non-numeric values
-//Returns 255 is user presses 'x' or input times out
-int getNumber(int numberOfSeconds)
+//Returns STATUS_GETNUMBER_TIMEOUT if input times out
+//Returns STATUS_PRESSED_X if user presses 'x'
+int64_t getNumber(int numberOfSeconds)
 {
   delay(10); //Wait for any incoming chars to hit buffer
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   //Get input from user
-  char cleansed[20];
+  char cleansed[20]; //Good for very large numbers: 123,456,789,012,345,678\0
 
   long startTime = millis();
   int spot = 0;
@@ -143,7 +136,7 @@ int getNumber(int numberOfSeconds)
         if (spot == 0)
         {
           Serial.println("No user input recieved. Do you have line endings turned on?");
-          return (255); //Timeout. No user input.
+          return (STATUS_GETNUMBER_TIMEOUT); //Timeout. No user input.
         }
         else if (spot > 0)
         {
@@ -174,16 +167,18 @@ int getNumber(int numberOfSeconds)
 
     if (incoming == 'x')
     {
-      return (255);
+      return (STATUS_PRESSED_X);
     }
   }
 
   cleansed[spot] = '\0';
-  Serial.print("cleansed: ");
-  Serial.println(cleansed);
 
-  String tempValue = cleansed;
-  Serial.print("tempValue: ");
-  Serial.println(tempValue);
-  return (tempValue.toInt());
+  uint64_t largeNumber = 0;
+  for(int x = 0 ; x < spot ; x++)
+  {
+    largeNumber *= 10;
+    largeNumber += (cleansed[x] - '0');
+  }
+
+  return (largeNumber);
 }

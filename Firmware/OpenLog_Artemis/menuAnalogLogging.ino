@@ -27,7 +27,7 @@ void menuAnalogLogging()
 
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       settings.logA11 ^= 1;
@@ -49,7 +49,7 @@ void menuAnalogLogging()
       settings.logAnalogVoltages ^= 1;
     else if (incoming == 'x')
       return;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       return;
     else
       printUnknown(incoming);

@@ -37,7 +37,7 @@ void menuMain()
 
     Serial.println("x) Return to logging");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
       menuLogRate();
@@ -54,7 +54,7 @@ void menuMain()
     else if (incoming == 'r')
     {
       Serial.println("\n\rResetting to factory defaults. Continue? Press 'y':");
-      byte bContinue = getByteChoice(10);
+      byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
         EEPROM.erase();
@@ -69,7 +69,7 @@ void menuMain()
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -84,5 +84,10 @@ void menuMain()
   //Reset measurements
   measurementStartTime = millis(); //Update time
   measurementCount = 0;
-  totalCharactersPrinted = 0;  
+  totalCharactersPrinted = 0;
+
+  //Edge case: after 10Hz reading, user sets the log rate above 2s mark. We never go to sleep because 
+  //takeReading is not true. And since we don't wake up, takeReading never gets set to true.
+  //Se we force it here.
+  takeReading = true; 
 }

@@ -20,7 +20,7 @@ void menuSerialLogging()
 
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
     {
@@ -48,7 +48,7 @@ void menuSerialLogging()
       if (incoming == '2')
       {
         Serial.print("Enter baud rate (1200 to 115200): ");
-        int newBaud = getNumber(10); //Timeout after 10 seconds
+        int newBaud = getNumber(menuTimeout); //Timeout after x seconds
         if (newBaud < 1200 || newBaud > 115200)
         {
           Serial.println("Error: baud rate out of range");
@@ -61,14 +61,14 @@ void menuSerialLogging()
       }
       else if (incoming == 'x')
         return;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         return;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       return;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       return;
     else
       printUnknown(incoming);

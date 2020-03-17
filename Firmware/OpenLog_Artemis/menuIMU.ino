@@ -29,7 +29,7 @@ void menuIMU()
     }
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(10); //Timeout after 10 seconds
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
     {
@@ -49,14 +49,14 @@ void menuIMU()
         settings.logIMUTemp ^= 1;
       else if (incoming == 'x')
         break;
-      else if (incoming == 255)
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
     else if (incoming == 'x')
       break;
-    else if (incoming == 255)
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);
