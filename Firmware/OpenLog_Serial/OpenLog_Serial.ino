@@ -9,6 +9,15 @@
   Write takes 54.13ms or 2494 bytes
 
   16384 buffer size will allow for up to 355.532ms before bytes are dropped
+  4096 buffer size will allow for up to 88.75ms before bytes are dropped
+
+  How big is RX FIFO within HAL? 32 bytes
+  Is there a 'nearly full' interrupt for the RX FIFO?
+  We could check the RX FIFO empty bit in the ISR in a loop
+  We could increase the ISR priority level
+
+  ISR is currently 16us which supports 460800. We can burst mode to 8.5us.
+  
 */
 
 //microSD Interface
@@ -90,6 +99,7 @@ void setup() {
   Serial.println("serLog created");
 
   overallStartTime = millis();
+  //enableBurstMode(); //Go to 96MHz
 }
 
 void loop()
@@ -102,14 +112,8 @@ void loop()
       incomingBuffer[incomingBufferSpot++] = SerialLog.read();
       if (incomingBufferSpot == sizeof(incomingBuffer))
       {
-//        long startTime = micros();
         serialDataFile.write(incomingBuffer, sizeof(incomingBuffer)); //Record the buffer to the card
-//        long endTime = micros();
-
         incomingBufferSpot = 0;
-
-//        Serial.print("Write time (ms): ");
-//        Serial.println((endTime - startTime) / 1000.0, 2);
       }
 
       charsReceived++;

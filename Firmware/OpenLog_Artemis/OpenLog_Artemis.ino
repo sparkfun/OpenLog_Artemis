@@ -20,7 +20,7 @@
   Setup a sleep timer, wake up ever 5 seconds, power up Qwiic, take reading, power down I2C bus, sleep.
   Allow user to decrease I2C speed on GPS to increase reliability
   Control Qwiic power from...
-  
+
   We have prelim support for DST correction. Do we want to add it? Currently removed.
   Allow user to adjust UTC offset
   Get time stamps from GPS
@@ -79,7 +79,6 @@ File sensorDataFile; //File that all sensor data is written to
 File serialDataFile; //File that all incoming serial data is written to
 char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
 char serialDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
-
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Add RTC interface for Artemis
@@ -94,6 +93,9 @@ Uart SerialLog(1, 13, 12);  // Declares a Uart object called Serial1 using insta
 unsigned long lastSeriaLogSyncTime = 0;
 const int MAX_IDLE_TIME_MSEC = 500;
 bool newSerialData = false;
+char incomingBuffer[256 * 2]; //This size of this buffer is sensitive. Do not change without analysis using OpenLog_Serial.
+int incomingBufferSpot = 0;
+//int charsReceived = 0; //Used for verifying/debugging serial reception
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Add ICM IMU interface
@@ -236,30 +238,40 @@ void loop() {
 
   if (settings.logSerial == true && online.serialLogging == true)
   {
-    if (SerialLog.available() > 128)
+    if (SerialLog.available())
     {
-      char temp[128];
-      uint16_t counter = 0;
       while (SerialLog.available())
       {
-        temp[counter++] = SerialLog.read();
-        if (counter == 128) break;
+        incomingBuffer[incomingBufferSpot++] = SerialLog.read();
+        if (incomingBufferSpot == sizeof(incomingBuffer))
+        {
+          serialDataFile.write(incomingBuffer, sizeof(incomingBuffer)); //Record the buffer to the card
+          incomingBufferSpot = 0;
+        }
+        //charsReceived++;
       }
 
-      serialDataFile.write(temp, counter); //Record the buffer to the card
       lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
       newSerialData = true;
 
       //Toggle stat LED indicating log recording
     }
-    //No characters received?
     else if (newSerialData == true)
     {
       if ((millis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
       {
+        if (incomingBufferSpot > 0)
+        {
+          //Write the remainder of the buffer
+          serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
+          serialDataFile.sync();
+
+          incomingBufferSpot = 0;
+        }
+
         newSerialData = false;
-        serialDataFile.sync();
         lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
+        //Serial.println("Total chars recevied: " + (String)charsReceived);
       }
     }
   }
