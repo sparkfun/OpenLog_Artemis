@@ -61,7 +61,7 @@ void menuMain()
         if (sd.exists("OLA_settings.cfg"))
           sd.remove("OLA_settings.cfg");
 
-        Serial.println("Settings erased. Please reset OpenLog Artemis...");
+        Serial.println("Settings erased. Please reset OpenLog Artemis and open a terminal at 115200bps...");
         while (1);
       }
       else

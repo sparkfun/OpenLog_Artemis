@@ -17,7 +17,12 @@ void menuTimeStamp()
     Serial.print(" ");
 
     char rtcTime[12]; //09:14:37.41
-    sprintf(rtcTime, "%02d:%02d:%02d.%02d", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+    int adjustedHour = myRTC.hour;
+    if (settings.hour24Style == false)
+    {
+      if (adjustedHour > 12) adjustedHour -= 12;
+    }
+    sprintf(rtcTime, "%02d:%02d:%02d.%02d", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
     Serial.println((String)rtcTime);
 
     Serial.print("1) Log Date: ");
@@ -53,9 +58,9 @@ void menuTimeStamp()
 
     if (settings.logDate == true || settings.logTime == true)
     {
-//      Serial.print("8) Correct time/date using USA Daylight Savings Time rules: ");
-//      if (settings.correctForDST == true) Serial.println("Enabled");
-//      else Serial.println("Disabled");
+      //      Serial.print("8) Correct time/date using USA Daylight Savings Time rules: ");
+      //      if (settings.correctForDST == true) Serial.println("Enabled");
+      //      else Serial.println("Disabled");
     }
 
     //    Serial.print("4) Synchronize RTC to GPS: ");
@@ -100,10 +105,10 @@ void menuTimeStamp()
         myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
         Serial.println("RTC set to compiler time");
       }
-//      else if (incoming == 8)
-//      {
-//        settings.correctForDST ^= 1;
-//      }
+      //      else if (incoming == 8)
+      //      {
+      //        settings.correctForDST ^= 1;
+      //      }
     }
 
     if (settings.logDate == true)
@@ -151,24 +156,24 @@ void menuTimeStamp()
 
         myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
       }
-      else if(incoming == 7)
+      else if (incoming == 7)
       {
         settings.hour24Style ^= 1;
       }
     }
 
     //GPS functions not yet implemented
-//    else if (incoming == 5)
-//      settings.getRTCfromGPS ^= 1;
-//    else if (incoming == 9)
-//    {
-//      Serial.print("Enter the local hour offset from UTC (-12 to 14): ");
-//      int offset = getNumber(menuTimeout); //Timeout after x seconds
-//      if (offset < -12 || offset > 14)
-//        Serial.println("Error: Offset is out of range");
-//      else
-//        settings.localUTCOffset = offset;
-//    }
+    //    else if (incoming == 5)
+    //      settings.getRTCfromGPS ^= 1;
+    //    else if (incoming == 9)
+    //    {
+    //      Serial.print("Enter the local hour offset from UTC (-12 to 14): ");
+    //      int offset = getNumber(menuTimeout); //Timeout after x seconds
+    //      if (offset < -12 || offset > 14)
+    //        Serial.println("Error: Offset is out of range");
+    //      else
+    //        settings.localUTCOffset = offset;
+    //    }
 
   }
 }

@@ -113,21 +113,32 @@ bool loadSettingsFromFile()
       }
 
       char line[50];
+      int lineNumber = 0;
 
       while (settingsFile.available()) {
         int n = settingsFile.fgets(line, sizeof(line));
         if (n <= 0) {
-          Serial.println("Failed to read line from settings file");
+          Serial.printf("Failed to read line %d from settings file\n", lineNumber);
         }
-
-        if (line[n - 1] != '\n' && n == (sizeof(line) - 1)) {
-          Serial.println("Settings line too long");
+        else if (line[n - 1] != '\n' && n == (sizeof(line) - 1)) {
+          Serial.printf("Settings line %d too long\n", lineNumber);
+          if(lineNumber == 0)
+          {
+            //If we can't read the first line of the settings file, give up
+            Serial.println("Giving up on settings file");
+            return(false);
+          }
         }
-
-        if (parseLine(line) == false) {
-          Serial.print("Failed to parse setting: ");
-          Serial.println(line);
+        else if (parseLine(line) == false) {
+          Serial.printf("Failed to parse line %d: %s\n", lineNumber, line);
+          if(lineNumber == 0)
+          {
+            //If we can't read the first line of the settings file, give up
+            Serial.println("Giving up on settings file");
+            return(false);
+          }
         }
+        lineNumber++;
       }
 
       Serial.println("Config file read complete");

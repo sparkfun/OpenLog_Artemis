@@ -11,33 +11,13 @@
   This firmware runs the OpenLog Artemis. A large variety of system settings can be
   adjusted by connecting at 115200bps.
 
-  TODO:
-  Disable local sensor logging, log only serial
-  Enable/disable time stamping of incoming serial
-  Toggle LED on serial data recording vs sensor recording
-  Check out the file creation. Use FILE_WRITE instead of the O_s. Might go faster without append...
-  Support multiples of a given sensor. How to support two MCP9600s attached at the same time?
-  Setup a sleep timer, wake up ever 5 seconds, power up Qwiic, take reading, power down I2C bus, sleep.
-  Allow user to decrease I2C speed on GPS to increase reliability
-  Control Qwiic power from...
-
-  We have prelim support for DST correction. Do we want to add it? Currently removed.
-  Allow user to adjust UTC offset
-  Get time stamps from GPS
-  Manual set RTC to GPS
-  Allow user to control local time stamp with GPS UTC offset
-
-  The Qwiic device settings menus don't change the devices directly. These are set at the exit of the main menu
-  when sensors are begun().
-
-  What happens when user enables analog on pin 12/tx and keeps serial on pin 13/rx and then changes baud rate? Does analog still work?
-  What happens when user enables serial on 13/rx then enables analog read on pin 12/tx? Does analog still work?
-
-  Max rates:
-  ~1140Hz for 3 channel analog, max data rate
-  2/26/20 - 0.34uA at 0.25Hz, with microSD, no USB, no Qwiic
+  v1.0 Power Consumption:
+  * Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
+  * 10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
 
 */
+
+const float FIRMWARE_VERSION = 1.0;
 
 #include "settings.h"
 
@@ -171,7 +151,7 @@ const byte menuTimeout = 45; //Menus will exit/timeout after this number of seco
 unsigned long startTime = 0;
 
 void setup() {
-  //If 3.3V rail drops below 3V, system will enter low power mode and maintain RTC
+  //If 3.3V rail drops below 3V, system will power down and maintain RTC
   pinMode(PIN_POWER_LOSS, INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
 
@@ -179,7 +159,6 @@ void setup() {
   digitalWrite(PIN_STAT_LED, LOW);
 
   Serial.begin(115200); //Default for initial debug messages if necessary
-  delay(10);
   Serial.println();
 
   SPI.begin(); //Needed if SD is disabled
@@ -190,7 +169,7 @@ void setup() {
 
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
-  Serial.println("Artemis OpenLog");
+  Serial.printf("Artemis OpenLog v%f\n", FIRMWARE_VERSION);
 
   beginQwiic();
 
