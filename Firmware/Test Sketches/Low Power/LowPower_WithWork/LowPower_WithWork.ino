@@ -50,6 +50,10 @@ const byte STAT_LED = 13;
 
 int counter = 0;
 
+const byte PIN_IMU_POWER = 22;
+const byte PIN_MICROSD_POWER = 15; //x04
+const byte PIN_QWIIC_POWER = 18;
+
 void setup(void) {
   Serial.begin(115200);
   Serial.println("Artemis Low Power Example");
@@ -114,6 +118,15 @@ void goToSleep()
   for (int x = 0 ; x < 50 ; x++)
     am_hal_gpio_pinconfig(x , g_AM_HAL_GPIO_DISABLE);
 
+  //We can't leave these power control pins floating
+  pinMode(PIN_QWIIC_POWER, OUTPUT);
+  pinMode(PIN_IMU_POWER, OUTPUT);
+  pinMode(PIN_MICROSD_POWER, OUTPUT);
+
+  qwiicPowerOff();
+  imuPowerOff();
+  microSDPowerOff();
+  
   //We use counter/timer 6 to cause us to wake up from sleep but 0 to 7 are available
   //CT 7 is used for Software Serial. All CTs are used for Servo.
   am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG); //Clear CT6
@@ -186,4 +199,38 @@ extern "C" void am_stimer_cmpr6_isr(void)
   {
     am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);
   }
+}
+
+
+void qwiicPowerOn()
+{
+  pinMode(PIN_QWIIC_POWER, OUTPUT);
+  digitalWrite(PIN_QWIIC_POWER, LOW);
+}
+void qwiicPowerOff()
+{
+  pinMode(PIN_QWIIC_POWER, OUTPUT);
+  digitalWrite(PIN_QWIIC_POWER, HIGH);
+}
+
+void microSDPowerOn()
+{
+  pinMode(PIN_MICROSD_POWER, OUTPUT);
+  digitalWrite(PIN_MICROSD_POWER, LOW);
+}
+void microSDPowerOff()
+{
+  pinMode(PIN_MICROSD_POWER, OUTPUT);
+  digitalWrite(PIN_MICROSD_POWER, HIGH);
+}
+
+void imuPowerOn()
+{
+  pinMode(PIN_IMU_POWER, OUTPUT);
+  digitalWrite(PIN_IMU_POWER, HIGH);
+}
+void imuPowerOff()
+{
+  pinMode(PIN_IMU_POWER, OUTPUT);
+  digitalWrite(PIN_IMU_POWER, LOW);
 }

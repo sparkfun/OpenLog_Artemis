@@ -6,19 +6,17 @@
   milliseconds before waking and printing the current time/date. This
   is helpful for checking power consumption of the core while RTC+CT6 are running.
 
-  3.2 microSD, no USB
-  2.4 no microSD, no USB
-
   6mA with Power LED, no microSD, USB
   4.58, no power LED, no microSD, USB
   So power LED is ~1.5mA
-  1.05mA no power, no microSD, no USB
+
+  1.05mA no power LED, no microSD, no USB
   So USB is ~3.5mA
+
   Fully powered down, board is pulling 450uA from battery but that
   seems to be because RTC batt is charging at ~360uA.
 
-  6.88 with microSD
-  5.07 with microSD on?
+  Measurements should be done at the MEAS jumper with the RTC battery disconnected. 
 
   3/5/20 -
     6.61mA, no LED, USB, SD
@@ -34,9 +32,11 @@
     0.188mA, no LED, no USB, SparkX SD
     0.098mA, no LEd, no USB, no SD
 
-    Can we get 90uA lower when microSD is started and stopped?
+    Various SD cards pull different current even when shut off.
 
-
+  3/18/20
+    0.171mA no USB, no SD
+    0.110mA no USB, no SD after overnight 
 
 */
 
@@ -87,7 +87,7 @@ void setup()
   qwiicPowerOff();
   microSDPowerOff();
   imuPowerOff();
-  SPI.begin(); //Needed if SD is disabled
+  SPI.begin();
 
   beginSD();
 
@@ -151,7 +151,6 @@ void loop()
       Serial.printf("%02d", myRTC.year);
 
       Serial.println();
-
     }
     else if (choice == 'q')
     {
@@ -180,7 +179,9 @@ void loop()
         microSDPowerOff();
         Serial.println("microSD Off / Pin High");
       }
-    }    while (Serial.available()) Serial.read();
+    }
+
+    while (Serial.available()) Serial.read();
   }
 }
 
@@ -190,17 +191,6 @@ void loop()
 void powerDown()
 {
   //digitalWrite(LOGIC_DEBUG, HIGH);
-
-  //Force the peripherals off
-  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
-  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
-  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
-  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
-  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
-  ////  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
-  //  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
-  //  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
-  //  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
   //The supervisor circuit tends to wake us from sleep if it
   //remains as an interrupt
@@ -219,50 +209,38 @@ void powerDown()
   Serial1.end();
 
   for (int x = 0 ; x < 50 ; x++)
-    am_hal_gpio_pinconfig(x , g_AM_HAL_GPIO_DISABLE);
+      am_hal_gpio_pinconfig(x , g_AM_HAL_GPIO_DISABLE);
+
 
   //We can't leave these power control pins floating
   qwiicPowerOff();
   imuPowerOff();
-  microSDPowerOff();
+  //microSDPowerOff(); //355
 
-  //  const byte PIN_SPI_MISO = 6;
-  //  const byte PIN_SPI_MOSI = 7;
-  //  const byte PIN_SPI_SCK = 5;
-  //  const byte PIN_SPI_CS = 10;
-  //
-  //  pinMode(PIN_SPI_CS, OUTPUT);
-  //  digitalWrite(PIN_SPI_CS, HIGH); //pullup the CS pin on the SD card (but only if you don’t already have a hardware pullup on your module)
-  //  pinMode(PIN_SPI_MOSI, OUTPUT);
-  //  digitalWrite(PIN_SPI_MOSI, HIGH); //pullup the MOSI pin on the SD card
-  //  pinMode(PIN_SPI_MISO, INPUT_PULLUP); //pullup the MISO pin on the SD card
-  //  pinMode(PIN_SPI_SCK, OUTPUT);
-  //  digitalWrite(PIN_SPI_SCK, LOW); //pull DOWN the 13scl pin on the SD card (IDLES LOW IN MODE0)
-  //  // NOTE: In Mode (0), the SPI interface holds the CLK line low when the bus is inactive, so DO NOT put a pullup on it.
+//  const byte PIN_SPI_MISO = 6;
+//  const byte PIN_SPI_MOSI = 7;
+//  const byte PIN_SPI_SCK = 5;
+//  const byte PIN_SPI_CS = 10;
+//
+//  pinMode(PIN_SPI_CS, OUTPUT);
+//  digitalWrite(PIN_SPI_CS, HIGH); //pullup the CS pin on the SD card (but only if you don’t already have a hardware pullup on your module)
+//  pinMode(PIN_SPI_MOSI, OUTPUT);
+//  digitalWrite(PIN_SPI_MOSI, HIGH); //pullup the MOSI pin on the SD card
+//  pinMode(PIN_SPI_MISO, INPUT_PULLUP); //pullup the MISO pin on the SD card
+//  pinMode(PIN_SPI_SCK, OUTPUT);
+//  digitalWrite(PIN_SPI_SCK, LOW); //pull DOWN the 13scl pin on the SD card (IDLES LOW IN MODE0)
+//  // NOTE: In Mode (0), the SPI interface holds the CLK line low when the bus is inactive, so DO NOT put a pullup on it.
 
-  // The default Arduino environment runs the System Timer (STIMER) off the 48 MHZ HFRC clock source.
-  // The HFRC appears to take over 60 uA when it is running, so this is a big source of extra
-  // current consumption in deep sleep.
-  // For systems that might want to use the STIMER to generate a periodic wakeup, it needs to be left running.
-  // However, it does not have to run at 48 MHz. If we reconfigure STIMER (system timer) to use the 32768 Hz
-  // XTAL clock source instead the measured deepsleep power drops by about 64 uA.
   am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
-
-  // This option selects 32768 Hz via crystal osc. This appears to cost about 0.1 uA versus selecting "no clock"
   am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ);
 
-  // This option would be available to systems that don't care about passing time, but might be set
-  // to wake up on a GPIO transition interrupt.
-  // am_hal_stimer_config(AM_HAL_STIMER_NO_CLK);
+  //Power down Flash, SRAM, cache
+  //  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE); //Turn off CACHE
+  //  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K); //Turn off everything but lower 512k
+  //  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k
+  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
 
-  // Turn OFF Flash1
-  am_hal_pwrctrl_memory_enable(AM_HAL_PWRCTRL_MEM_FLASH_512K);
-
-  // Power down SRAM
-  PWRCTRL->MEMPWDINSLEEP_b.SRAMPWDSLP = PWRCTRL_MEMPWDINSLEEP_SRAMPWDSLP_ALLBUTLOWER32K;
-
-  //Serial.end(); //Disable Serial
   //digitalWrite(LOGIC_DEBUG, LOW);
 
-  am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
+  am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP); //Sleep forever
 }
