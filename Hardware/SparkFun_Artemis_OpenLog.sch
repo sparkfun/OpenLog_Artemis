@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.5.2">
+<eagle version="9.6.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="yes"/>
@@ -15258,9 +15258,6 @@ or measure power</text>
 <wire x1="170.18" y1="144.78" x2="297.18" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 <wire x1="297.18" y1="144.78" x2="320.04" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 <text x="130.302" y="202.946" size="2.54" layer="97" font="vector" rot="R180" align="center">Qwiic</text>
-<text x="149.86" y="101.6" size="1.27" layer="91">x01 Pins:</text>
-<text x="149.86" y="96.52" size="1.27" layer="91">x02 x03:</text>
-<text x="152.4" y="99.06" size="1.27" layer="91">ICM_CS: 18</text>
 <text x="51.054" y="162.306" size="2.54" layer="97" font="vector" align="center">RTC Battery</text>
 <text x="179.578" y="215.9" size="1.778" layer="97" font="vector">Optional External Switch</text>
 <wire x1="297.18" y1="210.82" x2="297.18" y2="279.4" width="0.254" layer="97" style="longdash"/>
@@ -15274,10 +15271,11 @@ or measure power</text>
 <text x="33.02" y="132.08" size="1.778" layer="97" rot="R90">300uA Leakage</text>
 <text x="12.7" y="139.7" size="1.778" layer="97" rot="R90">0.65uA Leakage
 0.3V drop at 10mA</text>
-<text x="152.4" y="93.98" size="1.27" layer="91">SD_PWR: 23</text>
-<text x="149.86" y="91.44" size="1.27" layer="91">x04:</text>
 <text x="25.4" y="119.38" size="1.778" layer="97">~20 minute charge time</text>
 <text x="25.4" y="121.92" size="1.778" layer="97">1mAhr Capacity</text>
+<wire x1="297.18" y1="210.82" x2="383.54" y2="210.82" width="0.2032" layer="97" style="longdash"/>
+<wire x1="383.54" y1="210.82" x2="383.54" y2="144.78" width="0.2032" layer="97" style="longdash"/>
+<wire x1="383.54" y1="144.78" x2="320.04" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 </plain>
 <instances>
 <instance part="LOGO2" gate="G$1" x="391.16" y="45.72" smashed="yes"/>
