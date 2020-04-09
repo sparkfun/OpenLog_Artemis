@@ -82,7 +82,7 @@ const int MAX_IDLE_TIME_MSEC = 500;
 bool newSerialData = false;
 char incomingBuffer[256 * 2]; //This size of this buffer is sensitive. Do not change without analysis using OpenLog_Serial.
 int incomingBufferSpot = 0;
-//int charsReceived = 0; //Used for verifying/debugging serial reception
+int charsReceived = 0; //Used for verifying/debugging serial reception
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Add ICM IMU interface
@@ -176,7 +176,7 @@ void setup() {
 
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
-  Serial.printf("Artemis OpenLog v%f\n", FIRMWARE_VERSION);
+  Serial.printf("Artemis OpenLog v%.02f\n", FIRMWARE_VERSION);
 
   beginQwiic();
 
@@ -234,7 +234,7 @@ void loop() {
           serialDataFile.write(incomingBuffer, sizeof(incomingBuffer)); //Record the buffer to the card
           incomingBufferSpot = 0;
         }
-        //charsReceived++;
+        charsReceived++;
       }
 
       lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
@@ -257,7 +257,7 @@ void loop() {
 
         newSerialData = false;
         lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
-        //Serial.println("Total chars recevied: " + (String)charsReceived);
+        printDebug("Total chars received: " + (String)charsReceived);
       }
     }
   }
@@ -349,7 +349,7 @@ void beginSD()
       delay(250); //Give SD more time to power up, then try again
       if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
       {
-        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
+        Serial.println("SD init failed. Is card present? Formatted?");
         digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
         online.microSD = false;
         return;

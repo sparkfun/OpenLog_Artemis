@@ -47,9 +47,9 @@ void menuSerialLogging()
     {
       if (incoming == '2')
       {
-        Serial.print("Enter baud rate (1200 to 460800): ");
+        Serial.print("Enter baud rate (1200 to 921600): ");
         int newBaud = getNumber(menuTimeout); //Timeout after x seconds
-        if (newBaud < 1200 || newBaud > 460800)
+        if (newBaud < 1200 || newBaud > 921600)
         {
           Serial.println("Error: baud rate out of range");
         }

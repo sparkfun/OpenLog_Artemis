@@ -26,7 +26,7 @@ void loadSettings()
   EEPROM.get(0, settings);
 
   //Load any settings from config file
-  if(loadSettingsFromFile() == true)
+  if (loadSettingsFromFile() == true)
     recordSettings(); //Record these new settings to EEPROM and config file
 }
 
@@ -56,7 +56,7 @@ void recordSettingsToFile()
     settingsFile.println("sizeOfSettings=" + (String)settings.sizeOfSettings);
     settingsFile.println("nextSerialLogNumber=" + (String)settings.nextSerialLogNumber);
     settingsFile.println("nextDataLogNumber=" + (String)settings.nextDataLogNumber);
-    
+
     char temp[20];
     sprintf(temp, "%lu", settings.usBetweenReadings);
     settingsFile.println("usBetweenReadings=" + (String)temp);
@@ -89,6 +89,7 @@ void recordSettingsToFile()
     settingsFile.println("logA32=" + (String)settings.logA32);
     settingsFile.println("logAnalogVoltages=" + (String)settings.logAnalogVoltages);
     settingsFile.println("localUTCOffset=" + (String)settings.localUTCOffset);
+    settingsFile.println("printDebugMessages=" + (String)settings.printDebugMessages);
     //    settingsFile.println("=" + (String)settings.sensor_LPS25HB.);
 
     settingsFile.close();
@@ -109,7 +110,7 @@ bool loadSettingsFromFile()
       if (settingsFile.open("OLA_settings.cfg", O_READ) == false)
       {
         Serial.println("Failed to open settings file");
-        return(false);
+        return (false);
       }
 
       char line[50];
@@ -122,39 +123,40 @@ bool loadSettingsFromFile()
         }
         else if (line[n - 1] != '\n' && n == (sizeof(line) - 1)) {
           Serial.printf("Settings line %d too long\n", lineNumber);
-          if(lineNumber == 0)
+          if (lineNumber == 0)
           {
             //If we can't read the first line of the settings file, give up
             Serial.println("Giving up on settings file");
-            return(false);
+            return (false);
           }
         }
         else if (parseLine(line) == false) {
           Serial.printf("Failed to parse line %d: %s\n", lineNumber, line);
-          if(lineNumber == 0)
+          if (lineNumber == 0)
           {
             //If we can't read the first line of the settings file, give up
             Serial.println("Giving up on settings file");
-            return(false);
+            return (false);
           }
         }
+
         lineNumber++;
       }
 
       Serial.println("Config file read complete");
       settingsFile.close();
-      return(true);
+      return (true);
     }
     else
     {
-      Serial.println("No config file found. Loading defaults.");
+      Serial.println("No config file found. Using settings from EEPROM.");
       //The defaults of the struct will be recorded to a file later on.
-      return(false);
+      return (false);
     }
   }
 
   Serial.println("Config file read failed: SD offline");
-  return(false); //SD offline
+  return (false); //SD offline
 }
 
 // Check for extra characters in field or find minus sign.
@@ -168,6 +170,10 @@ char* skipSpace(char* str) {
 bool parseLine(char* str) {
   char* ptr;
 
+  //Debug
+  //Serial.printf("Line contents: %s", str);
+  //Serial.flush();
+
   // Set strtok start of line.
   str = strtok(str, "=");
   if (!str) return false;
@@ -180,16 +186,33 @@ bool parseLine(char* str) {
   str = strtok(nullptr, "\n");
   if (!str) return false;
 
+  //Serial.printf("s = %s\n", str);
+  //Serial.flush();
+
   // Convert string to double.
   double d = strtod(str, &ptr);
   if (str == ptr || *skipSpace(ptr)) return false;
 
+  //Serial.printf("d = %lf\n", d);
+  //Serial.flush();
+
   // Get setting name
   if (strcmp(settingName, "sizeOfSettings") == 0)
   {
+    //We may want to cause a factory reset from the settings file rather than the menu
+    //If user sets sizeOfSettings to -1 in config file, OLA will factory reset
+    if (d == -1)
+    {
+      EEPROM.erase();
+      sd.remove("OLA_settings.cfg");
+      Serial.println("OpenLog Artemis has been factory reset. Freezing. Please restart and open terminal at 115200bps.");
+      while(1);
+    }
+
     //Check to see if this setting file is compatible with this version of OLA
     if (d != sizeof(settings))
       Serial.printf("Warning: Settings size is %d but current firmware expects %d. Attempting to use settings from file.\n", d, sizeof(settings));
+
   }
   else if (strcmp(settingName, "nextSerialLogNumber") == 0)
     settings.nextSerialLogNumber = d;
@@ -253,8 +276,10 @@ bool parseLine(char* str) {
     settings.logAnalogVoltages = d;
   else if (strcmp(settingName, "localUTCOffset") == 0)
     settings.localUTCOffset = d;
-//  else if (strcmp(settingName, "") == 0)
-//    settings. = d;
+  else if (strcmp(settingName, "printDebugMessages") == 0)
+    settings.printDebugMessages = d;
+  //  else if (strcmp(settingName, "") == 0)
+  //    settings. = d;
   else
   {
     Serial.print("Unknown setting: ");

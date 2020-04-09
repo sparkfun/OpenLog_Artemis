@@ -155,6 +155,7 @@ struct struct_settings {
   bool logA32 = false;
   bool logAnalogVoltages = true;
   int localUTCOffset = -7; //Default to Denver because we can
+  bool printDebugMessages = false;
   struct_LPS25HB sensor_LPS25HB;
   struct_uBlox sensor_uBlox;
   struct_VL53L1X sensor_VL53L1X;
