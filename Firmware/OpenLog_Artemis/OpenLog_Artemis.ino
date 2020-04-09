@@ -17,7 +17,7 @@
 
 */
 
-const float FIRMWARE_VERSION = 1.0;
+const float FIRMWARE_VERSION = 1.1;
 
 #include "settings.h"
 
@@ -54,9 +54,16 @@ const byte PIN_MICROSD_POWER = 15; //x04
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 #define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 
-SdFat sd;
-File sensorDataFile; //File that all sensor data is written to
-File serialDataFile; //File that all incoming serial data is written to
+//ExFat
+SdFs sd;
+FsFile sensorDataFile; //File that all sensor data is written to
+FsFile serialDataFile; //File that all incoming serial data is written to
+
+//Fat16/32
+//SdFat sd;
+//File sensorDataFile; //File that all sensor data is written to
+//File serialDataFile; //File that all incoming serial data is written to
+
 char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
 char serialDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
