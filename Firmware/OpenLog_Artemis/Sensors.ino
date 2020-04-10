@@ -207,6 +207,26 @@ bool beginSensors()
     else
       beginSensorOutput += "SCD30 failed to respond. Check wiring.\n";
   }
+
+  if (qwiicAvailable.MS8607 && settings.sensor_MS8607.log && !qwiicOnline.MS8607)
+  {
+    if (pressureSensor_MS8607.begin(qwiic) == true) //Wire port. This checks both 0x40 and 0x76 sensor addresses
+    {
+      if(settings.sensor_MS8607.enableHeater == true)
+        pressureSensor_MS8607.enable_heater();
+      else
+        pressureSensor_MS8607.disable_heater();
+      
+      pressureSensor_MS8607.set_pressure_resolution(settings.sensor_MS8607.pressureResolution);
+      pressureSensor_MS8607.set_humidity_resolution(settings.sensor_MS8607.humidityResolution);
+
+      qwiicOnline.MS8607 = true;
+      beginSensorOutput += "MS8607 Online\n";
+    }
+    else
+      beginSensorOutput += "MS8607 failed to respond. Check wiring.\n";
+  }
+
   return true;
 }
 
@@ -638,6 +658,25 @@ void getData()
     if (settings.sensor_SCD30.logTemperature)
     {
       outputData += (String)co2Sensor_SCD30.getTemperature() + ",";
+      helperText += "degC,";
+    }
+  }
+
+  if (qwiicOnline.MS8607 && settings.sensor_MS8607.log)
+  {
+    if (settings.sensor_MS8607.logPressure)
+    {
+      outputData += (String)pressureSensor_MS8607.getPressure() + ",";
+      helperText += "hPa,";
+    }
+    if (settings.sensor_MS8607.logHumidity)
+    {
+      outputData += (String)pressureSensor_MS8607.getHumidity() + ",";
+      helperText += "humidity_%,";
+    }
+    if (settings.sensor_MS8607.logPressure)
+    {
+      outputData += (String)pressureSensor_MS8607.getTemperature() + ",";
       helperText += "degC,";
     }
   }

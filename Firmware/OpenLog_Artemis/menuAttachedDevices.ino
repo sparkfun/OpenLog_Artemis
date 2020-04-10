@@ -103,6 +103,11 @@ void menuAttachedDevices()
       functionPointers[availableDevices - 1] = menuConfigure_SCD30;
       Serial.printf("%d) SCD30 CO2 Sensor\n", availableDevices++);
     }
+    if (qwiicAvailable.MS8607)
+    {
+      functionPointers[availableDevices - 1] = menuConfigure_MS8607;
+      Serial.printf("%d) MS8607 Pressure Humidity Temperature Sensor\n", availableDevices++);
+    }
 
     Serial.println("x) Exit");
 
@@ -155,6 +160,7 @@ bool detectQwiicDevices()
 #define ADR_VEML6075 0x10
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
+#define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
 #define ADR_UBLOX 0x42
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_SGP30 0x58
@@ -167,6 +173,7 @@ bool detectQwiicDevices()
 #define ADR_MCP9600_1 0x66
 #define ADR_BME280_2 0x76
 #define ADR_MS5637 0x76
+//#define ADR_MS8607 0x76 //Pressure portion of the MS8607 sensor. We'll catch the 0x40 first
 #define ADR_BME280_1 0x77
 
 //Given an address, see if it repsonds as we would expect
@@ -230,12 +237,22 @@ bool testDevice(uint8_t i2cAddress)
         qwiicAvailable.VEML6075 = true;
       break;
     case ADR_MS5637:
-      if (pressureSensor_MS5637.begin(qwiic) == true) //Wire port
-        qwiicAvailable.MS5637 = true;
-      break;
+      {
+        //By the time we hit this address, MS8607 should have already been started by its first address
+        if (qwiicAvailable.MS8607 == false)
+        {
+          if (pressureSensor_MS5637.begin(qwiic) == true) //Wire port
+            qwiicAvailable.MS5637 = true;
+        }
+        break;
+      }
     case ADR_SCD30:
       if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
         qwiicAvailable.SCD30 = true;
+      break;
+    case ADR_MS8607:
+      if (pressureSensor_MS8607.begin(qwiic) == true) //Wire port. Tests for both 0x40 and 0x76 I2C addresses.
+        qwiicAvailable.MS8607 = true;
       break;
     default:
       Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
@@ -1192,4 +1209,127 @@ void menuConfigure_SCD30()
   }
 
   qwiicOnline.SCD30 = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_MS8607()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure MS8607 Pressure Humidity Temperature (PHT) Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (settings.sensor_MS8607.log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (settings.sensor_MS8607.log == true)
+    {
+      Serial.print("2) Log Pressure: ");
+      if (settings.sensor_MS8607.logPressure == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Humidity: ");
+      if (settings.sensor_MS8607.logHumidity == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("4) Log Temperature: ");
+      if (settings.sensor_MS8607.logTemperature == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("5) Heater: ");
+      if (settings.sensor_MS8607.enableHeater == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("6) Set Pressure Resolution: ");
+      if (settings.sensor_MS8607.pressureResolution == MS8607_pressure_resolution_osr_256)
+        Serial.print("0.11");
+      else if (settings.sensor_MS8607.pressureResolution == MS8607_pressure_resolution_osr_512)
+        Serial.print("0.062");
+      else if (settings.sensor_MS8607.pressureResolution == MS8607_pressure_resolution_osr_1024)
+        Serial.print("0.039");
+      else if (settings.sensor_MS8607.pressureResolution == MS8607_pressure_resolution_osr_2048)
+        Serial.print("0.028");
+      else if (settings.sensor_MS8607.pressureResolution == MS8607_pressure_resolution_osr_4096)
+        Serial.print("0.021");
+      else if (settings.sensor_MS8607.pressureResolution == MS8607_pressure_resolution_osr_8192)
+        Serial.print("0.016");
+      Serial.println(" mbar");
+
+      Serial.print("7) Set Humidity Resolution: ");
+      if (settings.sensor_MS8607.humidityResolution == MS8607_humidity_resolution_8b)
+        Serial.print("8");
+      else if (settings.sensor_MS8607.humidityResolution == MS8607_humidity_resolution_10b)
+        Serial.print("10");
+      else if (settings.sensor_MS8607.humidityResolution == MS8607_humidity_resolution_11b)
+        Serial.print("11");
+      else if (settings.sensor_MS8607.humidityResolution == MS8607_humidity_resolution_12b)
+        Serial.print("12");
+      Serial.println(" bits");
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      settings.sensor_MS8607.log ^= 1;
+    else if (settings.sensor_MS8607.log == true)
+    {
+      if (incoming == '2')
+        settings.sensor_MS8607.logPressure ^= 1;
+      else if (incoming == '3')
+        settings.sensor_MS8607.logHumidity ^= 1;
+      else if (incoming == '4')
+        settings.sensor_MS8607.logTemperature ^= 1;
+      else if (incoming == '5')
+        settings.sensor_MS8607.enableHeater ^= 1;
+      else if (incoming == '6')
+      {
+        Serial.println("Set Pressure Resolution:");
+        Serial.println("1) 0.11 mbar");
+        Serial.println("2) 0.062 mbar");
+        Serial.println("3) 0.039 mbar");
+        Serial.println("4) 0.028 mbar");
+        Serial.println("5) 0.021 mbar");
+        Serial.println("6) 0.016 mbar");
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt >= 1 && amt <= 6)
+          settings.sensor_MS8607.pressureResolution = (MS8607_pressure_resolution)(amt - 1);
+        else
+          Serial.println("Error: Out of range");
+      }
+      else if (incoming == '7')
+      {
+        Serial.println("Set Humidity Resolution:");
+        Serial.println("1) 8 bit");
+        Serial.println("2) 10 bit");
+        Serial.println("3) 11 bit");
+        Serial.println("4) 12 bit");
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt >= 1 && amt <= 4)
+        {
+          //Unfortunately these enums aren't sequential so we have to lookup
+          if (amt == 1) settings.sensor_MS8607.humidityResolution = MS8607_humidity_resolution_8b;
+          if (amt == 2) settings.sensor_MS8607.humidityResolution = MS8607_humidity_resolution_10b;
+          if (amt == 3) settings.sensor_MS8607.humidityResolution = MS8607_humidity_resolution_11b;
+          if (amt == 4) settings.sensor_MS8607.humidityResolution = MS8607_humidity_resolution_12b;
+        }
+        else
+          Serial.println("Error: Out of range");
+      }
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.MS8607 = false; //Mark as offline so it will be started with new settings
 }

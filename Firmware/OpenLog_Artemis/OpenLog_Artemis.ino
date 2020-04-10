@@ -33,7 +33,7 @@ enum returnStatus {
 
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#include "Wire.h"
+#include <Wire.h>
 TwoWire qwiic(1); //Will use pads 8/9
 const byte PIN_QWIIC_POWER = 18;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -137,6 +137,9 @@ SGP30 vocSensor_SGP30;
 
 #include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
 SCD30 co2Sensor_SCD30;
+
+#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+MS8607 pressureSensor_MS8607;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
