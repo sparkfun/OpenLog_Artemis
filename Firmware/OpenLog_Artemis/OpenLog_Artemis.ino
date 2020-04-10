@@ -17,7 +17,7 @@
 
 */
 
-const float FIRMWARE_VERSION = 1.0;
+const float FIRMWARE_VERSION = 1.1;
 
 #include "settings.h"
 
@@ -33,7 +33,7 @@ enum returnStatus {
 
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#include "Wire.h"
+#include <Wire.h>
 TwoWire qwiic(1); //Will use pads 8/9
 const byte PIN_QWIIC_POWER = 18;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -54,9 +54,16 @@ const byte PIN_MICROSD_POWER = 15; //x04
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 #define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 
-SdFat sd;
-File sensorDataFile; //File that all sensor data is written to
-File serialDataFile; //File that all incoming serial data is written to
+//ExFat
+SdFs sd;
+FsFile sensorDataFile; //File that all sensor data is written to
+FsFile serialDataFile; //File that all incoming serial data is written to
+
+//Fat16/32
+//SdFat sd;
+//File sensorDataFile; //File that all sensor data is written to
+//File serialDataFile; //File that all incoming serial data is written to
+
 char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
 char serialDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -75,7 +82,7 @@ const int MAX_IDLE_TIME_MSEC = 500;
 bool newSerialData = false;
 char incomingBuffer[256 * 2]; //This size of this buffer is sensitive. Do not change without analysis using OpenLog_Serial.
 int incomingBufferSpot = 0;
-//int charsReceived = 0; //Used for verifying/debugging serial reception
+int charsReceived = 0; //Used for verifying/debugging serial reception
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Add ICM IMU interface
@@ -131,6 +138,9 @@ SGP30 vocSensor_SGP30;
 #include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
 SCD30 co2Sensor_SCD30;
 
+#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+MS8607 pressureSensor_MS8607;
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Global variables
@@ -169,7 +179,7 @@ void setup() {
 
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
-  Serial.printf("Artemis OpenLog v%f\n", FIRMWARE_VERSION);
+  Serial.printf("Artemis OpenLog v%.02f\n", FIRMWARE_VERSION);
 
   beginQwiic();
 
@@ -227,7 +237,7 @@ void loop() {
           serialDataFile.write(incomingBuffer, sizeof(incomingBuffer)); //Record the buffer to the card
           incomingBufferSpot = 0;
         }
-        //charsReceived++;
+        charsReceived++;
       }
 
       lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
@@ -250,7 +260,7 @@ void loop() {
 
         newSerialData = false;
         lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
-        //Serial.println("Total chars recevied: " + (String)charsReceived);
+        printDebug("Total chars received: " + (String)charsReceived);
       }
     }
   }
@@ -342,7 +352,7 @@ void beginSD()
       delay(250); //Give SD more time to power up, then try again
       if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
       {
-        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
+        Serial.println("SD init failed. Is card present? Formatted?");
         digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
         online.microSD = false;
         return;

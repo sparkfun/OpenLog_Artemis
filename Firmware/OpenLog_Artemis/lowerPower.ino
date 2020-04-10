@@ -114,9 +114,14 @@ void goToSleep()
     am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
 
   //We can't leave these power control pins floating
-  qwiicPowerOff();
   imuPowerOff();
   microSDPowerOff();
+
+  //Keep Qwiic bus powered on if user desires it
+  if (settings.powerDownQwiicBusBetweenReads == true)
+    qwiicPowerOff();
+  else
+    qwiicPowerOn(); //Make sure pins stays as output
 
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE); //Turn off CACHE

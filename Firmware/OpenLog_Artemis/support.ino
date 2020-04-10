@@ -1,3 +1,11 @@
+void printDebug(String thingToPrint)
+{
+  if(settings.printDebugMessages == true)
+  {
+    Serial.print(thingToPrint);    
+  }
+}
+
 
 //Option not known
 void printUnknown(uint8_t unknownChoice)

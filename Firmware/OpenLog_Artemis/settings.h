@@ -1,3 +1,5 @@
+#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+
 //Add the new sensor settings below
 struct struct_LPS25HB {
   bool log = true;
@@ -115,6 +117,17 @@ struct struct_SCD30 {
   int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
 };
 
+
+struct struct_MS8607 {
+  bool log = true;
+  bool logHumidity = true;
+  bool logPressure = true;
+  bool logTemperature = true;
+  bool enableHeater = false; // The TE examples say that get_compensated_humidity and get_dew_point will only work if the heater is OFF
+  MS8607_pressure_resolution pressureResolution = MS8607_pressure_resolution_osr_8192; //17ms per reading, 0.016mbar resolution
+  MS8607_humidity_resolution humidityResolution = MS8607_humidity_resolution_12b; //12-bit
+};
+
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
   int sizeOfSettings = 0;
@@ -155,6 +168,9 @@ struct struct_settings {
   bool logA32 = false;
   bool logAnalogVoltages = true;
   int localUTCOffset = -7; //Default to Denver because we can
+  bool printDebugMessages = false;
+  bool powerDownQwiicBusBetweenReads = true;
+  int qwiicBusMaxSpeed = 400000;
   struct_LPS25HB sensor_LPS25HB;
   struct_uBlox sensor_uBlox;
   struct_VL53L1X sensor_VL53L1X;
@@ -168,6 +184,7 @@ struct struct_settings {
   struct_VEML6075 sensor_VEML6075;
   struct_MS5637 sensor_MS5637;
   struct_SCD30 sensor_SCD30;
+  struct_MS8607 sensor_MS8607;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
@@ -194,6 +211,7 @@ struct struct_QwiicSensors {
   bool VEML6075;
   bool MS5637;
   bool SCD30;
+  bool MS8607;
 };
 
 struct_QwiicSensors qwiicAvailable = {
@@ -211,6 +229,7 @@ struct_QwiicSensors qwiicAvailable = {
   .VEML6075 = false,
   .MS5637 = false,
   .SCD30 = false,
+  .MS8607 = false,
 };
 
 struct_QwiicSensors qwiicOnline = {
@@ -228,4 +247,5 @@ struct_QwiicSensors qwiicOnline = {
   .VEML6075 = false,
   .MS5637 = false,
   .SCD30 = false,
+  .MS8607 = false,
 };

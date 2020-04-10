@@ -22,18 +22,10 @@ void menuMain()
     Serial.println("5) Configure Analog Pin Logging");
 
     Serial.println("6) Detect / Configure Attached Devices");
-    //Serial.println("1) Detect Qwiic Devices"); //Do this in sub menu
-    //If VL53L1X attached, set read distance, set read rate?
-    //Log internal temp sensor
-    //Set record freq
-
-    //Serial.println(") Configure Power Control");
-    //Power down ICM
-    //Turn off SD? RTC?...
-    //Serial.println(") Configure Battery Voltage Logging");
-    //Enable VCC logging
 
     Serial.println("r) Reset all settings to default");
+
+    //Serial.println("d) Debug Menu");
 
     Serial.println("x) Return to logging");
 
@@ -51,6 +43,8 @@ void menuMain()
       menuAnalogLogging();
     else if (incoming == '6')
       menuAttachedDevices();
+    else if (incoming == 'd')
+      menuDebug();
     else if (incoming == 'r')
     {
       Serial.println("\n\rResetting to factory defaults. Continue? Press 'y':");

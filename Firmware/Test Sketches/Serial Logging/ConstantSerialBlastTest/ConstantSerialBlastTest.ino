@@ -9,8 +9,6 @@ int testAmt = 3;
 //At 57600, testAmt of 10 takes about 1 minute, 40 takes about 5 minutes
 //At 115200, testAmt of 30 takes about 1 minute
 
-
-
 unsigned long startTime = 0;
 
 void setup()
@@ -18,15 +16,26 @@ void setup()
   pinMode(ledPin, OUTPUT);
 
   Serial.begin(115200);
+  Serial.println();
   Serial.println("Run OpenLog Test");
 
   int rate = 115200 * 4;
   Serial1.begin(rate);
-  Serial.print("Baud rate: ");
+
+  Serial.print("Current output baud rate: ");
   Serial.println(rate);
 
-  Serial1.print("Hello");
+  Serial.println("s)end test blob of text");
+  Serial.println("1)Set baud to 115200");
+  Serial.println("2)Set baud to 230400");
+  Serial.println("3)Set baud to 460800");
+  Serial.println("4)Set baud to 500000");
+  Serial.println("5)Set baud to 691200");
+  Serial.println("6)Set baud to 921600");
+  Serial.println("a)Increase blob size");
+  Serial.println("d)Decrease blob size");
 
+  //enableBurstMode(); //Go to 96MHz
 }
 
 void loop()
@@ -57,13 +66,18 @@ void loop()
     }
     else if (incoming == '4')
     {
-      Serial.println("Serial set to: 921600");
-      Serial1.begin(921600);
+      Serial.println("Serial set to: 500000");
+      Serial1.begin(500000);
     }
     else if (incoming == '5')
     {
-      Serial.println("Serial set to: 500000");
-      Serial1.begin(500000);
+      Serial.println("Serial set to: 691200");
+      Serial1.begin(691200);
+    }
+    else if (incoming == '6')
+    {
+      Serial.println("Serial set to: 921600");
+      Serial1.begin(921600);
     }
     else if (incoming == 'a')
     {
@@ -126,8 +140,11 @@ void sendBlob()
 
   unsigned long totalCharacters = (long)testAmt * 100 * 100;
   Serial.print("Characters pushed: ");
+  Serial.flush();
   Serial.println(totalCharacters);
   Serial.print("Time taken (s): ");
+  Serial.flush();
   Serial.println((millis() - startTime) / 1000.0, 2);
   Serial.println("Done!");
+  Serial.flush();
 }
