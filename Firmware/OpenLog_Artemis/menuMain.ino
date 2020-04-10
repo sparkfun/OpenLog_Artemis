@@ -23,10 +23,9 @@ void menuMain()
 
     Serial.println("6) Detect / Configure Attached Devices");
 
-    //Serial.println(") Configure Battery Voltage Logging");
-    //Enable VCC logging
-
     Serial.println("r) Reset all settings to default");
+
+    //Serial.println("d) Debug Menu");
 
     Serial.println("x) Return to logging");
 
@@ -45,12 +44,7 @@ void menuMain()
     else if (incoming == '6')
       menuAttachedDevices();
     else if (incoming == 'd')
-    {
-      Serial.print("Debug Messages ");
-      settings.printDebugMessages ^= 1;
-      if(settings.printDebugMessages == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-    }
+      menuDebug();
     else if (incoming == 'r')
     {
       Serial.println("\n\rResetting to factory defaults. Continue? Press 'y':");

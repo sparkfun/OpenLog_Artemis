@@ -716,5 +716,9 @@ void determineMaxI2CSpeed()
   else if (settings.sensor_uBlox.i2cSpeed == 100000)
     maxSpeed = 100000;
 
+  //If user wants to limit the I2C bus speed, do it here
+  if(maxSpeed > settings.qwiicBusMaxSpeed)
+    maxSpeed = settings.qwiicBusMaxSpeed;
+
   qwiic.setClock(maxSpeed);
 }

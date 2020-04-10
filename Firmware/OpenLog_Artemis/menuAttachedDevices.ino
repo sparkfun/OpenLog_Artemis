@@ -26,11 +26,7 @@ void menuAttachedDevices()
 
     //See what's on the I2C bus. Will set the qwiicAvailable bools.
     if (detectQwiicDevices() == false)
-    {
-      Serial.println("No devices detected on Qwiic bus");
-      delay(3000);
-      return;
-    }
+      Serial.println("**No devices detected on Qwiic bus**");
 
     //Create array of pointers to the configure functions
     typedef void(*FunctionPointer)();
@@ -108,6 +104,9 @@ void menuAttachedDevices()
       functionPointers[availableDevices - 1] = menuConfigure_MS8607;
       Serial.printf("%d) MS8607 Pressure Humidity Temperature Sensor\n", availableDevices++);
     }
+
+    functionPointers[availableDevices - 1] = menuConfigure_QwiicBus;
+    Serial.printf("%d) Configure Qwiic Settings\n", availableDevices++);
 
     Serial.println("x) Exit");
 
@@ -260,6 +259,46 @@ bool testDevice(uint8_t i2cAddress)
       break;
   }
   return true;
+}
+
+void menuConfigure_QwiicBus()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure Qwiic Bus");
+
+    Serial.print("1) If sensor read time is greater than 2s, turn off bus power: ");
+    if (settings.powerDownQwiicBusBetweenReads == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    Serial.print("2) Set Max Qwiic Bus Speed: ");
+    Serial.println(settings.qwiicBusMaxSpeed);
+
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      settings.powerDownQwiicBusBetweenReads ^= 1;
+    else if (incoming == '2')
+    {
+      Serial.print("Enter max frequency to run Qwiic bus: (100000 to 400000): ");
+      int amt = getNumber(menuTimeout);
+      if (amt >= 100000 && amt <= 400000)
+        settings.qwiicBusMaxSpeed = amt;
+      else
+        Serial.println("Error: Out of range");
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  qwiicOnline.LPS25HB = false; //Mark as offline so it will be started with new settings
 }
 
 void menuConfigure_LPS25HB()

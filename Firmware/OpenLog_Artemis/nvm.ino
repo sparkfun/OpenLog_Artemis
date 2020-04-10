@@ -90,6 +90,8 @@ void recordSettingsToFile()
     settingsFile.println("logAnalogVoltages=" + (String)settings.logAnalogVoltages);
     settingsFile.println("localUTCOffset=" + (String)settings.localUTCOffset);
     settingsFile.println("printDebugMessages=" + (String)settings.printDebugMessages);
+    settingsFile.println("powerDownQwiicBusBetweenReads=" + (String)settings.powerDownQwiicBusBetweenReads);
+    settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
     //    settingsFile.println("=" + (String)settings.sensor_LPS25HB.);
 
     settingsFile.close();
@@ -278,6 +280,10 @@ bool parseLine(char* str) {
     settings.localUTCOffset = d;
   else if (strcmp(settingName, "printDebugMessages") == 0)
     settings.printDebugMessages = d;
+  else if (strcmp(settingName, "powerDownQwiicBusBetweenReads") == 0)
+    settings.powerDownQwiicBusBetweenReads = d;
+  else if (strcmp(settingName, "qwiicBusMaxSpeed") == 0)
+    settings.qwiicBusMaxSpeed = d;
   //  else if (strcmp(settingName, "") == 0)
   //    settings. = d;
   else
