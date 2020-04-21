@@ -17,7 +17,7 @@
 
 */
 
-const float FIRMWARE_VERSION = 1.1;
+const float FIRMWARE_VERSION = 1.2;
 
 #include "settings.h"
 
@@ -145,7 +145,7 @@ MS8607 pressureSensor_MS8607;
 
 //Global variables
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-unsigned long measurementStartTime; //Used to calc the actual update rate.
+uint64_t measurementStartTime; //Used to calc the actual update rate. Max is ~80,000,000ms in a 24 hour period.
 unsigned long measurementCount = 0; //Used to calc the actual update rate.
 String outputData;
 String beginSensorOutput;
@@ -158,7 +158,9 @@ const uint32_t maxUsBeforeSleep = 2000000; //Number of us between readings befor
 const byte menuTimeout = 45; //Menus will exit/timeout after this number of seconds
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-unsigned long startTime = 0;
+//unsigned long startTime = 0;
+
+#define DUMP(varname) {Serial.printf("%s: %llu\n", #varname, varname);}
 
 void setup() {
   //If 3.3V rail drops below 3V, system will power down and maintain RTC
@@ -210,16 +212,18 @@ void setup() {
   if (beginSensors() == true) Serial.println(beginSensorOutput); //159 - 865ms but varies based on number of devices attached
   else msg("No sensors detected");
 
-  measurementStartTime = millis();
+  //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
+  if (settings.usBetweenReadings >= maxUsBeforeSleep)
+    measurementStartTime = rtcMillis();
+  else
+    measurementStartTime = millis();
 
   //Serial.printf("Setup time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something
   if (settings.usBetweenReadings >= maxUsBeforeSleep)
-  {
-    menuMain(); //Present user menu at startup to allow configuration even in LP mode
-  }
+    menuMain();
 }
 
 void loop() {

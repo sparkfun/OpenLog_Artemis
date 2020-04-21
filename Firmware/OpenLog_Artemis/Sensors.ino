@@ -212,11 +212,11 @@ bool beginSensors()
   {
     if (pressureSensor_MS8607.begin(qwiic) == true) //Wire port. This checks both 0x40 and 0x76 sensor addresses
     {
-      if(settings.sensor_MS8607.enableHeater == true)
+      if (settings.sensor_MS8607.enableHeater == true)
         pressureSensor_MS8607.enable_heater();
       else
         pressureSensor_MS8607.disable_heater();
-      
+
       pressureSensor_MS8607.set_pressure_resolution(settings.sensor_MS8607.pressureResolution);
       pressureSensor_MS8607.set_humidity_resolution(settings.sensor_MS8607.humidityResolution);
 
@@ -683,10 +683,22 @@ void getData()
 
   if (settings.logHertz)
   {
-    //Calculate the actual update rate based on the sketch start time and the
-    //number of updates we've completed.
-    float actualRate = measurementCount * 1000.0 / (millis() - measurementStartTime);
+    uint64_t currentMillis;
 
+    //If we are sleeping between readings then we cannot rely on millis() as it is powered down
+    //Used RTC instead
+    if (settings.usBetweenReadings >= maxUsBeforeSleep)
+    {
+      currentMillis = rtcMillis();
+    }
+    else
+    {
+      //Calculate the actual update rate based on the sketch start time and the
+      //number of updates we've completed.
+      currentMillis = millis();
+    }
+
+    float actualRate = measurementCount * 1000.0 / (currentMillis - measurementStartTime);
     outputData += (String)actualRate + ","; //Hz
     helperText += "output_Hz,";
   }
@@ -717,7 +729,7 @@ void determineMaxI2CSpeed()
     maxSpeed = 100000;
 
   //If user wants to limit the I2C bus speed, do it here
-  if(maxSpeed > settings.qwiicBusMaxSpeed)
+  if (maxSpeed > settings.qwiicBusMaxSpeed)
     maxSpeed = settings.qwiicBusMaxSpeed;
 
   qwiic.setClock(maxSpeed);
