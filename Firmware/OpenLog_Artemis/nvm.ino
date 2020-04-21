@@ -94,6 +94,14 @@ void recordSettingsToFile()
     settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
     //    settingsFile.println("=" + (String)settings.sensor_LPS25HB.);
 
+    settingsFile.println("sensor_MS8607.log=" + (String)settings.sensor_MS8607.log);
+    settingsFile.println("sensor_MS8607.logHumidity=" + (String)settings.sensor_MS8607.logHumidity);
+    settingsFile.println("sensor_MS8607.logPressure=" + (String)settings.sensor_MS8607.logPressure);
+    settingsFile.println("sensor_MS8607.logTemperature=" + (String)settings.sensor_MS8607.logTemperature);
+    settingsFile.println("sensor_MS8607.enableHeater=" + (String)settings.sensor_MS8607.enableHeater);
+    settingsFile.println("sensor_MS8607.pressureResolution=" + (String)settings.sensor_MS8607.pressureResolution);
+    settingsFile.println("sensor_MS8607.humidityResolution=" + (String)settings.sensor_MS8607.humidityResolution);
+
     settingsFile.close();
   }
 }
@@ -284,6 +292,29 @@ bool parseLine(char* str) {
     settings.powerDownQwiicBusBetweenReads = d;
   else if (strcmp(settingName, "qwiicBusMaxSpeed") == 0)
     settings.qwiicBusMaxSpeed = d;
+
+  /*
+   LPS25HB
+   NAU7802
+   MCP9600
+   VCNL4040
+   */
+  
+  else if (strcmp(settingName, "sensor_MS8607.log") == 0)
+    settings.sensor_MS8607.log = d;
+  else if (strcmp(settingName, "sensor_MS8607.logHumidity") == 0)
+    settings.sensor_MS8607.logHumidity = d;
+  else if (strcmp(settingName, "sensor_MS8607.logPressure") == 0)
+    settings.sensor_MS8607.logPressure = d;
+  else if (strcmp(settingName, "sensor_MS8607.logTemperature") == 0)
+    settings.sensor_MS8607.logTemperature = d;
+  else if (strcmp(settingName, "sensor_MS8607.enableHeater") == 0)
+    settings.sensor_MS8607.enableHeater = d;
+  else if (strcmp(settingName, "sensor_MS8607.pressureResolution") == 0)
+    settings.sensor_MS8607.pressureResolution = (MS8607_pressure_resolution)d;
+  else if (strcmp(settingName, "sensor_MS8607.humidityResolution") == 0)
+    settings.sensor_MS8607.humidityResolution = (MS8607_humidity_resolution)d;
+
   //  else if (strcmp(settingName, "") == 0)
   //    settings. = d;
   else
