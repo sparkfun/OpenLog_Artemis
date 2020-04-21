@@ -2,7 +2,7 @@
 void msg(const char * message)
 {
   Serial.println(message);
-  if(online.microSD)
+  if (online.microSD)
     sensorDataFile.println(message);
 }
 
@@ -17,7 +17,7 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
     newFileNumber--; //Check if last log file was empty
 
   //Search for next available log spot
-  static char newFileName[13];
+  static char newFileName[40];
   while (1)
   {
     sprintf(newFileName, "%s%05u.TXT", fileLeader, newFileNumber); //Splice the new file number into this file name
@@ -25,7 +25,8 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
     if (sd.exists(newFileName) == false) break; //File name not found so we will use it.
 
     //File exists so open and see if it is empty. If so, use it.
-    newFile.open(newFileName, O_READ);
+    //newFile = sd.open(newFileName, O_READ);
+    newFile.open(newFileName, O_READ); //exFat
     if (newFile.size() == 0) break; // File is empty so we will use it.
 
     newFile.close(); // Close this existing file we just opened.

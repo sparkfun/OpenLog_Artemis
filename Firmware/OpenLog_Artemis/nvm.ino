@@ -46,7 +46,8 @@ void recordSettingsToFile()
     if (sd.exists("OLA_settings.cfg"))
       sd.remove("OLA_settings.cfg");
 
-    FsFile settingsFile;
+    //File settingsFile; //FAT16/32
+    FsFile settingsFile; //exFat
     if (settingsFile.open("OLA_settings.cfg", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create settings file");
@@ -116,7 +117,8 @@ bool loadSettingsFromFile()
   {
     if (sd.exists("OLA_settings.cfg"))
     {
-      FsFile settingsFile;
+      //File settingsFile; //FAT16/32
+      FsFile settingsFile; //exFat
       if (settingsFile.open("OLA_settings.cfg", O_READ) == false)
       {
         Serial.println("Failed to open settings file");

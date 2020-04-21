@@ -77,12 +77,12 @@ void goToSleep()
   if (online.dataLogging == true)
   {
     sensorDataFile.sync();
-    //sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
+    sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
   }
   if (online.serialLogging == true)
   {
     serialDataFile.sync();
-    //serialDataFile.close();
+    serialDataFile.close();
   }
 
   Serial.flush(); //Finish any prints
@@ -108,14 +108,16 @@ void goToSleep()
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
-
   //Disable all pads
   for (int x = 0 ; x < 50 ; x++)
     am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
 
   //We can't leave these power control pins floating
   imuPowerOff();
-  microSDPowerOff();
+  //microSDPowerOff();
+
+  //Testing file record issues
+  microSDPowerOn();
 
   //Keep Qwiic bus powered on if user desires it
   if (settings.powerDownQwiicBusBetweenReads == true)
@@ -191,11 +193,7 @@ void wakeFromSleep()
 
   beginSD(); //285 - 293ms
 
-  //loadSettings(); //50 - 250ms
-
   beginQwiic();
-
-  //analogReadResolution(14); //Increase from default of 10
 
   beginDataLogging(); //180ms
 
