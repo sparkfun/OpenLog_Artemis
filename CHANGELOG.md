@@ -1,6 +1,13 @@
 Change Log
 ======================
 
+v1.2
+---------
+
+* Fix bug in findNextAvailableLog() that was causing logging to fail during after a sleep/wakeup and sometimes corrupt the microSD card.
+* Fix calculation of actualHz when power sleeping >2s.
+* Log sensor configurations to config file. This allows users to configure an OpenLog Artemis and then deploy that configuration to multiple units as needed.
+
 v1.1
 ---------
 
