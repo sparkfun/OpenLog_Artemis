@@ -9,15 +9,15 @@ void powerDown()
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent voltage supervisor from waking us from sleep
 
   //Save files before going to sleep
-//  if (online.dataLogging == true)
-//  {
-//    sensorDataFile.sync();
-//  }
-//  if (online.serialLogging == true)
-//  {
-//    serialDataFile.sync();
-//  }
-  
+  //  if (online.dataLogging == true)
+  //  {
+  //    sensorDataFile.sync();
+  //  }
+  //  if (online.serialLogging == true)
+  //  {
+  //    serialDataFile.sync();
+  //  }
+
   //Serial.flush(); //Don't waste time waiting for prints to finish
 
   //  Wire.end(); //Power down I2C
@@ -29,7 +29,7 @@ void powerDown()
 
   Serial.end(); //Power down UART
   Serial1.end();
-  
+
   //Force the peripherals off
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
@@ -49,7 +49,7 @@ void powerDown()
   qwiicPowerOff();
   imuPowerOff();
   microSDPowerOff();
-  
+
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE); //Turn off CACHE
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K); //Turn off everything but lower 512k
@@ -108,14 +108,16 @@ void goToSleep()
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
-
   //Disable all pads
   for (int x = 0 ; x < 50 ; x++)
     am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
 
   //We can't leave these power control pins floating
   imuPowerOff();
-  microSDPowerOff();
+  //microSDPowerOff();
+
+  //Testing file record issues
+  microSDPowerOn();
 
   //Keep Qwiic bus powered on if user desires it
   if (settings.powerDownQwiicBusBetweenReads == true)
@@ -173,8 +175,6 @@ void wakeFromSleep()
   am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
   am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
 
-  startTime = micros();
-
   //Turn on ADC
   ap3_adc_setup();
 
@@ -193,11 +193,7 @@ void wakeFromSleep()
 
   beginSD(); //285 - 293ms
 
-  //loadSettings(); //50 - 250ms
-
   beginQwiic();
-
-  //analogReadResolution(14); //Increase from default of 10
 
   beginDataLogging(); //180ms
 
@@ -206,8 +202,6 @@ void wakeFromSleep()
   beginIMU(); //61ms
 
   beginSensors(); //159 - 865ms but varies based on number of devices attached
-
-  measurementStartTime = millis();
 
   //Serial.printf("Wake up time: %.02f ms\n", (micros() - startTime) / 1000.0);
 
@@ -246,4 +240,18 @@ void imuPowerOff()
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
   digitalWrite(PIN_IMU_POWER, LOW);
+}
+
+//Returns the number of milliseconds according to the RTC
+//Watch out for 24 hour roll over at 86,400,000ms
+uint32_t rtcMillis()
+{
+    myRTC.getTime();
+    uint32_t millisToday = 0;
+    millisToday += (myRTC.hour * 3600000UL);
+    millisToday += (myRTC.minute * 60000UL);
+    millisToday += (myRTC.seconds * 1000UL);
+    millisToday += (myRTC.hundredths * 10UL);
+
+    return(millisToday);  
 }
