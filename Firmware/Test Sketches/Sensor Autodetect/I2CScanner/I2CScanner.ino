@@ -1,23 +1,26 @@
 #include <Wire.h>
-TwoWire myWire(1); //Will use pads 8/9
+TwoWire qwiic(1); //Will use pads 8/9
 
 void setup()
 {
   Serial.begin(115200);
   Serial.println("Scanning...");
 
-  //Wire.begin();
-  myWire.begin();
-  myWire.setClock(100000);
+  const byte PIN_QWIIC_PWR = 18;
+  pinMode(PIN_QWIIC_PWR, OUTPUT);
+  digitalWrite(PIN_QWIIC_PWR, LOW); //qwiicPowerOn();
+
+  qwiic.begin();
+  qwiic.setClock(100000);
+
+  qwiic.setPullups(1); //Set pullups to 1k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   byte error, address;
   int nDevices = 0;
   for (address = 1; address < 127; address++ )
   {
-    //Wire.beginTransmission(address);
-    //error = Wire.endTransmission();
-    myWire.beginTransmission(address);
-    error = myWire.endTransmission();
+    qwiic.beginTransmission(address);
+    error = qwiic.endTransmission();
 
     if (error == 0)
     {
@@ -41,7 +44,6 @@ void setup()
     Serial.println("No I2C devices found\n");
   else
     Serial.println("done\n");
-
 }
 
 void loop()
