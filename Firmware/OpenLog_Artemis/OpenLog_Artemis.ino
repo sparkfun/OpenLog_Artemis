@@ -17,7 +17,8 @@
 
 */
 
-const float FIRMWARE_VERSION = 1.3;
+const int FIRMWARE_VERSION_MAJOR = 1;
+const int FIRMWARE_VERSION_MINOR = 3;
 
 #include "settings.h"
 
@@ -181,7 +182,7 @@ void setup() {
 
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
-  Serial.printf("Artemis OpenLog v%.02f\n", FIRMWARE_VERSION);
+  Serial.printf("Artemis OpenLog v%d.%d\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
 
   beginQwiic();
 
