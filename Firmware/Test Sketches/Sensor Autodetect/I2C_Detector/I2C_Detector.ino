@@ -138,13 +138,13 @@ void loop()
   qwiicPowerOn();
   //delay(1000); //SCD30 acks and responds
   //delay(100); //SCD30 acks but fails to start
-  delay(900); //
+  delay(100); //
   Serial.println("On!");
   Serial.flush();
 
   bool somethingDetected = false;
 
-  for (uint8_t address = 1 ; address < 127 ; address++)
+  for (uint8_t address = 0x60 ; address < 127 ; address++)
   {
     qwiic.beginTransmission(address);
     if (qwiic.endTransmission() == 0)
@@ -253,17 +253,11 @@ bool testDevice(uint8_t i2cAddress)
       }
     case ADR_SCD30:
       if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
-      {
         qwiicAvailable.SCD30 = true;
-        Serial.println("SCD30 found!");
-      }
       else
       {
-        Serial.println("SCD30 failed to respond");
-        
         //Give it 2s to boot and then try again
         delay(2000);
-        
         if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
         {
           qwiicAvailable.SCD30 = true;

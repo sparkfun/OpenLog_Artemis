@@ -17,7 +17,7 @@
 
 */
 
-const float FIRMWARE_VERSION = 1.2;
+const float FIRMWARE_VERSION = 1.3;
 
 #include "settings.h"
 

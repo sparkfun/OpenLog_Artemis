@@ -134,8 +134,12 @@ bool detectQwiicDevices()
 
   qwiic.setPullups(1); //Set pullups to 1k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
-  //Setting the Pullups to 24k causes the SGP30 to fail to detect.
-  //  qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+  //24k causes a bunch of unknown devices to be falsely detected.
+  //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+
+  //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
+  //Give sensors, specifically those with a low I2C address, time to turn on
+  delay(100); //SCD30 required >50ms to turn on
 
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
@@ -248,6 +252,14 @@ bool testDevice(uint8_t i2cAddress)
     case ADR_SCD30:
       if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
         qwiicAvailable.SCD30 = true;
+      else
+      {
+        //See issue #4: https://github.com/sparkfun/OpenLog_Artemis/issues/4
+        //Give it 2s to boot and then try again
+        delay(2000); //1s works but datasheet specs <2s so we'll go with 2000ms.
+        if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
+          qwiicAvailable.SCD30 = true;
+      }
       break;
     case ADR_MS8607:
       if (pressureSensor_MS8607.begin(qwiic) == true) //Wire port. Tests for both 0x40 and 0x76 I2C addresses.
