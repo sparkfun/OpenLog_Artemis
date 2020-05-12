@@ -1,7 +1,7 @@
 /*
   This example shows how to write to a file
 
-  Be sure to select "SparkFun RedBoard ATP" to get the pin assignments correct
+  Be sure to select "SparkFun RedBoard Artemis ATP" to get the pin assignments correct
 */
 
 //microSD Interface
