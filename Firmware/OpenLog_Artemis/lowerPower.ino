@@ -28,7 +28,7 @@ void powerDown()
   power_adc_disable(); //Power down ADC. It it started by default before setup().
 
   Serial.end(); //Power down UART
-  Serial1.end();
+  SerialLog.end();
 
   //Force the peripherals off
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
@@ -95,7 +95,7 @@ void goToSleep()
   power_adc_disable(); //Power down ADC. It it started by default before setup().
 
   Serial.end(); //Power down UART
-  Serial1.end();
+  SerialLog.end();
 
   //Force the peripherals off
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
