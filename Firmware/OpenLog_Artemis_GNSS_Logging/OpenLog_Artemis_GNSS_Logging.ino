@@ -24,7 +24,8 @@
 
   TO DO:
   Check UBX-MON-VER to see which GNSS is connected and hence:
-  - if UBX-NAV-RELPOSNED and UBX-RXM-RAWX are supported.
+  - if UBX-CFG-VALSET is supported (protocol >= 23.01)
+  - if UBX-NAV-RELPOSNED and UBX-RXM-RAWX are supported (high precision only)
   - the minimum usBetweenReadings
 
 */
@@ -186,51 +187,54 @@ void setup() {
 void loop() {
   if (Serial.available()) menuMain(); //Present user menu
 
-  //micros() resets to 0 during sleep so only test if we are not sleeping
-  if (settings.usBetweenReadings < maxUsBeforeSleep)
-  {
-    if ((micros() - lastReadTime) >= settings.usBetweenReadings)
-      takeReading = true;
-  }
+  storeData(); //storeData is the workhorse. It reads I2C data and writes it to SD.
 
-  //Is it time to get new data?
-  if (takeReading == true)
-  {
-    takeReading = false;
-    lastReadTime = micros();
-
-    getData(); //Query all enabled sensors for data
-
-    //Print to terminal
-    if (settings.enableTerminalOutput == true)
-      Serial.print(outputData); //Print to terminal
-
-    //Record to SD
-    if (settings.logData == true)
-    {
-      if (settings.enableSD && online.microSD)
-      {
-        char temp[512];
-        outputData.toCharArray(temp, 512); //Convert string to char array so sdfat can record it
-        gnssDataFile.write(temp, strlen(temp)); //Record the buffer to the card
-
-        //Force sync every 500ms
-        if (millis() - lastDataLogSyncTime > 500)
-        {
-          lastDataLogSyncTime = millis();
-          digitalWrite(PIN_STAT_LED, HIGH);
-          gnssDataFile.sync();
-          digitalWrite(PIN_STAT_LED, LOW);
-        }
-      }
-    }
-
-    //Go to sleep if time between readings is greater than 2 seconds
-    if (settings.usBetweenReadings > maxUsBeforeSleep)
-    {
-      goToSleep();
-    }
-  }
+//  //micros() resets to 0 during sleep so only test if we are not sleeping
+//  if (settings.usBetweenReadings < maxUsBeforeSleep)
+//  {
+//    if ((micros() - lastReadTime) >= settings.usBetweenReadings)
+//      takeReading = true;
+//  }
+//
+//  //Is it time to get new data?
+//  if (takeReading == true)
+//  {
+//    takeReading = false;
+//    lastReadTime = micros();
+//
+//    getData(); //Query all enabled sensors for data
+//
+//    //Print to terminal
+//    if (settings.enableTerminalOutput == true)
+//      Serial.print(outputData); //Print to terminal
+//
+//    //Record to SD
+//    if (settings.logData == true)
+//    {
+//      if (settings.enableSD && online.microSD)
+//      {
+//        TO DO: CHeck this bit. What happens if the module returns more than 512 bytes?
+//        char temp[512];
+//        outputData.toCharArray(temp, 512); //Convert string to char array so sdfat can record it
+//        gnssDataFile.write(temp, strlen(temp)); //Record the buffer to the card
+//
+//        //Force sync every 500ms
+//        if (millis() - lastDataLogSyncTime > 500)
+//        {
+//          lastDataLogSyncTime = millis();
+//          digitalWrite(PIN_STAT_LED, HIGH);
+//          gnssDataFile.sync();
+//          digitalWrite(PIN_STAT_LED, LOW);
+//        }
+//      }
+//    }
+//
+//    //Go to sleep if time between readings is greater than 2 seconds
+//    if (settings.usBetweenReadings > maxUsBeforeSleep)
+//    {
+//      goToSleep();
+//    }
+//  }
 }
 
 void beginQwiic()

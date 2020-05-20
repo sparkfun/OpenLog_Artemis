@@ -9,14 +9,12 @@ void menuMain()
     Serial.println("Menu: Main Menu");
 
     Serial.println("1) Configure Terminal Output");
-    //10 to 1 Hz? Global logging. Overrides the IMU, analog, etc.?
-    //User may want to log Analog really fast and IMU or humidity less fast.
 
     Serial.println("2) Detect / Configure Attached Devices");
 
     Serial.println("r) Reset all settings to default");
 
-    //Serial.println("d) Debug Menu");
+    Serial.println("d) Debug Menu");
 
     Serial.println("x) Return to logging");
 

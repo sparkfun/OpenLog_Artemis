@@ -192,29 +192,37 @@ void menuConfigure_uBlox()
       if (settings.sensor_uBlox.logUBXNAVRELPOSNED == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("10) Log UBX-NAV-TIMEUTC (UTC Time Solution): ");
+      Serial.print("10) Log UBX-NAV-STATUS (Receiver Navigation Status): ");
+      if (settings.sensor_uBlox.logUBXNAVSTATUS == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("11) Log UBX-NAV-TIMEUTC (UTC Time Solution): ");
       if (settings.sensor_uBlox.logUBXNAVTIMEUTC == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("11) Log UBX-NAV-VELECEF (Velocity Solution Earth-Centered Earth-Fixed): ");
+      Serial.print("12) Log UBX-NAV-VELECEF (Velocity Solution Earth-Centered Earth-Fixed): ");
       if (settings.sensor_uBlox.logUBXNAVVELECEF == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("12) Log UBX-NAV-VELNED (Velocity Solution North/East/Down): ");
+      Serial.print("13) Log UBX-NAV-VELNED (Velocity Solution North/East/Down): ");
       if (settings.sensor_uBlox.logUBXNAVVELNED == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("13) Log UBX-RXM-RAWX (Multi-GNSS Raw Measurement) (High Precision GNSS products only!): ");
+      Serial.print("14) Log UBX-RXM-RAWX (Multi-GNSS Raw Measurement) (High Precision GNSS products only!): ");
       if (settings.sensor_uBlox.logUBXRXMRAWX == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("14) Log UBX-RXM-SFRBX (Broadcast Navigation Data Subframe): ");
+      Serial.print("15) Log UBX-RXM-SFRBX (Broadcast Navigation Data Subframe): ");
       if (settings.sensor_uBlox.logUBXRXMSFRBX == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("16) Log UBX-TIM-TM2 (Time Mark Data): ");
+      if (settings.sensor_uBlox.logUBXTIMTM2 == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
       Serial.flush();
 
-      Serial.printf("15) Set I2C Interface Speed: %d\n", settings.sensor_uBlox.i2cSpeed);
+      Serial.printf("17) Set I2C Interface Speed: %d\n", settings.sensor_uBlox.i2cSpeed);
     }
     Serial.println("x) Exit");
 
@@ -243,16 +251,20 @@ void menuConfigure_uBlox()
       else if (incoming == 9)
         settings.sensor_uBlox.logUBXNAVRELPOSNED ^= 1;
       else if (incoming == 10)
-        settings.sensor_uBlox.logUBXNAVTIMEUTC ^= 1;
+        settings.sensor_uBlox.logUBXNAVSTATUS ^= 1;
       else if (incoming == 11)
-        settings.sensor_uBlox.logUBXNAVVELECEF ^= 1;
+        settings.sensor_uBlox.logUBXNAVTIMEUTC ^= 1;
       else if (incoming == 12)
-        settings.sensor_uBlox.logUBXNAVVELNED ^= 1;
+        settings.sensor_uBlox.logUBXNAVVELECEF ^= 1;
       else if (incoming == 13)
-        settings.sensor_uBlox.logUBXRXMRAWX ^= 1;
+        settings.sensor_uBlox.logUBXNAVVELNED ^= 1;
       else if (incoming == 14)
-        settings.sensor_uBlox.logUBXRXMSFRBX ^= 1;
+        settings.sensor_uBlox.logUBXRXMRAWX ^= 1;
       else if (incoming == 15)
+        settings.sensor_uBlox.logUBXRXMSFRBX ^= 1;
+      else if (incoming == 16)
+        settings.sensor_uBlox.logUBXTIMTM2 ^= 1;
+      else if (incoming == 17)
       {
         if (settings.sensor_uBlox.i2cSpeed == 100000)
           settings.sensor_uBlox.i2cSpeed = 400000;

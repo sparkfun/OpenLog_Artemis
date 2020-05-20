@@ -9,11 +9,15 @@ struct struct_uBlox {
   bool logUBXNAVPOSLLH = false;
   bool logUBXNAVPVT = true;
   bool logUBXNAVRELPOSNED = false;
+  bool logUBXNAVSTATUS = false;
   bool logUBXNAVTIMEUTC = false;
   bool logUBXNAVVELECEF = false;
   bool logUBXNAVVELNED = false;
   bool logUBXRXMRAWX = false;
   bool logUBXRXMSFRBX = false;
+  bool logUBXTIMTM2 = false;
+  uint16_t minMeasInterval = 100; //Minimum measurement interval in ms. TO DO: set this according to module type
+  uint8_t ubloxI2Caddress = 0x42; //Let's store this just in case we want to change it at some point with CFG-I2C-ADDRESS (0x20510001)
   int i2cSpeed = 400000; //Default to 400kHz
 };
 
@@ -22,9 +26,9 @@ struct struct_settings {
   int sizeOfSettings = 0;
   int nextSerialLogNumber = 1;
   int nextDataLogNumber = 1;
-  uint64_t usBetweenReadings = 100000; //100,000us = 100ms = 10 readings per second.
+  uint64_t usBetweenReadings = 1000000; //1000,000us = 1000ms = 1 readings per second.
   bool enableSD = true;
-  bool enableTerminalOutput = true;
+  bool enableTerminalOutput = false;
   bool logData = true;
   int serialTerminalBaudRate = 115200;
   bool showHelperText = true;
