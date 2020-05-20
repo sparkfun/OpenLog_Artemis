@@ -67,7 +67,8 @@ void recordSettingsToFile()
     settingsFile.println("logData=" + (String)settings.logData);
     settingsFile.println("serialTerminalBaudRate=" + (String)settings.serialTerminalBaudRate);
     settingsFile.println("showHelperText=" + (String)settings.showHelperText);
-    settingsFile.println("printDebugMessages=" + (String)settings.printDebugMessages);
+    settingsFile.println("printMajorDebugMessages=" + (String)settings.printMajorDebugMessages);
+    settingsFile.println("printMinorDebugMessages=" + (String)settings.printMinorDebugMessages);
     settingsFile.println("powerDownQwiicBusBetweenReads=" + (String)settings.powerDownQwiicBusBetweenReads);
     settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
 
@@ -210,8 +211,10 @@ bool parseLine(char* str) {
     settings.serialTerminalBaudRate = d;
   else if (strcmp(settingName, "showHelperText") == 0)
     settings.showHelperText = d;
-  else if (strcmp(settingName, "printDebugMessages") == 0)
-    settings.printDebugMessages = d;
+  else if (strcmp(settingName, "printMajorDebugMessages") == 0)
+    settings.printMajorDebugMessages = d;
+  else if (strcmp(settingName, "printMinorDebugMessages") == 0)
+    settings.printMinorDebugMessages = d;
   else if (strcmp(settingName, "powerDownQwiicBusBetweenReads") == 0)
     settings.powerDownQwiicBusBetweenReads = d;
   else if (strcmp(settingName, "qwiicBusMaxSpeed") == 0)

@@ -12,6 +12,16 @@ void menuMain()
 
     Serial.println("2) Detect / Configure Attached Devices");
 
+    if (settings.logData && settings.enableSD && online.microSD)
+    {
+      Serial.println("3) Open New Log File");
+
+      if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && qwiicOnline.uBlox)
+      {
+        Serial.println("4) Reset GNSS (Careful now!)");
+      }
+    }
+
     Serial.println("r) Reset all settings to default");
 
     Serial.println("d) Debug Menu");
@@ -24,6 +34,10 @@ void menuMain()
       menuLogRate();
     else if (incoming == '2')
       menuAttachedDevices();
+    else if (incoming == '3')
+      openNewLogFile();
+    else if (incoming == '4')
+      resetGNSS();
     else if (incoming == 'd')
       menuDebug();
     else if (incoming == 'r')

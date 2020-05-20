@@ -28,11 +28,12 @@ struct struct_settings {
   int nextDataLogNumber = 1;
   uint64_t usBetweenReadings = 1000000; //1000,000us = 1000ms = 1 readings per second.
   bool enableSD = true;
-  bool enableTerminalOutput = false;
+  bool enableTerminalOutput = true; //false;
   bool logData = true;
   int serialTerminalBaudRate = 115200;
   bool showHelperText = true;
-  bool printDebugMessages = false;
+  bool printMajorDebugMessages = true; //false;
+  bool printMinorDebugMessages = true; //false;
   bool powerDownQwiicBusBetweenReads = false;
   int qwiicBusMaxSpeed = 400000;
   struct_uBlox sensor_uBlox;
@@ -42,8 +43,8 @@ struct struct_settings {
 struct struct_online {
   bool microSD = false;
   bool dataLogging = false;
-  bool serialLogging = false;
-  bool IMU = false;
+//  bool serialLogging = false;
+//  bool IMU = false;
 } online;
 
 //These structs define supported sensors and if they are available and online(started).

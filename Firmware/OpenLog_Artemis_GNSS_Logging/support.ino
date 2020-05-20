@@ -1,11 +1,18 @@
-void printDebug(String thingToPrint)
+void printMajorDebug(String thingToPrint)
 {
-  if(settings.printDebugMessages == true)
+  if(settings.printMajorDebugMessages == true)
   {
     Serial.print(thingToPrint);    
   }
 }
 
+void printMinorDebug(String thingToPrint)
+{
+  if(settings.printMinorDebugMessages == true)
+  {
+    Serial.print(thingToPrint);    
+  }
+}
 
 //Option not known
 void printUnknown(uint8_t unknownChoice)
@@ -24,9 +31,12 @@ void printUnknown(int unknownValue)
 //Blocking wait for user input
 void waitForInput()
 {
-  delay(10); //Wait for any incoming chars to hit buffer
+  delay(5); //Wait for any incoming chars to hit buffer (let's keep this short!)
   while (Serial.available() > 0) Serial.read(); //Clear buffer
-  while (Serial.available() == 0);
+  while (Serial.available() == 0)
+  {
+    storeData(); //Keep reading I2C data and writing it to SD
+  }
 }
 
 //Get single byte from user
@@ -35,8 +45,11 @@ void waitForInput()
 //Returns 'x' if user presses 'x'
 uint8_t getByteChoice(int numberOfSeconds)
 {
+  bool termOut = settings.enableTerminalOutput; //Store settings.enableTerminalOutput
+  settings.enableTerminalOutput = false; //Disable terminal messages while waiting for a choice
+  
   Serial.flush();
-  delay(50); //Wait for any incoming chars to hit buffer
+  delay(5); //Wait for any incoming chars to hit buffer (let's keep this short!)
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   long startTime = millis();
@@ -55,13 +68,17 @@ uint8_t getByteChoice(int numberOfSeconds)
 
     if ( (millis() - startTime) / 1000 >= numberOfSeconds)
     {
-      Serial.println("No user input recieved.");
+      Serial.println("No user input received.");
+      settings.enableTerminalOutput = termOut; //Restore settings.enableTerminalOutput
       return (STATUS_GETBYTE_TIMEOUT); //Timeout. No user input.
     }
 
-    delay(10);
+    storeData(); //Keep reading I2C data and writing it to SD
+
+    delay(1);
   }
 
+  settings.enableTerminalOutput = termOut; //Restore settings.enableTerminalOutput
   return (incoming);
 }
 
@@ -70,7 +87,10 @@ uint8_t getByteChoice(int numberOfSeconds)
 //Returns STATUS_PRESSED_X if user presses 'x'
 int64_t getNumber(int numberOfSeconds)
 {
-  delay(10); //Wait for any incoming chars to hit buffer
+  bool termOut = settings.enableTerminalOutput; //Store settings.enableTerminalOutput
+  settings.enableTerminalOutput = false; //Disable terminal messages while waiting for a number
+  
+  delay(5); //Wait for any incoming chars to hit buffer (let's keep this short!)
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   //Get input from user
@@ -86,7 +106,8 @@ int64_t getNumber(int numberOfSeconds)
       {
         if (spot == 0)
         {
-          Serial.println("No user input recieved. Do you have line endings turned on?");
+          Serial.println("No user input received. Do you have line endings turned on?");
+          settings.enableTerminalOutput = termOut; //Restore settings.enableTerminalOutput
           return (STATUS_GETNUMBER_TIMEOUT); //Timeout. No user input.
         }
         else if (spot > 0)
@@ -94,6 +115,8 @@ int64_t getNumber(int numberOfSeconds)
           break; //Timeout, but we have data
         }
       }
+
+      storeData(); //Keep reading I2C data and writing it to SD
     }
 
     //See if we timed out waiting for a line ending
@@ -118,6 +141,7 @@ int64_t getNumber(int numberOfSeconds)
 
     if (incoming == 'x')
     {
+      settings.enableTerminalOutput = termOut; //Restore settings.enableTerminalOutput
       return (STATUS_PRESSED_X);
     }
   }
@@ -131,5 +155,6 @@ int64_t getNumber(int numberOfSeconds)
     largeNumber += (cleansed[x] - '0');
   }
 
+  settings.enableTerminalOutput = termOut; //Restore settings.enableTerminalOutput
   return (largeNumber);
 }

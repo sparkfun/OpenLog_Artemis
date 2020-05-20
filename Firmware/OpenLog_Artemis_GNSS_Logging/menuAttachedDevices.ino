@@ -154,77 +154,77 @@ void menuConfigure_uBlox()
     Serial.println();
     Serial.println("Menu: Configure uBlox GPS Receiver");
 
-    Serial.print("1) Sensor Logging: ");
+    Serial.print(F(" 1) Sensor Logging                                                                       : "));
     if (settings.sensor_uBlox.log == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
     if (settings.sensor_uBlox.log == true)
     {
-      Serial.print("2) Log UBX-NAV-CLOCK (Clock Solution): ");
+      Serial.print(F(" 2) Log UBX-NAV-CLOCK     (Clock Solution)                                               : "));
       if (settings.sensor_uBlox.logUBXNAVCLOCK == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("3) Log UBX-NAV-HPPOSECEF (High Precision Position Earth-Centered Earth-Fixed): ");
+      Serial.print(F(" 3) Log UBX-NAV-HPPOSECEF (High Precision Position Earth-Centered Earth-Fixed):          : "));
       if (settings.sensor_uBlox.logUBXNAVHPPOSECEF == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("4) Log UBX-NAV-HPPOSLLH (High Precision Position Lat/Lon/Height): ");
+      Serial.print(F(" 4) Log UBX-NAV-HPPOSLLH  (High Precision Position Lat/Lon/Height):                      : "));
       if (settings.sensor_uBlox.logUBXNAVHPPOSLLH == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("5) Log UBX-NAV-ODO (Odometer): ");
+      Serial.print(F(" 5) Log UBX-NAV-ODO       (Odometer):                                                    : "));
       if (settings.sensor_uBlox.logUBXNAVODO == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("6) Log UBX-NAV-POSECEF (Position Earth-Centered Earth-Fixed): ");
+      Serial.print(F(" 6) Log UBX-NAV-POSECEF   (Position Earth-Centered Earth-Fixed):                         : "));
       if (settings.sensor_uBlox.logUBXNAVPOSECEF == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("7) Log UBX-NAV-POSLLH (Position Lat/Lon/Height): ");
+      Serial.print(F(" 7) Log UBX-NAV-POSLLH    (Position Lat/Lon/Height):                                     : "));
       if (settings.sensor_uBlox.logUBXNAVPOSLLH == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("8) Log UBX-NAV-PVT (Position, Velocity, Time): ");
+      Serial.print(F(" 8) Log UBX-NAV-PVT       (Position, Velocity, Time):                                    : "));
       if (settings.sensor_uBlox.logUBXNAVPVT == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("9) Log UBX-NAV-RELPOSNED (Relative Position North/East/Down) (High Precision GNSS products only!): ");
+      Serial.print(F(" 9) Log UBX-NAV-RELPOSNED (Relative Position North/East/Down) (High Precision GNSS only!): "));
       if (settings.sensor_uBlox.logUBXNAVRELPOSNED == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("10) Log UBX-NAV-STATUS (Receiver Navigation Status): ");
+      Serial.print(F("10) Log UBX-NAV-STATUS    (Receiver Navigation Status):                                  : "));
       if (settings.sensor_uBlox.logUBXNAVSTATUS == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("11) Log UBX-NAV-TIMEUTC (UTC Time Solution): ");
+      Serial.print(F("11) Log UBX-NAV-TIMEUTC   (UTC Time Solution):                                           : "));
       if (settings.sensor_uBlox.logUBXNAVTIMEUTC == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("12) Log UBX-NAV-VELECEF (Velocity Solution Earth-Centered Earth-Fixed): ");
+      Serial.print(F("12) Log UBX-NAV-VELECEF   (Velocity Solution Earth-Centered Earth-Fixed):                : "));
       if (settings.sensor_uBlox.logUBXNAVVELECEF == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("13) Log UBX-NAV-VELNED (Velocity Solution North/East/Down): ");
+      Serial.print(F("13) Log UBX-NAV-VELNED    (Velocity Solution North/East/Down):                           : "));
       if (settings.sensor_uBlox.logUBXNAVVELNED == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("14) Log UBX-RXM-RAWX (Multi-GNSS Raw Measurement) (High Precision GNSS products only!): ");
+      Serial.print(F("14) Log UBX-RXM-RAWX      (Multi-GNSS Raw Measurement) (High Precision GNSS only!):      : "));
       if (settings.sensor_uBlox.logUBXRXMRAWX == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("15) Log UBX-RXM-SFRBX (Broadcast Navigation Data Subframe): ");
+      Serial.print(F("15) Log UBX-RXM-SFRBX     (Broadcast Navigation Data Subframe):                          : "));
       if (settings.sensor_uBlox.logUBXRXMSFRBX == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("16) Log UBX-TIM-TM2 (Time Mark Data): ");
+      Serial.print(F("16) Log UBX-TIM-TM2       (Time Mark Data):                                              : "));
       if (settings.sensor_uBlox.logUBXTIMTM2 == true) Serial.println("Enabled");
       else Serial.println("Disabled");
 
       Serial.flush();
 
-      Serial.printf("17) Set I2C Interface Speed: %d\n", settings.sensor_uBlox.i2cSpeed);
+      Serial.printf("17) Set I2C Interface Speed                                                              : %d\n", settings.sensor_uBlox.i2cSpeed);
     }
-    Serial.println("x) Exit");
+    Serial.println( " x) Exit");
 
     int incoming = getNumber(menuTimeout); //Timeout after 10 seconds
 
@@ -273,10 +273,14 @@ void menuConfigure_uBlox()
       }
       else if (incoming == STATUS_PRESSED_X)
         break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
       else
         printUnknown(incoming);
     }
     else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
       break;
     else
       printUnknown(incoming);

@@ -67,10 +67,12 @@ void menuLogRate()
     }
     else if (incoming == '4')
     {
-      int maxOutputRate = settings.serialTerminalBaudRate / 10 / (totalCharactersPrinted / measurementCount);
-      maxOutputRate = (maxOutputRate * 90) / 100; //Fudge reduction of 10%
+//      int maxOutputRate = settings.serialTerminalBaudRate / 10 / (totalCharactersPrinted / measurementCount);
+//      maxOutputRate = (maxOutputRate * 90) / 100; //Fudge reduction of 10%
+//      if(maxOutputRate < 10) maxOutputRate = 10; //TODO this is forced. Needed when multi seconds between readings.
 
-      if(maxOutputRate < 10) maxOutputRate = 10; //TODO this is forced. Needed when multi seconds between readings.
+      float rateLimit = 1.0 / (((float)settings.sensor_uBlox.minMeasInterval) / 1000.0);
+      int maxOutputRate = (int)rateLimit;
 
       Serial.printf("How many readings per second would you like to log? (Current max is %d): ", maxOutputRate);
       int tempRPS = getNumber(menuTimeout); //Timeout after x seconds
@@ -78,6 +80,8 @@ void menuLogRate()
         Serial.println("Error: Readings Per Second out of range");
       else
         settings.usBetweenReadings = 1000000UL / tempRPS;
+        
+      qwiicOnline.uBlox = false; //Mark as offline so it will be started with new settings
     }
     else if (incoming == '5')
     {
@@ -88,6 +92,8 @@ void menuLogRate()
       else
         //settings.recordPerSecond = tempRPS;
         settings.usBetweenReadings = 1000000UL * tempSeconds;
+
+      qwiicOnline.uBlox = false; //Mark as offline so it will be started with new settings
     }
     else if (incoming == 'x')
       return;

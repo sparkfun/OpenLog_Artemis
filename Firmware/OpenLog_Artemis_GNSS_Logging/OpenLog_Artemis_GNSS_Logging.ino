@@ -138,6 +138,12 @@ void setup() {
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, LOW);
 
+  if (PIN_LOGIC_DEBUG >= 0)
+  {
+    pinMode(PIN_LOGIC_DEBUG, OUTPUT); //Debug pin
+    digitalWrite(PIN_LOGIC_DEBUG, HIGH); //Make this high, trigger debug on falling edge
+  }
+
   Serial.begin(115200); //Default for initial debug messages if necessary
   Serial.println();
 
@@ -193,47 +199,13 @@ void loop() {
 //  if (settings.usBetweenReadings < maxUsBeforeSleep)
 //  {
 //    if ((micros() - lastReadTime) >= settings.usBetweenReadings)
-//      takeReading = true;
+//      ;
 //  }
 //
-//  //Is it time to get new data?
-//  if (takeReading == true)
+//  //Go to sleep if time between readings is greater than 2 seconds
+//  if (settings.usBetweenReadings > maxUsBeforeSleep)
 //  {
-//    takeReading = false;
-//    lastReadTime = micros();
-//
-//    getData(); //Query all enabled sensors for data
-//
-//    //Print to terminal
-//    if (settings.enableTerminalOutput == true)
-//      Serial.print(outputData); //Print to terminal
-//
-//    //Record to SD
-//    if (settings.logData == true)
-//    {
-//      if (settings.enableSD && online.microSD)
-//      {
-//        TO DO: CHeck this bit. What happens if the module returns more than 512 bytes?
-//        char temp[512];
-//        outputData.toCharArray(temp, 512); //Convert string to char array so sdfat can record it
-//        gnssDataFile.write(temp, strlen(temp)); //Record the buffer to the card
-//
-//        //Force sync every 500ms
-//        if (millis() - lastDataLogSyncTime > 500)
-//        {
-//          lastDataLogSyncTime = millis();
-//          digitalWrite(PIN_STAT_LED, HIGH);
-//          gnssDataFile.sync();
-//          digitalWrite(PIN_STAT_LED, LOW);
-//        }
-//      }
-//    }
-//
-//    //Go to sleep if time between readings is greater than 2 seconds
-//    if (settings.usBetweenReadings > maxUsBeforeSleep)
-//    {
-//      goToSleep();
-//    }
+//    goToSleep();
 //  }
 }
 
