@@ -3,21 +3,21 @@ void menuLogRate()
   while (1)
   {
     Serial.println();
-    Serial.println("Menu: Configure Terminal Output");
+    Serial.println(F("Menu: Configure Terminal Output"));
 
-    Serial.print("1) Log to microSD: ");
-    if (settings.logData == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("1) Log to microSD: "));
+    if (settings.logData == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("2) Log to Terminal: ");
-    if (settings.enableTerminalOutput == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("2) Log to Terminal: "));
+    if (settings.enableTerminalOutput == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("3) Set Serial Baud Rate: ");
+    Serial.print(F("3) Set Serial Baud Rate: "));
     Serial.print(settings.serialTerminalBaudRate);
-    Serial.println(" bps");
+    Serial.println(F(" bps"));
 
-    Serial.print("4) Set Log Rate in Hz: ");
+    Serial.print(F("4) Set Log Rate in Hz: "));
     if (settings.usBetweenReadings < 1000000UL) //Take more than one measurement per second
     {
       //Display Integer Hertz
@@ -31,7 +31,7 @@ void menuLogRate()
       Serial.printf("%.06lf\n", 1.0 / logRateSeconds);
     }
 
-    Serial.print("5) Set Log Rate in seconds between readings: ");
+    Serial.print(F("5) Set Log Rate in seconds between readings: "));
     if (settings.usBetweenReadings > 1000000UL) //Take more than one measurement per second
     {
       Serial.printf("%llu\n", settings.usBetweenReadings / 1000000UL);
@@ -41,7 +41,7 @@ void menuLogRate()
       Serial.printf("%.06lf\n", settings.usBetweenReadings / 1000000.0);
     }
 
-    Serial.println("x) Exit");
+    Serial.println(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -51,11 +51,11 @@ void menuLogRate()
       settings.enableTerminalOutput ^= 1;
     else if (incoming == '3')
     {
-      Serial.print("Enter baud rate (1200 to 500000): ");
+      Serial.print(F("Enter baud rate (1200 to 500000): "));
       int newBaud = getNumber(menuTimeout); //Timeout after x seconds
       if (newBaud < 1200 || newBaud > 500000)
       {
-        Serial.println("Error: baud rate out of range");
+        Serial.println(F("Error: baud rate out of range"));
       }
       else
       {
@@ -77,7 +77,7 @@ void menuLogRate()
       Serial.printf("How many readings per second would you like to log? (Current max is %d): ", maxOutputRate);
       int tempRPS = getNumber(menuTimeout); //Timeout after x seconds
       if (tempRPS < 1 || tempRPS > maxOutputRate)
-        Serial.println("Error: Readings Per Second out of range");
+        Serial.println(F("Error: Readings Per Second out of range"));
       else
         settings.usBetweenReadings = 1000000UL / tempRPS;
         
@@ -85,10 +85,10 @@ void menuLogRate()
     }
     else if (incoming == '5')
     {
-      Serial.println("How many seconds would you like to sleep between readings? (1 to 6,000,000,000):");
+      Serial.println(F("How many seconds would you like to sleep between readings? (1 to 6,000,000,000):"));
       uint64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
       if (tempSeconds < 1 || tempSeconds > 6000000000ULL)
-        Serial.println("Error: Readings Per Second out of range");
+        Serial.println(F("Error: Readings Per Second out of range"));
       else
         //settings.recordPerSecond = tempRPS;
         settings.usBetweenReadings = 1000000UL * tempSeconds;

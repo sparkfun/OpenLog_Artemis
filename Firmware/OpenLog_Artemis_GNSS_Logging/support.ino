@@ -17,13 +17,13 @@ void printMinorDebug(String thingToPrint)
 //Option not known
 void printUnknown(uint8_t unknownChoice)
 {
-  Serial.print("Unknown choice: ");
+  Serial.print(F("Unknown choice: "));
   Serial.write(unknownChoice);
   Serial.println();
 }
 void printUnknown(int unknownValue)
 {
-  Serial.print("Unknown value: ");
+  Serial.print(F("Unknown value: "));
   Serial.write(unknownValue);
   Serial.println();
 }
@@ -59,7 +59,7 @@ uint8_t getByteChoice(int numberOfSeconds)
     if (Serial.available() > 0)
     {
       incoming = Serial.read();
-//      Serial.print("byte: 0x");
+//      Serial.print(F("byte: 0x"));
 //      Serial.println(incoming, HEX);
       if (incoming >= 'a' && incoming <= 'z') break;
       if (incoming >= 'A' && incoming <= 'Z') break;
@@ -68,7 +68,7 @@ uint8_t getByteChoice(int numberOfSeconds)
 
     if ( (millis() - startTime) / 1000 >= numberOfSeconds)
     {
-      Serial.println("No user input received.");
+      Serial.println(F("No user input received."));
       settings.enableTerminalOutput = termOut; //Restore settings.enableTerminalOutput
       return (STATUS_GETBYTE_TIMEOUT); //Timeout. No user input.
     }
@@ -106,7 +106,7 @@ int64_t getNumber(int numberOfSeconds)
       {
         if (spot == 0)
         {
-          Serial.println("No user input received. Do you have line endings turned on?");
+          Serial.println(F("No user input received. Do you have line endings turned on?"));
           settings.enableTerminalOutput = termOut; //Restore settings.enableTerminalOutput
           return (STATUS_GETNUMBER_TIMEOUT); //Timeout. No user input.
         }
@@ -122,7 +122,7 @@ int64_t getNumber(int numberOfSeconds)
     //See if we timed out waiting for a line ending
     if (spot > 0 && (millis() - startTime) / 1000 >= numberOfSeconds)
     {
-      Serial.println("Do you have line endings turned on?");
+      Serial.println(F("Do you have line endings turned on?"));
       break; //Timeout, but we have data
     }
 

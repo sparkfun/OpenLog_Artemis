@@ -6,27 +6,27 @@ void menuMain()
   while (1)
   {
     Serial.println();
-    Serial.println("Menu: Main Menu");
+    Serial.println(F("Menu: Main Menu"));
 
-    Serial.println("1) Configure Terminal Output");
+    Serial.println(F("1) Configure Terminal Output"));
 
-    Serial.println("2) Detect / Configure Attached Devices");
+    Serial.println(F("2) Detect / Configure Attached Devices"));
 
     if (settings.logData && settings.enableSD && online.microSD)
     {
-      Serial.println("3) Open New Log File");
+      Serial.println(F("f) Open New Log File"));
 
       if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && qwiicOnline.uBlox)
       {
-        Serial.println("4) Reset GNSS (Careful now!)");
+        Serial.println(F("g) Reset GNSS"));
       }
     }
 
-    Serial.println("r) Reset all settings to default");
+    Serial.println(F("r) Reset all settings to default"));
 
-    Serial.println("d) Debug Menu");
+    Serial.println(F("d) Debug Menu"));
 
-    Serial.println("x) Return to logging");
+    Serial.println(F("x) Return to logging"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -34,15 +34,26 @@ void menuMain()
       menuLogRate();
     else if (incoming == '2')
       menuAttachedDevices();
-    else if (incoming == '3')
+    else if (incoming == 'f')
       openNewLogFile();
-    else if (incoming == '4')
-      resetGNSS();
+    else if (incoming == 'g')
+    {
+      Serial.println(F("\n\rResetting GNSS to factory defaults. Continue? Press 'y':"));
+      byte gContinue = getByteChoice(menuTimeout);
+      if (gContinue == 'y')
+      {
+        resetGNSS();
+        Serial.println(F("GNSS reset. Please reset OpenLog Artemis and open a terminal at 115200bps..."));
+        while (1);
+      }
+      else
+        Serial.println(F("GNSS reset aborted"));
+    }
     else if (incoming == 'd')
       menuDebug();
     else if (incoming == 'r')
     {
-      Serial.println("\n\rResetting to factory defaults. Continue? Press 'y':");
+      Serial.println(F("\n\rResetting to factory defaults. Continue? Press 'y':"));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
@@ -50,11 +61,11 @@ void menuMain()
         if (sd.exists("OLA_settings.cfg"))
           sd.remove("OLA_settings.cfg");
 
-        Serial.println("Settings erased. Please reset OpenLog Artemis and open a terminal at 115200bps...");
+        Serial.println(F("Settings erased. Please reset OpenLog Artemis and open a terminal at 115200bps..."));
         while (1);
       }
       else
-        Serial.println("Reset aborted");
+        Serial.println(F("Reset aborted"));
     }
     else if (incoming == 'x')
       break;

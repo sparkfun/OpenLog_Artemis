@@ -163,7 +163,7 @@ void setup() {
 
   beginDataLogging(); //180ms
 
-  beginIMU(); //Disable IMU
+  disableIMU(); //Disable IMU
 
   if (online.microSD == true) msg("SD card online");
   else msg("SD card offline");
@@ -171,7 +171,7 @@ void setup() {
   if (online.dataLogging == true) msg("Data logging online");
   else msg("Datalogging offline");
 
-  if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
+  if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println(F("Logging to microSD card with no terminal output"));
 
   if (beginSensors() == true) Serial.println(beginSensorOutput); //159 - 865ms but varies based on number of devices attached
   else msg("No sensors detected");
@@ -237,7 +237,7 @@ void beginSD()
     //    {
     //      if (sd.begin(SD_CONFIG_MAX_SPEED) == false) //Very Fast SdFat Beta (dedicated SPI, no IMU)
     //      {
-    //        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
+    //        Serial.println(F("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?"));
     //        online.microSD = false;
     //        return;
     //      }
@@ -249,7 +249,7 @@ void beginSD()
       delay(250); //Give SD more time to power up, then try again
       if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
       {
-        Serial.println("SD init failed. Is card present? Formatted?");
+        Serial.println(F("SD init failed. Is card present? Formatted?"));
         digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
         online.microSD = false;
         return;
@@ -260,7 +260,7 @@ void beginSD()
     //Change to root directory. All new file creation will be in root.
     if (sd.chdir() == false)
     {
-      Serial.println("SD change directory failed");
+      Serial.println(F("SD change directory failed"));
       online.microSD = false;
       return;
     }
@@ -274,7 +274,7 @@ void beginSD()
   }
 }
 
-void beginIMU()
+void disableIMU()
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
   pinMode(PIN_IMU_CHIP_SELECT, OUTPUT);
@@ -296,7 +296,7 @@ void beginDataLogging()
     // O_WRITE - open for write
     if (gnssDataFile.open(gnssDataFileName, O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      Serial.println("Failed to create sensor data file");
+      Serial.println(F("Failed to create sensor data file"));
       online.dataLogging = false;
       return;
     }
@@ -313,12 +313,12 @@ void beginDataLogging()
   //  }
   //  else if (online.microSD == false)
   //  {
-  //    Serial.println("Data logging disabled because microSD offline");
+  //    Serial.println(F("Data logging disabled because microSD offline"));
   //    online.serialLogging = false;
   //  }
   //  else
   //  {
-  //    Serial.println("Unknown microSD state");
+  //    Serial.println(F("Unknown microSD state"));
   //  }
 }
 

@@ -17,19 +17,82 @@ bool beginSensors()
       gpsSensor_ublox.newCfgValset8(0x10720001, 1, VAL_LAYER_RAM); // CFG-I2COUTPROT-UBX : Enable UBX output on the I2C port (in RAM only)
       gpsSensor_ublox.addCfgValset8(0x10720002, 0); // CFG-I2COUTPROT-NMEA : Disable NMEA output on the I2C port
       gpsSensor_ublox.addCfgValset8(0x10720004, 0); // CFG-I2COUTPROT-RTCM3X : Disable RTCM3 output on the I2C port
-      uint8_t success = gpsSensor_ublox.sendCfgValset8(0x20920001, 0, 2100); // CFG-INFMSG-UBX_I2C : Disable INFo messages on the I2C port (maxWait 2100ms)
+      uint8_t success = gpsSensor_ublox.sendCfgValset8(0x20920001, 0, 5100); // CFG-INFMSG-UBX_I2C : Disable INFo messages on the I2C port (maxWait 2100ms)
       if (success == 0)
       {
         if (settings.printMajorDebugMessages == true)
           {
-            Serial.println("beginSensors: sendCfgValset failed when setting the I2C port to output UBX only"); 
+            Serial.println(F("beginSensors: sendCfgValset failed when setting the I2C port to output UBX only")); 
           }       
       }
       else
       {
         if (settings.printMinorDebugMessages == true)
           {
-            Serial.println("beginSensors: sendCfgValset was successful when setting the I2C port to output UBX only"); 
+            Serial.println(F("beginSensors: sendCfgValset was successful when setting the I2C port to output UBX only")); 
+          }       
+      }
+
+      //Disable all logable messages
+      //TO DO: Check if selecting an invalid message for this module causes this to NACK
+      gpsSensor_ublox.newCfgValset8(0x20910065, 0, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
+      gpsSensor_ublox.addCfgValset8(0x2091002e, 0); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
+      gpsSensor_ublox.addCfgValset8(0x20910033, 0); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
+      gpsSensor_ublox.addCfgValset8(0x2091007e, 0); // CFG-MSGOUT-UBX_NAV_ODO_I2C
+      gpsSensor_ublox.addCfgValset8(0x20910024, 0); // CFG-MSGOUT-UBX_NAV_POSECEF_I2C
+      gpsSensor_ublox.addCfgValset8(0x20910029, 0); // CFG-MSGOUT-UBX_NAV_POSLLH_I2C
+      gpsSensor_ublox.addCfgValset8(0x20910006, 0); // CFG-MSGOUT-UBX_NAV_PVT_I2C
+      gpsSensor_ublox.addCfgValset8(0x2091008d, 0); // CFG-MSGOUT-UBX_NAV_RELPOSNED_I2C
+      gpsSensor_ublox.addCfgValset8(0x2091001a, 0); // CFG-MSGOUT-UBX_NAV_STATUS_I2C
+      gpsSensor_ublox.addCfgValset8(0x2091005b, 0); // CFG-MSGOUT-UBX_NAV_TIMEUTC_I2C
+      gpsSensor_ublox.addCfgValset8(0x2091003d, 0); // CFG-MSGOUT-UBX_NAV_VELECEF_I2C
+      gpsSensor_ublox.addCfgValset8(0x20910042, 0); // CFG-MSGOUT-UBX_NAV_VELNED_I2C
+      gpsSensor_ublox.addCfgValset8(0x209102a4, 0); // CFG-MSGOUT-UBX_RXM_RAWX_I2C
+      gpsSensor_ublox.addCfgValset8(0x20910231, 0); // CFG-MSGOUT-UBX_RXM_SFRBX_I2C
+      success = gpsSensor_ublox.sendCfgValset8(0x20910178, 0, 5100); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 2100ms)
+      if (success == 0)
+      {
+        if (settings.printMajorDebugMessages == true)
+          {
+            Serial.println(F("beginSensors: sendCfgValset failed when disabling messages")); 
+          }       
+      }
+      else
+      {
+        if (settings.printMinorDebugMessages == true)
+          {
+            Serial.println(F("beginSensors: sendCfgValset was successful when disabling messages")); 
+          }       
+      }
+
+      //Set output rate equal to our query rate
+      uint16_t measRate;
+      if (settings.usBetweenReadings < (((uint32_t)settings.sensor_uBlox.minMeasInterval) * 1000)) // Check if usBetweenReadings is too low
+      {
+        measRate = settings.sensor_uBlox.minMeasInterval;
+      }
+      else if (settings.usBetweenReadings > (0xFFFF * 1000)) // Check if usBetweenReadings is too high
+      {
+        measRate = 0xFFFF;
+      }
+      else
+      {
+        measRate = (uint16_t)(settings.usBetweenReadings / 1000); // Convert usBetweenReadings to ms
+      }
+      gpsSensor_ublox.newCfgValset16(0x30210001, measRate, VAL_LAYER_RAM); // CFG-RATE-MEAS : Configure measurement period (in RAM only)
+      success = gpsSensor_ublox.sendCfgValset16(0x30210002, 1, 5100); // CFG-RATE-NAV : 1 measurement per navigation solution (maxWait 2100ms)
+      if (success == 0)
+      {
+        if (settings.printMajorDebugMessages == true)
+          {
+            Serial.println(F("beginSensors: sendCfgValset failed when setting message interval")); 
+          }       
+      }
+      else
+      {
+        if (settings.printMinorDebugMessages == true)
+          {
+            Serial.println(F("beginSensors: sendCfgValset was successful when setting message interval")); 
           }       
       }
 
@@ -49,50 +112,19 @@ bool beginSensors()
       gpsSensor_ublox.addCfgValset8(0x20910042, settings.sensor_uBlox.logUBXNAVVELNED); // CFG-MSGOUT-UBX_NAV_VELNED_I2C
       gpsSensor_ublox.addCfgValset8(0x209102a4, settings.sensor_uBlox.logUBXRXMRAWX); // CFG-MSGOUT-UBX_RXM_RAWX_I2C
       gpsSensor_ublox.addCfgValset8(0x20910231, settings.sensor_uBlox.logUBXRXMSFRBX); // CFG-MSGOUT-UBX_RXM_SFRBX_I2C
-      success = gpsSensor_ublox.sendCfgValset8(0x20910178, settings.sensor_uBlox.logUBXTIMTM2, 2100); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 2100ms)
+      success = gpsSensor_ublox.sendCfgValset8(0x20910178, settings.sensor_uBlox.logUBXTIMTM2, 5100); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 2100ms)
       if (success == 0)
       {
         if (settings.printMajorDebugMessages == true)
           {
-            Serial.println("beginSensors: sendCfgValset failed when enabling messages"); 
+            Serial.println(F("beginSensors: sendCfgValset failed when enabling messages")); 
           }       
       }
       else
       {
         if (settings.printMinorDebugMessages == true)
           {
-            Serial.println("beginSensors: sendCfgValset was successful when enabling messages"); 
-          }       
-      }
-
-      //Set output rate equal to our query rate
-      uint16_t measRate;
-      if (settings.usBetweenReadings < (((uint32_t)settings.sensor_uBlox.minMeasInterval) * 1000)) // Check if usBetweenReadings is too low
-      {
-        measRate = settings.sensor_uBlox.minMeasInterval;
-      }
-      else if (settings.usBetweenReadings > (0xFFFF * 1000)) // Check if usBetweenReadings is too high
-      {
-        measRate = 0xFFFF;
-      }
-      else
-      {
-        measRate = (uint16_t)(settings.usBetweenReadings / 1000); // Convert usBetweenReadings to ms
-      }
-      gpsSensor_ublox.newCfgValset16(0x30210001, measRate, VAL_LAYER_RAM); // CFG-RATE-MEAS : Configure measurement period (in RAM only)
-      success = gpsSensor_ublox.sendCfgValset16(0x30210002, 1, 2100); // CFG-RATE-NAV : 1 measurement per navigation solution (maxWait 2100ms)
-      if (success == 0)
-      {
-        if (settings.printMajorDebugMessages == true)
-          {
-            Serial.println("beginSensors: sendCfgValset failed when setting message interval"); 
-          }       
-      }
-      else
-      {
-        if (settings.printMinorDebugMessages == true)
-          {
-            Serial.println("beginSensors: sendCfgValset was successful when setting message interval"); 
+            Serial.println(F("beginSensors: sendCfgValset was successful when enabling messages")); 
           }       
       }
 
@@ -133,23 +165,9 @@ void openNewLogFile()
       gpsSensor_ublox.addCfgValset8(0x20910231, 0); // CFG-MSGOUT-UBX_RXM_SFRBX_I2C
       uint8_t success = gpsSensor_ublox.sendCfgValset8(0x20910178, settings.sensor_uBlox.logUBXTIMTM2, 0); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 0!)
       //Using a maxWait of zero means we don't wait for the ACK/NACK
-      //The ACK will end up being logged to SD card. I don't think there is much we can do about that?
-      if (success == 0)
-      {
-        if (settings.printMajorDebugMessages == true)
-          {
-            Serial.println("openNewLogFile: sendCfgValset failed when disabling messages"); 
-          }       
-      }
-      else
-      {
-        if (settings.printMinorDebugMessages == true)
-          {
-            Serial.println("openNewLogFile: sendCfgValset was successful when disabling messages"); 
-          }       
-      }
+      //and success will always be false (sendCommand returns SFE_UBLOX_STATUS_SUCCESS not SFE_UBLOX_STATUS_DATA_SENT)
 
-      unsigned long pauseUntil = millis() + 550UL; //Wait > 500ms so we can be sure SD data is sync'd
+      unsigned long pauseUntil = millis() + 2100UL; //Wait > 500ms so we can be sure SD data is sync'd
       while (millis() < pauseUntil) //While we are pausing, keep writing data to SD
       {
         storeData(); //storeData is the workhorse. It reads I2C data and writes it to SD.
@@ -170,9 +188,9 @@ void openNewLogFile()
       if (gnssDataFile.open(gnssDataFileName, O_CREAT | O_APPEND | O_WRITE) == false)
       {
         if (settings.printMajorDebugMessages == true)
-          {
-            Serial.println("openNewLogFile: failed to create new sensor data file");
-          }       
+        {
+          Serial.println(F("openNewLogFile: failed to create new sensor data file"));
+        }       
         
         online.dataLogging = false;
         return;
@@ -199,14 +217,14 @@ void openNewLogFile()
       {
         if (settings.printMajorDebugMessages == true)
           {
-            Serial.println("openNewLogFile: sendCfgValset failed when enabling messages"); 
+            Serial.println(F("openNewLogFile: sendCfgValset failed when enabling messages")); 
           }       
       }
       else
       {
         if (settings.printMinorDebugMessages == true)
           {
-            Serial.println("openNewLogFile: sendCfgValset was successful when enabling messages"); 
+            Serial.println(F("openNewLogFile: sendCfgValset was successful when enabling messages")); 
           }       
       }
     }
@@ -214,7 +232,7 @@ void openNewLogFile()
 }
 
 //Close the current log file and then reset the GNSS
-bool resetGNSS()
+void resetGNSS()
 {
   if (settings.logData && settings.enableSD && online.microSD && online.dataLogging) //If we are logging
   {
@@ -238,23 +256,9 @@ bool resetGNSS()
       gpsSensor_ublox.addCfgValset8(0x20910231, 0); // CFG-MSGOUT-UBX_RXM_SFRBX_I2C
       uint8_t success = gpsSensor_ublox.sendCfgValset8(0x20910178, settings.sensor_uBlox.logUBXTIMTM2, 0); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 0!)
       //Using a maxWait of zero means we don't wait for the ACK/NACK
-      //The ACK will end up being logged to SD card. I don't think there is much we can do about that?
-      if (success == 0)
-      {
-        if (settings.printMajorDebugMessages == true)
-          {
-            Serial.println("openNewLogFile: sendCfgValset failed when disabling messages"); 
-          }       
-      }
-      else
-      {
-        if (settings.printMinorDebugMessages == true)
-          {
-            Serial.println("openNewLogFile: sendCfgValset was successful when disabling messages"); 
-          }       
-      }
+      //and success will always be false (sendCommand returns SFE_UBLOX_STATUS_SUCCESS not SFE_UBLOX_STATUS_DATA_SENT)
 
-      unsigned long pauseUntil = millis() + 550UL; //Wait > 500ms so we can be sure SD data is sync'd
+      unsigned long pauseUntil = millis() + 2100UL; //Wait > 500ms so we can be sure SD data is sync'd
       while (millis() < pauseUntil) //While we are pausing, keep writing data to SD
       {
         storeData(); //storeData is the workhorse. It reads I2C data and writes it to SD.
@@ -268,20 +272,21 @@ bool resetGNSS()
       gnssDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
 
       //Reset the GNSS
-      gpsSensor_ublox.factoryDefault(1100);
+      gpsSensor_ublox.factoryDefault(2100);
       gpsSensor_ublox.factoryReset();
 
       //Wait 3 secs
-      Serial.print(F("GNSS has been reset. Waiting 3 seconds."));
+      Serial.print(F("GNSS has been reset. Waiting 5 seconds."));
+      delay(1000);
+      Serial.print(F("."));
+      delay(1000);
+      Serial.print(F("."));
       delay(1000);
       Serial.print(F("."));
       delay(1000);
       Serial.print(F("."));
       delay(1000);
       Serial.println(F("."));
-
-      //Call beginSensors to reset logging
-      return(beginSensors());
     }
   }
 }

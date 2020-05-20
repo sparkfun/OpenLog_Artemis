@@ -9,7 +9,7 @@ void loadSettings()
   if (EEPROM.get(0, testRead) == 0xFFFFFFFF)
   {
     recordSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
-    Serial.println("Default settings applied");
+    Serial.println(F("Default settings applied"));
   }
 
   //Check that the current settings struct size matches what is stored in EEPROM
@@ -18,7 +18,7 @@ void loadSettings()
   EEPROM.get(0, tempSize); //Load the sizeOfSettings
   if (tempSize != sizeof(settings))
   {
-    Serial.println("Settings wrong size. Default settings applied");
+    Serial.println(F("Settings wrong size. Default settings applied"));
     recordSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 

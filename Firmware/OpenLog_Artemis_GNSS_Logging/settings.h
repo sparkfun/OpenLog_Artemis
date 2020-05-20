@@ -43,8 +43,6 @@ struct struct_settings {
 struct struct_online {
   bool microSD = false;
   bool dataLogging = false;
-//  bool serialLogging = false;
-//  bool IMU = false;
 } online;
 
 //These structs define supported sensors and if they are available and online(started).

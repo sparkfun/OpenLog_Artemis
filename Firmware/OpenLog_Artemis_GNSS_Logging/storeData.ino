@@ -1,5 +1,14 @@
+//Data is read from I2C into GNSSbuffer
+//It is read from GNSSbuffer and put into UBXbuffer until we know what type of frame it is
+//If it is not an ACK/NACK, it is then moved from UBXbuffer into SDpacket and written to SD card
+
 //Storage for the incoming I2C data
 RingBufferN<32768> GNSSbuffer;
+
+//Storage for a single UBX frame (so we can discard ACK/NACKs)
+const size_t UBXbufferSize = 4096; //Needs to be large enough to hold the largest RAWX frame (8 + 16 + (32 * numMeas))
+char UBXbuffer[UBXbufferSize];
+size_t UBXpointer = 0;
 
 //Storage for the SD packet
 //Define packet size, buffer and buffer pointer for SD card writes
@@ -124,6 +133,7 @@ bool storeData(void)
       {
         uint8_t incoming = qwiic.read(); //Grab the actual character
 
+//This code has been disabled as RAWX messages can frequently contain 0x7F as valid data!
 //        //Check to see if the first read is 0x7F. If it is, the module is not ready
 //        //to respond. Stop, wait, and try again
 //        if (x == 0)
@@ -146,10 +156,51 @@ bool storeData(void)
 //        }
 
         processUBX(incoming); //Process the incoming byte. This will update ubx_state
-        if (ubx_state > looking_for_B5) //Only store the byte if it is valid
+        
         //TO DO: close the current file and open a new one when ubx_state == sync_lost
+
+        UBXbuffer[UBXpointer] = incoming; //Store incoming in the UBX buffer
+        UBXpointer++; //Increment the pointer
+        if (UBXpointer == UBXbufferSize) //This should never happen!
         {
-          GNSSbuffer.store_char(incoming); //Store incoming in the GNSS ring buffer
+          Serial.print(F("storeData: UBXbuffer overflow! Freezing..."));
+          while(1)
+            ;
+        }
+        if (ubx_state == sync_lost) //If the UBX frame was invalid or we lost sync
+        {
+          UBXpointer = 0; //Discard the frame by resetting the UBXpointer
+          ubx_state = looking_for_B5; //Start looking for the start of a new frame
+        }
+        else if (ubx_state == frame_valid) //If the UBX frame is valid
+        {
+          if (UBXbuffer[2] != 0x05) //If the frame is not an ACK/NACK
+          {
+            for (size_t i = 0; i < UBXpointer; i++) //For each char in the frame
+            {
+              //TO DO: speed this up by doing some form of memory copy
+              GNSSbuffer.store_char(UBXbuffer[i]); //Copy it into the GNSS buffer
+            }
+          }
+          else
+          {
+            if (settings.printMajorDebugMessages == true)
+            {
+              if (UBXbuffer[3] == 0x00) //If this is a NACK
+              {
+                Serial.print(F("UBX NACK Class:0x"));
+              }
+              else if (UBXbuffer[3] == 0x01) //If this is a ACK
+              {
+                Serial.print(F("UBX ACK Class:0x"));
+              }
+              Serial.print(UBXbuffer[6], HEX);
+              Serial.print(F(" ID:0x"));
+              Serial.println(UBXbuffer[7], HEX);
+            }
+          }
+          UBXpointer = 0; //Reset the UBXpointer
+          ubx_state = looking_for_B5; //Start looking for the start of a new frame
         }
       }
     }
@@ -174,7 +225,7 @@ bool storeData(void)
         maxGNSSbufferAvailable = bufAvail; //We have - so record it
         if (settings.printMajorDebugMessages == true) //If debug messages are enabled
         {
-          Serial.print("storeData: Max bufAvail: "); //Print the new Max bufAvail so we can watch how full the buffer gets
+          Serial.print(F("storeData: Max bufAvail: ")); //Print the new Max bufAvail so we can watch how full the buffer gets
           Serial.println(maxGNSSbufferAvailable);
         }
       }

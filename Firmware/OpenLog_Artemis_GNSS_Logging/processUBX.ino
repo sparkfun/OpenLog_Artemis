@@ -9,6 +9,7 @@
 #define looking_for_checksum_A  7
 #define looking_for_checksum_B  8
 #define sync_lost               9
+#define frame_valid             10
 int ubx_state = looking_for_B5;
 int ubx_length = 0;
 int ubx_class = 0;
@@ -42,9 +43,9 @@ bool processUBX(char c)
       {
         if (settings.printMajorDebugMessages == true)
         {
-          Serial.println("processUBX: expecting Sync Char 0xB5 but did not receive one");
+          Serial.println(F("processUBX: expecting Sync Char 0xB5 but did not receive one"));
         }
-        //ubx_state = sync_lost;
+        ubx_state = sync_lost;
       }
     }
     break;
@@ -60,17 +61,9 @@ bool processUBX(char c)
       {
         if (settings.printMajorDebugMessages == true)
         {
-          Serial.println("processUBX: expecting Sync Char 0x62 but did not receive one");
+          Serial.println(F("processUBX: expecting Sync Char 0x62 but did not receive one"));
         }
-        //ubx_state = sync_lost;
-        if (c == 0xB5) //If this byte is 0xB5 then leave ubx_state set to looking_for_62
-        {
-          ;
-        }
-        else //This byte is not 0xB5 so go back to looking for one
-        {
-          ubx_state = looking_for_B5;
-        }
+        ubx_state = sync_lost;
       }
     }
     break;
@@ -134,19 +127,20 @@ bool processUBX(char c)
       {
         if (settings.printMajorDebugMessages == true)
         {
-          Serial.println("processUBX: UBX checksum error");
+          Serial.println(F("processUBX: UBX checksum error"));
         }
-        //ubx_state = sync_lost;
+        ubx_state = sync_lost;
       }
       else
       {
         if (settings.enableTerminalOutput == true)
         {
-          Serial.print("processUBX: valid message received: Class:0x");
+          Serial.print(F("UBX Class:0x")); //Let's keep this message short!
           Serial.print(ubx_class, HEX);
-          Serial.print(" ID:0x");
+          Serial.print(F(" ID:0x"));
           Serial.println(ubx_ID, HEX);
         }
+        ubx_state = frame_valid;
       }
     }
     break;

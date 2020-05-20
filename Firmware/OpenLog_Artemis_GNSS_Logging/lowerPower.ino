@@ -192,7 +192,7 @@ void wakeFromSleep()
 
   beginDataLogging(); //180ms
 
-  beginIMU(); //Disable IMU
+  disableIMU(); //Disable IMU
 
   beginSensors(); //159 - 865ms but varies based on number of devices attached
 
