@@ -16,8 +16,8 @@ bool beginSensors()
       //Set the I2C port to output UBX only (turn off NMEA noise)
       gpsSensor_ublox.newCfgValset8(0x10720001, 1, VAL_LAYER_RAM); // CFG-I2COUTPROT-UBX : Enable UBX output on the I2C port (in RAM only)
       gpsSensor_ublox.addCfgValset8(0x10720002, 0); // CFG-I2COUTPROT-NMEA : Disable NMEA output on the I2C port
-      gpsSensor_ublox.addCfgValset8(0x10720004, 0); // CFG-I2COUTPROT-RTCM3X : Disable RTCM3 output on the I2C port
-      uint8_t success = gpsSensor_ublox.sendCfgValset8(0x20920001, 0, 5100); // CFG-INFMSG-UBX_I2C : Disable INFo messages on the I2C port (maxWait 2100ms)
+      //gpsSensor_ublox.addCfgValset8(0x10720004, 0); // CFG-I2COUTPROT-RTCM3X : Disable RTCM3 output on the I2C port (Precision modules only)
+      uint8_t success = gpsSensor_ublox.sendCfgValset8(0x20920001, 0, 2100); // CFG-INFMSG-UBX_I2C : Disable UBX INFo messages on the I2C port (maxWait 2100ms)
       if (success == 0)
       {
         if (settings.printMajorDebugMessages == true)
@@ -34,7 +34,6 @@ bool beginSensors()
       }
 
       //Disable all logable messages
-      //TO DO: Check if selecting an invalid message for this module causes this to NACK
       gpsSensor_ublox.newCfgValset8(0x20910065, 0, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
       gpsSensor_ublox.addCfgValset8(0x2091002e, 0); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
       gpsSensor_ublox.addCfgValset8(0x20910033, 0); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
@@ -49,7 +48,7 @@ bool beginSensors()
       gpsSensor_ublox.addCfgValset8(0x20910042, 0); // CFG-MSGOUT-UBX_NAV_VELNED_I2C
       gpsSensor_ublox.addCfgValset8(0x209102a4, 0); // CFG-MSGOUT-UBX_RXM_RAWX_I2C
       gpsSensor_ublox.addCfgValset8(0x20910231, 0); // CFG-MSGOUT-UBX_RXM_SFRBX_I2C
-      success = gpsSensor_ublox.sendCfgValset8(0x20910178, 0, 5100); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 2100ms)
+      success = gpsSensor_ublox.sendCfgValset8(0x20910178, 0, 2100); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 2100ms)
       if (success == 0)
       {
         if (settings.printMajorDebugMessages == true)
@@ -65,7 +64,7 @@ bool beginSensors()
           }       
       }
 
-      //Set output rate equal to our query rate
+      //Calculate measurement rate
       uint16_t measRate;
       if (settings.usBetweenReadings < (((uint32_t)settings.sensor_uBlox.minMeasInterval) * 1000)) // Check if usBetweenReadings is too low
       {
@@ -79,8 +78,55 @@ bool beginSensors()
       {
         measRate = (uint16_t)(settings.usBetweenReadings / 1000); // Convert usBetweenReadings to ms
       }
+      
+      //If query rate is higher than 10Hz then disable all constellations except GPS
+      //If query rate is higher than 5Hz and RAWX is enabled then also disable all constellations except GPS
+      if ((measRate < 100) || ((measRate < 200) && (settings.sensor_uBlox.logUBXRXMRAWX == true)))
+      {
+        gpsSensor_ublox.newCfgValset8(0x10310021, 0, VAL_LAYER_RAM); // CFG-SIGNAL-GAL_ENA : Disable Galileo (in RAM only)
+        gpsSensor_ublox.addCfgValset8(0x10310022, 0); // CFG-SIGNAL-BDS_ENA : Disable BeiDou
+        gpsSensor_ublox.addCfgValset8(0x10310024, 0); // CFG-SIGNAL-QZSS_ENA : Disable QZSS
+        success = gpsSensor_ublox.sendCfgValset8(0x10310025, 0, 2100); // CFG-SIGNAL-GLO_ENA : Disable GLONASS (maxWait 2100ms)
+        if (success == 0)
+        {
+          if (settings.printMajorDebugMessages == true)
+            {
+              Serial.println(F("beginSensors: sendCfgValset failed when disabling constellations")); 
+            }       
+        }
+        else
+        {
+          if (settings.printMinorDebugMessages == true)
+            {
+              Serial.println(F("beginSensors: sendCfgValset was successful when disabling constellations")); 
+            }       
+        }        
+      }
+      else
+      {
+        gpsSensor_ublox.newCfgValset8(0x10310021, 1, VAL_LAYER_RAM); // CFG-SIGNAL-GAL_ENA : Enable Galileo (in RAM only)
+        gpsSensor_ublox.addCfgValset8(0x10310022, 1); // CFG-SIGNAL-BDS_ENA : Enable BeiDou
+        gpsSensor_ublox.addCfgValset8(0x10310024, 1); // CFG-SIGNAL-QZSS_ENA : Enable QZSS
+        success = gpsSensor_ublox.sendCfgValset8(0x10310025, 1, 2100); // CFG-SIGNAL-GLO_ENA : Enable GLONASS (maxWait 2100ms)
+        if (success == 0)
+        {
+          if (settings.printMajorDebugMessages == true)
+            {
+              Serial.println(F("beginSensors: sendCfgValset failed when enabling constellations")); 
+            }       
+        }
+        else
+        {
+          if (settings.printMinorDebugMessages == true)
+            {
+              Serial.println(F("beginSensors: sendCfgValset was successful when enabling constellations")); 
+            }       
+        }        
+      }
+
+      //Set output rate
       gpsSensor_ublox.newCfgValset16(0x30210001, measRate, VAL_LAYER_RAM); // CFG-RATE-MEAS : Configure measurement period (in RAM only)
-      success = gpsSensor_ublox.sendCfgValset16(0x30210002, 1, 5100); // CFG-RATE-NAV : 1 measurement per navigation solution (maxWait 2100ms)
+      success = gpsSensor_ublox.sendCfgValset16(0x30210002, 1, 2100); // CFG-RATE-NAV : 1 measurement per navigation solution (maxWait 2100ms)
       if (success == 0)
       {
         if (settings.printMajorDebugMessages == true)
@@ -97,7 +143,7 @@ bool beginSensors()
       }
 
       //Enable the selected messages
-      //TO DO: Check if selecting an invalid message for this module causes this to NACK
+      //TO DO: Selecting an invalid message (e.g. RAWX) for this module causes this to NACK. Needs to be prevented.
       gpsSensor_ublox.newCfgValset8(0x20910065, settings.sensor_uBlox.logUBXNAVCLOCK, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
       gpsSensor_ublox.addCfgValset8(0x2091002e, settings.sensor_uBlox.logUBXNAVHPPOSECEF); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
       gpsSensor_ublox.addCfgValset8(0x20910033, settings.sensor_uBlox.logUBXNAVHPPOSLLH); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
@@ -112,7 +158,7 @@ bool beginSensors()
       gpsSensor_ublox.addCfgValset8(0x20910042, settings.sensor_uBlox.logUBXNAVVELNED); // CFG-MSGOUT-UBX_NAV_VELNED_I2C
       gpsSensor_ublox.addCfgValset8(0x209102a4, settings.sensor_uBlox.logUBXRXMRAWX); // CFG-MSGOUT-UBX_RXM_RAWX_I2C
       gpsSensor_ublox.addCfgValset8(0x20910231, settings.sensor_uBlox.logUBXRXMSFRBX); // CFG-MSGOUT-UBX_RXM_SFRBX_I2C
-      success = gpsSensor_ublox.sendCfgValset8(0x20910178, settings.sensor_uBlox.logUBXTIMTM2, 5100); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 2100ms)
+      success = gpsSensor_ublox.sendCfgValset8(0x20910178, settings.sensor_uBlox.logUBXTIMTM2, 2100); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 2100ms)
       if (success == 0)
       {
         if (settings.printMajorDebugMessages == true)
@@ -148,7 +194,6 @@ void openNewLogFile()
     if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && qwiicOnline.uBlox) //If the uBlox is available and logging
     {
       //Disable all messages in RAM
-      //TO DO: Check if selecting an invalid message for this module causes this to NACK
       gpsSensor_ublox.newCfgValset8(0x20910065, 0, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
       gpsSensor_ublox.addCfgValset8(0x2091002e, 0); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
       gpsSensor_ublox.addCfgValset8(0x20910033, 0); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
@@ -197,7 +242,7 @@ void openNewLogFile()
       }
 
       //(Re)Enable the selected messages
-      //TO DO: Check if selecting an invalid message for this module causes this to NACK
+      //TO DO: Selecting an invalid message (e.g. RAWX) for this module causes this to NACK. Needs to be prevented.
       gpsSensor_ublox.newCfgValset8(0x20910065, settings.sensor_uBlox.logUBXNAVCLOCK, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
       gpsSensor_ublox.addCfgValset8(0x2091002e, settings.sensor_uBlox.logUBXNAVHPPOSECEF); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
       gpsSensor_ublox.addCfgValset8(0x20910033, settings.sensor_uBlox.logUBXNAVHPPOSLLH); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
@@ -239,7 +284,6 @@ void resetGNSS()
     if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && qwiicOnline.uBlox) //If the uBlox is available and logging
     {
       //Disable all messages in RAM
-      //TO DO: Check if selecting an invalid message for this module causes this to NACK
       gpsSensor_ublox.newCfgValset8(0x20910065, 0, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
       gpsSensor_ublox.addCfgValset8(0x2091002e, 0); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
       gpsSensor_ublox.addCfgValset8(0x20910033, 0); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
@@ -275,7 +319,7 @@ void resetGNSS()
       gpsSensor_ublox.factoryDefault(2100);
       gpsSensor_ublox.factoryReset();
 
-      //Wait 3 secs
+      //Wait 5 secs
       Serial.print(F("GNSS has been reset. Waiting 5 seconds."));
       delay(1000);
       Serial.print(F("."));

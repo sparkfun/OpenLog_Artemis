@@ -18,8 +18,8 @@
   
   Messages are streamed directly to SD without being processed.
 
-  All GNSS configuration is done using UBX-CFG-VALSET, UBX-CFG-VALGET and
-  UBX-CFG-VALDEL which is only supported on devices like the ZED-F9P and
+  All GNSS configuration is done using UBX-CFG-VALSET and UBX-CFG-VALGET
+  which is only supported on devices like the ZED-F9P and
   NEO-M9N running communication protocols greater than 23.01.
 
   TO DO:
@@ -27,6 +27,7 @@
   - if UBX-CFG-VALSET is supported (protocol >= 23.01)
   - if UBX-NAV-RELPOSNED and UBX-RXM-RAWX are supported (high precision only)
   - the minimum usBetweenReadings
+  Sleep functionality
 
 */
 
@@ -118,7 +119,7 @@ unsigned long measurementCount = 0; //Used to calc the actual update rate.
 String outputData;
 String beginSensorOutput;
 unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
-unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
+unsigned long lastDataLogSyncTime = 0; //Used to sync SD every half second
 bool helperTextPrinted = false; //Print the column headers only once
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep

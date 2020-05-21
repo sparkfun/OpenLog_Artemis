@@ -8,19 +8,14 @@ void powerDown()
 
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent voltage supervisor from waking us from sleep
 
-  //Save files before going to sleep
+  //Close file before going to sleep
   //  if (online.dataLogging == true)
   //  {
-  //    sensorDataFile.sync();
-  //  }
-  //  if (online.serialLogging == true)
-  //  {
-  //    serialDataFile.sync();
+  //    gnssDataFile.sync();
   //  }
 
   //Serial.flush(); //Don't waste time waiting for prints to finish
 
-  //  Wire.end(); //Power down I2C
   qwiic.end(); //Power down I2C
 
   SPI.end(); //Power down SPI
@@ -53,7 +48,7 @@ void powerDown()
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE); //Turn off CACHE
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K); //Turn off everything but lower 512k
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k
+  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k //TO DO: check this! GNSSbuffer is 32K!
   //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
 
   //Keep the 32kHz clock running for RTC
@@ -123,7 +118,7 @@ void goToSleep()
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE); //Turn off CACHE
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K); //Turn off everything but lower 512k
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k
+  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k //TO DO: check this! GNSSbuffer is 32K!
   //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
 
   //Use the lower power 32kHz clock. Use it to run CT6 as well.

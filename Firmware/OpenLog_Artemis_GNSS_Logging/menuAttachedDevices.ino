@@ -164,59 +164,59 @@ void menuConfigure_uBlox()
       if (settings.sensor_uBlox.logUBXNAVCLOCK == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F(" 3) Log UBX-NAV-HPPOSECEF (High Precision Position Earth-Centered Earth-Fixed):          : "));
+      Serial.print(F(" 3) Log UBX-NAV-HPPOSECEF (High Precision Position Earth-Centered Earth-Fixed)           : "));
       if (settings.sensor_uBlox.logUBXNAVHPPOSECEF == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F(" 4) Log UBX-NAV-HPPOSLLH  (High Precision Position Lat/Lon/Height):                      : "));
+      Serial.print(F(" 4) Log UBX-NAV-HPPOSLLH  (High Precision Position Lat/Lon/Height)                       : "));
       if (settings.sensor_uBlox.logUBXNAVHPPOSLLH == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F(" 5) Log UBX-NAV-ODO       (Odometer):                                                    : "));
+      Serial.print(F(" 5) Log UBX-NAV-ODO       (Odometer)                                                     : "));
       if (settings.sensor_uBlox.logUBXNAVODO == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F(" 6) Log UBX-NAV-POSECEF   (Position Earth-Centered Earth-Fixed):                         : "));
+      Serial.print(F(" 6) Log UBX-NAV-POSECEF   (Position Earth-Centered Earth-Fixed)                          : "));
       if (settings.sensor_uBlox.logUBXNAVPOSECEF == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F(" 7) Log UBX-NAV-POSLLH    (Position Lat/Lon/Height):                                     : "));
+      Serial.print(F(" 7) Log UBX-NAV-POSLLH    (Position Lat/Lon/Height)                                      : "));
       if (settings.sensor_uBlox.logUBXNAVPOSLLH == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F(" 8) Log UBX-NAV-PVT       (Position, Velocity, Time):                                    : "));
+      Serial.print(F(" 8) Log UBX-NAV-PVT       (Position, Velocity, Time)                                     : "));
       if (settings.sensor_uBlox.logUBXNAVPVT == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F(" 9) Log UBX-NAV-RELPOSNED (Relative Position North/East/Down) (High Precision GNSS only!): "));
+      Serial.print(F(" 9) Log UBX-NAV-RELPOSNED (Relative Position North/East/Down) (High Precision GNSS only) : "));
       if (settings.sensor_uBlox.logUBXNAVRELPOSNED == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("10) Log UBX-NAV-STATUS    (Receiver Navigation Status):                                  : "));
+      Serial.print(F("10) Log UBX-NAV-STATUS    (Receiver Navigation Status)                                   : "));
       if (settings.sensor_uBlox.logUBXNAVSTATUS == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("11) Log UBX-NAV-TIMEUTC   (UTC Time Solution):                                           : "));
+      Serial.print(F("11) Log UBX-NAV-TIMEUTC   (UTC Time Solution)                                            : "));
       if (settings.sensor_uBlox.logUBXNAVTIMEUTC == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("12) Log UBX-NAV-VELECEF   (Velocity Solution Earth-Centered Earth-Fixed):                : "));
+      Serial.print(F("12) Log UBX-NAV-VELECEF   (Velocity Solution Earth-Centered Earth-Fixed)                 : "));
       if (settings.sensor_uBlox.logUBXNAVVELECEF == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("13) Log UBX-NAV-VELNED    (Velocity Solution North/East/Down):                           : "));
+      Serial.print(F("13) Log UBX-NAV-VELNED    (Velocity Solution North/East/Down)                            : "));
       if (settings.sensor_uBlox.logUBXNAVVELNED == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("14) Log UBX-RXM-RAWX      (Multi-GNSS Raw Measurement) (High Precision GNSS only!):      : "));
+      Serial.print(F("14) Log UBX-RXM-RAWX      (Multi-GNSS Raw Measurement) (High Precision GNSS only)        : "));
       if (settings.sensor_uBlox.logUBXRXMRAWX == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("15) Log UBX-RXM-SFRBX     (Broadcast Navigation Data Subframe):                          : "));
+      Serial.print(F("15) Log UBX-RXM-SFRBX     (Broadcast Navigation Data Subframe)                           : "));
       if (settings.sensor_uBlox.logUBXRXMSFRBX == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("16) Log UBX-TIM-TM2       (Time Mark Data):                                              : "));
+      Serial.print(F("16) Log UBX-TIM-TM2       (Time Mark Data)                                               : "));
       if (settings.sensor_uBlox.logUBXTIMTM2 == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 

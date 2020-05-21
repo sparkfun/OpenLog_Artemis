@@ -3,6 +3,12 @@
 //If user doesn't respond within a few seconds, return to main loop
 void menuMain()
 {
+  //Disable debug messages when menu is open
+  bool prevPrintMajorDebugMessages = settings.printMajorDebugMessages;
+  bool prevPrintMinorDebugMessages = settings.printMinorDebugMessages;
+  settings.printMajorDebugMessages = false;
+  settings.printMinorDebugMessages = false;
+  
   while (1)
   {
     Serial.println();
@@ -50,7 +56,7 @@ void menuMain()
         Serial.println(F("GNSS reset aborted"));
     }
     else if (incoming == 'd')
-      menuDebug();
+      menuDebug(&prevPrintMajorDebugMessages, &prevPrintMinorDebugMessages);
     else if (incoming == 'r')
     {
       Serial.println(F("\n\rResetting to factory defaults. Continue? Press 'y':"));
@@ -75,6 +81,12 @@ void menuMain()
       printUnknown(incoming);
   }
 
+  Serial.println(F("\nReturning to logging..."));
+  
+  //Restore debug messages
+  settings.printMajorDebugMessages = prevPrintMajorDebugMessages;
+  settings.printMinorDebugMessages = prevPrintMinorDebugMessages;
+
   recordSettings(); //Once all menus have exited, record the new settings to EEPROM and config file
 
   beginSensors(); //Once all menus have exited, start any sensors that are available, logging, but not yet online/begun.
@@ -93,5 +105,6 @@ void menuMain()
   //Edge case: after 10Hz reading, user sets the log rate above 2s mark. We never go to sleep because 
   //takeReading is not true. And since we don't wake up, takeReading never gets set to true.
   //Se we force it here.
-  takeReading = true; 
+  takeReading = true;
+
 }
