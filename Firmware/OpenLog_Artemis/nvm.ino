@@ -46,8 +46,11 @@ void recordSettingsToFile()
     if (sd.exists("OLA_settings.cfg"))
       sd.remove("OLA_settings.cfg");
 
-    //File settingsFile; //FAT16/32
+#ifdef USE_EXFAT
     FsFile settingsFile; //exFat
+#else
+    File settingsFile; //FAT16/32
+#endif
     if (settingsFile.open("OLA_settings.cfg", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create settings file");
@@ -117,8 +120,11 @@ bool loadSettingsFromFile()
   {
     if (sd.exists("OLA_settings.cfg"))
     {
-      //File settingsFile; //FAT16/32
+#ifdef USE_EXFAT
       FsFile settingsFile; //exFat
+#else
+      File settingsFile; //FAT16/32
+#endif
       if (settingsFile.open("OLA_settings.cfg", O_READ) == false)
       {
         Serial.println("Failed to open settings file");
@@ -218,7 +224,7 @@ bool parseLine(char* str) {
       EEPROM.erase();
       sd.remove("OLA_settings.cfg");
       Serial.println("OpenLog Artemis has been factory reset. Freezing. Please restart and open terminal at 115200bps.");
-      while(1);
+      while (1);
     }
 
     //Check to see if this setting file is compatible with this version of OLA
@@ -296,12 +302,12 @@ bool parseLine(char* str) {
     settings.qwiicBusMaxSpeed = d;
 
   /*
-   LPS25HB
-   NAU7802
-   MCP9600
-   VCNL4040
-   */
-  
+    LPS25HB
+    NAU7802
+    MCP9600
+    VCNL4040
+  */
+
   else if (strcmp(settingName, "sensor_MS8607.log") == 0)
     settings.sensor_MS8607.log = d;
   else if (strcmp(settingName, "sensor_MS8607.logHumidity") == 0)

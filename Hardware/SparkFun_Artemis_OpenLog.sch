@@ -15276,6 +15276,12 @@ or measure power</text>
 <wire x1="297.18" y1="210.82" x2="383.54" y2="210.82" width="0.2032" layer="97" style="longdash"/>
 <wire x1="383.54" y1="210.82" x2="383.54" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 <wire x1="383.54" y1="144.78" x2="320.04" y2="144.78" width="0.2032" layer="97" style="longdash"/>
+<text x="462.28" y="170.18" size="1.27" layer="91">Remove MISO pullup R49, DNP</text>
+<text x="462.28" y="167.64" size="1.27" layer="91">Add NO jumper for EN pin connection</text>
+<text x="462.28" y="165.1" size="1.27" layer="91">4 layer</text>
+<text x="462.28" y="160.02" size="1.27" layer="91">SDIO interface</text>
+<text x="462.28" y="162.56" size="1.27" layer="91">PWR LED to GPIO</text>
+<text x="462.28" y="157.48" size="1.27" layer="91">Move to red text labels</text>
 </plain>
 <instances>
 <instance part="LOGO2" gate="G$1" x="391.16" y="45.72" smashed="yes"/>
@@ -15517,9 +15523,9 @@ or measure power</text>
 <attribute name="NAME" x="231.14" y="33.274" size="1.778" layer="95" font="vector"/>
 <attribute name="VALUE" x="231.14" y="14.986" size="1.778" layer="96" font="vector" align="top-left"/>
 </instance>
-<instance part="C51" gate="G$1" x="213.36" y="12.7" smashed="yes">
-<attribute name="NAME" x="214.884" y="15.621" size="1.778" layer="95" font="vector"/>
-<attribute name="VALUE" x="214.884" y="10.541" size="1.778" layer="96" font="vector"/>
+<instance part="C51" gate="G$1" x="218.44" y="12.7" smashed="yes">
+<attribute name="NAME" x="212.598" y="15.494" size="1.778" layer="95" font="vector"/>
+<attribute name="VALUE" x="210.566" y="10.414" size="1.778" layer="96" font="vector"/>
 </instance>
 <instance part="C52" gate="G$1" x="233.68" y="60.96" smashed="yes">
 <attribute name="NAME" x="235.204" y="63.881" size="1.778" layer="95" font="vector"/>
@@ -15532,8 +15538,8 @@ or measure power</text>
 <instance part="GND80" gate="1" x="226.06" y="12.7" smashed="yes">
 <attribute name="VALUE" x="226.06" y="12.446" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="GND81" gate="1" x="213.36" y="5.08" smashed="yes">
-<attribute name="VALUE" x="213.36" y="4.826" size="1.778" layer="96" align="top-center"/>
+<instance part="GND81" gate="1" x="218.44" y="5.08" smashed="yes">
+<attribute name="VALUE" x="218.44" y="4.826" size="1.778" layer="96" align="top-center"/>
 </instance>
 <instance part="GND82" gate="1" x="233.68" y="53.34" smashed="yes">
 <attribute name="VALUE" x="233.68" y="53.086" size="1.778" layer="96" align="top-center"/>
@@ -15574,17 +15580,17 @@ or measure power</text>
 <instance part="SUPPLY70" gate="G$1" x="200.66" y="137.16" smashed="yes">
 <attribute name="VALUE" x="200.66" y="139.954" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="Q7" gate="NMOS" x="287.02" y="55.88" smashed="yes" rot="R270">
-<attribute name="NAME" x="284.988" y="50.038" size="1.778" layer="95" font="vector"/>
-<attribute name="VALUE" x="272.288" y="47.244" size="1.778" layer="96" font="vector"/>
+<instance part="Q7" gate="NMOS" x="284.48" y="55.88" smashed="yes" rot="R270">
+<attribute name="NAME" x="282.448" y="50.038" size="1.778" layer="95" font="vector"/>
+<attribute name="VALUE" x="269.748" y="47.244" size="1.778" layer="96" font="vector"/>
 </instance>
 <instance part="R44" gate="G$1" x="276.86" y="60.96" smashed="yes" rot="R90">
 <attribute name="NAME" x="275.336" y="60.96" size="1.778" layer="95" font="vector" rot="R90" align="bottom-center"/>
 <attribute name="VALUE" x="278.384" y="60.96" size="1.778" layer="96" font="vector" rot="R90" align="top-center"/>
 </instance>
-<instance part="R45" gate="G$1" x="294.64" y="60.96" smashed="yes" rot="R90">
-<attribute name="NAME" x="293.116" y="60.96" size="1.778" layer="95" font="vector" rot="R90" align="bottom-center"/>
-<attribute name="VALUE" x="296.164" y="60.96" size="1.778" layer="96" font="vector" rot="R90" align="top-center"/>
+<instance part="R45" gate="G$1" x="292.1" y="60.96" smashed="yes" rot="R90">
+<attribute name="NAME" x="290.576" y="60.96" size="1.778" layer="95" font="vector" rot="R90" align="bottom-center"/>
+<attribute name="VALUE" x="293.624" y="60.96" size="1.778" layer="96" font="vector" rot="R90" align="top-center"/>
 </instance>
 <instance part="SUPPLY72" gate="G$1" x="276.86" y="68.58" smashed="yes">
 <attribute name="VALUE" x="276.86" y="71.374" size="1.778" layer="96" align="bottom-center"/>
@@ -15592,8 +15598,8 @@ or measure power</text>
 <instance part="SUPPLY73" gate="G$1" x="177.8" y="71.12" smashed="yes">
 <attribute name="VALUE" x="177.8" y="73.914" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="SUPPLY75" gate="G$1" x="294.64" y="68.58" smashed="yes">
-<attribute name="VALUE" x="294.64" y="71.374" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY75" gate="G$1" x="292.1" y="68.58" smashed="yes">
+<attribute name="VALUE" x="292.1" y="71.374" size="1.778" layer="96" align="bottom-center"/>
 </instance>
 <instance part="GND85" gate="1" x="195.58" y="53.34" smashed="yes">
 <attribute name="VALUE" x="195.58" y="53.086" size="1.778" layer="96" align="top-center"/>
@@ -15604,8 +15610,8 @@ or measure power</text>
 <instance part="SUPPLY77" gate="G$1" x="205.74" y="132.08" smashed="yes">
 <attribute name="VALUE" x="205.74" y="134.874" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="SUPPLY79" gate="G$1" x="284.48" y="63.5" smashed="yes">
-<attribute name="VALUE" x="284.48" y="66.294" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY79" gate="G$1" x="281.94" y="63.5" smashed="yes">
+<attribute name="VALUE" x="281.94" y="66.294" size="1.778" layer="96" align="bottom-center"/>
 </instance>
 <instance part="SUPPLY80" gate="G$1" x="226.06" y="33.02" smashed="yes">
 <attribute name="VALUE" x="226.06" y="35.814" size="1.778" layer="96" align="bottom-center"/>
@@ -15941,7 +15947,7 @@ or measure power</text>
 <segment>
 <pinref part="C51" gate="G$1" pin="2"/>
 <pinref part="GND81" gate="1" pin="GND"/>
-<wire x1="213.36" y1="10.16" x2="213.36" y2="7.62" width="0.1524" layer="91"/>
+<wire x1="218.44" y1="10.16" x2="218.44" y2="7.62" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND80" gate="1" pin="GND"/>
@@ -16102,7 +16108,7 @@ or measure power</text>
 </segment>
 <segment>
 <pinref part="R45" gate="G$1" pin="2"/>
-<wire x1="294.64" y1="66.04" x2="294.64" y2="68.58" width="0.1524" layer="91"/>
+<wire x1="292.1" y1="66.04" x2="292.1" y2="68.58" width="0.1524" layer="91"/>
 <pinref part="SUPPLY75" gate="G$1" pin="3.3V"/>
 </segment>
 <segment>
@@ -16666,9 +16672,9 @@ or measure power</text>
 <net name="N$30" class="0">
 <segment>
 <pinref part="U13" gate="G$1" pin="REGOUT"/>
-<wire x1="228.6" y1="20.32" x2="213.36" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="228.6" y1="20.32" x2="218.44" y2="20.32" width="0.1524" layer="91"/>
 <pinref part="C51" gate="G$1" pin="1"/>
-<wire x1="213.36" y1="20.32" x2="213.36" y2="17.78" width="0.1524" layer="91"/>
+<wire x1="218.44" y1="20.32" x2="218.44" y2="17.78" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="ICM-20948-LV_INT" class="0">
@@ -16679,7 +16685,7 @@ or measure power</text>
 </segment>
 <segment>
 <pinref part="Q7" gate="NMOS" pin="S"/>
-<wire x1="276.86" y1="53.34" x2="281.94" y2="53.34" width="0.1524" layer="91"/>
+<wire x1="276.86" y1="53.34" x2="279.4" y2="53.34" width="0.1524" layer="91"/>
 <wire x1="274.32" y1="53.34" x2="276.86" y2="53.34" width="0.1524" layer="91"/>
 <pinref part="R44" gate="G$1" pin="1"/>
 <wire x1="276.86" y1="55.88" x2="276.86" y2="53.34" width="0.1524" layer="91"/>
@@ -16785,7 +16791,7 @@ or measure power</text>
 <pinref part="Q3" gate="NMOS" pin="G"/>
 </segment>
 <segment>
-<wire x1="284.48" y1="63.5" x2="284.48" y2="60.96" width="0.1524" layer="91"/>
+<wire x1="281.94" y1="63.5" x2="281.94" y2="60.96" width="0.1524" layer="91"/>
 <pinref part="SUPPLY79" gate="G$1" pin="1.8V"/>
 <pinref part="Q7" gate="NMOS" pin="G"/>
 </segment>
@@ -16813,12 +16819,12 @@ or measure power</text>
 <net name="ICM_INT" class="0">
 <segment>
 <pinref part="R45" gate="G$1" pin="1"/>
-<wire x1="294.64" y1="55.88" x2="294.64" y2="53.34" width="0.1524" layer="91"/>
+<wire x1="292.1" y1="55.88" x2="292.1" y2="53.34" width="0.1524" layer="91"/>
 <pinref part="Q7" gate="NMOS" pin="D"/>
+<wire x1="289.56" y1="53.34" x2="292.1" y2="53.34" width="0.1524" layer="91"/>
 <wire x1="292.1" y1="53.34" x2="294.64" y2="53.34" width="0.1524" layer="91"/>
-<wire x1="294.64" y1="53.34" x2="297.18" y2="53.34" width="0.1524" layer="91"/>
-<junction x="294.64" y="53.34"/>
-<label x="297.18" y="53.34" size="1.27" layer="95" xref="yes"/>
+<junction x="292.1" y="53.34"/>
+<label x="294.64" y="53.34" size="1.27" layer="95" xref="yes"/>
 </segment>
 <segment>
 <pinref part="U8" gate="U1" pin="(TX1/PDMCLK/SCCIO)~D37"/>

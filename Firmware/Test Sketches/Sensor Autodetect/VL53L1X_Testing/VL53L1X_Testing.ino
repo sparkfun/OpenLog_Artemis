@@ -20,25 +20,33 @@
 #define SHUTDOWN_PIN 2
 #define INTERRUPT_PIN 3
 
-TwoWire qwiic(1); //Will use pads 8/9
-SFEVL53L1X distanceSensor(qwiic);
+//TwoWire qwiic(1); //Will use pads 8/9
+//SFEVL53L1X distanceSensor(qwiic);
+SFEVL53L1X distanceSensor(Wire);
+
 //Uncomment the following line to use the optional shutdown and interrupt pins.
 //SFEVL53L1X distanceSensor(Wire, SHUTDOWN_PIN, INTERRUPT_PIN);
 
 void setup(void)
 {
-  qwiic.begin();
+  Wire.begin();
+  //qwiic.begin();
 
   Serial.begin(115200);
   Serial.println("VL53L1X Qwiic Test");
 
-  if (distanceSensor.begin() == 0) //Begin returns 0 on a good init
-    Serial.println("Sensor online!");
+  if (distanceSensor.begin() != 0) //Begin returns 0 on a good init
+  {
+    Serial.println("Sensor failed to begin. Please check wiring. Freezing...");
+    while(1);
+  }
 
-  distanceSensor.setIntermeasurementPeriod(180);
+  //distanceSensor.setIntermeasurementPeriod(180);
   Serial.println(distanceSensor.getIntermeasurementPeriod());
+
+  while(1);
   distanceSensor.setDistanceModeLong();
-    distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
+  distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
 }
 
 void loop(void)
@@ -49,9 +57,9 @@ void loop(void)
   int distance;
   while (1)
   {
-//    distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
+    //    distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
     distance = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
-//    distanceSensor.stopRanging();
+    //    distanceSensor.stopRanging();
     //if (distance != oldDistance) break;
     break;
 
