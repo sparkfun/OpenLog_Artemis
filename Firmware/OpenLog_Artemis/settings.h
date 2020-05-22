@@ -1,4 +1,26 @@
+//Needed for the MS8607 struct below
 #include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+
+typedef enum
+{
+  DEVICE_MULTIPLEXER = 0,
+  DEVICE_LOADCELL_NAU7802,
+  DEVICE_DISTANCE_VL53L1X,
+  DEVICE_GPS_UBLOX,
+  DEVICE_PROXIMITY_VCNL4040,
+  DEVICE_TEMPERATURE_TMP117,
+  DEVICE_PRESSURE_MS5637,
+  DEVICE_PRESSURE_LPS25HB,
+  DEVICE_PHT_BME280,
+  DEVICE_UV_VEML6075,
+  DEVICE_VOC_CCS811,
+  DEVICE_VOC_SGP30,
+  DEVICE_CO2_SCD30,
+  DEVICE_PRESSURE_MS8607,
+
+  DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
+  DEVICE_UNKNOWN_DEVICE,
+} deviceType_e;
 
 //Add the new sensor settings below
 struct struct_LPS25HB {

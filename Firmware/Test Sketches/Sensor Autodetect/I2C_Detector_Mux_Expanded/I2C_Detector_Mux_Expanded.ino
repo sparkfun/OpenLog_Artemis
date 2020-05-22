@@ -316,9 +316,9 @@ void createClassesForDetectedDevices()
             multiplexer[x] = new QWIICMUX;
           break;
         case DEVICE_DISTANCE_VL53L1X:
-          distanceSensor_vl53l1x = new SFEVL53L1X *[devicesInThisClass];
-          for (int x = 0 ; x < devicesInThisClass ; x++)
-            distanceSensor_vl53l1x[x] = new SFEVL53L1X(qwiic); //Construct with arguments
+//          distanceSensor_vl53l1x = new SFEVL53L1X *[devicesInThisClass];
+//          for (int x = 0 ; x < devicesInThisClass ; x++)
+//            distanceSensor_vl53l1x[x] = new SFEVL53L1X(qwiic); //Construct with arguments
           break;
         case DEVICE_PHT_BME280:
           phtSensor_BME280 = new BME280 *[devicesInThisClass];

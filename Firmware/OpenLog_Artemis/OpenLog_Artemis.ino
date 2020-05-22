@@ -18,7 +18,7 @@
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 3;
+const int FIRMWARE_VERSION_MINOR = 4;
 
 #include "settings.h"
 
@@ -102,49 +102,52 @@ ICM_20948_SPI myICM;
 //Header files for all possible Qwiic sensors
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-#include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
-NAU7802 loadcellSensor_NAU7802;
+//#include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
+//NAU7802 loadcellSensor_NAU7802;
 
 #include "SparkFun_VL53L1X.h" //Click here to get the library: http://librarymanager/All#SparkFun_VL53L1X
-SFEVL53L1X distanceSensor_VL53L1X(qwiic);
+//SFEVL53L1X **distanceSensor_VL53L1X;
 
-#include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
-SFE_UBLOX_GPS gpsSensor_ublox;
+//#include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
+//SFE_UBLOX_GPS gpsSensor_ublox;
 
-#include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
-VCNL4040 proximitySensor_VCNL4040;
+//#include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
+//VCNL4040 proximitySensor_VCNL4040;
 
-#include "SparkFun_MCP9600.h" //Click here to get the library: http://librarymanager/All#SparkFun_MCP9600
-MCP9600 thermoSensor_MCP9600;
+//#include "SparkFun_MCP9600.h" //Click here to get the library: http://librarymanager/All#SparkFun_MCP9600
+//MCP9600 thermoSensor_MCP9600;
 
 #include "SparkFun_TMP117.h" //Click here to get the library: http://librarymanager/All#SparkFun_TMP117
-TMP117 tempSensor_TMP117;
+//TMP117 tempSensor_TMP117;
 
-#include "SparkFun_MS5637_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MS5637
-MS5637 pressureSensor_MS5637;
+//#include "SparkFun_MS5637_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MS5637
+//MS5637 pressureSensor_MS5637;
 
-#include "SparkFun_LPS25HB_Arduino_Library.h"  //Click here to get the library: http://librarymanager/All#SparkFun_LPS25HB
-LPS25HB pressureSensor_LPS25HB;
+//#include "SparkFun_LPS25HB_Arduino_Library.h"  //Click here to get the library: http://librarymanager/All#SparkFun_LPS25HB
+//LPS25HB pressureSensor_LPS25HB;
 
 #include "SparkFunBME280.h" //Click here to get the library: http://librarymanager/All#SparkFun_BME280
-BME280 phtSensor_BME280;
+//BME280 **phtSensor_BME280;
 
-#include "SparkFun_VEML6075_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VEML6075
-VEML6075 uvSensor_VEML6075;
+//#include "SparkFun_VEML6075_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VEML6075
+//VEML6075 uvSensor_VEML6075;
 
 #include "SparkFunCCS811.h" //Click here to get the library: http://librarymanager/All#SparkFun_CCS811
-#define CCS811_ADDR 0x5B //Default I2C Address
-//#define CCS811_ADDR 0x5A //Alternate I2C Address
-CCS811 vocSensor_CCS811(CCS811_ADDR);
+//#define CCS811_ADDR 0x5B //Default I2C Address
+////#define CCS811_ADDR 0x5A //Alternate I2C Address
+//CCS811 **vocSensor_CCS811;
 
-#include "SparkFun_SGP30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SGP30
-SGP30 vocSensor_SGP30;
+//#include "SparkFun_SGP30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SGP30
+//SGP30 vocSensor_SGP30;
 
-#include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
-SCD30 co2Sensor_SCD30;
+//#include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
+//SCD30 co2Sensor_SCD30;
 
-#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
-MS8607 pressureSensor_MS8607;
+//#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+//MS8607 pressureSensor_MS8607;
+
+#include <SparkFun_I2C_Mux_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_I2C_Mux
+//QWIICMUX **multiplexer;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 

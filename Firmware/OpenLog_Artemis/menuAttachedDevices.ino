@@ -126,6 +126,11 @@ void menuAttachedDevices()
 }
 
 //Let's see what's on the I2C bus
+//Scan I2C bus including sub-branches of multiplexers
+//Creates a linked list of devices
+//Creates appropriate classes for each device 
+//Begin()s each device in list
+//Returns true if devices detected > 0
 bool detectQwiicDevices()
 {
   bool somethingDetected = false;
@@ -141,17 +146,88 @@ bool detectQwiicDevices()
   //Give sensors, specifically those with a low I2C address, time to turn on
   delay(100); //SCD30 required >50ms to turn on
 
+  //First scan for Muxes. Valid addresses are 0x70 to 0x77.
+  //If any are found, they will be begin()'d causing their ports to turn off
+  Serial.println("Scanning for Muxes");
+  for (uint8_t address = 0x70 ; address < 0x78 ; address++)
+  {
+    qwiic.beginTransmission(address);
+    if (qwiic.endTransmission() == 0)
+    {
+      somethingDetected = true;
+
+      deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
+      if (foundType == DEVICE_MULTIPLEXER)
+        addDevice(address, foundType); //Add this device to our map
+    }
+  }
+
+  //Before going into sub branches, complete the scan of the main branch for all devices
+  Serial.println("Scanning main bus");
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
     qwiic.beginTransmission(address);
     if (qwiic.endTransmission() == 0)
     {
-      //Serial.printf("Device found at address 0x%02X\n", address);
-      if (testDevice(address) == false)
-        Serial.printf("Unknown I2C device found at address 0x%02X\n", address);
+      somethingDetected = true;
+      deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
+      if (foundType != DEVICE_UNKNOWN_DEVICE)
+      {
+        if (recordDevice(address, foundType) == true) //Records this device. Returns true if new.
+          deviceCounts[foundType]++; //If this is a newly discovered device, increase the count of this type of device
+        Serial.printf("-%s found at address 0x%02X\n", getDeviceName(foundType), address);
+      }
       else
-        somethingDetected = true;
+        Serial.printf("-%s found at address 0x%02X\n", getDeviceName(foundType), address);
     }
+  }
+
+  //If we have muxes, begin scanning their sub nets
+  if (deviceCounts[DEVICE_MULTIPLEXER] > 0)
+  {
+    Serial.println("Scanning sub nets");
+
+    //Step into first mux and begin stepping through ports
+    for (int muxNumber = 0 ; muxNumber < deviceCounts[DEVICE_MULTIPLEXER] ; muxNumber++)
+    {
+      uint8_t muxAddress = getDeviceAddress(DEVICE_MULTIPLEXER, muxNumber);
+
+      for (int portNumber = 0 ; portNumber < 7 ; portNumber++)
+      {
+        multiplexer[muxNumber]->setPort(portNumber);
+
+        //Scan this new bus for new addresses
+        for (uint8_t address = 1 ; address < 127 ; address++)
+        {
+          qwiic.beginTransmission(address);
+          if (qwiic.endTransmission() == 0)
+          {
+            somethingDetected = true;
+
+            //Ignore devices we've already logged. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+            if (deviceExists(address, muxAddress, portNumber) == false)
+            {
+              deviceType_e foundType = testDevice(address, muxAddress, portNumber);
+              if (foundType != DEVICE_UNKNOWN_DEVICE)
+              {
+                if (recordDevice(address, foundType, muxAddress, portNumber) == true) //Record this device, with mux port specifics. Returns true if new.
+                  deviceCounts[foundType]++; //If this is a newly discovered device, increase the count of this type of device
+                Serial.printf("-New %s found at address 0x%02X.0x%02X.0x%02X\n", getDeviceName(foundType), address, muxAddress, portNumber);
+              }
+              else
+                Serial.printf("-%s found at address 0x%02X\n", getDeviceName(foundType), address);
+            } //End device exists check
+          } //End I2c check
+        } //End I2C scanning
+      } //End mux port stepping
+    } //End mux stepping
+  } //End mux > 0
+
+  if (somethingDetected)
+  {
+    createClassesForDetectedDevices();
+    beginDetectedDevices(); //Step through the linked list and begin() everything in our map
+    printDetectedDevices();
   }
 
   if (somethingDetected) qwiic.setPullups(0); //We've detected something on the bus so disable pullups
@@ -179,98 +255,69 @@ bool detectQwiicDevices()
 //#define ADR_MS8607 0x76 //Pressure portion of the MS8607 sensor. We'll catch the 0x40 first
 #define ADR_BME280_1 0x77
 
-//Given an address, see if it repsonds as we would expect
-//Returns false if I2C address is not known
-bool testDevice(uint8_t i2cAddress)
+//Given an address, returns the device type if it responds as we would expect
+deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumber)
 {
   switch (i2cAddress)
   {
-    case ADR_LPS25HB_1:
-      if (pressureSensor_LPS25HB.begin(qwiic, ADR_LPS25HB_1) == true) //Wire port, Address.
-        if (pressureSensor_LPS25HB.isConnected() == true)
-          qwiicAvailable.LPS25HB = true;
-      break;
-    case ADR_LPS25HB_2:
-      if (pressureSensor_LPS25HB.begin(qwiic, ADR_LPS25HB_2) == true) //Wire port, Address.
-        if (pressureSensor_LPS25HB.isConnected() == true)
-          qwiicAvailable.LPS25HB = true;
-      break;
-    case ADR_MCP9600_1:
-      if (thermoSensor_MCP9600.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
-        if (thermoSensor_MCP9600.isConnected() == true)
-          qwiicAvailable.MCP9600 = true;
-      break;
-    case ADR_VCNL4040_OR_MCP9600:
-      //      if (thermoSensor_MCP9600.begin(ADR_MCP9600_1, qwiic) == true) //Address, Wire port
-      //        if (thermoSensor_MCP9600.isConnected() == true)
-      //          qwiicAvailable.MCP9600 = true;
-      if (proximitySensor_VCNL4040.begin(qwiic) == true) //Wire port. Checks ID so should avoid collision with MCP9600
-        qwiicAvailable.VCNL4040 = true;
-      break;
-    case ADR_NAU7802:
-      if (loadcellSensor_NAU7802.begin(qwiic) == true) //Wire port
-        qwiicAvailable.NAU7802 = true;
-      break;
-    case ADR_UBLOX:
-      if (gpsSensor_ublox.begin(qwiic, ADR_UBLOX) == true) //Wire port, address
-        qwiicAvailable.uBlox = true;
-      break;
-    case ADR_VL53L1X:
-      if (distanceSensor_VL53L1X.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
-        qwiicAvailable.VL53L1X = true;
-      break;
-    case ADR_TMP117:
-      if (tempSensor_TMP117.begin(ADR_TMP117, qwiic) == true) //Adr, Wire port
-        qwiicAvailable.TMP117 = true;
-      break;
-    case ADR_CCS811_1:
-      if (vocSensor_CCS811.begin(qwiic) == true) //Wire port
-        qwiicAvailable.CCS811 = true;
-      break;
-    case ADR_BME280_1:
-      if (phtSensor_BME280.beginI2C(qwiic) == true) //Wire port
-        qwiicAvailable.BME280 = true;
-      break;
-    case ADR_SGP30:
-      if (vocSensor_SGP30.begin(qwiic) == true) //Wire port
-        qwiicAvailable.SGP30 = true;
-      break;
-    case ADR_VEML6075:
-      if (uvSensor_VEML6075.begin(qwiic) == true) //Wire port
-        qwiicAvailable.VEML6075 = true;
-      break;
-    case ADR_MS5637:
+    case 0x29:
       {
-        //By the time we hit this address, MS8607 should have already been started by its first address
-        if (qwiicAvailable.MS8607 == false)
-        {
-          if (pressureSensor_MS5637.begin(qwiic) == true) //Wire port
-            qwiicAvailable.MS5637 = true;
-        }
+        SFEVL53L1X distanceSensor_VL53L1X(qwiic); //Start with given wire port
+        if (distanceSensor_VL53L1X.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
+          return (DEVICE_DISTANCE_VL53L1X);
         break;
       }
-    case ADR_SCD30:
-      if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
-        qwiicAvailable.SCD30 = true;
-      else
+    case 0x5A:
+    case 0x5B:
       {
-        //See issue #4: https://github.com/sparkfun/OpenLog_Artemis/issues/4
-        //Give it 2s to boot and then try again
-        delay(2000); //1s works but datasheet specs <2s so we'll go with 2000ms.
-        if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
-          qwiicAvailable.SCD30 = true;
+        CCS811 vocSensor_CCS811(i2cAddress); //Start with given I2C address
+        if (vocSensor_CCS811.begin(qwiic) == true) //Wire port
+          return (DEVICE_VOC_CCS811);
+        break;
       }
-      break;
-    case ADR_MS8607:
-      if (pressureSensor_MS8607.begin(qwiic) == true) //Wire port. Tests for both 0x40 and 0x76 I2C addresses.
-        qwiicAvailable.MS8607 = true;
-      break;
+    case 0x70:
+    case 0x71:
+    case 0x72:
+    case 0x73:
+    case 0x74:
+    case 0x75:
+      {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(i2cAddress, muxAddress, portNumber) == true) return (getDeviceType(i2cAddress));
+        QWIICMUX multiplexer;
+        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_MULTIPLEXER);
+        break;
+      }
+    case 0x76:
+    case 0x77:
+      {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(i2cAddress, muxAddress, portNumber) == true) return (getDeviceType(i2cAddress));
+
+        //Try a mux first. This will write/read to 0x00 register.
+        QWIICMUX multiplexer;
+        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
+        {
+          Serial.println("Mux found?");
+          return (DEVICE_MULTIPLEXER);
+        }
+
+        BME280 phtSensor_BME280;
+        phtSensor_BME280.setI2CAddress(i2cAddress);
+        if (phtSensor_BME280.beginI2C(qwiic) == true) //Wire port
+          return (DEVICE_PHT_BME280);
+        break;
+      }
     default:
-      Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
-      return false;
-      break;
+      {
+        Serial.printf("-Unknown device at address 0x%02X\n", i2cAddress);
+        return DEVICE_UNKNOWN_DEVICE;
+        break;
+      }
   }
-  return true;
+  Serial.printf("-Known I2C address but device responded unexpectedly at address 0x%02X\n", i2cAddress);
+  return DEVICE_UNKNOWN_DEVICE;
 }
 
 void menuConfigure_QwiicBus()

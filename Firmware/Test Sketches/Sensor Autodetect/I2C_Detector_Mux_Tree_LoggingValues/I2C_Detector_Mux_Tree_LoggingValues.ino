@@ -364,15 +364,15 @@ void beginDetectedDevices()
 
       //https://stackoverflow.com/questions/14768230/malloc-for-struct-and-pointer-in-c
       
-      struct_CCS811 sensor_CCS811; //Create the struct
-      sensor_CCS811.log = true;
-      sensor_CCS811.tempValue = 56;
-      temp->loggingConfigStruct = &sensor_CCS811; //Make the node point at this struct
-
-      struct_CCS811 *local_config = (struct_CCS811 *)temp->loggingConfigStruct; //Create a local pointer, to give definition. Point pointer at the previous struct.
-      local_config->log = true; //Change struct
-      Serial.printf("temp value: %d\n", local_config->tempValue);
-      while(1);
+//      struct_CCS811 sensor_CCS811; //Create the struct
+//      sensor_CCS811.log = true;
+//      sensor_CCS811.tempValue = 56;
+//      temp->loggingConfigStruct = &sensor_CCS811; //Make the node point at this struct
+//
+//      struct_CCS811 *local_config = (struct_CCS811 *)temp->loggingConfigStruct; //Create a local pointer, to give definition. Point pointer at the previous struct.
+//      local_config->log = true; //Change struct
+//      Serial.printf("temp value: %d\n", local_config->tempValue);
+//      while(1);
       
       Serial.printf("-%s %d online!\n", getDeviceName(temp->deviceType), deviceNumber);
     }
