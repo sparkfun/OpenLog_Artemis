@@ -19,7 +19,7 @@ int ubx_checksum_B = 0;
 int ubx_expected_checksum_A = 0;
 int ubx_expected_checksum_B = 0;
 
-// Process data bytes according to ubx_state
+// Process incoming data bytes according to ubx_state
 // For UBX messages:
 // Sync Char 1: 0xB5
 // Sync Char 2: 0x62

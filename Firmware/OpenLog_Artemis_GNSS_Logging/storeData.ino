@@ -21,7 +21,7 @@
 //We only discard ACK/NACKs when streaming messages to SD.
 
 //Storage for the incoming I2C data
-RingBufferN<32768> GNSSbuffer;
+RingBufferN<16384> GNSSbuffer;
 
 //Storage for a single UBX frame (so we can discard ACK/NACKs)
 //Needs to be large enough to hold the largest RAWX frame (8 + 16 + (32 * numMeas))
@@ -70,8 +70,8 @@ bool storeData(void)
 {
   bool ret_val = true; //The return value
 
-  if (qwiicOnline.uBlox == false)
-    goto SD_WRITE; // uBlox is offline so let's not try to talk to it. Save any remaining data to SD.
+  if ((qwiicOnline.uBlox == false) || (qwiicAvailable.uBlox == false))
+    goto SD_WRITE; // uBlox is offline so let's not try to talk to it. But we will still try to save any remaining data to SD.
   
   //Check for new I2C data three times faster than usBetweenReadings to avoid pounding the I2C bus
   if ((micros() - lastReadTime) > (settings.usBetweenReadings / 3))
@@ -216,7 +216,7 @@ bool storeData(void)
           UBXpointer++; //Increment the pointer
           if (UBXpointer == UBXbufferSize) //This should never happen!
           {
-            Serial.print(F("storeData: UBXbuffer overflow! Freezing..."));
+            Serial.print(F("storeData: UBXbuffer overflow! You need to increase the size of UBXbufferSize in storeData. Freezing..."));
             while(1)
               ;
           }
@@ -383,7 +383,7 @@ bool storeData(void)
   
   //Record one packet to SD
   //Only do this if logging is enabled and the SD card is ready
-  if (settings.logData && settings.enableSD && online.microSD && online.dataLogging)
+  if (settings.logData && settings.sensor_uBlox.log && online.microSD && online.dataLogging)
   {
     int bufAvail = GNSSbuffer.available(); //Check how many bytes are in the GNSS buffer
     

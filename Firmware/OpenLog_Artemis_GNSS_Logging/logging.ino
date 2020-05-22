@@ -1,11 +1,3 @@
-//Print a message both to terminal and to log
-void msg(const char * message)
-{
-  Serial.println(message);
-  if (online.microSD)
-    gnssDataFile.println(message);
-}
-
 //Returns next available log file name
 //Checks the spots in EEPROM for the next available LOG# file name
 //Updates EEPROM and then appends to the new log file.

@@ -2,7 +2,7 @@
 bool beginSensors()
 {
   //If no sensors are available then return
-  if (detectQwiicDevices() == false)
+  if (detectQwiicDevices() == false) //Sets Wire to 100kHz
   {
     if (settings.printMajorDebugMessages == true)
     {
@@ -12,9 +12,8 @@ bool beginSensors()
     return (false);
   }
 
-  determineMaxI2CSpeed(); //Try for 400kHz but reduce to 100kHz or low if certain devices are attached
-
-  if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && !qwiicOnline.uBlox)
+  determineMaxI2CSpeed(); //Try for 400kHz but reduce if the user has selected a slower speed
+  if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && !qwiicOnline.uBlox) // Only do this if the sensor is not online
   {
     if (gpsSensor_ublox.begin(qwiic, settings.sensor_uBlox.ubloxI2Caddress) == true) //Wire port, Address. Default is 0x42.
     {
@@ -291,7 +290,6 @@ bool beginSensors()
       }
 
       //Enable the selected messages
-      //TO DO: Selecting an invalid message (e.g. RAWX) for this module causes this to NACK. Needs to be prevented.
       gpsSensor_ublox.newCfgValset8(0x20910065, settings.sensor_uBlox.logUBXNAVCLOCK, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
       gpsSensor_ublox.addCfgValset8(0x2091002e, settings.sensor_uBlox.logUBXNAVHPPOSECEF); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
       gpsSensor_ublox.addCfgValset8(0x20910033, settings.sensor_uBlox.logUBXNAVHPPOSLLH); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
@@ -340,9 +338,9 @@ bool beginSensors()
 //but it is defined here as it is uBlox-specific
 void openNewLogFile()
 {
-  if (settings.logData && settings.enableSD && online.microSD && online.dataLogging) //If we are logging
+  if (settings.logData && settings.sensor_uBlox.log && online.microSD && online.dataLogging) //If we are logging
   {
-    if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && qwiicOnline.uBlox) //If the uBlox is available and logging
+    if (qwiicAvailable.uBlox && qwiicOnline.uBlox) //If the uBlox is available and logging
     {
       //Disable all messages in RAM
       gpsSensor_ublox.newCfgValset8(0x20910065, 0, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
@@ -393,7 +391,6 @@ void openNewLogFile()
       }
 
       //(Re)Enable the selected messages
-      //TO DO: Selecting an invalid message (e.g. RAWX) for this module causes this to NACK. Needs to be prevented.
       gpsSensor_ublox.newCfgValset8(0x20910065, settings.sensor_uBlox.logUBXNAVCLOCK, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
       gpsSensor_ublox.addCfgValset8(0x2091002e, settings.sensor_uBlox.logUBXNAVHPPOSECEF); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
       gpsSensor_ublox.addCfgValset8(0x20910033, settings.sensor_uBlox.logUBXNAVHPPOSLLH); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
@@ -436,9 +433,9 @@ void openNewLogFile()
 //Close the current log file and then reset the GNSS
 void resetGNSS()
 {
-  if (settings.logData && settings.enableSD && online.microSD && online.dataLogging) //If we are logging
+  if (settings.logData && settings.sensor_uBlox.log && online.microSD && online.dataLogging) //If we are logging
   {
-    if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && qwiicOnline.uBlox) //If the uBlox is available and logging
+    if (qwiicAvailable.uBlox && qwiicOnline.uBlox) //If the uBlox is available and logging
     {
       //Disable all messages in RAM
       gpsSensor_ublox.newCfgValset8(0x20910065, 0, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
@@ -459,7 +456,7 @@ void resetGNSS()
       //Using a maxWait of zero means we don't wait for the ACK/NACK
       //and success will always be false (sendCommand returns SFE_UBLOX_STATUS_SUCCESS not SFE_UBLOX_STATUS_DATA_SENT)
 
-      unsigned long pauseUntil = millis() + 2100UL; //Wait > 500ms so we can be sure SD data is sync'd
+      unsigned long pauseUntil = millis() + 2100UL; //Wait >> 500ms so we can be sure SD data is sync'd
       while (millis() < pauseUntil) //While we are pausing, keep writing data to SD
       {
         storeData(); //storeData is the workhorse. It reads I2C data and writes it to SD.
@@ -473,6 +470,7 @@ void resetGNSS()
       gnssDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
 
       //Reset the GNSS
+      //Note: this method is DEPRECATED. TO DO: replace this with UBX-CFG-VALDEL ?
       gpsSensor_ublox.factoryDefault(2100);
       gpsSensor_ublox.factoryReset();
 
@@ -491,41 +489,6 @@ void resetGNSS()
     }
   }
 }
-
-////Query each enabled sensor for it's most recent data
-//void getData()
-//{
-//  measurementCount++;
-//
-//  outputData = "";
-//  String helperText = "";
-//
-//  if (qwiicOnline.uBlox && settings.sensor_uBlox.log)
-//  {
-//    gpsSensor_ublox.getPVT();
-//    if (settings.sensor_uBlox.logUBXNAVPVT)
-//    {
-//      outputData += (String)gpsSensor_ublox.getLatitude() + ",";
-//      outputData += (String)gpsSensor_ublox.getLongitude();
-//      helperText += "gps_Lat,gps_Long";
-//    }
-//    gpsSensor_ublox.flushPVT(); //Mark all PVT data as used
-//  }
-//
-//  outputData += '\n';
-//  helperText += '\n';
-//
-//  totalCharactersPrinted += outputData.length();
-//
-//  if (settings.showHelperText == true)
-//  {
-//    if (helperTextPrinted == false)
-//    {
-//      helperTextPrinted = true;
-//      outputData = helperText + outputData;
-//    }
-//  }
-//}
 
 //If certain devices are attached, we need to reduce the I2C max speed
 void determineMaxI2CSpeed()

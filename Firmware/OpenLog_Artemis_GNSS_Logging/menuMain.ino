@@ -14,21 +14,21 @@ void menuMain()
     Serial.println();
     Serial.println(F("Menu: Main Menu"));
 
-    Serial.println(F("1) Configure Terminal Output"));
+    Serial.println(F("1) Configure Logging"));
 
     Serial.println(F("2) Detect / Configure Attached Devices"));
 
-    if (settings.logData && settings.enableSD && online.microSD)
+    if (settings.logData && online.microSD && online.dataLogging)
     {
       Serial.println(F("f) Open New Log File"));
-
-      if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && qwiicOnline.uBlox)
-      {
-        Serial.println(F("g) Reset GNSS"));
-      }
     }
 
-    Serial.println(F("r) Reset all settings to default"));
+    if (qwiicAvailable.uBlox && qwiicOnline.uBlox)
+    {
+      Serial.println(F("g) Reset GNSS"));
+    }
+
+    Serial.println(F("r) Reset all OLA settings to default"));
 
     Serial.println(F("d) Debug Menu"));
 
@@ -94,9 +94,6 @@ void menuMain()
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
-  if (settings.usBetweenReadings >= maxUsBeforeSleep)
-    measurementStartTime = rtcMillis();
-  else
-    measurementStartTime = millis();
+  measurementStartTime = rtcMillis();
 
 }

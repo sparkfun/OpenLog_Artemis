@@ -5,11 +5,11 @@ void menuDebug(bool *printMajorDebugMessages, bool *printMinorDebugMessages)
     Serial.println();
     Serial.println(F("Menu: Configure Debug Settings"));
 
-    Serial.print(F("1) Major Debug Messages: "));
+    Serial.print(F("1) Major Debug Messages : "));
     if (*printMajorDebugMessages == true) Serial.println(F("Enabled"));
     else Serial.println("Disabled");
 
-    Serial.print(F("2) Minor Debug Messages: "));
+    Serial.print(F("2) Minor Debug Messages : "));
     if (*printMinorDebugMessages == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 

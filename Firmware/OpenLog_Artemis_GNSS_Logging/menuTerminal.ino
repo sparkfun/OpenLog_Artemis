@@ -3,21 +3,21 @@ void menuLogRate()
   while (1)
   {
     Serial.println();
-    Serial.println(F("Menu: Configure Terminal Output"));
+    Serial.println(F("Menu: Configure Logging"));
 
-    Serial.print(F("1) Log to microSD: "));
+    Serial.print(F("1) Log to microSD                               : "));
     if (settings.logData == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 
-    Serial.print(F("2) Log to Terminal: "));
+    Serial.print(F("2) Log to Terminal                              : "));
     if (settings.enableTerminalOutput == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 
-    Serial.print(F("3) Set Serial Baud Rate: "));
+    Serial.print(F("3) Set Serial Baud Rate                         : "));
     Serial.print(settings.serialTerminalBaudRate);
     Serial.println(F(" bps"));
 
-    Serial.print(F("4) Set Log Rate in Hz: "));
+    Serial.print(F("4) Set Log Rate in Hz                           : "));
     if (settings.usBetweenReadings < 1000000UL) //Take more than one measurement per second
     {
       //Display Integer Hertz
@@ -31,15 +31,25 @@ void menuLogRate()
       Serial.printf("%.06lf\n", 1.0 / logRateSeconds);
     }
 
-    Serial.print(F("5) Set Log Rate in seconds between readings: "));
+    Serial.print(F("5) Set Log Rate in seconds between readings     : "));
     if (settings.usBetweenReadings > 1000000UL) //Take more than one measurement per second
     {
       Serial.printf("%llu\n", settings.usBetweenReadings / 1000000UL);
     }
     else
     {
-      Serial.printf("%.06lf\n", settings.usBetweenReadings / 1000000.0);
+      Serial.printf("%.03lf\n", settings.usBetweenReadings / 1000000.0);
     }
+    
+    Serial.print(F("6) Set logging duration in seconds              : "));
+    Serial.printf("%llu\n", settings.usLoggingDuration / 1000000UL);
+
+    Serial.print(F("7) Set sleep duration in seconds (0=continuous) : "));
+    Serial.printf("%llu\n", settings.usSleepDuration / 1000000UL);
+
+    Serial.print(F("8) Open new log file after sleep                : "));
+    if (settings.openNewLogFile == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
     Serial.println(F("x) Exit"));
 
@@ -81,7 +91,7 @@ void menuLogRate()
     }
     else if (incoming == '5')
     {
-      Serial.println(F("How many seconds would you like to sleep between readings? (1 to 6,000,000,000):"));
+      Serial.println(F("How many seconds between readings? (1 to 6,000,000,000):"));
       uint64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
       if (tempSeconds < 1 || tempSeconds > 6000000000ULL)
         Serial.println(F("Error: Readings Per Second out of range"));
@@ -91,6 +101,27 @@ void menuLogRate()
 
       qwiicOnline.uBlox = false; //Mark as offline so it will be started with new settings
     }
+    else if (incoming == '6')
+    {
+      uint64_t secsBetweenReads = settings.usBetweenReadings / 1000000UL;
+      Serial.printf("How many seconds would you like to log for? (%d to 6,000,000,000):", secsBetweenReads);
+      uint64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
+      if ((tempSeconds < secsBetweenReads) || tempSeconds > 6000000000ULL)
+        Serial.println(F("Error: Logging Duration out of range"));
+      else
+        settings.usLoggingDuration = 1000000UL * tempSeconds;
+    }
+    else if (incoming == '7')
+    {
+      Serial.println(F("How many seconds would you like to sleep for after logging? (0  or  10 to 6,000,000,000):"));
+      uint64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
+      if (((tempSeconds > 0) && (tempSeconds < 10)) || tempSeconds > 6000000000ULL)
+        Serial.println(F("Error: Sleep Duration out of range"));
+      else
+        settings.usSleepDuration = 1000000UL * tempSeconds;
+    }
+    else if (incoming == '8')
+      settings.openNewLogFile ^= 1;
     else if (incoming == 'x')
       return;
     else if (incoming == STATUS_GETBYTE_TIMEOUT)

@@ -36,7 +36,6 @@ bool getModuleInfo(uint16_t maxWait)
   minfo.swVersion[0] = 0;
   for (int i = 0; i < 10; i++)
       minfo.extension[i][0] = 0;
-  minfo.extensionNo = 0;
   minfo.protVerMajor = -1;
   minfo.protVerMinor = -1;
   minfo.SPG = false;
@@ -46,6 +45,8 @@ bool getModuleInfo(uint16_t maxWait)
   minfo.TIM = false;
   minfo.FTS = false;
   minfo.LAP = false;
+  
+  uint8_t extensionNo = 0;
 
   uint16_t position = 0;
   for (int i = 0; i < 30; i++)
@@ -59,15 +60,15 @@ bool getModuleInfo(uint16_t maxWait)
       position++;
   }
 
-  while (customCfg.len > (position + 40))
+  while (customCfg.len >= position + 30) // I think (position < customCfg.len) would also work
   {
       for (int i = 0; i < 30; i++)
       {
-          minfo.extension[minfo.extensionNo][i] = customPayload[position];
+          minfo.extension[extensionNo][i] = customPayload[position];
           position++;
       }
 
-      String ver_str = String((char *)minfo.extension[minfo.extensionNo]); // Convert extension into a String
+      String ver_str = String((char *)minfo.extension[extensionNo]); // Convert extension into a String
 
       //Check for FWVER
       int starts_at = -1;
@@ -111,8 +112,8 @@ bool getModuleInfo(uint16_t maxWait)
         }
       }
       
-      minfo.extensionNo++;
-      if (minfo.extensionNo > 9)
+      extensionNo++;
+      if (extensionNo > 9)
           break;
   }
 

@@ -48,7 +48,7 @@ void powerDown()
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE); //Turn off CACHE
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K); //Turn off everything but lower 512k
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k //TO DO: check this! GNSSbuffer is 32K!
+  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k //TO DO: check this! GNSSbuffer is 16K!
   //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
 
   //Keep the 32kHz clock running for RTC
@@ -63,14 +63,42 @@ void powerDown()
 //Power everything down and wait for interrupt wakeup
 void goToSleep()
 {
-  uint32_t msToSleep = settings.usBetweenReadings / 1000;
+  uint32_t msToSleep = settings.usSleepDuration / 1000;
   uint32_t sysTicksToSleep = msToSleep * 32768L / 1000; //Counter/Timer 6 will use the 32kHz clock
 
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent voltage supervisor from waking us from sleep
 
+  if (qwiicAvailable.uBlox && qwiicOnline.uBlox) //If the uBlox is available and logging
+  {
+    //Disable all messages in RAM otherwise they will still be in the module's I2C buffer when we wake up
+    gpsSensor_ublox.newCfgValset8(0x20910065, 0, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
+    gpsSensor_ublox.addCfgValset8(0x2091002e, 0); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910033, 0); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
+    gpsSensor_ublox.addCfgValset8(0x2091007e, 0); // CFG-MSGOUT-UBX_NAV_ODO_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910024, 0); // CFG-MSGOUT-UBX_NAV_POSECEF_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910029, 0); // CFG-MSGOUT-UBX_NAV_POSLLH_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910006, 0); // CFG-MSGOUT-UBX_NAV_PVT_I2C
+    gpsSensor_ublox.addCfgValset8(0x2091008d, 0); // CFG-MSGOUT-UBX_NAV_RELPOSNED_I2C
+    gpsSensor_ublox.addCfgValset8(0x2091001a, 0); // CFG-MSGOUT-UBX_NAV_STATUS_I2C
+    gpsSensor_ublox.addCfgValset8(0x2091005b, 0); // CFG-MSGOUT-UBX_NAV_TIMEUTC_I2C
+    gpsSensor_ublox.addCfgValset8(0x2091003d, 0); // CFG-MSGOUT-UBX_NAV_VELECEF_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910042, 0); // CFG-MSGOUT-UBX_NAV_VELNED_I2C
+    gpsSensor_ublox.addCfgValset8(0x209102a4, 0); // CFG-MSGOUT-UBX_RXM_RAWX_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910231, 0); // CFG-MSGOUT-UBX_RXM_SFRBX_I2C
+    uint8_t success = gpsSensor_ublox.sendCfgValset8(0x20910178, settings.sensor_uBlox.logUBXTIMTM2, 0); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 0!)
+    //Using a maxWait of zero means we don't wait for the ACK/NACK
+    //and success will always be false (sendCommand returns SFE_UBLOX_STATUS_SUCCESS not SFE_UBLOX_STATUS_DATA_SENT)
+  }
+  
   //Save files before going to sleep
   if (online.dataLogging == true)
   {
+    unsigned long pauseUntil = millis() + 550UL; //Wait > 500ms so we can be sure SD data is sync'd
+    while (millis() < pauseUntil) //While we are pausing, keep writing data to SD
+    {
+      storeData(); //storeData is the workhorse. It reads I2C data and writes it to SD.
+    }
+
     gnssDataFile.sync();
     gnssDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
   }
@@ -111,14 +139,17 @@ void goToSleep()
 
   //Keep Qwiic bus powered on if user desires it
   if (settings.powerDownQwiicBusBetweenReads == true)
+  {
     qwiicPowerOff();
+    qwiicOnline.uBlox = false; //Mark as offline so it will be started with new settings
+  }
   else
     qwiicPowerOn(); //Make sure pins stays as output
 
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE); //Turn off CACHE
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K); //Turn off everything but lower 512k
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k //TO DO: check this! GNSSbuffer is 32K!
+  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k //TO DO: check this! GNSSbuffer is 16K!
   //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
 
   //Use the lower power 32kHz clock. Use it to run CT6 as well.
@@ -189,12 +220,49 @@ void wakeFromSleep()
 
   disableIMU(); //Disable IMU
 
-  beginSensors(); //159 - 865ms but varies based on number of devices attached
-
-  //Serial.printf("Wake up time: %.02f ms\n", (micros() - startTime) / 1000.0);
-
-  //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
-  takeReading = true;
+  if (qwiicOnline.uBlox == false) //Check if we powered down the module
+  {
+    beginSensors(); //Restart the module from scratch
+  }
+  else
+  {
+    //Module is still online so (re)enable the selected messages
+    gpsSensor_ublox.newCfgValset8(0x20910065, settings.sensor_uBlox.logUBXNAVCLOCK, VAL_LAYER_RAM); // CFG-MSGOUT-UBX_NAV_CLOCK_I2C (in RAM only)
+    gpsSensor_ublox.addCfgValset8(0x2091002e, settings.sensor_uBlox.logUBXNAVHPPOSECEF); // CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910033, settings.sensor_uBlox.logUBXNAVHPPOSLLH); // CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C
+    gpsSensor_ublox.addCfgValset8(0x2091007e, settings.sensor_uBlox.logUBXNAVODO); // CFG-MSGOUT-UBX_NAV_ODO_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910024, settings.sensor_uBlox.logUBXNAVPOSECEF); // CFG-MSGOUT-UBX_NAV_POSECEF_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910029, settings.sensor_uBlox.logUBXNAVPOSLLH); // CFG-MSGOUT-UBX_NAV_POSLLH_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910006, settings.sensor_uBlox.logUBXNAVPVT); // CFG-MSGOUT-UBX_NAV_PVT_I2C
+    gpsSensor_ublox.addCfgValset8(0x2091001a, settings.sensor_uBlox.logUBXNAVSTATUS); // CFG-MSGOUT-UBX_NAV_STATUS_I2C
+    gpsSensor_ublox.addCfgValset8(0x2091005b, settings.sensor_uBlox.logUBXNAVTIMEUTC); // CFG-MSGOUT-UBX_NAV_TIMEUTC_I2C
+    gpsSensor_ublox.addCfgValset8(0x2091003d, settings.sensor_uBlox.logUBXNAVVELECEF); // CFG-MSGOUT-UBX_NAV_VELECEF_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910042, settings.sensor_uBlox.logUBXNAVVELNED); // CFG-MSGOUT-UBX_NAV_VELNED_I2C
+    gpsSensor_ublox.addCfgValset8(0x20910231, settings.sensor_uBlox.logUBXRXMSFRBX); // CFG-MSGOUT-UBX_RXM_SFRBX_I2C
+    if (minfo.HPG == true)
+    {
+      gpsSensor_ublox.addCfgValset8(0x2091008d, settings.sensor_uBlox.logUBXNAVRELPOSNED); // CFG-MSGOUT-UBX_NAV_RELPOSNED_I2C
+    }
+    if ((minfo.HPG == true) || (minfo.TIM == true) || (minfo.FTS == true))
+    {
+      gpsSensor_ublox.addCfgValset8(0x209102a4, settings.sensor_uBlox.logUBXRXMRAWX); // CFG-MSGOUT-UBX_RXM_RAWX_I2C
+    }
+    uint8_t success = gpsSensor_ublox.sendCfgValset8(0x20910178, settings.sensor_uBlox.logUBXTIMTM2, 2100); // CFG-MSGOUT-UBX_TIM_TM2_I2C (maxWait 1100ms)
+    if (success == 0)
+    {
+      if (settings.printMajorDebugMessages == true)
+        {
+          Serial.println(F("wakeFromSleep: sendCfgValset failed when enabling messages")); 
+        }       
+    }
+    else
+    {
+      if (settings.printMinorDebugMessages == true)
+        {
+          Serial.println(F("wakeFromSleep: sendCfgValset was successful when enabling messages")); 
+        }       
+    }
+  }
 }
 
 void qwiicPowerOn()
@@ -231,15 +299,62 @@ void imuPowerOff()
 }
 
 //Returns the number of milliseconds according to the RTC
-//Watch out for 24 hour roll over at 86,400,000ms
-uint32_t rtcMillis()
+//(In increments of 10ms)
+//Watch out for the year roll-over!
+uint64_t rtcMillis()
 {
     myRTC.getTime();
-    uint32_t millisToday = 0;
+    uint64_t millisToday = 0;
+    int dayOfYear = calculateDayOfYear(myRTC.dayOfMonth, myRTC.month, myRTC.year + 2000);
+    millisToday += (dayOfYear * 86400000UL);
     millisToday += (myRTC.hour * 3600000UL);
     millisToday += (myRTC.minute * 60000UL);
     millisToday += (myRTC.seconds * 1000UL);
     millisToday += (myRTC.hundredths * 10UL);
 
     return(millisToday);  
+}
+
+//Returns the day of year
+//https://gist.github.com/jrleeman/3b7c10712112e49d8607
+int calculateDayOfYear(int day, int month, int year)
+{  
+  // Given a day, month, and year (4 digit), returns 
+  // the day of year. Errors return 999.
+  
+  int daysInMonth[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+  
+  // Verify we got a 4-digit year
+  if (year < 1000) {
+    return 999;
+  }
+  
+  // Check if it is a leap year, this is confusing business
+  // See: https://support.microsoft.com/en-us/kb/214019
+  if (year%4  == 0) {
+    if (year%100 != 0) {
+      daysInMonth[1] = 29;
+    }
+    else {
+      if (year%400 == 0) {
+        daysInMonth[1] = 29;
+      }
+    }
+   }
+
+  // Make sure we are on a valid day of the month
+  if (day < 1) 
+  {
+    return 999;
+  } else if (day > daysInMonth[month-1]) {
+    return 999;
+  }
+  
+  int doy = 0;
+  for (int i = 0; i < month - 1; i++) {
+    doy += daysInMonth[i];
+  }
+  
+  doy += day;
+  return doy;
 }

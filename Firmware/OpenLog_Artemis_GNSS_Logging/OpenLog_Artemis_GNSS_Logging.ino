@@ -16,15 +16,11 @@
   This firmware runs the OpenLog Artemis and is dedicated to logging
   messages from the u-blox F9 and M9 GNSS receivers.
   
-  Messages are streamed directly to SD without being processed.
+  Messages are streamed directly to SD in UBX format without being processed.
 
   All GNSS configuration is done using UBX-CFG-VALSET and UBX-CFG-VALGET
   which is only supported on devices like the ZED-F9P and
-  NEO-M9N running communication protocols greater than 23.01.
-
-  TO DO:
-  Sleep functionality
-
+  NEO-M9N running communication protocols greater than 27.01.
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -112,21 +108,19 @@ SFE_UBLOX_GPS gpsSensor_ublox;
 
 //Global variables
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-uint64_t measurementStartTime; //Used to calc the actual update rate. Max is ~80,000,000ms in a 24 hour period.
+uint64_t measurementStartTime; //Used to calc the elapsed time
 String outputData;
 String beginSensorOutput;
-unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
+unsigned long lastReadTime = 0; //Used to delay between uBlox reads
 unsigned long lastDataLogSyncTime = 0; //Used to sync SD every half second
 bool helperTextPrinted = false; //Print the column headers only once
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
-const uint32_t maxUsBeforeSleep = 2000000; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 45; //Menus will exit/timeout after this number of seconds
 
-struct minfoStructure // Structure to hold the module info
+struct minfoStructure // Structure to hold the GNSS module info
 {
   char swVersion[30];
   char hwVersion[10];
-  uint8_t extensionNo = 0;
   char extension[10][30];
   int protVerMajor;
   int protVerMinor;
@@ -180,29 +174,29 @@ void setup() {
 
   disableIMU(); //Disable IMU
 
-  if (online.microSD == true) msg("SD card online");
-  else msg("SD card offline");
+  if (online.microSD == true) Serial.println("SD card online");
+  else Serial.println("SD card offline");
 
-  if (online.dataLogging == true) msg("Data logging online");
-  else msg("Datalogging offline");
+  if (online.dataLogging == true) Serial.println("Data logging online");
+  else Serial.println("Datalogging offline");
 
   if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println(F("Logging to microSD card with no terminal output"));
 
   if (beginSensors() == true) Serial.println(beginSensorOutput); //159 - 865ms but varies based on number of devices attached
-  else msg("No sensors detected");
+  else Serial.println("No sensors detected");
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
-  if (settings.usBetweenReadings >= maxUsBeforeSleep)
-    measurementStartTime = rtcMillis();
-  else
-    measurementStartTime = millis();
+  measurementStartTime = rtcMillis();
 
-  //Serial.printf("Setup time: %.02f ms\n", (micros() - startTime) / 1000.0);
+  if (settings.printMajorDebugMessages == true)
+  {
+    Serial.printf("Start time: %d ms\n", measurementStartTime);
+  }
 
-  //If we are immediately going to go to sleep after the first reading then
-  //first present the user with the config menu in case they need to change something
-  if (settings.usBetweenReadings >= maxUsBeforeSleep)
-    menuMain();
+//  //If we are immediately going to go to sleep after the first reading then
+//  //first present the user with the config menu in case they need to change something
+//  if (settings.usBetweenReadings >= settings.usLoggingDuration)
+//    menuMain();
 }
 
 void loop() {
@@ -210,18 +204,25 @@ void loop() {
 
   storeData(); //storeData is the workhorse. It reads I2C data and writes it to SD.
 
-//  //micros() resets to 0 during sleep so only test if we are not sleeping
-//  if (settings.usBetweenReadings < maxUsBeforeSleep)
-//  {
-//    if ((micros() - lastReadTime) >= settings.usBetweenReadings)
-//      ;
-//  }
-//
-//  //Go to sleep if time between readings is greater than 2 seconds
-//  if (settings.usBetweenReadings > maxUsBeforeSleep)
-//  {
-//    goToSleep();
-//  }
+  uint64_t timeNow = rtcMillis();
+
+  if ((settings.usSleepDuration > 0) && (timeNow > (measurementStartTime + (settings.usLoggingDuration / 1000))))
+  {
+    if (settings.printMajorDebugMessages == true)
+    {
+      Serial.println(F("Going to sleep..."));
+    }
+
+    goToSleep();
+
+    //Update measurementStartTime so we know when to go back to sleep
+    measurementStartTime = measurementStartTime + (settings.usLoggingDuration / 1000) + (settings.usSleepDuration / 1000);
+    
+    if (settings.printMajorDebugMessages == true)
+    {
+      Serial.printf("Wake up time: %d ms\n", rtcMillis());
+    }
+  }
 }
 
 void beginQwiic()
@@ -303,7 +304,7 @@ void beginDataLogging()
   if (online.microSD == true && settings.logData == true)
   {
     //If we don't have a file yet, create one. Otherwise, re-open the last used file
-    if (strlen(gnssDataFileName) == 0)
+    if ((strlen(gnssDataFileName) == 0) || (settings.openNewLogFile == true))
       strcpy(gnssDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
 
     // O_CREAT - create the file if it does not exist

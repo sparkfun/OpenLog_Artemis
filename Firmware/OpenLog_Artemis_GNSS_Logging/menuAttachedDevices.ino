@@ -37,7 +37,7 @@ void menuAttachedDevices()
     if (qwiicAvailable.uBlox)
     {
       functionPointers[availableDevices - 1] = menuConfigure_uBlox;
-      Serial.printf("%d) uBlox GPS Receiver\n", availableDevices++);
+      Serial.printf("%d) uBlox GNSS Receiver\n", availableDevices++);
     }
 
     functionPointers[availableDevices - 1] = menuConfigure_QwiicBus;
@@ -60,9 +60,6 @@ void menuAttachedDevices()
   }
 }
 
-// Available Qwiic devices
-#define ADR_UBLOX 0x42
-
 //Let's see what's on the I2C bus
 bool detectQwiicDevices()
 {
@@ -77,35 +74,22 @@ bool detectQwiicDevices()
   delay(100); //SCD30 required >50ms to turn on
 
   uint8_t address = settings.sensor_uBlox.ubloxI2Caddress;
+  
   qwiic.beginTransmission(address);
   if (qwiic.endTransmission() == 0)
   {
-    //Serial.printf("Device found at address 0x%02X\n", address);
-    if (testDevice(address) == false)
-      Serial.printf("Unknown I2C device found at address 0x%02X\n", address);
-    else
+    if (settings.printMinorDebugMessages == true)
+    {
+      Serial.printf("Device found at address 0x%02X\n", address);
+    }
+    if (gpsSensor_ublox.begin(qwiic, address) == true) //Wire port, address
+    {
+      qwiicAvailable.uBlox = true;
       somethingDetected = true;
+    }
   }
 
   return (somethingDetected);
-}
-
-//Given an address, see if it repsonds as we would expect
-//Returns false if I2C address is not known
-bool testDevice(uint8_t i2cAddress)
-{
-  switch (i2cAddress)
-  {
-    case ADR_UBLOX:
-      if (gpsSensor_ublox.begin(qwiic, ADR_UBLOX) == true) //Wire port, address
-        qwiicAvailable.uBlox = true;
-      break;
-    default:
-      Serial.printf("Unknown device at address 0x%02X\n", i2cAddress);
-      return false;
-      break;
-  }
-  return true;
 }
 
 void menuConfigure_QwiicBus()
@@ -115,11 +99,11 @@ void menuConfigure_QwiicBus()
     Serial.println();
     Serial.println(F("Menu: Configure Qwiic Bus"));
 
-    Serial.print(F("1) Turn off bus power when sleeping: "));
+    Serial.print(F("1) Turn off bus power when sleeping : "));
     if (settings.powerDownQwiicBusBetweenReads == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 
-    Serial.print(F("2) Set Max Qwiic Bus Speed: "));
+    Serial.print(F("2) Set Max Qwiic Bus Speed          : "));
     Serial.println(settings.qwiicBusMaxSpeed);
 
     Serial.println(F("x) Exit"));
