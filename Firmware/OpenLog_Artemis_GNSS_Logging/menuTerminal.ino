@@ -67,10 +67,6 @@ void menuLogRate()
     }
     else if (incoming == '4')
     {
-//      int maxOutputRate = settings.serialTerminalBaudRate / 10 / (totalCharactersPrinted / measurementCount);
-//      maxOutputRate = (maxOutputRate * 90) / 100; //Fudge reduction of 10%
-//      if(maxOutputRate < 10) maxOutputRate = 10; //TODO this is forced. Needed when multi seconds between readings.
-
       float rateLimit = 1.0 / (((float)settings.sensor_uBlox.minMeasInterval) / 1000.0);
       int maxOutputRate = (int)rateLimit;
 

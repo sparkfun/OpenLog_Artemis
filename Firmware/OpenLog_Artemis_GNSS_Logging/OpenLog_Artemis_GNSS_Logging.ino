@@ -23,10 +23,6 @@
   NEO-M9N running communication protocols greater than 23.01.
 
   TO DO:
-  Check UBX-MON-VER to see which GNSS is connected and hence:
-  - if UBX-CFG-VALSET is supported (protocol >= 23.01)
-  - if UBX-NAV-RELPOSNED and UBX-RXM-RAWX are supported (high precision only)
-  - the minimum usBetweenReadings
   Sleep functionality
 
 */
@@ -107,6 +103,8 @@ const byte PIN_IMU_INT = 37;
 //Header files for all possible Qwiic sensors
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+#define MAX_PAYLOAD_SIZE 384 // Override MAX_PAYLOAD_SIZE for getModuleInfo which can return up to 348 bytes
+
 #include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
 SFE_UBLOX_GPS gpsSensor_ublox;
 
@@ -115,16 +113,32 @@ SFE_UBLOX_GPS gpsSensor_ublox;
 //Global variables
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 uint64_t measurementStartTime; //Used to calc the actual update rate. Max is ~80,000,000ms in a 24 hour period.
-unsigned long measurementCount = 0; //Used to calc the actual update rate.
 String outputData;
 String beginSensorOutput;
 unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
 unsigned long lastDataLogSyncTime = 0; //Used to sync SD every half second
 bool helperTextPrinted = false; //Print the column headers only once
-unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
 const uint32_t maxUsBeforeSleep = 2000000; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 45; //Menus will exit/timeout after this number of seconds
+
+struct minfoStructure // Structure to hold the module info
+{
+  char swVersion[30];
+  char hwVersion[10];
+  uint8_t extensionNo = 0;
+  char extension[10][30];
+  int protVerMajor;
+  int protVerMinor;
+  bool SPG;
+  bool HPG;
+  bool ADR;
+  bool UDR;
+  bool TIM;
+  bool FTS;
+  bool LAP;
+} minfo; //Module info
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //unsigned long startTime = 0;

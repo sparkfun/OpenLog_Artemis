@@ -69,6 +69,9 @@ unsigned long lastRELPOSNEDdebug = 0; //The last time (millis) that a RELPOSNED 
 bool storeData(void)
 {
   bool ret_val = true; //The return value
+
+  if (qwiicOnline.uBlox == false)
+    goto SD_WRITE; // uBlox is offline so let's not try to talk to it. Save any remaining data to SD.
   
   //Check for new I2C data three times faster than usBetweenReadings to avoid pounding the I2C bus
   if ((micros() - lastReadTime) > (settings.usBetweenReadings / 3))
@@ -434,7 +437,7 @@ bool storeData(void)
   }
   else //SD logging is disabled so discard the data so we don't overflow the buffer
   {
-    if (settings.printMajorDebugMessages == true)
+    if (settings.printMinorDebugMessages == true)
     {
       Serial.println(F("storeData: we are not logging. Discarding data!"));
     }

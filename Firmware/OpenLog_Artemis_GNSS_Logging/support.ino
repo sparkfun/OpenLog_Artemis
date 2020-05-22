@@ -18,13 +18,13 @@ void printMinorDebug(String thingToPrint)
 void printUnknown(uint8_t unknownChoice)
 {
   Serial.print(F("Unknown choice: "));
-  Serial.write(unknownChoice);
+  Serial.print(unknownChoice);
   Serial.println();
 }
 void printUnknown(int unknownValue)
 {
   Serial.print(F("Unknown value: "));
-  Serial.write(unknownValue);
+  Serial.print(unknownValue);
   Serial.println();
 }
 

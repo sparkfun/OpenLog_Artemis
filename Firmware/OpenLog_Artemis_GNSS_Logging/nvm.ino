@@ -185,7 +185,7 @@ bool parseLine(char* str) {
     if (d == -1)
     {
       EEPROM.erase();
-      sd.remove("OLA_settings.cfg");
+      sd.remove("OLA_GNSS_settings.cfg");
       Serial.println("OpenLog Artemis has been factory reset. Freezing. Please restart and open terminal at 115200bps.");
       while(1);
     }

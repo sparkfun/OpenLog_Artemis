@@ -16,9 +16,12 @@ struct struct_uBlox {
   bool logUBXRXMRAWX = false;
   bool logUBXRXMSFRBX = false;
   bool logUBXTIMTM2 = false;
+  bool enableUSB = true;
+  bool enableUART1 = true;
+  bool enableUART2 = true;
+  bool enableSPI = false;
   uint16_t minMeasInterval = 33; //Minimum measurement interval in ms. TO DO: set this according to module type
   uint8_t ubloxI2Caddress = 0x42; //Let's store this just in case we want to change it at some point with CFG-I2C-ADDRESS (0x20510001)
-  int i2cSpeed = 400000; //Default to 400kHz
 };
 
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.

@@ -64,8 +64,8 @@ void menuMain()
       if (bContinue == 'y')
       {
         EEPROM.erase();
-        if (sd.exists("OLA_settings.cfg"))
-          sd.remove("OLA_settings.cfg");
+        if (sd.exists("OLA_GNSS_settings.cfg"))
+          sd.remove("OLA_GNSS_settings.cfg");
 
         Serial.println(F("Settings erased. Please reset OpenLog Artemis and open a terminal at 115200bps..."));
         while (1);
@@ -93,18 +93,10 @@ void menuMain()
 
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 
-  //Reset measurements
-  measurementCount = 0;
-  totalCharactersPrinted = 0;
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
   if (settings.usBetweenReadings >= maxUsBeforeSleep)
     measurementStartTime = rtcMillis();
   else
     measurementStartTime = millis();
-
-  //Edge case: after 10Hz reading, user sets the log rate above 2s mark. We never go to sleep because 
-  //takeReading is not true. And since we don't wake up, takeReading never gets set to true.
-  //Se we force it here.
-  takeReading = true;
 
 }
