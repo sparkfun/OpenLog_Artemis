@@ -1,223 +1,223 @@
 //Init / begin comm with all enabled sensors
 
 
-  //  if (qwiicAvailable.LPS25HB && settings.sensor_LPS25HB.log && !qwiicOnline.LPS25HB)
-  //  {
-  //    if (pressureSensor_LPS25HB.begin(qwiic) == true) //Wire port, Address.
-  //    {
-  //      qwiicOnline.LPS25HB = true;
-  //      beginSensorOutput += "LPS25HB Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput + "LPS25HB failed to respond. Check wiring and address jumper.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.NAU7802 && settings.sensor_NAU7802.log && !qwiicOnline.NAU7802)
-  //  {
-  //    if (loadcellSensor_NAU7802.begin(qwiic) == true) //Wire port
-  //    {
-  //      loadcellSensor_NAU7802.setSampleRate(NAU7802_SPS_320); //Sample rate can be set to 10, 20, 40, 80, or 320Hz
-  //
-  //      //Setup scale with stored values
-  //      loadcellSensor_NAU7802.setCalibrationFactor(settings.sensor_NAU7802.calibrationFactor);
-  //      loadcellSensor_NAU7802.setZeroOffset(settings.sensor_NAU7802.zeroOffset);
-  //      qwiicOnline.NAU7802 = true;
-  //      beginSensorOutput += "NAU7802 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "NAU7802 failed to respond. Check wiring\n.";
-  //  }
-  //
-  //  if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && !qwiicOnline.uBlox)
-  //  {
-  //    if (gpsSensor_ublox.begin(qwiic, 0x42) == true) //Wire port, Address. Default is 0x42.
-  //    {
-  //      gpsSensor_ublox.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
-  //
-  //      //gpsSensor_ublox.setAutoPVT(true); //Tell the GPS to "send" each solution
-  //      gpsSensor_ublox.setAutoPVT(false);
-  //
-  //      //if (settings.recordPerSecond <= 10)
-  //      if (1000000UL / settings.usBetweenReadings <= 10)
-  //        gpsSensor_ublox.setNavigationFrequency(1000000 / settings.usBetweenReadings); //Set output rate equal to our query rate
-  //      else
-  //        gpsSensor_ublox.setNavigationFrequency(10); //Max output depends on the module used.
-  //
-  //      gpsSensor_ublox.saveConfiguration(); //Save the current settings to flash and BBR
-  //
-  //      qwiicOnline.uBlox = true;
-  //      beginSensorOutput += "uBlox GPS Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "uBlox GPS failed to respond. Check wiring and I2C address of module with uCenter.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.MCP9600 && settings.sensor_MCP9600.log && !qwiicOnline.MCP9600)
-  //  {
-  //    if (thermoSensor_MCP9600.begin(0x66, qwiic) == true) //Address, Wire port
-  //    {
-  //      //set the resolution on the ambient (cold) junction
-  //      Ambient_Resolution ambientRes = RES_ZERO_POINT_0625; //_25 and _0625
-  //      thermoSensor_MCP9600.setAmbientResolution(ambientRes);
-  //
-  //      Thermocouple_Resolution thermocoupleRes = RES_14_BIT; //12, 14, 16, and 18
-  //      thermoSensor_MCP9600.setThermocoupleResolution(thermocoupleRes);
-  //
-  //      qwiicOnline.MCP9600 = true;
-  //      beginSensorOutput += "MCP9600 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "MCP9600 failed to respond. Check wiring and address jumper.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.VCNL4040 && settings.sensor_VCNL4040.log && !qwiicOnline.VCNL4040)
-  //  {
-  //    if (proximitySensor_VCNL4040.begin(qwiic) == true) //Wire port
-  //    {
-  //      proximitySensor_VCNL4040.powerOnAmbient(); //Turn on ambient sensing
-  //
-  //      proximitySensor_VCNL4040.setLEDCurrent(settings.sensor_VCNL4040.LEDCurrent);
-  //      proximitySensor_VCNL4040.setIRDutyCycle(settings.sensor_VCNL4040.IRDutyCycle);
-  //      proximitySensor_VCNL4040.setProxIntegrationTime(settings.sensor_VCNL4040.proximityIntegrationTime);
-  //      proximitySensor_VCNL4040.setProxResolution(settings.sensor_VCNL4040.resolution);
-  //      proximitySensor_VCNL4040.setAmbientIntegrationTime(settings.sensor_VCNL4040.ambientIntegrationTime);
-  //
-  //      qwiicOnline.VCNL4040 = true;
-  //      beginSensorOutput += "VCNL4040 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "VCNL4040 failed to respond. Check wiring.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.VL53L1X && settings.sensor_VL53L1X.log && !qwiicOnline.VL53L1X)
-  //  {
-  //    if (distanceSensor_VL53L1X.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
-  //    {
-  //      if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
-  //        distanceSensor_VL53L1X.setDistanceModeShort();
-  //      else
-  //        distanceSensor_VL53L1X.setDistanceModeLong();
-  //
-  //      distanceSensor_VL53L1X.setIntermeasurementPeriod(settings.sensor_VL53L1X.intermeasurementPeriod - 1);
-  //      distanceSensor_VL53L1X.setXTalk(settings.sensor_VL53L1X.crosstalk);
-  //      distanceSensor_VL53L1X.setOffset(settings.sensor_VL53L1X.offset);
-  //
-  //      distanceSensor_VL53L1X.startRanging(); //Write configuration bytes to initiate measurement
-  //
-  //      qwiicOnline.VL53L1X = true;
-  //      beginSensorOutput += "VL53L1X Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "VX53L1X failed to respond. Check wiring.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.TMP117 && settings.sensor_TMP117.log && !qwiicOnline.TMP117)
-  //  {
-  //    if (tempSensor_TMP117.begin(0x48, qwiic) == true) //Address, Wire port
-  //    {
-  //      tempSensor_TMP117.setConversionAverageMode(settings.sensor_TMP117.conversionAverageMode);
-  //      tempSensor_TMP117.setConversionCycleBit(settings.sensor_TMP117.conversionCycle);
-  //      tempSensor_TMP117.setContinuousConversionMode();
-  //
-  //      qwiicOnline.TMP117 = true;
-  //      beginSensorOutput += "TMP117 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "TMP117 failed to respond. Check wiring and address jumpers.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.CCS811 && settings.sensor_CCS811.log && !qwiicOnline.CCS811)
-  //  {
-  //    if (vocSensor_CCS811.begin(qwiic) == true) //Wire port
-  //    {
-  //      qwiicOnline.CCS811 = true;
-  //      beginSensorOutput += "CCS811 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "CCS811 failed to respond. Check wiring and address jumpers. Adr must be 0x5B.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.BME280 && settings.sensor_BME280.log && !qwiicOnline.BME280)
-  //  {
-  //    if (phtSensor_BME280.beginI2C(qwiic) == true) //Wire port
-  //    {
-  //      qwiicOnline.BME280 = true;
-  //      beginSensorOutput += "BME280 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "BME280 failed to respond. Check wiring and address jumpers. Adr must be 0x77.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.SGP30 && settings.sensor_SGP30.log && !qwiicOnline.SGP30)
-  //  {
-  //    if (vocSensor_SGP30.begin(qwiic) == true) //Wire port
-  //    {
-  //      //Initializes sensor for air quality readings
-  //      vocSensor_SGP30.initAirQuality();
-  //
-  //      qwiicOnline.SGP30 = true;
-  //      beginSensorOutput += "SGP30 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "SGP30 failed to respond. Check wiring.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.VEML6075 && settings.sensor_VEML6075.log && !qwiicOnline.VEML6075)
-  //  {
-  //    if (uvSensor_VEML6075.begin(qwiic) == true) //Wire port
-  //    {
-  //      qwiicOnline.VEML6075 = true;
-  //      beginSensorOutput += "VEML6075 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "VEML6075 failed to respond. Check wiring.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.MS5637 && settings.sensor_MS5637.log && !qwiicOnline.MS5637)
-  //  {
-  //    if (pressureSensor_MS5637.begin(qwiic) == true) //Wire port
-  //    {
-  //      qwiicOnline.MS5637 = true;
-  //      beginSensorOutput += "MS5637 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "MS5637 failed to respond. Check wiring.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.SCD30 && settings.sensor_SCD30.log && !qwiicOnline.SCD30)
-  //  {
-  //    if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
-  //    {
-  //      co2Sensor_SCD30.setMeasurementInterval(settings.sensor_SCD30.measurementInterval);
-  //      co2Sensor_SCD30.setAltitudeCompensation(settings.sensor_SCD30.altitudeCompensation);
-  //      co2Sensor_SCD30.setAmbientPressure(settings.sensor_SCD30.ambientPressure);
-  //      //co2Sensor_SCD30.setTemperatureOffset(settings.sensor_SCD30.temperatureOffset);
-  //
-  //      qwiicOnline.SCD30 = true;
-  //      beginSensorOutput += "SCD30 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "SCD30 failed to respond. Check wiring.\n";
-  //  }
-  //
-  //  if (qwiicAvailable.MS8607 && settings.sensor_MS8607.log && !qwiicOnline.MS8607)
-  //  {
-  //    if (pressureSensor_MS8607.begin(qwiic) == true) //Wire port. This checks both 0x40 and 0x76 sensor addresses
-  //    {
-  //      if (settings.sensor_MS8607.enableHeater == true)
-  //        pressureSensor_MS8607.enable_heater();
-  //      else
-  //        pressureSensor_MS8607.disable_heater();
-  //
-  //      pressureSensor_MS8607.set_pressure_resolution(settings.sensor_MS8607.pressureResolution);
-  //      pressureSensor_MS8607.set_humidity_resolution(settings.sensor_MS8607.humidityResolution);
-  //
-  //      qwiicOnline.MS8607 = true;
-  //      beginSensorOutput += "MS8607 Online\n";
-  //    }
-  //    else
-  //      beginSensorOutput += "MS8607 failed to respond. Check wiring.\n";
-  //  }
+//  if (qwiicAvailable.LPS25HB && settings.sensor_LPS25HB.log && !qwiicOnline.LPS25HB)
+//  {
+//    if (pressureSensor_LPS25HB.begin(qwiic) == true) //Wire port, Address.
+//    {
+//      qwiicOnline.LPS25HB = true;
+//      beginSensorOutput += "LPS25HB Online\n";
+//    }
+//    else
+//      beginSensorOutput + "LPS25HB failed to respond. Check wiring and address jumper.\n";
+//  }
+//
+//  if (qwiicAvailable.NAU7802 && settings.sensor_NAU7802.log && !qwiicOnline.NAU7802)
+//  {
+//    if (loadcellSensor_NAU7802.begin(qwiic) == true) //Wire port
+//    {
+//      loadcellSensor_NAU7802.setSampleRate(NAU7802_SPS_320); //Sample rate can be set to 10, 20, 40, 80, or 320Hz
+//
+//      //Setup scale with stored values
+//      loadcellSensor_NAU7802.setCalibrationFactor(settings.sensor_NAU7802.calibrationFactor);
+//      loadcellSensor_NAU7802.setZeroOffset(settings.sensor_NAU7802.zeroOffset);
+//      qwiicOnline.NAU7802 = true;
+//      beginSensorOutput += "NAU7802 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "NAU7802 failed to respond. Check wiring\n.";
+//  }
+//
+//  if (qwiicAvailable.uBlox && settings.sensor_uBlox.log && !qwiicOnline.uBlox)
+//  {
+//    if (gpsSensor_ublox.begin(qwiic, 0x42) == true) //Wire port, Address. Default is 0x42.
+//    {
+//      gpsSensor_ublox.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+//
+//      //gpsSensor_ublox.setAutoPVT(true); //Tell the GPS to "send" each solution
+//      gpsSensor_ublox.setAutoPVT(false);
+//
+//      //if (settings.recordPerSecond <= 10)
+//      if (1000000UL / settings.usBetweenReadings <= 10)
+//        gpsSensor_ublox.setNavigationFrequency(1000000 / settings.usBetweenReadings); //Set output rate equal to our query rate
+//      else
+//        gpsSensor_ublox.setNavigationFrequency(10); //Max output depends on the module used.
+//
+//      gpsSensor_ublox.saveConfiguration(); //Save the current settings to flash and BBR
+//
+//      qwiicOnline.uBlox = true;
+//      beginSensorOutput += "uBlox GPS Online\n";
+//    }
+//    else
+//      beginSensorOutput += "uBlox GPS failed to respond. Check wiring and I2C address of module with uCenter.\n";
+//  }
+//
+//  if (qwiicAvailable.MCP9600 && settings.sensor_MCP9600.log && !qwiicOnline.MCP9600)
+//  {
+//    if (thermoSensor_MCP9600.begin(0x66, qwiic) == true) //Address, Wire port
+//    {
+//      //set the resolution on the ambient (cold) junction
+//      Ambient_Resolution ambientRes = RES_ZERO_POINT_0625; //_25 and _0625
+//      thermoSensor_MCP9600.setAmbientResolution(ambientRes);
+//
+//      Thermocouple_Resolution thermocoupleRes = RES_14_BIT; //12, 14, 16, and 18
+//      thermoSensor_MCP9600.setThermocoupleResolution(thermocoupleRes);
+//
+//      qwiicOnline.MCP9600 = true;
+//      beginSensorOutput += "MCP9600 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "MCP9600 failed to respond. Check wiring and address jumper.\n";
+//  }
+//
+//  if (qwiicAvailable.VCNL4040 && settings.sensor_VCNL4040.log && !qwiicOnline.VCNL4040)
+//  {
+//    if (proximitySensor_VCNL4040.begin(qwiic) == true) //Wire port
+//    {
+//      proximitySensor_VCNL4040.powerOnAmbient(); //Turn on ambient sensing
+//
+//      proximitySensor_VCNL4040.setLEDCurrent(settings.sensor_VCNL4040.LEDCurrent);
+//      proximitySensor_VCNL4040.setIRDutyCycle(settings.sensor_VCNL4040.IRDutyCycle);
+//      proximitySensor_VCNL4040.setProxIntegrationTime(settings.sensor_VCNL4040.proximityIntegrationTime);
+//      proximitySensor_VCNL4040.setProxResolution(settings.sensor_VCNL4040.resolution);
+//      proximitySensor_VCNL4040.setAmbientIntegrationTime(settings.sensor_VCNL4040.ambientIntegrationTime);
+//
+//      qwiicOnline.VCNL4040 = true;
+//      beginSensorOutput += "VCNL4040 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "VCNL4040 failed to respond. Check wiring.\n";
+//  }
+//
+//  if (qwiicAvailable.VL53L1X && settings.sensor_VL53L1X.log && !qwiicOnline.VL53L1X)
+//  {
+//    if (distanceSensor_VL53L1X.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
+//    {
+//      if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
+//        distanceSensor_VL53L1X.setDistanceModeShort();
+//      else
+//        distanceSensor_VL53L1X.setDistanceModeLong();
+//
+//      distanceSensor_VL53L1X.setIntermeasurementPeriod(settings.sensor_VL53L1X.intermeasurementPeriod - 1);
+//      distanceSensor_VL53L1X.setXTalk(settings.sensor_VL53L1X.crosstalk);
+//      distanceSensor_VL53L1X.setOffset(settings.sensor_VL53L1X.offset);
+//
+//      distanceSensor_VL53L1X.startRanging(); //Write configuration bytes to initiate measurement
+//
+//      qwiicOnline.VL53L1X = true;
+//      beginSensorOutput += "VL53L1X Online\n";
+//    }
+//    else
+//      beginSensorOutput += "VX53L1X failed to respond. Check wiring.\n";
+//  }
+//
+//  if (qwiicAvailable.TMP117 && settings.sensor_TMP117.log && !qwiicOnline.TMP117)
+//  {
+//    if (tempSensor_TMP117.begin(0x48, qwiic) == true) //Address, Wire port
+//    {
+//      tempSensor_TMP117.setConversionAverageMode(settings.sensor_TMP117.conversionAverageMode);
+//      tempSensor_TMP117.setConversionCycleBit(settings.sensor_TMP117.conversionCycle);
+//      tempSensor_TMP117.setContinuousConversionMode();
+//
+//      qwiicOnline.TMP117 = true;
+//      beginSensorOutput += "TMP117 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "TMP117 failed to respond. Check wiring and address jumpers.\n";
+//  }
+//
+//  if (qwiicAvailable.CCS811 && settings.sensor_CCS811.log && !qwiicOnline.CCS811)
+//  {
+//    if (vocSensor_CCS811.begin(qwiic) == true) //Wire port
+//    {
+//      qwiicOnline.CCS811 = true;
+//      beginSensorOutput += "CCS811 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "CCS811 failed to respond. Check wiring and address jumpers. Adr must be 0x5B.\n";
+//  }
+//
+//  if (qwiicAvailable.BME280 && settings.sensor_BME280.log && !qwiicOnline.BME280)
+//  {
+//    if (phtSensor_BME280.beginI2C(qwiic) == true) //Wire port
+//    {
+//      qwiicOnline.BME280 = true;
+//      beginSensorOutput += "BME280 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "BME280 failed to respond. Check wiring and address jumpers. Adr must be 0x77.\n";
+//  }
+//
+//  if (qwiicAvailable.SGP30 && settings.sensor_SGP30.log && !qwiicOnline.SGP30)
+//  {
+//    if (vocSensor_SGP30.begin(qwiic) == true) //Wire port
+//    {
+//      //Initializes sensor for air quality readings
+//      vocSensor_SGP30.initAirQuality();
+//
+//      qwiicOnline.SGP30 = true;
+//      beginSensorOutput += "SGP30 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "SGP30 failed to respond. Check wiring.\n";
+//  }
+//
+//  if (qwiicAvailable.VEML6075 && settings.sensor_VEML6075.log && !qwiicOnline.VEML6075)
+//  {
+//    if (uvSensor_VEML6075.begin(qwiic) == true) //Wire port
+//    {
+//      qwiicOnline.VEML6075 = true;
+//      beginSensorOutput += "VEML6075 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "VEML6075 failed to respond. Check wiring.\n";
+//  }
+//
+//  if (qwiicAvailable.MS5637 && settings.sensor_MS5637.log && !qwiicOnline.MS5637)
+//  {
+//    if (pressureSensor_MS5637.begin(qwiic) == true) //Wire port
+//    {
+//      qwiicOnline.MS5637 = true;
+//      beginSensorOutput += "MS5637 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "MS5637 failed to respond. Check wiring.\n";
+//  }
+//
+//  if (qwiicAvailable.SCD30 && settings.sensor_SCD30.log && !qwiicOnline.SCD30)
+//  {
+//    if (co2Sensor_SCD30.begin(qwiic) == true) //Wire port
+//    {
+//      co2Sensor_SCD30.setMeasurementInterval(settings.sensor_SCD30.measurementInterval);
+//      co2Sensor_SCD30.setAltitudeCompensation(settings.sensor_SCD30.altitudeCompensation);
+//      co2Sensor_SCD30.setAmbientPressure(settings.sensor_SCD30.ambientPressure);
+//      //co2Sensor_SCD30.setTemperatureOffset(settings.sensor_SCD30.temperatureOffset);
+//
+//      qwiicOnline.SCD30 = true;
+//      beginSensorOutput += "SCD30 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "SCD30 failed to respond. Check wiring.\n";
+//  }
+//
+//  if (qwiicAvailable.MS8607 && settings.sensor_MS8607.log && !qwiicOnline.MS8607)
+//  {
+//    if (pressureSensor_MS8607.begin(qwiic) == true) //Wire port. This checks both 0x40 and 0x76 sensor addresses
+//    {
+//      if (settings.sensor_MS8607.enableHeater == true)
+//        pressureSensor_MS8607.enable_heater();
+//      else
+//        pressureSensor_MS8607.disable_heater();
+//
+//      pressureSensor_MS8607.set_pressure_resolution(settings.sensor_MS8607.pressureResolution);
+//      pressureSensor_MS8607.set_humidity_resolution(settings.sensor_MS8607.humidityResolution);
+//
+//      qwiicOnline.MS8607 = true;
+//      beginSensorOutput += "MS8607 Online\n";
+//    }
+//    else
+//      beginSensorOutput += "MS8607 failed to respond. Check wiring.\n";
+//  }
 
 //Query each enabled sensor for its most recent data
 void getData()
@@ -906,10 +906,29 @@ void determineMaxI2CSpeed()
 {
   uint32_t maxSpeed = 400000; //Assume 400kHz
 
-  //  if (qwiicAvailable.MCP9600 == true && settings.sensor_MCP9600.log == true)
-  //    maxSpeed = 100000;
-  //  else if (settings.sensor_uBlox.i2cSpeed == 100000)
-  //    maxSpeed = 100000;
+  //Search nodes for MCP9600s and Ublox modules
+  node *temp = head;
+  while (temp != NULL)
+  {
+    if (temp->deviceType == DEVICE_TEMPERATURE_MCP9600)
+    {
+      //TODO Are we sure the MCP9600, begin'd() on the bus, but not logged will behave when bus is 400kHz?
+      //Check if logging is enabled
+      struct_MCP9600 *sensor = (struct_MCP9600*)temp->configPtr;
+      if(sensor->log == true)
+        maxSpeed = 100000; 
+    }
+    
+    if (temp->deviceType == DEVICE_GPS_UBLOX)
+    {
+      //Check if i2cSpeed is lowered
+      struct_uBlox *sensor = (struct_uBlox*)temp->configPtr;
+      if(sensor->i2cSpeed == 100000)
+        maxSpeed = 100000; 
+    }
+
+    temp = temp->next;
+  }
 
   //If user wants to limit the I2C bus speed, do it here
   if (maxSpeed > settings.qwiicBusMaxSpeed)
