@@ -22,6 +22,33 @@ typedef enum
   DEVICE_UNKNOWN_DEVICE,
 } deviceType_e;
 
+struct node
+{
+  deviceType_e deviceType;
+
+  uint8_t address = 0;
+  uint8_t portNumber = 0;
+  uint8_t muxAddress = 0;
+  bool online = false; //Goes true once successfully begin()'d
+
+  void *classPtr; //Pointer to this devices' class instantiation
+  void *configPtr; //The struct containing this devices logging options
+  node *next;
+};
+
+node *head = NULL;
+node *tail = NULL;
+
+typedef void (*FunctionPointer)(void*); //Used for pointing to device config menus
+
+//Begin specific sensor config structs
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+struct struct_multiplexer {
+  //There is nothing about a multiplexer that we want to configure
+  //Ignore certain ports at detection step?
+};
+
 //Add the new sensor settings below
 struct struct_LPS25HB {
   bool log = true;
@@ -106,7 +133,7 @@ struct struct_BME280 {
   bool logHumidity = true;
   bool logPressure = true;
   bool logAltitude = true;
-  bool logTemp = true;
+  bool logTemperature = true;
 };
 
 struct struct_SGP30 {
@@ -138,7 +165,6 @@ struct struct_SCD30 {
   int ambientPressure = 835; //mBar STP
   int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
 };
-
 
 struct struct_MS8607 {
   bool log = true;
@@ -193,20 +219,6 @@ struct struct_settings {
   bool printDebugMessages = false;
   bool powerDownQwiicBusBetweenReads = true;
   int qwiicBusMaxSpeed = 400000;
-  struct_LPS25HB sensor_LPS25HB;
-  struct_uBlox sensor_uBlox;
-  struct_VL53L1X sensor_VL53L1X;
-  struct_NAU7802 sensor_NAU7802;
-  struct_MCP9600 sensor_MCP9600;
-  struct_VCNL4040 sensor_VCNL4040;
-  struct_TMP117 sensor_TMP117;
-  struct_CCS811 sensor_CCS811;
-  struct_BME280 sensor_BME280;
-  struct_SGP30 sensor_SGP30;
-  struct_VEML6075 sensor_VEML6075;
-  struct_MS5637 sensor_MS5637;
-  struct_SCD30 sensor_SCD30;
-  struct_MS8607 sensor_MS8607;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
@@ -216,58 +228,3 @@ struct struct_online {
   bool serialLogging = false;
   bool IMU = false;
 } online;
-
-//These structs define supported sensors and if they are available and online(started).
-struct struct_QwiicSensors {
-  bool LPS25HB;
-  bool MCP9600;
-  bool BH1749NUC;
-  bool NAU7802;
-  bool uBlox;
-  bool VL53L1X;
-  bool VCNL4040;
-  bool TMP117;
-  bool CCS811;
-  bool BME280;
-  bool SGP30;
-  bool VEML6075;
-  bool MS5637;
-  bool SCD30;
-  bool MS8607;
-};
-
-struct_QwiicSensors qwiicAvailable = {
-  .LPS25HB = false,
-  .MCP9600 = false,
-  .BH1749NUC = false,
-  .NAU7802 = false,
-  .uBlox = false,
-  .VL53L1X = false,
-  .VCNL4040 = false,
-  .TMP117 = false,
-  .CCS811 = false,
-  .BME280 = false,
-  .SGP30 = false,
-  .VEML6075 = false,
-  .MS5637 = false,
-  .SCD30 = false,
-  .MS8607 = false,
-};
-
-struct_QwiicSensors qwiicOnline = {
-  .LPS25HB = false,
-  .MCP9600 = false,
-  .BH1749NUC = false,
-  .NAU7802 = false,
-  .uBlox = false,
-  .VL53L1X = false,
-  .VCNL4040 = false,
-  .TMP117 = false,
-  .CCS811 = false,
-  .BME280 = false,
-  .SGP30 = false,
-  .VEML6075 = false,
-  .MS5637 = false,
-  .SCD30 = false,
-  .MS8607 = false,
-};

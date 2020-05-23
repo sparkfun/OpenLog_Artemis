@@ -122,8 +122,7 @@ void menuAttachedDevices()
     int availableDevices = 0;
 
     //Step through node list
-    node *temp = new node;
-    temp = head;
+    node *temp = head;
 
     if (temp == NULL)
       Serial.println("**No devices detected on Qwiic bus**");

@@ -28,9 +28,8 @@ void recordSettingsToFile()
     //    settingsFile.println("sensor_MS8607.humidityResolution=" + (String)settings.sensor_MS8607.humidityResolution);
 
     //Step through the node list, recording each node's settings
-    node *temp = new node;
-    temp = head;
     char base[75];
+    node *temp = head;
     while (temp != NULL)
     {
       sprintf(base, "%s.%d.%d.%d.%d.", getDeviceName(temp->deviceType), temp->deviceType, temp->address, temp->muxAddress, temp->portNumber);

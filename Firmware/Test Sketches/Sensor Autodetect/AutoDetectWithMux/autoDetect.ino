@@ -1,35 +1,5 @@
 /*
-  Autodetect theory of operation:
 
-  The TCA9548A I2C mux introduces a can of worms but enables multiple (up to 64) of
-  a single I2C device to be connected to a given I2C bus. You just have to turn on/off
-  a given port while you communicate with said device.
-
-  This is how the autodection algorithm works:
-   Scan bus for muxes (0x70 to 0x77)
-   Begin() any muxes. This causes them to turn off all their ports.
-   With any possible muxes turned off, finish scanning main branch
-   Any detected device is stored as a node in a linked list containing their address and device type,
-   If muxes are found, begin scanning mux0/port0. Any new device is stored with their address and mux address/port.
-   Begin() all devices in our linked list. Connections through muxes are performed as needed.
-
-  All of this works has the side benefit of enabling regular devices, that support multiple address, to
-  auto-detect, begin(), and behave as before, but now in multiples.
-
-  Future work:
-
-  Theoretically you could attach 8 muxes configured to 0x71 off the 8 ports of an 0x70 mux. We could
-  do this for other muxes as well to create a mux monster:
-   - 0x70 - (port 0) 0x71 - 8 ports - device * 8
-                     0x72 - 8 ports - device * 8
-                     0x73 - 8 ports - device * 8
-                     0x74 - 8 ports - device * 8
-                     0x75 - 8 ports - device * 8
-                     0x76 - 8 ports - device * 8
-                     0x77 - 8 ports - device * 8
-  This would allow a maximum of 8 * 7 * 8 = 448 of the *same* I2C device address to be
-  connected at once. We don't support this sub-muxing right now. So the max we support
-  is 64 identical address devices. That should be enough.
 */
 
 /*
@@ -53,8 +23,7 @@
 node *getNodePointer(uint8_t nodeNumber)
 {
   //Search the list of nodes
-  node *temp = new node;
-  temp = head;
+  node *temp = head;
 
   int counter = 0;
   while (temp != NULL)
@@ -71,8 +40,7 @@ node *getNodePointer(uint8_t nodeNumber)
 node *getNodePointer(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uint8_t portNumber)
 {
   //Search the list of nodes
-  node *temp = new node;
-  temp = head;
+  node *temp = head;
   while (temp != NULL)
   {
     if (temp->address == address)
@@ -120,7 +88,7 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
   //Create class instantiation for this device
   //Create logging details for this device
 
-  node *temp = new node;
+  node *temp = new node; //Create the node in memory
 
   //Setup this node
   temp->deviceType = deviceType;
@@ -134,7 +102,7 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
   {
     case DEVICE_MULTIPLEXER:
       {
-        temp->classPtr = new QWIICMUX; //Does this truly allocate memory or do we need to formally malloc()?
+        temp->classPtr = new QWIICMUX; //This allocates the memory needed for this class
         temp->configPtr = new struct_multiplexer;
 
         QWIICMUX *tempDevice = (QWIICMUX *)temp->classPtr;
@@ -160,8 +128,6 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         BME280 *tempDevice = (BME280 *)temp->classPtr;
         tempDevice->setI2CAddress(temp->address);
         temp->online = tempDevice->beginI2C(qwiic); //Wire port
-
-        Serial.printf(" pressure: %f", tempDevice->readFloatPressure());
       }
       break;
     case DEVICE_VOC_CCS811:
@@ -277,9 +243,7 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
 //Returns true if this device address already exists in our system
 bool deviceExists(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uint8_t portNumber)
 {
-  node *temp = new node;
-  temp = head;
-
+  node *temp = head;
   while (temp != NULL)
   {
     if (temp->address == address)
@@ -407,8 +371,7 @@ void printDetectedDevices()
   Serial.println("Address.MuxAddress.Port#: Device Name[type]");
   Serial.flush();
 
-  node *temp = new node;
-  temp = head;
+  node *temp = head;
 
   if (temp == NULL) Serial.println("-Nothing detected");
 

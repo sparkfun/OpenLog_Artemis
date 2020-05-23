@@ -71,8 +71,6 @@ void menuMain()
 
   recordSettings(); //Once all menus have exited, record the new settings to EEPROM and config file
 
-  beginSensors(); //Once all menus have exited, start any sensors that are available, logging, but not yet online/begun.
-
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 
   //Reset measurements
@@ -86,6 +84,6 @@ void menuMain()
 
   //Edge case: after 10Hz reading, user sets the log rate above 2s mark. We never go to sleep because 
   //takeReading is not true. And since we don't wake up, takeReading never gets set to true.
-  //Se we force it here.
+  //So we force it here.
   takeReading = true; 
 }

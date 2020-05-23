@@ -1,11 +1,13 @@
 
+
 //Read values from the devices on the node list
-void printDeviceValues()
+void gatherDeviceValues()
 {
-  node *temp = new node;
-  temp = head;
+  char tempData[50];
+  outputData[0] = '\0'; //Clear string contents
 
   //Step through list, printing values as we go
+  node *temp = head;
   while (temp != NULL)
   {
     //If this node successfully begin()'d
@@ -29,11 +31,20 @@ void printDeviceValues()
               openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
 
               if (nodeSetting->logDistance)
-                Serial.printf(" Dist: %d", nodeDevice->getDistance());
+              {
+                sprintf(tempData, "%d,", nodeDevice->getDistance());
+                strcat(outputData, tempData);
+              }
               if (nodeSetting->logRangeStatus)
-                Serial.printf(" Range: %d", nodeDevice->getRangeStatus());
+              {
+                sprintf(tempData, "%d,", nodeDevice->getRangeStatus());
+                strcat(outputData, tempData);
+              }
               if (nodeSetting->logSignalRate)
-                Serial.printf(" Signal: %d", nodeDevice->getSignalRate());
+              {
+                sprintf(tempData, "%d,", nodeDevice->getSignalRate());
+                strcat(outputData, tempData);
+              }
             }
           }
           break;
@@ -46,13 +57,25 @@ void printDeviceValues()
               openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
 
               if (nodeSetting->logPressure)
-                Serial.printf(" pres: %.02f", nodeDevice->readFloatPressure());
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->readFloatPressure());
+                strcat(outputData, tempData);
+              }
               if (nodeSetting->logHumidity)
-                Serial.printf(" hum: %.02f", nodeDevice->readFloatHumidity());
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->readFloatHumidity());
+                strcat(outputData, tempData);
+              }
               if (nodeSetting->logAltitude)
-                Serial.printf(" alt: %.02f", nodeDevice->readFloatAltitudeMeters());
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->readFloatAltitudeMeters());
+                strcat(outputData, tempData);
+              }
               if (nodeSetting->logTemperature)
-                Serial.printf(" temp: %.02f", nodeDevice->readTempC());
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->readTempC());
+                strcat(outputData, tempData);
+              }
             }
           }
           break;
@@ -66,9 +89,15 @@ void printDeviceValues()
 
               nodeDevice->readAlgorithmResults();
               if (nodeSetting->logTVOC)
-                Serial.printf(" TVOC: %d", nodeDevice->getTVOC());
+              {
+                sprintf(tempData, "%d,", nodeDevice->getTVOC());
+                strcat(outputData, tempData);
+              }
               if (nodeSetting->logCO2)
-                Serial.printf(" CO2: %d", nodeDevice->getCO2());
+              {
+                sprintf(tempData, "%d,", nodeDevice->getCO2());
+                strcat(outputData, tempData);
+              }
             }
           }
           break;

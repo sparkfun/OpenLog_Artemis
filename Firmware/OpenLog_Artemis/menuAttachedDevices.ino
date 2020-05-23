@@ -13,122 +13,10 @@
 */
 
 
-#define MAX_NUMBER_OF_QWIIC_DEVICES 30
-
-void menuAttachedDevices()
-{
-  while (1)
-  {
-    //TODO - Power on Qwiic Bus
-
-    Serial.println();
-    Serial.println("Menu: Configure Attached Devices");
-
-    //See what's on the I2C bus. Will set the qwiicAvailable bools.
-    if (detectQwiicDevices() == false)
-      Serial.println("**No devices detected on Qwiic bus**");
-
-    //Create array of pointers to the configure functions
-    typedef void(*FunctionPointer)();
-    FunctionPointer functionPointers[MAX_NUMBER_OF_QWIIC_DEVICES]; //Array is 4 * dim = 120 bytes
-
-    //If device is detected, connect the configure function
-    int availableDevices = 1;
-    if (qwiicAvailable.LPS25HB)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_LPS25HB;
-      Serial.printf("%d) Configure LPS25HB Pressure Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.NAU7802)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_NAU7802;
-      Serial.printf("%d) NAU7802 Load Cell Amplifier\n", availableDevices++);
-    }
-    if (qwiicAvailable.uBlox)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_uBlox;
-      Serial.printf("%d) uBlox GPS Receiver\n", availableDevices++);
-    }
-    if (qwiicAvailable.MCP9600)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_MCP9600;
-      Serial.printf("%d) MCP9600 Thermocouple Amplifier\n", availableDevices++);
-    }
-    if (qwiicAvailable.VCNL4040)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_VCNL4040;
-      Serial.printf("%d) VCNL4040 Proximity Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.VL53L1X)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_VL53L1X;
-      Serial.printf("%d) VL53L1X Distance Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.TMP117)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_TMP117;
-      Serial.printf("%d) TMP117 Precision Temperature Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.CCS811)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_CCS811;
-      Serial.printf("%d) CCS811 tVOC and CO2 Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.BME280)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_BME280;
-      Serial.printf("%d) BME280 Pressure/Humidity/Temp (PHT) Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.SGP30)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_SGP30;
-      Serial.printf("%d) SGP30 tVOC and CO2 Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.VEML6075)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_VEML6075;
-      Serial.printf("%d) VEML6075 UV Index Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.MS5637)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_MS5637;
-      Serial.printf("%d) MS5637 Pressure Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.SCD30)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_SCD30;
-      Serial.printf("%d) SCD30 CO2 Sensor\n", availableDevices++);
-    }
-    if (qwiicAvailable.MS8607)
-    {
-      functionPointers[availableDevices - 1] = menuConfigure_MS8607;
-      Serial.printf("%d) MS8607 Pressure Humidity Temperature Sensor\n", availableDevices++);
-    }
-
-    functionPointers[availableDevices - 1] = menuConfigure_QwiicBus;
-    Serial.printf("%d) Configure Qwiic Settings\n", availableDevices++);
-
-    Serial.println("x) Exit");
-
-    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
-
-    if (incoming >= '1' && incoming < ('1' + availableDevices - 1))
-    {
-      functionPointers[incoming - '0' - 1]();
-    }
-    else if (incoming == 'x')
-      break;
-    else if (incoming == STATUS_GETBYTE_TIMEOUT)
-      break;
-    else
-      printUnknown(incoming);
-  }
-}
-
 //Let's see what's on the I2C bus
 //Scan I2C bus including sub-branches of multiplexers
 //Creates a linked list of devices
-//Creates appropriate classes for each device 
+//Creates appropriate classes for each device
 //Begin()s each device in list
 //Returns true if devices detected > 0
 bool detectQwiicDevices()
@@ -149,6 +37,7 @@ bool detectQwiicDevices()
   //First scan for Muxes. Valid addresses are 0x70 to 0x77.
   //If any are found, they will be begin()'d causing their ports to turn off
   Serial.println("Scanning for Muxes");
+  uint8_t muxCount = 0;
   for (uint8_t address = 0x70 ; address < 0x78 ; address++)
   {
     qwiic.beginTransmission(address);
@@ -158,7 +47,10 @@ bool detectQwiicDevices()
 
       deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType == DEVICE_MULTIPLEXER)
-        addDevice(address, foundType); //Add this device to our map
+      {
+        addDevice(foundType, address, 0, 0); //Add this device to our map
+        muxCount++;
+      }
     }
   }
 
@@ -173,28 +65,29 @@ bool detectQwiicDevices()
       deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType != DEVICE_UNKNOWN_DEVICE)
       {
-        if (recordDevice(address, foundType) == true) //Records this device. Returns true if new.
-          deviceCounts[foundType]++; //If this is a newly discovered device, increase the count of this type of device
-        Serial.printf("-%s found at address 0x%02X\n", getDeviceName(foundType), address);
+        if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
+          Serial.printf("-Added %s at address 0x%02X\n", getDeviceName(foundType), address);
       }
       else
-        Serial.printf("-%s found at address 0x%02X\n", getDeviceName(foundType), address);
+        Serial.printf("-Device %s failed testing at address 0x%02X\n", getDeviceName(foundType), address);
     }
   }
 
   //If we have muxes, begin scanning their sub nets
-  if (deviceCounts[DEVICE_MULTIPLEXER] > 0)
+  if (muxCount > 0)
   {
     Serial.println("Scanning sub nets");
 
     //Step into first mux and begin stepping through ports
-    for (int muxNumber = 0 ; muxNumber < deviceCounts[DEVICE_MULTIPLEXER] ; muxNumber++)
+    for (int muxNumber = 0 ; muxNumber < muxCount ; muxNumber++)
     {
-      uint8_t muxAddress = getDeviceAddress(DEVICE_MULTIPLEXER, muxNumber);
+      //The node tree starts with muxes so we can align node numbers
+      node *muxNode = getNodePointer(muxNumber);
+      QWIICMUX *myMux = (QWIICMUX *)muxNode->classPtr;
 
       for (int portNumber = 0 ; portNumber < 7 ; portNumber++)
       {
-        multiplexer[muxNumber]->setPort(portNumber);
+        myMux->setPort(portNumber);
 
         //Scan this new bus for new addresses
         for (uint8_t address = 1 ; address < 127 ; address++)
@@ -204,19 +97,14 @@ bool detectQwiicDevices()
           {
             somethingDetected = true;
 
-            //Ignore devices we've already logged. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
-            if (deviceExists(address, muxAddress, portNumber) == false)
+            deviceType_e foundType = testDevice(address, muxNode->address, portNumber);
+            if (foundType != DEVICE_UNKNOWN_DEVICE)
             {
-              deviceType_e foundType = testDevice(address, muxAddress, portNumber);
-              if (foundType != DEVICE_UNKNOWN_DEVICE)
-              {
-                if (recordDevice(address, foundType, muxAddress, portNumber) == true) //Record this device, with mux port specifics. Returns true if new.
-                  deviceCounts[foundType]++; //If this is a newly discovered device, increase the count of this type of device
-                Serial.printf("-New %s found at address 0x%02X.0x%02X.0x%02X\n", getDeviceName(foundType), address, muxAddress, portNumber);
-              }
-              else
-                Serial.printf("-%s found at address 0x%02X\n", getDeviceName(foundType), address);
-            } //End device exists check
+              if (addDevice(foundType, address, muxNode->address, portNumber) == true) //Record this device, with mux port specifics.
+                Serial.printf("-Added %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+            }
+            else
+              Serial.printf("-%s found at address 0x%02X\n", getDeviceName(foundType), address);
           } //End I2c check
         } //End I2C scanning
       } //End mux port stepping
@@ -225,99 +113,94 @@ bool detectQwiicDevices()
 
   if (somethingDetected)
   {
-    createClassesForDetectedDevices();
-    beginDetectedDevices(); //Step through the linked list and begin() everything in our map
+    //createClassesForDetectedDevices();
+    //beginDetectedDevices(); //Step through the linked list and begin() everything in our map
     printDetectedDevices();
   }
 
   if (somethingDetected) qwiic.setPullups(0); //We've detected something on the bus so disable pullups
 
+  Serial.println("Autodetect complete");
+  Serial.flush();
+
   return (somethingDetected);
 }
 
-// Available Qwiic devices
-#define ADR_VEML6075 0x10
-#define ADR_NAU7802 0x2A
-#define ADR_VL53L1X 0x29
-#define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
-#define ADR_UBLOX 0x42
-#define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
-#define ADR_SGP30 0x58
-#define ADR_CCS811_2 0x5A
-#define ADR_CCS811_1 0x5B
-#define ADR_LPS25HB_2 0x5C
-#define ADR_LPS25HB_1 0x5D
-#define ADR_VCNL4040_OR_MCP9600 0x60
-#define ADR_SCD30 0x61
-#define ADR_MCP9600_1 0x66
-#define ADR_BME280_2 0x76
-#define ADR_MS5637 0x76
-//#define ADR_MS8607 0x76 //Pressure portion of the MS8607 sensor. We'll catch the 0x40 first
-#define ADR_BME280_1 0x77
-
-//Given an address, returns the device type if it responds as we would expect
-deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumber)
+void menuAttachedDevices()
 {
-  switch (i2cAddress)
+  while (1)
   {
-    case 0x29:
-      {
-        SFEVL53L1X distanceSensor_VL53L1X(qwiic); //Start with given wire port
-        if (distanceSensor_VL53L1X.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
-          return (DEVICE_DISTANCE_VL53L1X);
-        break;
-      }
-    case 0x5A:
-    case 0x5B:
-      {
-        CCS811 vocSensor_CCS811(i2cAddress); //Start with given I2C address
-        if (vocSensor_CCS811.begin(qwiic) == true) //Wire port
-          return (DEVICE_VOC_CCS811);
-        break;
-      }
-    case 0x70:
-    case 0x71:
-    case 0x72:
-    case 0x73:
-    case 0x74:
-    case 0x75:
-      {
-        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
-        if (deviceExists(i2cAddress, muxAddress, portNumber) == true) return (getDeviceType(i2cAddress));
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
-        break;
-      }
-    case 0x76:
-    case 0x77:
-      {
-        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
-        if (deviceExists(i2cAddress, muxAddress, portNumber) == true) return (getDeviceType(i2cAddress));
+    Serial.println();
+    Serial.println("Menu: Configure Attached Devices");
 
-        //Try a mux first. This will write/read to 0x00 register.
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-        {
-          Serial.println("Mux found?");
-          return (DEVICE_MULTIPLEXER);
-        }
+    int availableDevices = 0;
 
-        BME280 phtSensor_BME280;
-        phtSensor_BME280.setI2CAddress(i2cAddress);
-        if (phtSensor_BME280.beginI2C(qwiic) == true) //Wire port
-          return (DEVICE_PHT_BME280);
-        break;
-      }
-    default:
+    //Step through node list
+    node *temp = head;
+
+    if (temp == NULL)
+      Serial.println("**No devices detected on Qwiic bus**");
+
+    while (temp != NULL)
+    {
+      char strAddress[50];
+      if (temp->muxAddress == 0)
+        sprintf(strAddress, "(0x%02X)", temp->address);
+      else
+        sprintf(strAddress, "(0x%02X)(Mux:0x%02X Port:%d)", temp->muxAddress, temp->portNumber, temp->address);
+
+      char strDeviceMenu[10];
+      sprintf(strDeviceMenu, "%d)", availableDevices++ + 1);
+
+      switch (temp->deviceType)
       {
-        Serial.printf("-Unknown device at address 0x%02X\n", i2cAddress);
-        return DEVICE_UNKNOWN_DEVICE;
-        break;
+        case DEVICE_MULTIPLEXER:
+          Serial.printf("%s Multiplexer %s\n", strDeviceMenu, strAddress);
+          break;
+        case DEVICE_DISTANCE_VL53L1X:
+          Serial.printf("%s VL53L1X Distance Sensor %s\n", strDeviceMenu, strAddress);
+          break;
+        case DEVICE_PHT_BME280:
+          Serial.printf("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\n", strDeviceMenu, strAddress);
+          break;
+        case DEVICE_VOC_CCS811:
+          Serial.printf("%s CCS811 tVOC and CO2 Sensor %s\n", strDeviceMenu, strAddress);
+          break;
+        default:
+          Serial.printf("Unknown device type %d in menuAttachedDevices\n", temp->deviceType);
+          break;
       }
+
+      temp = temp->next;
+    }
+
+    Serial.printf("%d) Configure Qwiic Settings\n", availableDevices++ + 1);
+
+    Serial.println("x) Exit");
+
+    int nodeNumber = getNumber(menuTimeout); //Timeout after x seconds
+    if (nodeNumber > 0 && nodeNumber < availableDevices)
+    {
+      //Lookup the function we need to call based the node number
+      FunctionPointer functionPointer = getConfigFunctionPtr(nodeNumber - 1);
+
+      //Get the configPtr for this given node
+      void *deviceConfigPtr = getConfigPointer(nodeNumber - 1);
+      functionPointer(deviceConfigPtr); //Call the appropriate config menu with a pointer to this node's configPtr
+
+      configureDevice(nodeNumber); //Reconfigure this device with the new settings
+    }
+    else if (nodeNumber == availableDevices)
+    {
+      //menuConfigure_QwiicBus();
+    }
+    else if (nodeNumber == STATUS_PRESSED_X)
+      break;
+    else if (nodeNumber == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(nodeNumber);
   }
-  Serial.printf("-Known I2C address but device responded unexpectedly at address 0x%02X\n", i2cAddress);
-  return DEVICE_UNKNOWN_DEVICE;
 }
 
 void menuConfigure_QwiicBus()
@@ -357,8 +240,258 @@ void menuConfigure_QwiicBus()
       printUnknown(incoming);
   }
 
-  qwiicOnline.LPS25HB = false; //Mark as offline so it will be started with new settings
+  //qwiicOnline.LPS25HB = false; //Mark as offline so it will be started with new settings
 }
+
+void menuConfigure_Multiplexer(void *configPtr)
+{
+  //struct_multiplexer *sensor = (struct_multiplexer*)configPtr;
+
+  Serial.println();
+  Serial.println("Menu: Configure Multiplexer");
+
+  Serial.println("There are currently no configurable options for this device.");
+  delay(500);
+}
+
+//There is short and long range mode
+//The Intermeasurement period seems to set the timing budget (PLL of the device)
+//Setting the Intermeasurement period too short causes the device to freeze up
+//The intermeasurement period that gets written as X gets read as X+1 so we get X and write X-1.
+void menuConfigure_VL53L1X(void *configPtr)
+{
+  struct_VL53L1X *sensor = (struct_VL53L1X*)configPtr;
+
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure VL53L1X Distance Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (sensor->log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (sensor->log == true)
+    {
+      Serial.print("2) Log Distance: ");
+      if (sensor->logDistance == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Range Status: ");
+      if (sensor->logRangeStatus == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("4) Log Signal Rate: ");
+      if (sensor->logSignalRate == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("5) Set Distance Mode: ");
+      if (sensor->distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
+        Serial.print("Short");
+      else
+        Serial.print("Long");
+      Serial.println();
+
+      Serial.printf("6) Set Intermeasurement Period: %d ms\n", sensor->intermeasurementPeriod);
+      Serial.printf("7) Set Offset: %d mm\n", sensor->offset);
+      Serial.printf("8) Set Cross Talk (counts per second): %d cps\n", sensor->crosstalk);
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensor->log ^= 1;
+    else if (sensor->log == true)
+    {
+      if (incoming == '2')
+        sensor->logDistance ^= 1;
+      else if (incoming == '3')
+        sensor->logRangeStatus ^= 1;
+      else if (incoming == '4')
+        sensor->logSignalRate ^= 1;
+      else if (incoming == '5')
+      {
+        if (sensor->distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
+          sensor->distanceMode = VL53L1X_DISTANCE_MODE_LONG;
+        else
+          sensor->distanceMode = VL53L1X_DISTANCE_MODE_SHORT;
+
+        //Error check
+        if (sensor->distanceMode == VL53L1X_DISTANCE_MODE_LONG && sensor->intermeasurementPeriod < 140)
+        {
+          sensor->intermeasurementPeriod = 140;
+          Serial.println("Intermeasurement Period increased to 140ms");
+        }
+      }
+      else if (incoming == '6')
+      {
+        int min = 20;
+        if (sensor->distanceMode == VL53L1X_DISTANCE_MODE_LONG)
+          min = 140;
+
+
+        Serial.printf("Set timing budget (%d to 1000ms): ", min);
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt < min || amt > 1000)
+          Serial.println("Error: Out of range");
+        else
+          sensor->intermeasurementPeriod = amt;
+      }
+      else if (incoming == '7')
+      {
+        Serial.print("Set Offset in mm (0 to 4000mm): ");
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt < 0 || amt > 4000)
+          Serial.println("Error: Out of range");
+        else
+          sensor->offset = amt;
+      }
+      else if (incoming == '8')
+      {
+        Serial.print("Set Crosstalk in Counts Per Second: ");
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt < 0 || amt > 4000)
+          Serial.println("Error: Out of range");
+        else
+          sensor->crosstalk = amt;
+      }
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  //qwiicOnline.VL53L1X = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_BME280(void *configPtr)
+{
+  struct_BME280 *sensor = (struct_BME280*)configPtr;
+
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure BME280 Pressure/Humidity/Temperature Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (sensor->log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (sensor->log == true)
+    {
+      Serial.print("2) Log Pressure: ");
+      if (sensor->logPressure == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Humidity: ");
+      if (sensor->logHumidity == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("4) Log Altitude: ");
+      if (sensor->logAltitude == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("5) Log Temperature: ");
+      if (sensor->logTemperature == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensor->log ^= 1;
+    else if (sensor->log == true)
+    {
+      if (incoming == '2')
+        sensor->logPressure ^= 1;
+      else if (incoming == '3')
+        sensor->logHumidity ^= 1;
+      else if (incoming == '4')
+        sensor->logAltitude ^= 1;
+      else if (incoming == '5')
+        sensor->logTemperature ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  //qwiicOnline.BME280 = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_CCS811(void *configPtr)
+{
+  struct_CCS811 *sensor = (struct_CCS811*)configPtr;
+
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure CCS811 tVOC and CO2 Sensor");
+
+    Serial.print("1) Sensor Logging: ");
+    if (sensor->log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (sensor->log == true)
+    {
+      Serial.print("2) Log tVOC: ");
+      if (sensor->logTVOC == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log CO2: ");
+      if (sensor->logCO2 == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensor->log ^= 1;
+    else if (sensor->log == true)
+    {
+      if (incoming == '2')
+        sensor->logTVOC ^= 1;
+      else if (incoming == '3')
+        sensor->logCO2 ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  //  sensor->online = false; //Mark as offline so it will be started with new settings
+}
+/*
 
 void menuConfigure_LPS25HB()
 {
@@ -788,123 +921,6 @@ void menuConfigure_VCNL4040()
   qwiicOnline.VCNL4040 = false; //Mark as offline so it will be started with new settings
 }
 
-//There is short and long range mode
-//The Intermeasurement period seems to set the timing budget (PLL of the device)
-//Setting the Intermeasurement period too short causes the device to freeze up
-//The intermeasurement period that gets written as X gets read as X+1 so we get X and write X-1.
-void menuConfigure_VL53L1X()
-{
-  while (1)
-  {
-    Serial.println();
-    Serial.println("Menu: Configure VL53L1X Distance Sensor");
-
-    Serial.print("1) Sensor Logging: ");
-    if (settings.sensor_VL53L1X.log == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
-
-    if (settings.sensor_VL53L1X.log == true)
-    {
-      Serial.print("2) Log Distance: ");
-      if (settings.sensor_VL53L1X.logDistance == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-
-      Serial.print("3) Log Range Status: ");
-      if (settings.sensor_VL53L1X.logRangeStatus == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-
-      Serial.print("4) Log Signal Rate: ");
-      if (settings.sensor_VL53L1X.logSignalRate == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-
-      Serial.print("5) Set Distance Mode: ");
-      if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
-        Serial.print("Short");
-      else
-        Serial.print("Long");
-      Serial.println();
-
-      Serial.printf("6) Set Intermeasurement Period: %d ms\n", settings.sensor_VL53L1X.intermeasurementPeriod);
-      Serial.printf("7) Set Offset: %d mm\n", settings.sensor_VL53L1X.offset);
-      Serial.printf("8) Set Cross Talk (counts per second): %d cps\n", settings.sensor_VL53L1X.crosstalk);
-    }
-    Serial.println("x) Exit");
-
-    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
-
-    if (incoming == '1')
-      settings.sensor_VL53L1X.log ^= 1;
-    else if (settings.sensor_VL53L1X.log == true)
-    {
-      if (incoming == '2')
-        settings.sensor_VL53L1X.logDistance ^= 1;
-      else if (incoming == '3')
-        settings.sensor_VL53L1X.logRangeStatus ^= 1;
-      else if (incoming == '4')
-        settings.sensor_VL53L1X.logSignalRate ^= 1;
-      else if (incoming == '5')
-      {
-        if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
-          settings.sensor_VL53L1X.distanceMode = VL53L1X_DISTANCE_MODE_LONG;
-        else
-          settings.sensor_VL53L1X.distanceMode = VL53L1X_DISTANCE_MODE_SHORT;
-
-        //Error check
-        if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_LONG && settings.sensor_VL53L1X.intermeasurementPeriod < 140)
-        {
-          settings.sensor_VL53L1X.intermeasurementPeriod = 140;
-          Serial.println("Intermeasurement Period increased to 140ms");
-        }
-      }
-      else if (incoming == '6')
-      {
-        int min = 20;
-        if (settings.sensor_VL53L1X.distanceMode == VL53L1X_DISTANCE_MODE_LONG)
-          min = 140;
-
-
-        Serial.printf("Set timing budget (%d to 1000ms): ", min);
-        int amt = getNumber(menuTimeout); //x second timeout
-        if (amt < min || amt > 1000)
-          Serial.println("Error: Out of range");
-        else
-          settings.sensor_VL53L1X.intermeasurementPeriod = amt;
-      }
-      else if (incoming == '7')
-      {
-        Serial.print("Set Offset in mm (0 to 4000mm): ");
-        int amt = getNumber(menuTimeout); //x second timeout
-        if (amt < 0 || amt > 4000)
-          Serial.println("Error: Out of range");
-        else
-          settings.sensor_VL53L1X.offset = amt;
-      }
-      else if (incoming == '8')
-      {
-        Serial.print("Set Crosstalk in Counts Per Second: ");
-        int amt = getNumber(menuTimeout); //x second timeout
-        if (amt < 0 || amt > 4000)
-          Serial.println("Error: Out of range");
-        else
-          settings.sensor_VL53L1X.crosstalk = amt;
-      }
-      else if (incoming == 'x')
-        break;
-      else if (incoming == STATUS_GETBYTE_TIMEOUT)
-        break;
-      else
-        printUnknown(incoming);
-    }
-    else if (incoming == 'x')
-      break;
-    else if (incoming == STATUS_GETBYTE_TIMEOUT)
-      break;
-    else
-      printUnknown(incoming);
-  }
-
-  qwiicOnline.VL53L1X = false; //Mark as offline so it will be started with new settings
-}
 
 
 void menuConfigure_TMP117()
@@ -935,119 +951,6 @@ void menuConfigure_TMP117()
   qwiicOnline.TMP117 = false; //Mark as offline so it will be started with new settings
 }
 
-void menuConfigure_CCS811()
-{
-  while (1)
-  {
-    Serial.println();
-    Serial.println("Menu: Configure CCS811 tVOC and CO2 Sensor");
-
-    Serial.print("1) Sensor Logging: ");
-    if (settings.sensor_CCS811.log == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
-
-    if (settings.sensor_CCS811.log == true)
-    {
-      Serial.print("2) Log tVOC: ");
-      if (settings.sensor_CCS811.logTVOC == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-
-      Serial.print("3) Log CO2: ");
-      if (settings.sensor_CCS811.logCO2 == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-    }
-    Serial.println("x) Exit");
-
-    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
-
-    if (incoming == '1')
-      settings.sensor_CCS811.log ^= 1;
-    else if (settings.sensor_CCS811.log == true)
-    {
-      if (incoming == '2')
-        settings.sensor_CCS811.logTVOC ^= 1;
-      else if (incoming == '3')
-        settings.sensor_CCS811.logCO2 ^= 1;
-      else if (incoming == 'x')
-        break;
-      else if (incoming == STATUS_GETBYTE_TIMEOUT)
-        break;
-      else
-        printUnknown(incoming);
-    }
-    else if (incoming == 'x')
-      break;
-    else if (incoming == STATUS_GETBYTE_TIMEOUT)
-      break;
-    else
-      printUnknown(incoming);
-  }
-
-  qwiicOnline.CCS811 = false; //Mark as offline so it will be started with new settings
-}
-
-void menuConfigure_BME280()
-{
-  while (1)
-  {
-    Serial.println();
-    Serial.println("Menu: Configure BME280 Pressure/Humidity/Temperature Sensor");
-
-    Serial.print("1) Sensor Logging: ");
-    if (settings.sensor_BME280.log == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
-
-    if (settings.sensor_BME280.log == true)
-    {
-      Serial.print("2) Log Pressure: ");
-      if (settings.sensor_BME280.logPressure == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-
-      Serial.print("3) Log Humidity: ");
-      if (settings.sensor_BME280.logHumidity == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-
-      Serial.print("4) Log Altitude: ");
-      if (settings.sensor_BME280.logAltitude == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-
-      Serial.print("5) Log Temperature: ");
-      if (settings.sensor_BME280.logTemp == true) Serial.println("Enabled");
-      else Serial.println("Disabled");
-    }
-    Serial.println("x) Exit");
-
-    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
-
-    if (incoming == '1')
-      settings.sensor_BME280.log ^= 1;
-    else if (settings.sensor_BME280.log == true)
-    {
-      if (incoming == '2')
-        settings.sensor_BME280.logPressure ^= 1;
-      else if (incoming == '3')
-        settings.sensor_BME280.logHumidity ^= 1;
-      else if (incoming == '4')
-        settings.sensor_BME280.logAltitude ^= 1;
-      else if (incoming == '5')
-        settings.sensor_BME280.logTemp ^= 1;
-      else if (incoming == 'x')
-        break;
-      else if (incoming == STATUS_GETBYTE_TIMEOUT)
-        break;
-      else
-        printUnknown(incoming);
-    }
-    else if (incoming == 'x')
-      break;
-    else if (incoming == STATUS_GETBYTE_TIMEOUT)
-      break;
-    else
-      printUnknown(incoming);
-  }
-
-  qwiicOnline.BME280 = false; //Mark as offline so it will be started with new settings
-}
 
 void menuConfigure_SGP30()
 {
@@ -1431,3 +1334,4 @@ void menuConfigure_MS8607()
 
   qwiicOnline.MS8607 = false; //Mark as offline so it will be started with new settings
 }
+*/
