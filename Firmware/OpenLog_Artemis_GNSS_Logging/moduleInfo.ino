@@ -9,12 +9,6 @@
 
 bool getModuleInfo(uint16_t maxWait)
 {
-  // Let's create our custom packet
-  uint8_t customPayload[MAX_PAYLOAD_SIZE]; // This array holds the payload data bytes
-
-  // The next line creates and initialises the packet information which wraps around the payload
-  ubxPacket customCfg = {0, 0, 0, 0, 0, customPayload, 0, 0, SFE_UBLOX_PACKET_VALIDITY_NOT_DEFINED, SFE_UBLOX_PACKET_VALIDITY_NOT_DEFINED};
-
   // Referring to the u-blox M8 Receiver Description and Protocol Specification we see that
   // the module information can be read using the UBX-MON-VER message. So let's load our
   // custom packet with the correct information so we can read (poll / get) the module information.
@@ -45,6 +39,7 @@ bool getModuleInfo(uint16_t maxWait)
   minfo.TIM = false;
   minfo.FTS = false;
   minfo.LAP = false;
+  minfo.HDG = false;
   
   uint8_t extensionNo = 0;
 
@@ -84,7 +79,8 @@ bool getModuleInfo(uint16_t maxWait)
           else if (fwver_str == "UDR") minfo.UDR = true;
           else if (fwver_str == "TIM") minfo.TIM = true;
           else if (fwver_str == "FTS") minfo.FTS = true;
-          else if (fwver_str == "LAP") minfo.FTS = true;
+          else if (fwver_str == "LAP") minfo.LAP = true;
+          else if (fwver_str == "HDG") minfo.HDG = true;
           if (settings.printMajorDebugMessages == true)
           {
             Serial.print(F("getModuleInfo: "));

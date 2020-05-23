@@ -144,6 +144,10 @@ void menuConfigure_uBlox()
 
     if (settings.sensor_uBlox.log == true)
     {
+      Serial.print(F(" 2) Use a power management task to put the module to sleep                     : "));
+      if (settings.sensor_uBlox.powerManagement == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
       Serial.print(F("10) Log UBX-NAV-CLOCK     (Clock Solution)                                     : "));
       if (settings.sensor_uBlox.logUBXNAVCLOCK == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
@@ -237,6 +241,8 @@ void menuConfigure_uBlox()
     }
     else if (settings.sensor_uBlox.log == true)
     {
+      if (incoming == 2)
+        settings.sensor_uBlox.powerManagement ^= 1;
       if (incoming == 10)
         settings.sensor_uBlox.logUBXNAVCLOCK ^= 1;
       else if (incoming == 11)

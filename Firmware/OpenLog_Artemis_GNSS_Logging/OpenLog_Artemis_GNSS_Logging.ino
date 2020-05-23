@@ -3,6 +3,15 @@
   By: Paul Clark (PaulZC)
   Date: May 19th, 2020
 
+  This firmware runs the OpenLog Artemis and is dedicated to logging
+  messages from the u-blox F9 and M9 GNSS receivers.
+  
+  Messages are streamed directly to SD in UBX format without being processed.
+
+  All GNSS configuration is done using UBX-CFG-VALSET and UBX-CFG-VALGET
+  which is only supported on devices like the ZED-F9P and
+  NEO-M9N running communication protocols greater than 27.01.
+
   Based on:
   OpenLog Artemis
   By: Nathan Seidle
@@ -13,14 +22,6 @@
   Feel like supporting our work? Buy a board from SparkFun!
   https://www.sparkfun.com/products/15793
 
-  This firmware runs the OpenLog Artemis and is dedicated to logging
-  messages from the u-blox F9 and M9 GNSS receivers.
-  
-  Messages are streamed directly to SD in UBX format without being processed.
-
-  All GNSS configuration is done using UBX-CFG-VALSET and UBX-CFG-VALGET
-  which is only supported on devices like the ZED-F9P and
-  NEO-M9N running communication protocols greater than 27.01.
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -124,14 +125,20 @@ struct minfoStructure // Structure to hold the GNSS module info
   char extension[10][30];
   int protVerMajor;
   int protVerMinor;
-  bool SPG;
-  bool HPG;
-  bool ADR;
-  bool UDR;
-  bool TIM;
-  bool FTS;
-  bool LAP;
+  bool SPG; //Standard Precision
+  bool HPG; //High Precision (ZED-F9P)
+  bool ADR; //Automotive Dead Reckoning (ZED-F9K)
+  bool UDR; //Untethered Dead Reckoning (NEO-M8U which does not support protocol 27)
+  bool TIM; //Time sync (ZED-F9T) (Guess!)
+  bool FTS; //Frequency and Time Sync
+  bool LAP; //Lane accurate (ZED-F9R)
+  bool HDG; //Heading (ZED-F9H)
 } minfo; //Module info
+
+// Custom UBX Packet for getModuleInfo and powerManagementTask
+uint8_t customPayload[MAX_PAYLOAD_SIZE]; // This array holds the payload data bytes
+// The next line creates and initialises the packet information which wraps around the payload
+ubxPacket customCfg = {0, 0, 0, 0, 0, customPayload, 0, 0, SFE_UBLOX_PACKET_VALIDITY_NOT_DEFINED, SFE_UBLOX_PACKET_VALIDITY_NOT_DEFINED};
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -195,7 +202,7 @@ void setup() {
 
 //  //If we are immediately going to go to sleep after the first reading then
 //  //first present the user with the config menu in case they need to change something
-//  if (settings.usBetweenReadings >= settings.usLoggingDuration)
+//  if (settings.usBetweenReadings == settings.usLoggingDuration)
 //    menuMain();
 }
 

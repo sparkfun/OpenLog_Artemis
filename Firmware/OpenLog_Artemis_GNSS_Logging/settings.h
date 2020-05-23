@@ -15,6 +15,7 @@
 //u-blox settings
 struct struct_uBlox {
   bool log = true;
+  bool powerManagement = true;
   bool logUBXNAVCLOCK = false;
   bool logUBXNAVHPPOSECEF = false;
   bool logUBXNAVHPPOSLLH = false;
