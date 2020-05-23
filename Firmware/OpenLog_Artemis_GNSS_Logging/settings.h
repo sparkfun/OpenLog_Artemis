@@ -25,7 +25,7 @@ struct struct_uBlox {
   bool logUBXNAVPVT = true;
   bool logUBXNAVRELPOSNED = false;
   bool logUBXNAVSTATUS = false;
-  bool logUBXNAVTIMEUTC = false;
+  bool logUBXNAVTIMEUTC = true;
   bool logUBXNAVVELECEF = false;
   bool logUBXNAVVELNED = false;
   bool logUBXRXMRAWX = false;

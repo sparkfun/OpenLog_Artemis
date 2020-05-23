@@ -87,6 +87,26 @@ void goToSleep()
     }
 
     gnssDataFile.sync();
+
+    if (rtcHasBeenSyncd == true) //Update the write and access times if RTC is valid
+    {
+      myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
+      //Update the file access time
+      bool result = gnssDataFile.timestamp(T_ACCESS, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+      if (settings.printMinorDebugMessages == true)
+      {
+        Serial.print(F("goToSleep: gnssDataFile.timestamp T_ACCESS returned "));
+        Serial.println(result);
+      }
+      //Update the file write time
+      result = gnssDataFile.timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+      if (settings.printMinorDebugMessages == true)
+      {
+        Serial.print(F("goToSleep: gnssDataFile.timestamp T_WRITE returned "));
+        Serial.println(result);
+      }
+    }
+
     gnssDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
   }
 
@@ -270,11 +290,11 @@ uint64_t rtcMillis()
     myRTC.getTime();
     uint64_t millisToday = 0;
     int dayOfYear = calculateDayOfYear(myRTC.dayOfMonth, myRTC.month, myRTC.year + 2000);
-    millisToday += (dayOfYear * 86400000UL);
-    millisToday += (myRTC.hour * 3600000UL);
-    millisToday += (myRTC.minute * 60000UL);
-    millisToday += (myRTC.seconds * 1000UL);
-    millisToday += (myRTC.hundredths * 10UL);
+    millisToday += ((uint64_t)dayOfYear * 86400000ULL);
+    millisToday += ((uint64_t)myRTC.hour * 3600000ULL);
+    millisToday += ((uint64_t)myRTC.minute * 60000ULL);
+    millisToday += ((uint64_t)myRTC.seconds * 1000ULL);
+    millisToday += ((uint64_t)myRTC.hundredths * 10ULL);
 
     return(millisToday);  
 }

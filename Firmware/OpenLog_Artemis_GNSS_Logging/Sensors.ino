@@ -55,7 +55,7 @@ bool beginSensors()
         Serial.print(minfo.HPG); // We can only enable RAWX on HPG and TIM modules
         Serial.print(F(" ADR=")); //Dead Reckoning (ZED-F9K)
         Serial.print(minfo.ADR);
-        Serial.print(F(" UDR=")); //Untethered Dead Reckoning (NEO-M8U) (Guess!)
+        Serial.print(F(" UDR=")); //Untethered Dead Reckoning (NEO-M8U)
         Serial.print(minfo.UDR);
         Serial.print(F(" TIM=")); //Time sync (ZED-F9T)
         Serial.print(minfo.TIM); // We can only enable RAWX on HPG and TIM modules
@@ -298,6 +298,26 @@ void openNewLogFile()
       Serial.print(F("Closing: "));
       Serial.println(gnssDataFileName);
       gnssDataFile.sync();
+
+      if (rtcHasBeenSyncd == true) //Update the write and access times if RTC is valid
+      {
+        myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
+        //Update the file access time
+        bool result = gnssDataFile.timestamp(T_ACCESS, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+        if (settings.printMinorDebugMessages == true)
+        {
+          Serial.print(F("openNewLogFile: gnssDataFile.timestamp T_ACCESS returned "));
+          Serial.println(result);
+        }
+        //Update the file write time
+        result = gnssDataFile.timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+        if (settings.printMinorDebugMessages == true)
+        {
+          Serial.print(F("openNewLogFile: gnssDataFile.timestamp T_WRITE returned "));
+          Serial.println(result);
+        }
+      }
+
       gnssDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
 
       strcpy(gnssDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
@@ -314,6 +334,18 @@ void openNewLogFile()
         
         online.dataLogging = false;
         return;
+      }
+
+      if (rtcHasBeenSyncd == true) //Update the create time if the RTC is valid
+      {
+        myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
+        //Update the file create time
+        bool result = gnssDataFile.timestamp(T_CREATE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+        if (settings.printMinorDebugMessages == true)
+        {
+          Serial.print(F("openNewLogFile: gnssDataFile.timestamp T_CREATE returned "));
+          Serial.println(result);
+        }
       }
 
       //(Re)Enable the selected messages in RAM (MaxWait 2100)
@@ -345,6 +377,26 @@ void resetGNSS()
       Serial.print(F("Closing: "));
       Serial.println(gnssDataFileName);
       gnssDataFile.sync();
+
+      if (rtcHasBeenSyncd == true) //Update the write and access times if RTC is valid
+      {
+        myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
+        //Update the file access time
+        bool result = gnssDataFile.timestamp(T_ACCESS, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+        if (settings.printMinorDebugMessages == true)
+        {
+          Serial.print(F("resetGNSS: gnssDataFile.timestamp T_ACCESS returned "));
+          Serial.println(result);
+        }
+        //Update the file write time
+        result = gnssDataFile.timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+        if (settings.printMinorDebugMessages == true)
+        {
+          Serial.print(F("resetGNSS: gnssDataFile.timestamp T_WRITE returned "));
+          Serial.println(result);
+        }
+      }
+
       gnssDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
 
       //Reset the GNSS

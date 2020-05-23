@@ -229,12 +229,12 @@ bool storeData(void)
           }
           else if (ubx_state == frame_valid) //If the UBX frame is valid
           {
-            if (UBXbuffer[2] != 0x05) //If the frame is not an ACK/NACK
+            if (UBXbuffer[2] != UBX_CLASS_ACK) //If the frame is not an ACK/NACK
             {
               //Check for a RAWX frame so we can calculate the frame rate
-              if (UBXbuffer[2] == 0x02) //Class 0x02
+              if (UBXbuffer[2] == UBX_CLASS_RXM) //Class 0x02
               {
-                if (UBXbuffer[3] == 0x15) //ID 0x15
+                if (UBXbuffer[3] == UBX_RXM_RAWX) //ID 0x15
                 {
                   lastRAWXmicros5 = lastRAWXmicros4; //Update lastRAWXmicros
                   lastRAWXmicros4 = lastRAWXmicros3;
@@ -259,9 +259,9 @@ bool storeData(void)
               }
               
               //Check for a PVT frame so we can calculate the frame rate
-              if (UBXbuffer[2] == 0x01) //Class 0x01
+              if (UBXbuffer[2] == UBX_CLASS_NAV) //Class 0x01
               {
-                if (UBXbuffer[3] == 0x07) //ID 0x07
+                if (UBXbuffer[3] == UBX_NAV_PVT) //ID 0x07
                 {
                   lastPVTmicros5 = lastPVTmicros4; //Update lastPVTmicros
                   lastPVTmicros4 = lastPVTmicros3;
@@ -286,9 +286,9 @@ bool storeData(void)
               }
 
               //Check for a HPPOSLLH frame so we can calculate the frame rate
-              if (UBXbuffer[2] == 0x01) //Class 0x01
+              if (UBXbuffer[2] == UBX_CLASS_NAV) //Class 0x01
               {
-                if (UBXbuffer[3] == 0x14) //ID 0x14
+                if (UBXbuffer[3] == UBX_NAV_HPPOSLLH) //ID 0x14
                 {
                   lastHPPOSLLHmicros5 = lastHPPOSLLHmicros4; //Update lastHPPOSLLHmicros
                   lastHPPOSLLHmicros4 = lastHPPOSLLHmicros3;
@@ -313,9 +313,9 @@ bool storeData(void)
               }
 
               //Check for a RELPOSNED frame so we can calculate the frame rate
-              if (UBXbuffer[2] == 0x01) //Class 0x01
+              if (UBXbuffer[2] == UBX_CLASS_NAV) //Class 0x01
               {
-                if (UBXbuffer[3] == 0x3C) //ID 0x3C
+                if (UBXbuffer[3] == UBX_NAV_RELPOSNED) //ID 0x3C
                 {
                   lastRELPOSNEDmicros5 = lastRELPOSNEDmicros4; //Update lastRELPOSNEDmicros
                   lastRELPOSNEDmicros4 = lastRELPOSNEDmicros3;
@@ -339,6 +339,32 @@ bool storeData(void)
                 }
               }
 
+              //Check for a UBX-NAV-TIMEUTC frame so we can set the RTC
+              if (UBXbuffer[2] == UBX_CLASS_NAV) //Class 0x01
+              {
+                if (UBXbuffer[3] == UBX_NAV_TIMEUTC) //ID 0x21
+                {
+                  if (rtcNeedsSync == true) //Do we need to sync the RTC
+                  {
+                    if (((UBXbuffer[25] & 0x04) == 0x04) && (rtcNeedsSync == true))//If the validUTC flag bit is set and a sync is needed
+                    {
+                      //UBX-NAV-TIMEUTC includes the nanoseconds as a signed int32_t (-1e9 .. 1e9), so let's just ignore that!
+                      uint16_t rtcYear = ((uint16_t)UBXbuffer[18]) | (((uint16_t)UBXbuffer[19]) << 8); //RTC year
+                      myRTC.setTime(UBXbuffer[22], UBXbuffer[23], UBXbuffer[24], 0, UBXbuffer[21], UBXbuffer[20], (rtcYear - 2000)); //Set the RTC
+                      rtcHasBeenSyncd = true; //Set rtcHasBeenSyncd to show RTC has been sync'd
+                      rtcNeedsSync = false; //Clear rtcNeedsSync so we don't set the RTC multiple times
+                      if (settings.printMinorDebugMessages == true)
+                      {
+                        Serial.printf("storeData: RTC sync'd to %04d/%02d/%02d %02d:%02d:%02d\n", rtcYear, UBXbuffer[20], UBXbuffer[21], UBXbuffer[22], UBXbuffer[23], UBXbuffer[24]);
+                        myRTC.getTime();
+                        Serial.printf("storeData: RTC time is   %04d/%02d/%02d %02d:%02d:%02d.%02d\n", (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+                      }
+                    }
+                  }
+                }
+              }
+
+              //Copy this frame into teh GNSS buffer
               for (size_t i = 0; i < UBXpointer; i++) //For each char in the frame
               {
                 //TO DO: speed this up by doing some form of memory copy
@@ -349,11 +375,11 @@ bool storeData(void)
             {
               if (settings.printMajorDebugMessages == true)
               {
-                if (UBXbuffer[3] == 0x00) //If this is a NACK
+                if (UBXbuffer[3] == UBX_ACK_NACK) //If this is a NACK
                 {
                   Serial.print(F("UBX NACK Class:0x"));
                 }
-                else if (UBXbuffer[3] == 0x01) //If this is a ACK
+                else if (UBXbuffer[3] == UBX_ACK_ACK) //If this is a ACK
                 {
                   Serial.print(F("UBX ACK Class:0x"));
                 }
@@ -411,6 +437,12 @@ bool storeData(void)
         SDpointer = 0; //Reset the SDpointer
         digitalWrite(PIN_STAT_LED, HIGH); //Flash the LED while writing
         gnssDataFile.write(SDbuffer, SDpacket); //Record the buffer to the card
+//        if (rtcHasBeenSyncd == true)
+//        {
+//          myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
+//          //Update the file write time
+//          gnssDataFile.timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+//        }
         digitalWrite(PIN_STAT_LED, LOW);
         keep_going = false; //Stop now that we have written one packet
       }
@@ -431,6 +463,14 @@ bool storeData(void)
         SDpointer = 0; //Reset the SDpointer
       }
       gnssDataFile.sync(); //sync the file system
+//      if (rtcHasBeenSyncd == true)
+//      {
+//        myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
+//        //Update the file access time
+//        gnssDataFile.timestamp(T_ACCESS, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+//        //Update the file write time
+//        gnssDataFile.timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+//      }
       digitalWrite(PIN_STAT_LED, LOW);
     }
 

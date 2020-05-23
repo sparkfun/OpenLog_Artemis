@@ -117,6 +117,8 @@ unsigned long lastDataLogSyncTime = 0; //Used to sync SD every half second
 bool helperTextPrinted = false; //Print the column headers only once
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
 const byte menuTimeout = 45; //Menus will exit/timeout after this number of seconds
+bool rtcHasBeenSyncd = false; //Flag to indicate if the RTC been sync'd to GNSS
+bool rtcNeedsSync = true; //Flag to indicate if the RTC needs to be sync'd (after sleep)
 
 struct minfoStructure // Structure to hold the GNSS module info
 {
@@ -195,11 +197,6 @@ void setup() {
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
   measurementStartTime = rtcMillis();
 
-  if (settings.printMajorDebugMessages == true)
-  {
-    Serial.printf("Start time: %d ms\n", measurementStartTime);
-  }
-
 //  //If we are immediately going to go to sleep after the first reading then
 //  //first present the user with the config menu in case they need to change something
 //  if (settings.usBetweenReadings == settings.usLoggingDuration)
@@ -225,10 +222,7 @@ void loop() {
     //Update measurementStartTime so we know when to go back to sleep
     measurementStartTime = measurementStartTime + (settings.usLoggingDuration / 1000) + (settings.usSleepDuration / 1000);
     
-    if (settings.printMajorDebugMessages == true)
-    {
-      Serial.printf("Wake up time: %d ms\n", rtcMillis());
-    }
+    rtcNeedsSync = true; //Let's re-sync the RTC after sleep
   }
 }
 
@@ -324,6 +318,18 @@ void beginDataLogging()
       return;
     }
 
+    if (rtcHasBeenSyncd == true) //Update the create time if the RTC is valid
+    {
+      myRTC.getTime(); //Get the RTC time so we can use it to update the create time
+      //Update the file create time
+      bool result = gnssDataFile.timestamp(T_CREATE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+      if (settings.printMinorDebugMessages == true)
+      {
+        Serial.print(F("beginDataLogging: gnssDataFile.timestamp T_CREATE returned "));
+        Serial.println(result);
+      }
+    }
+
     online.dataLogging = true;
   }
   else
@@ -343,6 +349,27 @@ void beginDataLogging()
   //  {
   //    Serial.println(F("Unknown microSD state"));
   //  }
+}
+
+void printUint64(uint64_t val)
+{
+  Serial.print("0x");
+  uint8_t Byte = (val >> 56) & 0xFF;
+  Serial.print(Byte, HEX);
+  Byte = (val >> 48) & 0xFF;
+  Serial.print(Byte, HEX);
+  Byte = (val >> 40) & 0xFF;
+  Serial.print(Byte, HEX);
+  Byte = (val >> 32) & 0xFF;
+  Serial.print(Byte, HEX);
+  Byte = (val >> 24) & 0xFF;
+  Serial.print(Byte, HEX);
+  Byte = (val >> 16) & 0xFF;
+  Serial.print(Byte, HEX);
+  Byte = (val >> 8) & 0xFF;
+  Serial.print(Byte, HEX);
+  Byte = (val >> 0) & 0xFF;
+  Serial.println(Byte, HEX);
 }
 
 //Called once number of milliseconds has passed

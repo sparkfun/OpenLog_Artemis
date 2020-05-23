@@ -180,7 +180,7 @@ void menuConfigure_uBlox()
       if (settings.sensor_uBlox.logUBXNAVSTATUS == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("18) Log UBX-NAV-TIMEUTC   (UTC Time Solution)                                  : "));
+      Serial.print(F("18) Log UBX-NAV-TIMEUTC   (UTC Time Solution) (Used to sync the OLA RTC)       : "));
       if (settings.sensor_uBlox.logUBXNAVTIMEUTC == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 

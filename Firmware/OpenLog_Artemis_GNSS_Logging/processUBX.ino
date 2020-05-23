@@ -135,10 +135,85 @@ bool processUBX(char c)
       {
         if (settings.enableTerminalOutput == true)
         {
-          Serial.print(F("UBX Class:0x")); //Let's keep this message short!
+          //Print some useful information. Let's keep this message short!
+          myRTC.getTime(); //Get the RTC time so we can print it
+          Serial.printf("%04d/%02d/%02d %02d:%02d:%02d.%02d ", (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+          //Print the frame information
+          Serial.print(F("UBX Class:0x"));
           Serial.print(ubx_class, HEX);
           Serial.print(F(" ID:0x"));
-          Serial.println(ubx_ID, HEX);
+          if (ubx_ID < 0x10) Serial.print(F("0"));
+          Serial.print(ubx_ID, HEX);
+          switch (ubx_class)
+          {
+            case UBX_CLASS_NAV:
+            {
+              switch (ubx_ID)
+              {
+                case UBX_NAV_CLOCK:
+                  Serial.print(F(" NAV-CLOCK"));
+                break;                
+                case UBX_NAV_HPPOSECEF:
+                  Serial.print(F(" NAV-HPPOSECEF"));
+                break;                
+                case UBX_NAV_HPPOSLLH:
+                  Serial.print(F(" NAV-HPPOSLLH"));
+                break;                
+                case UBX_NAV_ODO:
+                  Serial.print(F(" NAV-ODO"));
+                break;                
+                case UBX_NAV_POSECEF:
+                  Serial.print(F(" NAV-POSECEF"));
+                break;                
+                case UBX_NAV_POSLLH:
+                  Serial.print(F(" NAV-POSLLH"));
+                break;                
+                case UBX_NAV_PVT:
+                  Serial.print(F(" NAV-PVT"));
+                break;                
+                case UBX_NAV_RELPOSNED:
+                  Serial.print(F(" NAV-RELPOSNED"));
+                break;                
+                case UBX_NAV_STATUS:
+                  Serial.print(F(" NAV-STATUS"));
+                break;                
+                case UBX_NAV_TIMEUTC:
+                  Serial.print(F(" NAV-TIMEUTC"));
+                break;                
+                case UBX_NAV_VELECEF:
+                  Serial.print(F(" NAV-VELECEF"));
+                break;                
+                case UBX_NAV_VELNED:
+                  Serial.print(F(" NAV-VELNED"));
+                break;                
+              }
+            }
+            break;
+            case UBX_CLASS_RXM:
+            {
+              switch (ubx_ID)
+              {
+                case UBX_RXM_RAWX:
+                  Serial.print(F(" RXM-RAWX"));
+                break;
+                case UBX_RXM_SFRBX:
+                  Serial.print(F(" RXM-SFRBX"));
+                break;
+              }
+            }
+            break;
+            case UBX_CLASS_TIM:
+            {
+              switch (ubx_ID)
+              {
+                case UBX_TIM_TM2:
+                  Serial.print(F(" TIM-TM2"));
+                break;
+              }
+            }
+            break;
+          }
+          Serial.println();
         }
         ubx_state = frame_valid;
       }
