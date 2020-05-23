@@ -78,7 +78,8 @@ void menuLogRate()
       else
       {
         settings.serialTerminalBaudRate = newBaud;
-        recordSettings();
+        recordSystemSettings(); //Normally recorded upon all menu exits
+        recordDeviceSettingsToFile(); //Normally recorded upon all menu exits
         Serial.printf("Terminal now set at %dbps. Please reset device and open terminal at new baud rate. Freezing...\n", settings.serialTerminalBaudRate);
         while (1);
       }
@@ -88,7 +89,7 @@ void menuLogRate()
       int maxOutputRate = settings.serialTerminalBaudRate / 10 / (totalCharactersPrinted / measurementCount);
       maxOutputRate = (maxOutputRate * 90) / 100; //Fudge reduction of 10%
 
-      if(maxOutputRate < 10) maxOutputRate = 10; //TODO this is forced. Needed when multi seconds between readings.
+      if (maxOutputRate < 10) maxOutputRate = 10; //TODO this is forced. Needed when multi seconds between readings.
 
       Serial.printf("How many readings per second would you like to log? (Current max is %d): ", maxOutputRate);
       int tempRPS = getNumber(menuTimeout); //Timeout after x seconds
@@ -124,7 +125,8 @@ void menuLogRate()
           serialDataFile.close();
           sensorDataFile.close();
 
-          recordSettings(); //Normally recorded upon all menu exits
+          recordSystemSettings(); //Normally recorded upon all menu exits
+          recordDeviceSettingsToFile(); //Normally recorded upon all menu exits
 
           Serial.println("OpenLog Artemis configured for max data rate. Please reset. Freezing...");
           while (1);

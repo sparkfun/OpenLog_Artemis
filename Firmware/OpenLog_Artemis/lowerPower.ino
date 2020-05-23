@@ -203,7 +203,12 @@ void wakeFromSleep()
 
   beginIMU(); //61ms
 
-  beginSensors(); //159 - 865ms but varies based on number of devices attached
+  //If we powered down the Qwiic bus, then re-detect and re-configure everything
+  if (settings.powerDownQwiicBusBetweenReads == true)
+  {
+    detectQwiicDevices(); //159 - 865ms but varies based on number of devices attached
+    loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
+  }
 
   //Serial.printf("Wake up time: %.02f ms\n", (micros() - startTime) / 1000.0);
 

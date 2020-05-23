@@ -109,5 +109,4 @@ void gatherDeviceValues()
     }
     temp = temp->next;
   }
-  
 }

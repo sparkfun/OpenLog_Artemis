@@ -15,6 +15,15 @@
   * Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
   * 10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
 
+TODO:
+  (done) Create settings file for sensor. Load after qwiic bus is scanned.
+  (done on larger Strings) Remove String dependencies.
+  (done) Bubble sort list of devices.
+  (done) Remove listing for muxes.
+  Currently device settings are not recorded to EEPROM, only deviceSettings.txt
+  (done) Change settings extension to txt
+  Fix max I2C speed to use linked list
+  Is there a better way to dynamically create size of outputData array so we don't every get larger than X sensors outputting?
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -108,38 +117,16 @@ ICM_20948_SPI myICM;
 #include "SparkFunBME280.h" //Click here to get the library: http://librarymanager/All#SparkFun_BME280
 
 //#include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
-//NAU7802 loadcellSensor_NAU7802;
-
 //#include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
-//SFE_UBLOX_GPS gpsSensor_ublox;
-
 //#include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
-//VCNL4040 proximitySensor_VCNL4040;
-
 //#include "SparkFun_MCP9600.h" //Click here to get the library: http://librarymanager/All#SparkFun_MCP9600
-//MCP9600 thermoSensor_MCP9600;
-
 //#include "SparkFun_TMP117.h" //Click here to get the library: http://librarymanager/All#SparkFun_TMP117
-//TMP117 tempSensor_TMP117;
-
 //#include "SparkFun_MS5637_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MS5637
-//MS5637 pressureSensor_MS5637;
-
 //#include "SparkFun_LPS25HB_Arduino_Library.h"  //Click here to get the library: http://librarymanager/All#SparkFun_LPS25HB
-//LPS25HB pressureSensor_LPS25HB;
-
 //#include "SparkFun_VEML6075_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VEML6075
-//VEML6075 uvSensor_VEML6075;
-
 //#include "SparkFun_SGP30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SGP30
-//SGP30 vocSensor_SGP30;
-
 //#include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
-//SCD30 co2Sensor_SCD30;
-
 //#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
-//MS8607 pressureSensor_MS8607;
-
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -147,11 +134,9 @@ ICM_20948_SPI myICM;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 uint64_t measurementStartTime; //Used to calc the actual update rate. Max is ~80,000,000ms in a 24 hour period.
 unsigned long measurementCount = 0; //Used to calc the actual update rate.
-String outputData;
-String beginSensorOutput;
+char outputData[512*2]; //Factor of 512 for easier recording to SD in 512 chunks
 unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
 unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
-bool helperTextPrinted = false; //Print the column headers only once
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
 const uint32_t maxUsBeforeSleep = 2000000; //Number of us between readings before sleep is activated.
@@ -209,8 +194,11 @@ void setup() {
 
   if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
 
-  if (beginSensors() == true) Serial.println(beginSensorOutput); //159 - 865ms but varies based on number of devices attached
-  else msg("No sensors detected");
+  if(detectQwiicDevices() == false) msg("No Qwiic devices detected"); //159 - 865ms but varies based on number of devices attached
+
+  loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
+
+  if (settings.showHelperText == true) printHelperText();
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
   if (settings.usBetweenReadings >= maxUsBeforeSleep)
@@ -293,9 +281,7 @@ void loop() {
     {
       if (settings.enableSD && online.microSD)
       {
-        char temp[512];
-        outputData.toCharArray(temp, 512); //Convert string to char array so sdfat can record it
-        sensorDataFile.write(temp, strlen(temp)); //Record the buffer to the card
+        sensorDataFile.write(outputData, strlen(outputData)); //Record the buffer to the card
 
         //Force sync every 500ms
         if (millis() - lastDataLogSyncTime > 500)

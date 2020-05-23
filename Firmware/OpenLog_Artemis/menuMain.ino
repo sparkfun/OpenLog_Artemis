@@ -52,8 +52,10 @@ void menuMain()
       if (bContinue == 'y')
       {
         EEPROM.erase();
-        if (sd.exists("OLA_settings.cfg"))
-          sd.remove("OLA_settings.cfg");
+        if (sd.exists("OLA_settings.txt"))
+          sd.remove("OLA_settings.txt");
+        if (sd.exists("OLA_deviceSettings.txt"))
+          sd.remove("OLA_deviceSettings.txt");
 
         Serial.println("Settings erased. Please reset OpenLog Artemis and open a terminal at 115200bps...");
         while (1);
@@ -69,7 +71,9 @@ void menuMain()
       printUnknown(incoming);
   }
 
-  recordSettings(); //Once all menus have exited, record the new settings to EEPROM and config file
+  recordSystemSettings(); //Once all menus have exited, record the new settings to EEPROM and config file
+
+  recordDeviceSettingsToFile(); //Record the current devices settings to device config file
 
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 

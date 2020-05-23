@@ -144,8 +144,6 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         BME280 *tempDevice = (BME280 *)temp->classPtr;
         tempDevice->setI2CAddress(temp->address);
         temp->online = tempDevice->beginI2C(qwiic); //Wire port
-
-        Serial.printf(" pressure: %f", tempDevice->readFloatPressure());
       }
       break;
     case DEVICE_VOC_CCS811:
@@ -167,19 +165,17 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
   if (temp->online)
   {
     configureDevice(temp); //Configure this device with the node's config settings
-    sprintf(sensorOnlineText, "%s Online\n", getDeviceName(temp->deviceType));
 
-    //Add this device's helper text to the pile
-
-  //Need to switch here on device type to get 
-//      helperText += "distance_mm,";
+    if (temp->muxAddress == 0)
+      sprintf(sensorOnlineText, "%s online at address 0x%02X\n", getDeviceName(temp->deviceType), temp->address);
+    else
+      sprintf(sensorOnlineText, "%s online at address 0x%02X.0x%02X.%d\n", getDeviceName(temp->deviceType), temp->address, temp->muxAddress, temp->portNumber);
   }
   else
   {
     sprintf(sensorOnlineText, "%s failed to respond\n", getDeviceName(temp->deviceType));
   }
-  beginSensorOutput += (String)sensorOnlineText;
-
+  Serial.print(sensorOnlineText);
 
   //Link to next node
   temp->next = NULL;
@@ -211,6 +207,9 @@ void configureDevice(node *temp)
   uint8_t deviceType = temp->deviceType;
   switch (deviceType)
   {
+    case DEVICE_MULTIPLEXER:
+      //Nothing to configure
+      break;
     case DEVICE_DISTANCE_VL53L1X:
       {
         SFEVL53L1X *tempDevice = (SFEVL53L1X *)temp->classPtr;
@@ -235,7 +234,7 @@ void configureDevice(node *temp)
       //Nothing to configure
       break;
     default:
-      Serial.println("configureDevice: Unknown device type");
+      Serial.printf("configureDevice: Unknown device type %d: %s\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
   }
 }
@@ -320,6 +319,66 @@ bool openConnection(uint8_t muxAddress, uint8_t portNumber)
   return (true);
 }
 
+//Bubble sort the given linked list by the device address
+//https://www.geeksforgeeks.org/c-program-bubble-sort-linked-list/
+void bubbleSortDevices(struct node *start)
+{
+  int swapped, i;
+  struct node *ptr1;
+  struct node *lptr = NULL;
+
+  //Checking for empty list
+  if (start == NULL) return;
+
+  do
+  {
+    swapped = 0;
+    ptr1 = start;
+
+    while (ptr1->next != lptr)
+    {
+      if (ptr1->address > ptr1->next->address)
+      {
+        swap(ptr1, ptr1->next);
+        swapped = 1;
+      }
+      ptr1 = ptr1->next;
+    }
+    lptr = ptr1;
+  }
+  while (swapped);
+}
+
+//Swap data of two nodes a and b
+void swap(struct node *a, struct node *b)
+{
+  node temp;
+
+  temp.deviceType = a->deviceType;
+  temp.address = a->address;
+  temp.portNumber = a->portNumber;
+  temp.muxAddress = a->muxAddress;
+  temp.online = a->online;
+  temp.classPtr = a->classPtr;
+  temp.configPtr = a->configPtr;
+
+  a->deviceType = b->deviceType;
+  a->address = b->address;
+  a->portNumber = b->portNumber;
+  a->muxAddress = b->muxAddress;
+  a->online = b->online;
+  a->classPtr = b->classPtr;
+  a->configPtr = b->configPtr;
+
+  b->deviceType = temp.deviceType;
+  b->address = temp.address;
+  b->portNumber = temp.portNumber;
+  b->muxAddress = temp.muxAddress;
+  b->online = temp.online;
+  b->classPtr = temp.classPtr;
+  b->configPtr = temp.configPtr;
+}
+
 //The functions below are specific to the steps of auto-detection rather than node manipulation
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -387,10 +446,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Try a mux first. This will write/read to 0x00 register.
         QWIICMUX multiplexer;
         if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-        {
-          Serial.println("Mux found?");
           return (DEVICE_MULTIPLEXER);
-        }
 
         BME280 phtSensor_BME280;
         phtSensor_BME280.setI2CAddress(i2cAddress);

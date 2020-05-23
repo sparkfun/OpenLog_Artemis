@@ -8,7 +8,7 @@ void loadSettings()
   uint32_t testRead = 0;
   if (EEPROM.get(0, testRead) == 0xFFFFFFFF)
   {
-    recordSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
+    recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
     Serial.println("Default settings applied");
   }
 
@@ -19,39 +19,39 @@ void loadSettings()
   if (tempSize != sizeof(settings))
   {
     Serial.println("Settings wrong size. Default settings applied");
-    recordSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
+    recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 
   //Read current settings
   EEPROM.get(0, settings);
 
   //Load any settings from config file
-  if (loadSettingsFromFile() == true)
-    recordSettings(); //Record these new settings to EEPROM and config file
+  if (loadSystemSettingsFromFile() == true)
+    recordSystemSettingsToFile(); //Record these new settings to EEPROM and config file
 }
 
 //Record the current settings struct to EEPROM and then to config file
-void recordSettings()
+void recordSystemSettings()
 {
   settings.sizeOfSettings = sizeof(settings);
   EEPROM.put(0, settings);
-  recordSettingsToFile();
+  recordSystemSettingsToFile();
 }
 
 //Export the current settings to a config file
-void recordSettingsToFile()
+void recordSystemSettingsToFile()
 {
   if (online.microSD == true)
   {
-    if (sd.exists("OLA_settings.cfg"))
-      sd.remove("OLA_settings.cfg");
+    if (sd.exists("OLA_settings.txt"))
+      sd.remove("OLA_settings.txt");
 
 #ifdef USE_EXFAT
     FsFile settingsFile; //exFat
 #else
     File settingsFile; //FAT16/32
 #endif
-    if (settingsFile.open("OLA_settings.cfg", O_CREAT | O_APPEND | O_WRITE) == false)
+    if (settingsFile.open("OLA_settings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create settings file");
       return;
@@ -96,63 +96,6 @@ void recordSettingsToFile()
     settingsFile.println("printDebugMessages=" + (String)settings.printDebugMessages);
     settingsFile.println("powerDownQwiicBusBetweenReads=" + (String)settings.powerDownQwiicBusBetweenReads);
     settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
-    //    settingsFile.println("=" + (String)settings.sensor_LPS25HB.);
-
-    //Step through the device node list, recording each node's settings
-    char base[75];
-    node *temp = head;
-    while (temp != NULL)
-    {
-      sprintf(base, "%s.%d.%d.%d.%d.", getDeviceName(temp->deviceType), temp->deviceType, temp->address, temp->muxAddress, temp->portNumber);
-
-      switch (temp->deviceType)
-      {
-        case DEVICE_MULTIPLEXER:
-          {
-            //Currently, no settings for multiplexer to record
-            //struct_multiplexer *nodeSetting = (struct_multiplexer *)temp->configPtr; //Create a local pointer that points to same spot as node does
-            //settingsFile.println((String)base + "log=" + nodeSetting->log);
-            break;
-          }
-        case DEVICE_DISTANCE_VL53L1X:
-          {
-            struct_VL53L1X *nodeSetting = (struct_VL53L1X *)temp->configPtr; //Create a local pointer that points to same spot as node does
-            settingsFile.println((String)base + "log=" + nodeSetting->log);
-            settingsFile.println((String)base + "logDistance=" + nodeSetting->logDistance);
-            settingsFile.println((String)base + "logRangeStatus=" + nodeSetting->logRangeStatus);
-            settingsFile.println((String)base + "logSignalRate=" + nodeSetting->logSignalRate);
-            settingsFile.println((String)base + "distanceMode=" + nodeSetting->distanceMode);
-            settingsFile.println((String)base + "intermeasurementPeriod=" + nodeSetting->intermeasurementPeriod);
-            settingsFile.println((String)base + "offset=" + nodeSetting->offset);
-            settingsFile.println((String)base + "crosstalk=" + nodeSetting->crosstalk);
-            break;
-          }
-        case DEVICE_PHT_BME280:
-          {
-            struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr; //Create a local pointer that points to same spot as node does
-            settingsFile.println((String)base + "log=" + nodeSetting->log);
-            settingsFile.println((String)base + "logHumidity=" + nodeSetting->logHumidity);
-            settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
-            settingsFile.println((String)base + "logAltitude=" + nodeSetting->logAltitude);
-            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
-            break;
-          }
-        case DEVICE_VOC_CCS811:
-          {
-            struct_CCS811 *nodeSetting = (struct_CCS811 *)temp->configPtr; //Create a local pointer that points to same spot as node does
-            settingsFile.println((String)base + "log=" + nodeSetting->log);
-            settingsFile.println((String)base + "logTVOC=" + nodeSetting->logTVOC);
-            settingsFile.println((String)base + "logCO2=" + nodeSetting->logCO2);
-            break;
-          }
-        default:
-          Serial.printf("recordSettingsToFile Unknown device: %s\n", base);
-          //settingsFile.println((String)base + "=UnknownDeviceSettings");
-          break;
-      }
-
-      temp = temp->next;
-    }
     settingsFile.close();
   }
 }
@@ -161,18 +104,18 @@ void recordSettingsToFile()
 //Heavily based on ReadCsvFile from SdFat library
 //Returns true if some settings were loaded from a file
 //Returns false if a file was not opened/loaded
-bool loadSettingsFromFile()
+bool loadSystemSettingsFromFile()
 {
   if (online.microSD == true)
   {
-    if (sd.exists("OLA_settings.cfg"))
+    if (sd.exists("OLA_settings.txt"))
     {
 #ifdef USE_EXFAT
       FsFile settingsFile; //exFat
 #else
       File settingsFile; //FAT16/32
 #endif
-      if (settingsFile.open("OLA_settings.cfg", O_READ) == false)
+      if (settingsFile.open("OLA_settings.txt", O_READ) == false)
       {
         Serial.println("Failed to open settings file");
         return (false);
@@ -208,7 +151,7 @@ bool loadSettingsFromFile()
         lineNumber++;
       }
 
-      Serial.println("Config file read complete");
+      //Serial.println("Config file read complete");
       settingsFile.close();
       return (true);
     }
@@ -269,7 +212,7 @@ bool parseLine(char* str) {
     if (d == -1)
     {
       EEPROM.erase();
-      sd.remove("OLA_settings.cfg");
+      sd.remove("OLA_settings.txt");
       Serial.println("OpenLog Artemis has been factory reset. Freezing. Please restart and open terminal at 115200bps.");
       while (1);
     }
@@ -348,126 +291,289 @@ bool parseLine(char* str) {
   else if (strcmp(settingName, "qwiicBusMaxSpeed") == 0)
     settings.qwiicBusMaxSpeed = d;
   else
+    Serial.printf("Unknown setting %s on line: %s\n", settingName, str);
+
+  return (true);
+}
+
+//Export the current device settings to a config file
+void recordDeviceSettingsToFile()
+{
+  if (online.microSD == true)
   {
-    //Is this a device setting?
-    //Break it into its constituent parts
-    char deviceSettingName[50];
-    deviceType_e deviceType;
-    uint8_t address;
-    uint8_t muxAddress;
-    uint8_t portNumber;
-    uint8_t count = 0;
-    char *split = strtok(settingName, ".");
-    while (split != NULL)
+    if (sd.exists("OLA_deviceSettings.txt"))
+      sd.remove("OLA_deviceSettings.txt");
+
+#ifdef USE_EXFAT
+    FsFile settingsFile; //exFat
+#else
+    File settingsFile; //FAT16/32
+#endif
+    if (settingsFile.open("OLA_deviceSettings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      if (count == 0)
-        ; //Do nothing. This is merely the human friendly device name
-      else if (count == 1)
-        deviceType = (deviceType_e)atoi(split);
-      else if (count == 2)
-        address = atoi(split);
-      else if (count == 3)
-        muxAddress = atoi(split);
-      else if (count == 4)
-        portNumber = atoi(split);
-      else if (count == 5)
-        sprintf(deviceSettingName, "%s", split);
-      split = strtok(NULL, ".");
-      count++;
+      Serial.println("Failed to create device settings file");
+      return;
     }
 
-    if (count < 5)
+    //Step through the node list, recording each node's settings
+    char base[75];
+    node *temp = head;
+    while (temp != NULL)
     {
-      Serial.printf("Incomplete setting: %s\n", settingName);
-      return false;
-    }
+      sprintf(base, "%s.%d.%d.%d.%d.", getDeviceName(temp->deviceType), temp->deviceType, temp->address, temp->muxAddress, temp->portNumber);
 
-    //Serial.printf("%d: %d.%d.%d - %s\n", deviceType, address, muxAddress, portNumber, deviceSettingName);
-    //Serial.flush();
-
-    //Find the device in the list that has this device type and address
-    void *deviceConfigPtr = getConfigPointer(deviceType, address, muxAddress, portNumber);
-    if (deviceConfigPtr == NULL)
-    {
-      Serial.printf("Setting in file found but no matching device on bus is available: %s\n", settingName);
-      Serial.flush();
-    }
-    else
-    {
-      switch (deviceType)
+      switch (temp->deviceType)
       {
         case DEVICE_MULTIPLEXER:
           {
-            Serial.println("There are no known settings for a multiplexer to load.");
+            //Currently, no settings for multiplexer to record
+            //struct_multiplexer *nodeSetting = (struct_multiplexer *)temp->configPtr; //Create a local pointer that points to same spot as node does
+            //settingsFile.println((String)base + "log=" + nodeSetting->log);
+            break;
           }
-          break;
         case DEVICE_DISTANCE_VL53L1X:
           {
-            struct_VL53L1X *nodeSetting = (struct_VL53L1X *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
-
-            //Apply the appropriate settings
-            if (strcmp(deviceSettingName, "log") == 0)
-              nodeSetting->log = d;
-            else if (strcmp(deviceSettingName, "logDistance") == 0)
-              nodeSetting->logDistance = d;
-            else if (strcmp(deviceSettingName, "logRangeStatus") == 0)
-              nodeSetting->logRangeStatus = d;
-            else if (strcmp(deviceSettingName, "logSignalRate") == 0)
-              nodeSetting->logSignalRate = d;
-            else if (strcmp(deviceSettingName, "distanceMode") == 0)
-              nodeSetting->distanceMode = d;
-            else if (strcmp(deviceSettingName, "intermeasurementPeriod") == 0)
-              nodeSetting->intermeasurementPeriod = d;
-            else if (strcmp(deviceSettingName, "offset") == 0)
-              nodeSetting->offset = d;
-            else if (strcmp(deviceSettingName, "crosstalk") == 0)
-              nodeSetting->crosstalk = d;
-            else
-              Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+            struct_VL53L1X *nodeSetting = (struct_VL53L1X *)temp->configPtr; //Create a local pointer that points to same spot as node does
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logDistance=" + nodeSetting->logDistance);
+            settingsFile.println((String)base + "logRangeStatus=" + nodeSetting->logRangeStatus);
+            settingsFile.println((String)base + "logSignalRate=" + nodeSetting->logSignalRate);
+            settingsFile.println((String)base + "distanceMode=" + nodeSetting->distanceMode);
+            settingsFile.println((String)base + "intermeasurementPeriod=" + nodeSetting->intermeasurementPeriod);
+            settingsFile.println((String)base + "offset=" + nodeSetting->offset);
+            settingsFile.println((String)base + "crosstalk=" + nodeSetting->crosstalk);
+            break;
           }
-          break;
         case DEVICE_PHT_BME280:
           {
-            struct_BME280 *nodeSetting = (struct_BME280 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
-
-            //Apply the appropriate settings
-            if (strcmp(deviceSettingName, "log") == 0)
-              nodeSetting->log = d;
-            else if (strcmp(deviceSettingName, "logHumidity") == 0)
-              nodeSetting->logHumidity = d;
-            else if (strcmp(deviceSettingName, "logPressure") == 0)
-              nodeSetting->logPressure = d;
-            else if (strcmp(deviceSettingName, "logAltitude") == 0)
-              nodeSetting->logAltitude = d;
-            else if (strcmp(deviceSettingName, "logTemperature") == 0)
-              nodeSetting->logTemperature = d;
-            else
-              Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+            struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logHumidity=" + nodeSetting->logHumidity);
+            settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
+            settingsFile.println((String)base + "logAltitude=" + nodeSetting->logAltitude);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+            break;
           }
-          break;
         case DEVICE_VOC_CCS811:
           {
-            struct_CCS811 *nodeSetting = (struct_CCS811 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
-
-            //Apply the appropriate settings
-            if (strcmp(deviceSettingName, "log") == 0)
-              nodeSetting->log = d;
-            else if (strcmp(deviceSettingName, "logTVOC") == 0)
-              nodeSetting->logTVOC = d;
-            else if (strcmp(deviceSettingName, "logCO2") == 0)
-              nodeSetting->logCO2 = d;
-            else
-              Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+            struct_CCS811 *nodeSetting = (struct_CCS811 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logTVOC=" + nodeSetting->logTVOC);
+            settingsFile.println((String)base + "logCO2=" + nodeSetting->logCO2);
+            break;
           }
-          break;
-
         default:
-          Serial.printf("Unknown device type: %d\n", deviceType);
-          Serial.flush();
+          Serial.printf("recordSettingsToFile Unknown device: %s\n", base);
+          //settingsFile.println((String)base + "=UnknownDeviceSettings");
           break;
       }
+      temp = temp->next;
+    }
+    settingsFile.close();
+  }
+}
+
+//If a device config file exists on the SD card, load them and overwrite the local settings
+//Heavily based on ReadCsvFile from SdFat library
+//Returns true if some settings were loaded from a file
+//Returns false if a file was not opened/loaded
+bool loadDeviceSettingsFromFile()
+{
+  if (online.microSD == true)
+  {
+    if (sd.exists("OLA_deviceSettings.txt"))
+    {
+#ifdef USE_EXFAT
+      FsFile settingsFile; //exFat
+#else
+      File settingsFile; //FAT16/32
+#endif
+      if (settingsFile.open("OLA_deviceSettings.txt", O_READ) == false)
+      {
+        Serial.println("Failed to open device settings file");
+        return (false);
+      }
+
+      char line[150];
+      int lineNumber = 0;
+
+      while (settingsFile.available()) {
+        int n = settingsFile.fgets(line, sizeof(line));
+        if (n <= 0) {
+          Serial.printf("Failed to read line %d from settings file\n", lineNumber);
+        }
+        else if (line[n - 1] != '\n' && n == (sizeof(line) - 1)) {
+          Serial.printf("Settings line %d too long\n", lineNumber);
+        }
+        else if (parseDeviceLine(line) == false) {
+          Serial.printf("Failed to parse line %d: %s\n", lineNumber + 1, line);
+        }
+
+        lineNumber++;
+      }
+
+      //Serial.println("Device config file read complete");
+      settingsFile.close();
+      return (true);
+    }
+    else
+    {
+      Serial.println("No device config file found. Using device defaults.");
+      return (false);
     }
   }
 
+  Serial.println("Device config file read failed: SD offline");
+  return (false); //SD offline
+}
+
+//Convert a given line from device setting file into a settingName and value
+//Immediately applies the setting to the appropriate node
+bool parseDeviceLine(char* str) {
+  char* ptr;
+
+  //Debug
+  //Serial.printf("Line contents: %s", str);
+  //Serial.flush();
+
+  // Set strtok start of line.
+  str = strtok(str, "=");
+  if (!str) return false;
+
+  //Store this setting name
+  char settingName[150];
+  sprintf(settingName, "%s", str);
+
+  //Move pointer to end of line
+  str = strtok(nullptr, "\n");
+  if (!str) return false;
+
+  //Serial.printf("s = %s\n", str);
+  //Serial.flush();
+
+  // Convert string to double.
+  double d = strtod(str, &ptr);
+  if (str == ptr || *skipSpace(ptr)) return false;
+
+  //Serial.printf("d = %lf\n", d);
+  //Serial.flush();
+
+  //Break device setting into its constituent parts
+  char deviceSettingName[50];
+  deviceType_e deviceType;
+  uint8_t address;
+  uint8_t muxAddress;
+  uint8_t portNumber;
+  uint8_t count = 0;
+  char *split = strtok(settingName, ".");
+  while (split != NULL)
+  {
+    if (count == 0)
+      ; //Do nothing. This is merely the human friendly device name
+    else if (count == 1)
+      deviceType = (deviceType_e)atoi(split);
+    else if (count == 2)
+      address = atoi(split);
+    else if (count == 3)
+      muxAddress = atoi(split);
+    else if (count == 4)
+      portNumber = atoi(split);
+    else if (count == 5)
+      sprintf(deviceSettingName, "%s", split);
+    split = strtok(NULL, ".");
+    count++;
+  }
+
+  if (count < 5)
+  {
+    Serial.printf("Incomplete setting: %s\n", settingName);
+    return false;
+  }
+
+  //Serial.printf("%d: %d.%d.%d - %s\n", deviceType, address, muxAddress, portNumber, deviceSettingName);
+  //Serial.flush();
+
+  //Find the device in the list that has this device type and address
+  void *deviceConfigPtr = getConfigPointer(deviceType, address, muxAddress, portNumber);
+  if (deviceConfigPtr == NULL)
+  {
+    //Serial.printf("Setting in file found but no matching device on bus is available: %s\n", settingName);
+    //Serial.flush();
+  }
+  else
+  {
+    switch (deviceType)
+    {
+      case DEVICE_MULTIPLEXER:
+        {
+          Serial.println("There are no known settings for a multiplexer to load.");
+        }
+        break;
+      case DEVICE_DISTANCE_VL53L1X:
+        {
+          struct_VL53L1X *nodeSetting = (struct_VL53L1X *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+
+          //Apply the appropriate settings
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logDistance") == 0)
+            nodeSetting->logDistance = d;
+          else if (strcmp(deviceSettingName, "logRangeStatus") == 0)
+            nodeSetting->logRangeStatus = d;
+          else if (strcmp(deviceSettingName, "logSignalRate") == 0)
+            nodeSetting->logSignalRate = d;
+          else if (strcmp(deviceSettingName, "distanceMode") == 0)
+            nodeSetting->distanceMode = d;
+          else if (strcmp(deviceSettingName, "intermeasurementPeriod") == 0)
+            nodeSetting->intermeasurementPeriod = d;
+          else if (strcmp(deviceSettingName, "offset") == 0)
+            nodeSetting->offset = d;
+          else if (strcmp(deviceSettingName, "crosstalk") == 0)
+            nodeSetting->crosstalk = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PHT_BME280:
+        {
+          struct_BME280 *nodeSetting = (struct_BME280 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+
+          //Apply the appropriate settings
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logHumidity") == 0)
+            nodeSetting->logHumidity = d;
+          else if (strcmp(deviceSettingName, "logPressure") == 0)
+            nodeSetting->logPressure = d;
+          else if (strcmp(deviceSettingName, "logAltitude") == 0)
+            nodeSetting->logAltitude = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_VOC_CCS811:
+        {
+          struct_CCS811 *nodeSetting = (struct_CCS811 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+
+          //Apply the appropriate settings
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logTVOC") == 0)
+            nodeSetting->logTVOC = d;
+          else if (strcmp(deviceSettingName, "logCO2") == 0)
+            nodeSetting->logCO2 = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+
+      default:
+        Serial.printf("Unknown device type: %d\n", deviceType);
+        Serial.flush();
+        break;
+    }
+  }
   return (true);
 }

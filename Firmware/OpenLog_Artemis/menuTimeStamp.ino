@@ -13,7 +13,7 @@ void menuTimeStamp()
     else
       sprintf(rtcDate, "%02d/%02d/20%02d", myRTC.dayOfMonth, myRTC.month, myRTC.year);
 
-    Serial.print((String)rtcDate);
+    Serial.print(rtcDate);
     Serial.print(" ");
 
     char rtcTime[12]; //09:14:37.41
@@ -23,7 +23,7 @@ void menuTimeStamp()
       if (adjustedHour > 12) adjustedHour -= 12;
     }
     sprintf(rtcTime, "%02d:%02d:%02d.%02d", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-    Serial.println((String)rtcTime);
+    Serial.println(rtcTime);
 
     Serial.print("1) Log Date: ");
     if (settings.logDate == true) Serial.println("Enabled");

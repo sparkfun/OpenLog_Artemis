@@ -30,21 +30,33 @@ bool detectQwiicDevices()
   //24k causes a bunch of unknown devices to be falsely detected.
   //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
+  //Do a prelim scan to see if anything is out there
+  for (uint8_t address = 1 ; address < 127 ; address++)
+  {
+    qwiic.beginTransmission(address);
+    if (qwiic.endTransmission() == 0)
+    {
+      somethingDetected = true;
+      break;
+    }
+  }
+  if (somethingDetected == false) return (false);
+
+  Serial.println("Scanning I2C bus...");
+
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
   delay(100); //SCD30 required >50ms to turn on
 
   //First scan for Muxes. Valid addresses are 0x70 to 0x77.
   //If any are found, they will be begin()'d causing their ports to turn off
-  Serial.println("Scanning for Muxes");
+  //Serial.println("Scanning for Muxes");
   uint8_t muxCount = 0;
   for (uint8_t address = 0x70 ; address < 0x78 ; address++)
   {
     qwiic.beginTransmission(address);
     if (qwiic.endTransmission() == 0)
     {
-      somethingDetected = true;
-
       deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType == DEVICE_MULTIPLEXER)
       {
@@ -55,28 +67,29 @@ bool detectQwiicDevices()
   }
 
   //Before going into sub branches, complete the scan of the main branch for all devices
-  Serial.println("Scanning main bus");
+  //Serial.println("Scanning main bus");
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
     qwiic.beginTransmission(address);
     if (qwiic.endTransmission() == 0)
     {
-      somethingDetected = true;
       deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType != DEVICE_UNKNOWN_DEVICE)
       {
         if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
-          Serial.printf("-Added %s at address 0x%02X\n", getDeviceName(foundType), address);
+        {
+          //Serial.printf("-Added %s at address 0x%02X\n", getDeviceName(foundType), address);
+        }
       }
       else
-        Serial.printf("-Device %s failed testing at address 0x%02X\n", getDeviceName(foundType), address);
+        Serial.printf("-Device %s failed identification at address 0x%02X\n", getDeviceName(foundType), address);
     }
   }
 
   //If we have muxes, begin scanning their sub nets
   if (muxCount > 0)
   {
-    Serial.println("Scanning sub nets");
+    //Serial.println("Scanning sub nets");
 
     //Step into first mux and begin stepping through ports
     for (int muxNumber = 0 ; muxNumber < muxCount ; muxNumber++)
@@ -101,29 +114,25 @@ bool detectQwiicDevices()
             if (foundType != DEVICE_UNKNOWN_DEVICE)
             {
               if (addDevice(foundType, address, muxNode->address, portNumber) == true) //Record this device, with mux port specifics.
-                Serial.printf("-Added %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+              {
+                //Serial.printf("-Added %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+              }
             }
-            else
-              Serial.printf("-%s found at address 0x%02X\n", getDeviceName(foundType), address);
           } //End I2c check
         } //End I2C scanning
       } //End mux port stepping
     } //End mux stepping
   } //End mux > 0
 
-  if (somethingDetected)
-  {
-    //createClassesForDetectedDevices();
-    //beginDetectedDevices(); //Step through the linked list and begin() everything in our map
-    printDetectedDevices();
-  }
+  bubbleSortDevices(head);
+  //printDetectedDevices();
+  qwiic.setPullups(0); //We've detected something on the bus so disable pullups
 
-  if (somethingDetected) qwiic.setPullups(0); //We've detected something on the bus so disable pullups
+  determineMaxI2CSpeed(); //Try for 400kHz but reduce to 100kHz or low if certain devices are attached
 
-  Serial.println("Autodetect complete");
-  Serial.flush();
+  //Serial.println("Autodetect complete");
 
-  return (somethingDetected);
+  return (true);
 }
 
 void menuAttachedDevices()
@@ -143,32 +152,36 @@ void menuAttachedDevices()
 
     while (temp != NULL)
     {
-      char strAddress[50];
-      if (temp->muxAddress == 0)
-        sprintf(strAddress, "(0x%02X)", temp->address);
-      else
-        sprintf(strAddress, "(0x%02X)(Mux:0x%02X Port:%d)", temp->muxAddress, temp->portNumber, temp->address);
-
-      char strDeviceMenu[10];
-      sprintf(strDeviceMenu, "%d)", availableDevices++ + 1);
-
-      switch (temp->deviceType)
+      //Exclude multiplexers from the list
+      if (temp->deviceType != DEVICE_MULTIPLEXER)
       {
-        case DEVICE_MULTIPLEXER:
-          Serial.printf("%s Multiplexer %s\n", strDeviceMenu, strAddress);
-          break;
-        case DEVICE_DISTANCE_VL53L1X:
-          Serial.printf("%s VL53L1X Distance Sensor %s\n", strDeviceMenu, strAddress);
-          break;
-        case DEVICE_PHT_BME280:
-          Serial.printf("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\n", strDeviceMenu, strAddress);
-          break;
-        case DEVICE_VOC_CCS811:
-          Serial.printf("%s CCS811 tVOC and CO2 Sensor %s\n", strDeviceMenu, strAddress);
-          break;
-        default:
-          Serial.printf("Unknown device type %d in menuAttachedDevices\n", temp->deviceType);
-          break;
+        char strAddress[50];
+        if (temp->muxAddress == 0)
+          sprintf(strAddress, "(0x%02X)", temp->address);
+        else
+          sprintf(strAddress, "(0x%02X)(Mux:0x%02X Port:%d)", temp->address, temp->muxAddress, temp->portNumber);
+
+        char strDeviceMenu[10];
+        sprintf(strDeviceMenu, "%d)", availableDevices++ + 1);
+
+        switch (temp->deviceType)
+        {
+          case DEVICE_MULTIPLEXER:
+            //Serial.printf("%s Multiplexer %s\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_DISTANCE_VL53L1X:
+            Serial.printf("%s VL53L1X Distance Sensor %s\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_PHT_BME280:
+            Serial.printf("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_VOC_CCS811:
+            Serial.printf("%s CCS811 tVOC and CO2 Sensor %s\n", strDeviceMenu, strAddress);
+            break;
+          default:
+            Serial.printf("Unknown device type %d in menuAttachedDevices\n", temp->deviceType);
+            break;
+        }
       }
 
       temp = temp->next;
@@ -192,7 +205,7 @@ void menuAttachedDevices()
     }
     else if (nodeNumber == availableDevices)
     {
-      //menuConfigure_QwiicBus();
+      menuConfigure_QwiicBus();
     }
     else if (nodeNumber == STATUS_PRESSED_X)
       break;
@@ -493,8 +506,8 @@ void menuConfigure_CCS811(void *configPtr)
 }
 /*
 
-void menuConfigure_LPS25HB()
-{
+  void menuConfigure_LPS25HB()
+  {
   while (1)
   {
     Serial.println();
@@ -542,10 +555,10 @@ void menuConfigure_LPS25HB()
   }
 
   qwiicOnline.LPS25HB = false; //Mark as offline so it will be started with new settings
-}
+  }
 
-void menuConfigure_NAU7802()
-{
+  void menuConfigure_NAU7802()
+  {
   while (1)
   {
     Serial.println();
@@ -646,10 +659,10 @@ void menuConfigure_NAU7802()
   }
 
   qwiicOnline.NAU7802 = false; //Mark as offline so it will be started with new settings
-}
+  }
 
-void menuConfigure_uBlox()
-{
+  void menuConfigure_uBlox()
+  {
   while (1)
   {
     Serial.println();
@@ -766,10 +779,10 @@ void menuConfigure_uBlox()
   }
 
   qwiicOnline.uBlox = false; //Mark as offline so it will be started with new settings
-}
+  }
 
-void menuConfigure_MCP9600()
-{
+  void menuConfigure_MCP9600()
+  {
   while (1)
   {
     Serial.println();
@@ -817,10 +830,10 @@ void menuConfigure_MCP9600()
   }
 
   qwiicOnline.MCP9600 = false; //Mark as offline so it will be started with new settings
-}
+  }
 
-void menuConfigure_VCNL4040()
-{
+  void menuConfigure_VCNL4040()
+  {
   while (1)
   {
     Serial.println();
@@ -919,12 +932,12 @@ void menuConfigure_VCNL4040()
   }
 
   qwiicOnline.VCNL4040 = false; //Mark as offline so it will be started with new settings
-}
+  }
 
 
 
-void menuConfigure_TMP117()
-{
+  void menuConfigure_TMP117()
+  {
   while (1)
   {
     Serial.println();
@@ -949,11 +962,11 @@ void menuConfigure_TMP117()
   }
 
   qwiicOnline.TMP117 = false; //Mark as offline so it will be started with new settings
-}
+  }
 
 
-void menuConfigure_SGP30()
-{
+  void menuConfigure_SGP30()
+  {
   while (1)
   {
     Serial.println();
@@ -1001,10 +1014,10 @@ void menuConfigure_SGP30()
   }
 
   qwiicOnline.SGP30 = false; //Mark as offline so it will be started with new settings
-}
+  }
 
-void menuConfigure_VEML6075()
-{
+  void menuConfigure_VEML6075()
+  {
   while (1)
   {
     Serial.println();
@@ -1058,10 +1071,10 @@ void menuConfigure_VEML6075()
   }
 
   qwiicOnline.VEML6075 = false; //Mark as offline so it will be started with new settings
-}
+  }
 
-void menuConfigure_MS5637()
-{
+  void menuConfigure_MS5637()
+  {
   while (1)
   {
     Serial.println();
@@ -1109,10 +1122,10 @@ void menuConfigure_MS5637()
   }
 
   qwiicOnline.MS5637 = false; //Mark as offline so it will be started with new settings
-}
+  }
 
-void menuConfigure_SCD30()
-{
+  void menuConfigure_SCD30()
+  {
   while (1)
   {
     Serial.println();
@@ -1210,10 +1223,10 @@ void menuConfigure_SCD30()
   }
 
   qwiicOnline.SCD30 = false; //Mark as offline so it will be started with new settings
-}
+  }
 
-void menuConfigure_MS8607()
-{
+  void menuConfigure_MS8607()
+  {
   while (1)
   {
     Serial.println();
@@ -1333,5 +1346,5 @@ void menuConfigure_MS8607()
   }
 
   qwiicOnline.MS8607 = false; //Mark as offline so it will be started with new settings
-}
+  }
 */

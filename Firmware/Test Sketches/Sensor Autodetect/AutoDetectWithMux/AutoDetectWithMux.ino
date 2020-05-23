@@ -102,7 +102,11 @@ void setup()
 
   detectQwiicDevices();
 
-  //loadSettingsFromFile();
+  loadDeviceSettingsFromFile();
+
+  bubbleSortDevices(head);
+
+  printDetectedDevices();
 
   printHelperText();
 }
@@ -122,13 +126,80 @@ void loop()
     while (Serial.available()) Serial.read();
     menuAttachedDevices();
 
-    recordSettingsToFile();
+    recordDeviceSettingsToFile();
 
     delay(10);
     while (Serial.available()) Serial.read();
   }
 }
 
+//Bubble sort the given linked list
+//https://www.geeksforgeeks.org/c-program-bubble-sort-linked-list/
+void bubbleSortDevices(struct node *start)
+{
+  int swapped, i;
+  struct node *ptr1;
+  struct node *lptr = NULL;
+
+  //Checking for empty list
+  if (start == NULL) return;
+
+  do
+  {
+    swapped = 0;
+    ptr1 = start;
+
+    while (ptr1->next != lptr)
+    {
+      if (ptr1->address > ptr1->next->address)
+      {
+        swap(ptr1, ptr1->next);
+        swapped = 1;
+      }
+      ptr1 = ptr1->next;
+    }
+    lptr = ptr1;
+  }
+  while (swapped);
+}
+
+//function to swap data of two nodes a and b
+void swap(struct node *a, struct node *b)
+{
+//  int temp = a->data;
+//  a->data = b->data;
+//  b->data = temp;
+
+  node temp;
+
+  temp.deviceType = a->deviceType;
+  temp.address = a->address;
+  temp.portNumber = a->portNumber;
+  temp.muxAddress = a->muxAddress;
+  temp.online = a->online;
+  temp.classPtr = a->classPtr;
+  temp.configPtr = a->configPtr;
+  //temp.next = a->next; //Nope
+
+  a->deviceType = b->deviceType;
+  a->address = b->address;
+  a->portNumber = b->portNumber;
+  a->muxAddress = b->muxAddress;
+  a->online = b->online;
+  a->classPtr = b->classPtr;
+  a->configPtr = b->configPtr;
+
+  b->deviceType = temp.deviceType;
+  b->address = temp.address;
+  b->portNumber = temp.portNumber;
+  b->muxAddress = temp.muxAddress;
+  b->online = temp.online;
+  b->classPtr = temp.classPtr;
+  b->configPtr = temp.configPtr;
+  
+}
+
+//Step through the node list and print helper text for the enabled readings
 void printHelperText()
 {
   char helperText[1000];
