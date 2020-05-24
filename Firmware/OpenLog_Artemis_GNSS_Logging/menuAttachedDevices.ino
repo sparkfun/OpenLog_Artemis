@@ -180,7 +180,7 @@ void menuConfigure_uBlox()
       if (settings.sensor_uBlox.logUBXNAVSTATUS == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("18) Log UBX-NAV-TIMEUTC   (UTC Time Solution) (Used to sync the OLA RTC)       : "));
+      Serial.print(F("18) Log UBX-NAV-TIMEUTC   (UTC Time Solution) (** Used to sync the OLA RTC **) : "));
       if (settings.sensor_uBlox.logUBXNAVTIMEUTC == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
@@ -200,7 +200,7 @@ void menuConfigure_uBlox()
       if (settings.sensor_uBlox.logUBXTIMTM2 == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      if (minfo.HPG == true)
+      if ((minfo.HPG == true) || (minfo.HDG == true) || (minfo.ADR == true) || (minfo.LAP == true))
       {
         Serial.print(F("50) Log UBX-NAV-RELPOSNED (Relative Position North/East/Down)                  : "));
         if (settings.sensor_uBlox.logUBXNAVRELPOSNED == true) Serial.println(F("Enabled"));
@@ -269,7 +269,7 @@ void menuConfigure_uBlox()
         settings.sensor_uBlox.logUBXRXMSFRBX ^= 1;
       else if (incoming == 40)
         settings.sensor_uBlox.logUBXTIMTM2 ^= 1;
-      else if ((incoming == 50) && (minfo.HPG == true))
+      else if ((incoming == 50) && ((minfo.HPG == true) || (minfo.HDG == true) || (minfo.ADR == true) || (minfo.LAP == true)))
         settings.sensor_uBlox.logUBXNAVRELPOSNED ^= 1;
       else if ((incoming == 60) && ((minfo.HPG == true) || (minfo.TIM == true) || (minfo.FTS == true)))
         settings.sensor_uBlox.logUBXRXMRAWX ^= 1;

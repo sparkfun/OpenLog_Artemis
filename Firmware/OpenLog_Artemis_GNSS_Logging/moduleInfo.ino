@@ -32,6 +32,8 @@ bool getModuleInfo(uint16_t maxWait)
       minfo.extension[i][0] = 0;
   minfo.protVerMajor = -1;
   minfo.protVerMinor = -1;
+  String newMod = "UNKNOWN";
+  newMod.toCharArray(minfo.mod,7);
   minfo.SPG = false;
   minfo.HPG = false;
   minfo.ADR = false;
@@ -69,7 +71,8 @@ bool getModuleInfo(uint16_t maxWait)
       int starts_at = -1;
       int ends_at = -1;
       starts_at = ver_str.indexOf("FWVER="); // See is message contains "FWVER="
-      if (starts_at >= 0) { // If it does:
+      if (starts_at >= 0) // If it does:
+      {
         ends_at = ver_str.indexOf(" ", starts_at); // Find the following " "
         if (ends_at > starts_at) { // If the message contains both "FWVER=" and " "
           String fwver_str = ver_str.substring((starts_at + 6),ends_at); // Extract the text after the "="
@@ -93,7 +96,8 @@ bool getModuleInfo(uint16_t maxWait)
       starts_at = -1;
       ends_at = -1;
       starts_at = ver_str.indexOf("PROTVER="); // See is message contains "PROTVER="
-      if (starts_at >= 0) { // If it does:
+      if (starts_at >= 0) // If it does:
+      {
         ends_at = ver_str.indexOf(".", starts_at); // Find the following "."
         if (ends_at > starts_at) { // If the message contains both "PROTVER=" and "."
           String protver_str = ver_str.substring((starts_at + 8),ends_at); // Extract the value after the "="
@@ -105,6 +109,20 @@ bool getModuleInfo(uint16_t maxWait)
             Serial.print(F("getModuleInfo: "));
             Serial.println(ver_str);
           }
+        }
+      }
+      
+      //Check for MOD
+      starts_at = -1;
+      starts_at = ver_str.indexOf("MOD="); // See is message contains "MOD="
+      if (starts_at >= 0) // If it does:
+      {
+        newMod = ver_str.substring((starts_at + 4),(starts_at + 12)); // Extract the 7 chars after the "="
+        newMod.toCharArray(minfo.mod,8);
+        if (settings.printMajorDebugMessages == true)
+        {
+          Serial.print(F("getModuleInfo: MOD="));
+          Serial.println(minfo.mod);
         }
       }
       

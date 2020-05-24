@@ -21,7 +21,11 @@
 //We only discard ACK/NACKs when streaming messages to SD.
 
 //Storage for the incoming I2C data
-RingBufferN<16384> GNSSbuffer;
+//** Test carefully when changing the size of GNSSbuffer **
+//** The storeData: Max bufAvail: debug messages will help **
+//** The buffer needs to be big enough to buffer RAWX data from all constellations **
+//** with a flaky SD card! **
+RingBufferN<24576> GNSSbuffer;
 
 //Storage for a single UBX frame (so we can discard ACK/NACKs)
 //Needs to be large enough to hold the largest RAWX frame (8 + 16 + (32 * numMeas))
@@ -437,12 +441,7 @@ bool storeData(void)
         SDpointer = 0; //Reset the SDpointer
         digitalWrite(PIN_STAT_LED, HIGH); //Flash the LED while writing
         gnssDataFile.write(SDbuffer, SDpacket); //Record the buffer to the card
-//        if (rtcHasBeenSyncd == true)
-//        {
-//          myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
-//          //Update the file write time
-//          gnssDataFile.timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
-//        }
+//        updateDataFileWrite(); //Update the file write time stamp
         digitalWrite(PIN_STAT_LED, LOW);
         keep_going = false; //Stop now that we have written one packet
       }
@@ -463,14 +462,7 @@ bool storeData(void)
         SDpointer = 0; //Reset the SDpointer
       }
       gnssDataFile.sync(); //sync the file system
-//      if (rtcHasBeenSyncd == true)
-//      {
-//        myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
-//        //Update the file access time
-//        gnssDataFile.timestamp(T_ACCESS, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
-//        //Update the file write time
-//        gnssDataFile.timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
-//      }
+//      updateDataFileAccess(); //Update the file access time stamp
       digitalWrite(PIN_STAT_LED, LOW);
     }
 

@@ -64,7 +64,9 @@ bool beginSensors()
         Serial.print(F(" LAP=")); //Lane accurate (ZED-F9R)
         Serial.print(minfo.LAP);
         Serial.print(F(" HDG=")); //Heading (ZED-F9H)
-        Serial.println(minfo.HDG);
+        Serial.print(minfo.HDG);
+        Serial.print(F(" MOD=")); //Module type
+        Serial.println(minfo.mod);
       }
 
       //Check the PROTVER is >= 27
@@ -184,11 +186,48 @@ bool beginSensors()
         }
       }
 
+      //Update settings.sensor_uBlox.minMeasIntervalGPS and settings.sensor_uBlox.minMeasIntervalAll according to module type
+      if (strcmp(minfo.mod,"ZED-F9P") == 0) //Is this a ZED-F9P?
+      {
+        settings.sensor_uBlox.minMeasIntervalGPS = 50; //ZED-F9P can do 20Hz RTK
+        settings.sensor_uBlox.minMeasIntervalAll = 125; //ZED-F9P can do 8Hz RTK
+      }
+      else if (strcmp(minfo.mod,"ZED-F9K") == 0) //Is this a ZED-F9K?
+      {
+        settings.sensor_uBlox.minMeasIntervalGPS = 33; //ZED-F9K can do 30Hz
+        settings.sensor_uBlox.minMeasIntervalAll = 100; //ZED-F9K can do 10Hz (Guess!)
+      }
+      else if (strcmp(minfo.mod,"ZED-F9R") == 0) //Is this a ZED-F9R?
+      {
+        settings.sensor_uBlox.minMeasIntervalGPS = 33; //ZED-F9R can do 30Hz
+        settings.sensor_uBlox.minMeasIntervalAll = 100; //ZED-F9R can do 10Hz (Guess!)
+      }
+      else if (strcmp(minfo.mod,"ZED-F9H") == 0) //Is this a ZED-F9H?
+      {
+        settings.sensor_uBlox.minMeasIntervalGPS = 33; //ZED-F9H can do 30Hz
+        settings.sensor_uBlox.minMeasIntervalAll = 100; //ZED-F9H can do 10Hz (Guess!)
+      }
+      else if (strcmp(minfo.mod,"ZED-F9T") == 0) //Is this a ZED-F9T?
+      {
+        settings.sensor_uBlox.minMeasIntervalGPS = 50; //ZED-F9T can do 20Hz
+        settings.sensor_uBlox.minMeasIntervalAll = 125; //ZED-F9T can do 8Hz
+      }
+      else if (strcmp(minfo.mod,"NEO-M9N") == 0) //Is this a NEO-M9N?
+      {
+        settings.sensor_uBlox.minMeasIntervalGPS = 40; //NEO-M9N can do 25Hz
+        settings.sensor_uBlox.minMeasIntervalAll = 40; //NEO-M9N can do 25Hz
+      }
+      else
+      {
+        settings.sensor_uBlox.minMeasIntervalGPS = 50; //Default to 20Hz
+        settings.sensor_uBlox.minMeasIntervalAll = 125; //Default to 8Hz
+      }
+
       //Calculate measurement rate
       uint16_t measRate;
-      if (settings.usBetweenReadings < (((uint32_t)settings.sensor_uBlox.minMeasInterval) * 1000)) // Check if usBetweenReadings is too low
+      if (settings.usBetweenReadings < (((uint32_t)settings.sensor_uBlox.minMeasIntervalGPS) * 1000)) // Check if usBetweenReadings is too low
       {
-        measRate = settings.sensor_uBlox.minMeasInterval;
+        measRate = settings.sensor_uBlox.minMeasIntervalGPS;
       }
       else if (settings.usBetweenReadings > (0xFFFF * 1000)) // Check if usBetweenReadings is too high
       {
@@ -199,10 +238,9 @@ bool beginSensors()
         measRate = (uint16_t)(settings.usBetweenReadings / 1000); // Convert usBetweenReadings to ms
       }
       
-      //If query rate is higher than 10Hz then disable all constellations except GPS
-      //If query rate is higher than 5Hz and RAWX is enabled then also disable all constellations except GPS
-      //TO DO: adjust these limits according to module type?
-      if ((measRate < 100) || ((measRate < 200) && (settings.sensor_uBlox.logUBXRXMRAWX == true)))
+      //If measurement interval is less than minMeasIntervalAll then disable all constellations except GPS
+      //If query rate is higher than 5Hz and RAWX is enabled then also disable all constellations except GPS to limit I2C traffic
+      if ((measRate < settings.sensor_uBlox.minMeasIntervalAll) || ((measRate < settings.sensor_uBlox.minMeasIntervalRAWXAll) && (settings.sensor_uBlox.logUBXRXMRAWX == true)))
       {
         gpsSensor_ublox.newCfgValset8(0x10310021, 0, VAL_LAYER_RAM); // CFG-SIGNAL-GAL_ENA : Disable Galileo (in RAM only)
         gpsSensor_ublox.addCfgValset8(0x10310022, 0); // CFG-SIGNAL-BDS_ENA : Disable BeiDou
@@ -299,24 +337,7 @@ void openNewLogFile()
       Serial.println(gnssDataFileName);
       gnssDataFile.sync();
 
-      if (rtcHasBeenSyncd == true) //Update the write and access times if RTC is valid
-      {
-        myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
-        //Update the file access time
-        bool result = gnssDataFile.timestamp(T_ACCESS, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
-        if (settings.printMinorDebugMessages == true)
-        {
-          Serial.print(F("openNewLogFile: gnssDataFile.timestamp T_ACCESS returned "));
-          Serial.println(result);
-        }
-        //Update the file write time
-        result = gnssDataFile.timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
-        if (settings.printMinorDebugMessages == true)
-        {
-          Serial.print(F("openNewLogFile: gnssDataFile.timestamp T_WRITE returned "));
-          Serial.println(result);
-        }
-      }
+      updateDataFileAccess(); //Update the file access time stamp
 
       gnssDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
 
@@ -378,24 +399,7 @@ void resetGNSS()
       Serial.println(gnssDataFileName);
       gnssDataFile.sync();
 
-      if (rtcHasBeenSyncd == true) //Update the write and access times if RTC is valid
-      {
-        myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
-        //Update the file access time
-        bool result = gnssDataFile.timestamp(T_ACCESS, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
-        if (settings.printMinorDebugMessages == true)
-        {
-          Serial.print(F("resetGNSS: gnssDataFile.timestamp T_ACCESS returned "));
-          Serial.println(result);
-        }
-        //Update the file write time
-        result = gnssDataFile.timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
-        if (settings.printMinorDebugMessages == true)
-        {
-          Serial.print(F("resetGNSS: gnssDataFile.timestamp T_WRITE returned "));
-          Serial.println(result);
-        }
-      }
+      updateDataFileAccess(); //Update the file access time stamp
 
       gnssDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
 

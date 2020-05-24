@@ -35,13 +35,18 @@ struct struct_uBlox {
   bool enableUART1 = true;
   bool enableUART2 = true;
   bool enableSPI = false;
-  uint16_t minMeasInterval = 33; //Minimum measurement interval in ms. TO DO: set this according to module type
+  uint16_t minMeasIntervalGPS = 50; //Minimum measurement interval in ms when tracking GPS only (20Hz for ZED-F9P)
+  uint16_t minMeasIntervalAll = 125; //Minimum measurement interval in ms when tracking all constallations (8Hz for ZED-F9P)
+  //High-rate RAWX logging is a tricky thing. The ZED-F9P seems happy to log RAWX for all constellations slightly above 5Hz but only if the USB, UARTs and SPI are disabled.
+  //I suspect it is more to do with not overloading the I2C bus, rather than not overloading the module core. RAWX frames can be over 2KB in size.
+  //At 5Hz we are getting very close to overloading the I2C bus at 100kHz. TO DO: set this according to module type?
+  uint16_t minMeasIntervalRAWXAll = 200; //Minimum measurement interval in ms when tracking all constallations and logging RAWX
   uint8_t ubloxI2Caddress = ADR_UBLOX; //Let's store this just in case we want to change it at some point with CFG-I2C-ADDRESS (0x20510001)
 };
 
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
-  int sizeOfSettings = 0;
+  int sizeOfSettings = 0; //sizeOfSettings **must** be the first entry
   int nextSerialLogNumber = 1;
   int nextDataLogNumber = 1;
   uint64_t usBetweenReadings = 1000000ULL; //1000,000us = 1000ms = 1 readings per second.
@@ -49,12 +54,12 @@ struct struct_settings {
   uint64_t usSleepDuration = 0ULL; //0us = do not sleep (continuous logging)
   bool openNewLogFile = true; //false;
   bool enableSD = true;
-  bool enableTerminalOutput = true; //false;
+  bool enableTerminalOutput = true;
   bool logData = true;
   int serialTerminalBaudRate = 115200;
   bool showHelperText = true;
-  bool printMajorDebugMessages = true; //false;
-  bool printMinorDebugMessages = true; //false;
+  bool printMajorDebugMessages = false;
+  bool printMinorDebugMessages = false;
   bool powerDownQwiicBusBetweenReads = false;
   int qwiicBusMaxSpeed = 400000;
   struct_uBlox sensor_uBlox;

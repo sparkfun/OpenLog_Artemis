@@ -77,7 +77,7 @@ void menuLogRate()
     }
     else if (incoming == '4')
     {
-      float rateLimit = 1.0 / (((float)settings.sensor_uBlox.minMeasInterval) / 1000.0);
+      float rateLimit = 1.0 / (((float)settings.sensor_uBlox.minMeasIntervalGPS) / 1000.0);
       int maxOutputRate = (int)rateLimit;
 
       Serial.printf("How many readings per second would you like to log? (Current max is %d): ", maxOutputRate);
@@ -104,6 +104,7 @@ void menuLogRate()
     else if (incoming == '6')
     {
       uint64_t secsBetweenReads = settings.usBetweenReadings / 1000000UL;
+      if (secsBetweenReads < 5) secsBetweenReads = 5; //Let's be sensible about this. The module will take ~2 secs to do a hot start anyway.
       Serial.printf("How many seconds would you like to log for? (%d to 6,000,000,000):", secsBetweenReads);
       uint64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
       if ((tempSeconds < secsBetweenReads) || tempSeconds > 6000000000ULL)
