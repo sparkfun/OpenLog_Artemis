@@ -1,4 +1,4 @@
- /*
+/*
   OpenLog Artemis
   By: Nathan Seidle
   SparkFun Electronics
@@ -12,18 +12,28 @@
   adjusted by connecting at 115200bps.
 
   v1.0 Power Consumption:
-  * Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
-  * 10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
+   Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
+   10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
 
-TODO:
+  TODO:
   (done) Create settings file for sensor. Load after qwiic bus is scanned.
   (done on larger Strings) Remove String dependencies.
   (done) Bubble sort list of devices.
   (done) Remove listing for muxes.
   Currently device settings are not recorded to EEPROM, only deviceSettings.txt
   (done) Change settings extension to txt
-  Fix max I2C speed to use linked list
+  (done) Fix max I2C speed to use linked list
   Is there a better way to dynamically create size of outputData array so we don't every get larger than X sensors outputting?
+
+  Verify the printing of all sensors is %f, %d correct
+  (done) Add begin function seperate from everything, call after wakeup instead of detect
+  Add counter to output to look for memory leaks on long runs
+  (done) Add AHT20 support
+  (done) Add SHTC3 support
+  Find way to store device configs into EEPROM
+  Log four pressure sensors and graph them on plotter
+  Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
+  Test NAU7802s
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -108,25 +118,26 @@ const byte PIN_IMU_INT = 37;
 ICM_20948_SPI myICM;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-//Header files for all possible Qwiic sensors
+//Header files for all compatible Qwiic sensors
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 #include "SparkFun_I2C_Mux_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_I2C_Mux
 #include "SparkFunCCS811.h" //Click here to get the library: http://librarymanager/All#SparkFun_CCS811
 #include "SparkFun_VL53L1X.h" //Click here to get the library: http://librarymanager/All#SparkFun_VL53L1X
 #include "SparkFunBME280.h" //Click here to get the library: http://librarymanager/All#SparkFun_BME280
-
-//#include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
-//#include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
-//#include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
-//#include "SparkFun_MCP9600.h" //Click here to get the library: http://librarymanager/All#SparkFun_MCP9600
-//#include "SparkFun_TMP117.h" //Click here to get the library: http://librarymanager/All#SparkFun_TMP117
-//#include "SparkFun_MS5637_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MS5637
-//#include "SparkFun_LPS25HB_Arduino_Library.h"  //Click here to get the library: http://librarymanager/All#SparkFun_LPS25HB
-//#include "SparkFun_VEML6075_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VEML6075
-//#include "SparkFun_SGP30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SGP30
-//#include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
-//#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+#include "SparkFun_LPS25HB_Arduino_Library.h"  //Click here to get the library: http://librarymanager/All#SparkFun_LPS25HB
+#include "SparkFun_VEML6075_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VEML6075
+#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+#include "SparkFun_MCP9600.h" //Click here to get the library: http://librarymanager/All#SparkFun_MCP9600
+#include "SparkFun_SGP30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SGP30
+#include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
+#include "SparkFun_MS5637_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MS5637
+#include "SparkFun_TMP117.h" //Click here to get the library: http://librarymanager/All#SparkFun_TMP117
+#include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
+#include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
+#include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
+#include "SparkFun_Qwiic_Humidity_AHT20.h" //Click here to get the library: http://librarymanager/All#Qwiic_Humidity_AHT20 by SparkFun
+#include "SparkFun_SHTC3.h" // Click here to get the library: http://librarymanager/All#SparkFun_SHTC3
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -134,7 +145,7 @@ ICM_20948_SPI myICM;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 uint64_t measurementStartTime; //Used to calc the actual update rate. Max is ~80,000,000ms in a 24 hour period.
 unsigned long measurementCount = 0; //Used to calc the actual update rate.
-char outputData[512*2]; //Factor of 512 for easier recording to SD in 512 chunks
+char outputData[512 * 2]; //Factor of 512 for easier recording to SD in 512 chunks
 unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
 unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
@@ -194,7 +205,13 @@ void setup() {
 
   if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
 
-  if(detectQwiicDevices() == false) msg("No Qwiic devices detected"); //159 - 865ms but varies based on number of devices attached
+  if (detectQwiicDevices() == true) //159 - 865ms but varies based on number of devices attached
+  {
+    beginQwiicDevices(); //Begin() each device in the node list
+    printOnlineDevice();
+  }
+  else
+    msg("No Qwiic devices detected");
 
   loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
 

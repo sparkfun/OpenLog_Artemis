@@ -16,8 +16,10 @@ typedef enum
   DEVICE_VOC_CCS811,
   DEVICE_VOC_SGP30,
   DEVICE_CO2_SCD30,
-  DEVICE_PRESSURE_MS8607,
+  DEVICE_PHT_MS8607,
   DEVICE_TEMPERATURE_MCP9600,
+  DEVICE_HUMIDITY_AHT20,
+  DEVICE_HUMIDITY_SHTC3,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -54,7 +56,7 @@ struct struct_multiplexer {
 struct struct_LPS25HB {
   bool log = true;
   bool logPressure = true;
-  bool logTemp = true;
+  bool logTemperature = true;
 };
 
 struct struct_NAU7802 {
@@ -67,8 +69,8 @@ struct struct_NAU7802 {
 
 struct struct_MCP9600 {
   bool log = true;
-  bool logTemp = true;
-  bool logAmbientTemp = true;
+  bool logTemperature= true;
+  bool logAmbientTemperature = true;
 };
 
 struct struct_VCNL4040 {
@@ -112,13 +114,13 @@ struct struct_VL53L1X {
   int crosstalk = 0;
 };
 
-#define TMP1117_MODE_CONTINUOUS 0
-#define TMP1117_MODE_SHUTDOWN 1
-#define TMP1117_MODE_ONESHOT 2
+#define TMP117_MODE_CONTINUOUS 0
+#define TMP117_MODE_SHUTDOWN 1
+#define TMP117_MODE_ONESHOT 2
 struct struct_TMP117 {
   bool log = true;
-  bool logTemp = true;
-  int conversionMode = TMP1117_MODE_CONTINUOUS;
+  bool logTemperature= true;
+  int conversionMode = TMP117_MODE_CONTINUOUS;
   int conversionAverageMode = 0; //Setup for 15.5ms reads
   int conversionCycle = 0;
 };
@@ -153,7 +155,7 @@ struct struct_VEML6075 {
 struct struct_MS5637 {
   bool log = true;
   bool logPressure = true;
-  bool logTemp = true;
+  bool logTemperature= true;
 };
 
 struct struct_SCD30 {
@@ -175,6 +177,18 @@ struct struct_MS8607 {
   bool enableHeater = false; // The TE examples say that get_compensated_humidity and get_dew_point will only work if the heater is OFF
   MS8607_pressure_resolution pressureResolution = MS8607_pressure_resolution_osr_8192; //17ms per reading, 0.016mbar resolution
   MS8607_humidity_resolution humidityResolution = MS8607_humidity_resolution_12b; //12-bit
+};
+
+struct struct_AHT20 {
+  bool log = true;
+  bool logHumidity = true;
+  bool logTemperature = true;
+};
+
+struct struct_SHTC3 {
+  bool log = true;
+  bool logHumidity = true;
+  bool logTemperature = true;
 };
 
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.

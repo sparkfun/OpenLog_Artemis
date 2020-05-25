@@ -71,7 +71,7 @@ void goToSleep()
   uint32_t msToSleep = settings.usBetweenReadings / 1000;
   uint32_t sysTicksToSleep = msToSleep * 32768L / 1000; //Counter/Timer 6 will use the 32kHz clock
 
-  //sysTicksToSleep = 100 * 32768L / 1000; //For testing!
+  sysTicksToSleep = 100 * 32768L / 1000; //For testing! Sleep for 100ms
 
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent voltage supervisor from waking us from sleep
 
@@ -203,10 +203,11 @@ void wakeFromSleep()
 
   beginIMU(); //61ms
 
-  //If we powered down the Qwiic bus, then re-detect and re-configure everything
+  //If we powered down the Qwiic bus, then re-begin and re-configure everything
   if (settings.powerDownQwiicBusBetweenReads == true)
   {
-    detectQwiicDevices(); //159 - 865ms but varies based on number of devices attached
+    //detectQwiicDevices();
+    beginQwiicDevices();
     loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
   }
 

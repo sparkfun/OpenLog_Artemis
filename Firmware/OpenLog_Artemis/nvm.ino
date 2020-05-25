@@ -329,11 +329,21 @@ void recordDeviceSettingsToFile()
             //Currently, no settings for multiplexer to record
             //struct_multiplexer *nodeSetting = (struct_multiplexer *)temp->configPtr; //Create a local pointer that points to same spot as node does
             //settingsFile.println((String)base + "log=" + nodeSetting->log);
-            break;
           }
+          break;
+        case DEVICE_LOADCELL_NAU7802:
+          {
+            struct_NAU7802 *nodeSetting = (struct_NAU7802 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "calibrationFactor=" + nodeSetting->calibrationFactor);
+            settingsFile.println((String)base + "zeroOffset=" + nodeSetting->zeroOffset);
+            settingsFile.println((String)base + "decimalPlaces=" + nodeSetting->decimalPlaces);
+            settingsFile.println((String)base + "averageAmount=" + nodeSetting->averageAmount);
+          }
+          break;
         case DEVICE_DISTANCE_VL53L1X:
           {
-            struct_VL53L1X *nodeSetting = (struct_VL53L1X *)temp->configPtr; //Create a local pointer that points to same spot as node does
+            struct_VL53L1X *nodeSetting = (struct_VL53L1X *)temp->configPtr;
             settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logDistance=" + nodeSetting->logDistance);
             settingsFile.println((String)base + "logRangeStatus=" + nodeSetting->logRangeStatus);
@@ -342,26 +352,147 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "intermeasurementPeriod=" + nodeSetting->intermeasurementPeriod);
             settingsFile.println((String)base + "offset=" + nodeSetting->offset);
             settingsFile.println((String)base + "crosstalk=" + nodeSetting->crosstalk);
-            break;
           }
+          break;
+        case DEVICE_GPS_UBLOX:
+          {
+            struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logDate=" + nodeSetting->logDate);
+            settingsFile.println((String)base + "logTime=" + nodeSetting->logTime);
+            settingsFile.println((String)base + "logPosition=" + nodeSetting->logPosition);
+            settingsFile.println((String)base + "logAltitude=" + nodeSetting->logAltitude);
+            settingsFile.println((String)base + "logAltitudeMSL=" + nodeSetting->logAltitudeMSL);
+            settingsFile.println((String)base + "logSIV=" + nodeSetting->logSIV);
+            settingsFile.println((String)base + "logFixType=" + nodeSetting->logFixType);
+            settingsFile.println((String)base + "logCarrierSolution=" + nodeSetting->logCarrierSolution);
+            settingsFile.println((String)base + "logGroundSpeed=" + nodeSetting->logGroundSpeed);
+            settingsFile.println((String)base + "logHeadingOfMotion=" + nodeSetting->logHeadingOfMotion);
+            settingsFile.println((String)base + "logpDOP=" + nodeSetting->logpDOP);
+            settingsFile.println((String)base + "logiTOW=" + nodeSetting->logiTOW);
+            settingsFile.println((String)base + "i2cSpeed=" + nodeSetting->i2cSpeed);
+          }
+          break;
+        case DEVICE_PROXIMITY_VCNL4040:
+          {
+            struct_VCNL4040 *nodeSetting = (struct_VCNL4040 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logProximity=" + nodeSetting->logProximity);
+            settingsFile.println((String)base + "logAmbientLight=" + nodeSetting->logAmbientLight);
+            settingsFile.println((String)base + "LEDCurrent=" + nodeSetting->LEDCurrent);
+            settingsFile.println((String)base + "IRDutyCycle=" + nodeSetting->IRDutyCycle);
+            settingsFile.println((String)base + "proximityIntegrationTime=" + nodeSetting->proximityIntegrationTime);
+            settingsFile.println((String)base + "ambientIntegrationTime=" + nodeSetting->ambientIntegrationTime);
+            settingsFile.println((String)base + "resolution=" + nodeSetting->resolution);
+          }
+          break;
+        case DEVICE_TEMPERATURE_TMP117:
+          {
+            struct_TMP117 *nodeSetting = (struct_TMP117 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+          }
+          break;
+        case DEVICE_PRESSURE_MS5637:
+          {
+            struct_MS5637 *nodeSetting = (struct_MS5637 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+          }
+          break;
+        case DEVICE_PRESSURE_LPS25HB:
+          {
+            struct_LPS25HB *nodeSetting = (struct_LPS25HB *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+          }
+          break;
         case DEVICE_PHT_BME280:
           {
-            struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+            struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr;
             settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logHumidity=" + nodeSetting->logHumidity);
             settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
             settingsFile.println((String)base + "logAltitude=" + nodeSetting->logAltitude);
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
-            break;
           }
+          break;
+        case DEVICE_UV_VEML6075:
+          {
+            struct_VEML6075 *nodeSetting = (struct_VEML6075 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logUVA=" + nodeSetting->logUVA);
+            settingsFile.println((String)base + "logUVB=" + nodeSetting->logUVB);
+            settingsFile.println((String)base + "logUVIndex=" + nodeSetting->logUVIndex);
+          }
+          break;
         case DEVICE_VOC_CCS811:
           {
-            struct_CCS811 *nodeSetting = (struct_CCS811 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+            struct_CCS811 *nodeSetting = (struct_CCS811 *)temp->configPtr;
             settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logTVOC=" + nodeSetting->logTVOC);
             settingsFile.println((String)base + "logCO2=" + nodeSetting->logCO2);
-            break;
           }
+          break;
+        case DEVICE_VOC_SGP30:
+          {
+            struct_SGP30 *nodeSetting = (struct_SGP30 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logTVOC=" + nodeSetting->logTVOC);
+            settingsFile.println((String)base + "logCO2=" + nodeSetting->logCO2);
+          }
+          break;
+        case DEVICE_CO2_SCD30:
+          {
+            struct_SCD30 *nodeSetting = (struct_SCD30 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logCO2=" + nodeSetting->logCO2);
+            settingsFile.println((String)base + "logHumidity=" + nodeSetting->logHumidity);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+            settingsFile.println((String)base + "measurementInterval=" + nodeSetting->measurementInterval);
+            settingsFile.println((String)base + "altitudeCompensation=" + nodeSetting->altitudeCompensation);
+            settingsFile.println((String)base + "ambientPressure=" + nodeSetting->ambientPressure);
+            settingsFile.println((String)base + "temperatureOffset=" + nodeSetting->temperatureOffset);
+          }
+          break;
+        case DEVICE_PHT_MS8607:
+          {
+            struct_MS8607 *nodeSetting = (struct_MS8607 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logHumidity=" + nodeSetting->logHumidity);
+            settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+            settingsFile.println((String)base + "enableHeater=" + nodeSetting->enableHeater);
+            settingsFile.println((String)base + "pressureResolution=" + nodeSetting->pressureResolution);
+            settingsFile.println((String)base + "humidityResolution=" + nodeSetting->humidityResolution);
+          }
+          break;
+        case DEVICE_TEMPERATURE_MCP9600:
+          {
+            struct_MCP9600 *nodeSetting = (struct_MCP9600 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+            settingsFile.println((String)base + "logAmbientTemperature=" + nodeSetting->logAmbientTemperature);
+          }
+          break;
+        case DEVICE_HUMIDITY_AHT20:
+          {
+            struct_AHT20 *nodeSetting = (struct_AHT20 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logHumidity=" + nodeSetting->logHumidity);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+          }
+          break;
+        case DEVICE_HUMIDITY_SHTC3:
+          {
+            struct_SHTC3 *nodeSetting = (struct_SHTC3 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logHumidity=" + nodeSetting->logHumidity);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+          }
+          break;
         default:
           Serial.printf("recordSettingsToFile Unknown device: %s\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
@@ -509,11 +640,28 @@ bool parseDeviceLine(char* str) {
           Serial.println("There are no known settings for a multiplexer to load.");
         }
         break;
-      case DEVICE_DISTANCE_VL53L1X:
+      case DEVICE_LOADCELL_NAU7802:
         {
-          struct_VL53L1X *nodeSetting = (struct_VL53L1X *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          struct_NAU7802 *nodeSetting = (struct_NAU7802 *)deviceConfigPtr;
 
           //Apply the appropriate settings
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "calibrationFactor") == 0)
+            nodeSetting->calibrationFactor = d;
+          else if (strcmp(deviceSettingName, "zeroOffset") == 0)
+            nodeSetting->zeroOffset = d;
+          else if (strcmp(deviceSettingName, "decimalPlaces") == 0)
+            nodeSetting->decimalPlaces = d;
+          else if (strcmp(deviceSettingName, "averageAmount") == 0)
+            nodeSetting->averageAmount = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_DISTANCE_VL53L1X:
+        {
+          struct_VL53L1X *nodeSetting = (struct_VL53L1X *)deviceConfigPtr;
           if (strcmp(deviceSettingName, "log") == 0)
             nodeSetting->log = d;
           else if (strcmp(deviceSettingName, "logDistance") == 0)
@@ -534,11 +682,106 @@ bool parseDeviceLine(char* str) {
             Serial.printf("Unknown device setting: %s\n", deviceSettingName);
         }
         break;
+      case DEVICE_GPS_UBLOX:
+        {
+          struct_uBlox *nodeSetting = (struct_uBlox *)deviceConfigPtr;
+
+          //Apply the appropriate settings
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logDate") == 0)
+            nodeSetting->logDate = d;
+          else if (strcmp(deviceSettingName, "logTime") == 0)
+            nodeSetting->logTime = d;
+          else if (strcmp(deviceSettingName, "logPosition") == 0)
+            nodeSetting->logPosition = d;
+          else if (strcmp(deviceSettingName, "logAltitude") == 0)
+            nodeSetting->logAltitude = d;
+          else if (strcmp(deviceSettingName, "logAltitudeMSL") == 0)
+            nodeSetting->logAltitudeMSL = d;
+          else if (strcmp(deviceSettingName, "logSIV") == 0)
+            nodeSetting->logSIV = d;
+          else if (strcmp(deviceSettingName, "logFixType") == 0)
+            nodeSetting->logFixType = d;
+          else if (strcmp(deviceSettingName, "logCarrierSolution") == 0)
+            nodeSetting->logCarrierSolution = d;
+          else if (strcmp(deviceSettingName, "logGroundSpeed") == 0)
+            nodeSetting->logGroundSpeed = d;
+          else if (strcmp(deviceSettingName, "logHeadingOfMotion") == 0)
+            nodeSetting->logHeadingOfMotion = d;
+          else if (strcmp(deviceSettingName, "logpDOP") == 0)
+            nodeSetting->logpDOP = d;
+          else if (strcmp(deviceSettingName, "logiTOW") == 0)
+            nodeSetting->logiTOW = d;
+          else if (strcmp(deviceSettingName, "i2cSpeed") == 0)
+            nodeSetting->i2cSpeed = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PROXIMITY_VCNL4040:
+        {
+          struct_VCNL4040 *nodeSetting = (struct_VCNL4040 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logProximity") == 0)
+            nodeSetting->logProximity = d;
+          else if (strcmp(deviceSettingName, "logAmbientLight") == 0)
+            nodeSetting->logAmbientLight = d;
+          else if (strcmp(deviceSettingName, "LEDCurrent") == 0)
+            nodeSetting->LEDCurrent = d;
+          else if (strcmp(deviceSettingName, "IRDutyCycle") == 0)
+            nodeSetting->IRDutyCycle = d;
+          else if (strcmp(deviceSettingName, "proximityIntegrationTime") == 0)
+            nodeSetting->proximityIntegrationTime = d;
+          else if (strcmp(deviceSettingName, "ambientIntegrationTime") == 0)
+            nodeSetting->ambientIntegrationTime = d;
+          else if (strcmp(deviceSettingName, "resolution") == 0)
+            nodeSetting->resolution = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_TEMPERATURE_TMP117:
+        {
+          struct_TMP117 *nodeSetting = (struct_TMP117 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PRESSURE_MS5637:
+        {
+          struct_MS5637 *nodeSetting = (struct_MS5637 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logPressure") == 0)
+            nodeSetting->logPressure = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PRESSURE_LPS25HB:
+        {
+          struct_LPS25HB *nodeSetting = (struct_LPS25HB *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logPressure") == 0)
+            nodeSetting->logPressure = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
       case DEVICE_PHT_BME280:
         {
           struct_BME280 *nodeSetting = (struct_BME280 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
-
-          //Apply the appropriate settings
           if (strcmp(deviceSettingName, "log") == 0)
             nodeSetting->log = d;
           else if (strcmp(deviceSettingName, "logHumidity") == 0)
@@ -553,17 +796,126 @@ bool parseDeviceLine(char* str) {
             Serial.printf("Unknown device setting: %s\n", deviceSettingName);
         }
         break;
+      case DEVICE_UV_VEML6075:
+        {
+          struct_VEML6075 *nodeSetting = (struct_VEML6075 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logUVA") == 0)
+            nodeSetting->logUVA = d;
+          else if (strcmp(deviceSettingName, "logUVB") == 0)
+            nodeSetting->logUVB = d;
+          else if (strcmp(deviceSettingName, "logUVIndex") == 0)
+            nodeSetting->logUVIndex = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
       case DEVICE_VOC_CCS811:
         {
           struct_CCS811 *nodeSetting = (struct_CCS811 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
-
-          //Apply the appropriate settings
           if (strcmp(deviceSettingName, "log") == 0)
             nodeSetting->log = d;
           else if (strcmp(deviceSettingName, "logTVOC") == 0)
             nodeSetting->logTVOC = d;
           else if (strcmp(deviceSettingName, "logCO2") == 0)
             nodeSetting->logCO2 = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_VOC_SGP30:
+        {
+          struct_SGP30 *nodeSetting = (struct_SGP30 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logTVOC") == 0)
+            nodeSetting->logTVOC = d;
+          else if (strcmp(deviceSettingName, "logCO2") == 0)
+            nodeSetting->logCO2 = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_CO2_SCD30:
+        {
+          struct_SCD30 *nodeSetting = (struct_SCD30 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logCO2") == 0)
+            nodeSetting->logCO2 = d;
+          else if (strcmp(deviceSettingName, "logHumidity") == 0)
+            nodeSetting->logHumidity = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else if (strcmp(deviceSettingName, "measurementInterval") == 0)
+            nodeSetting->measurementInterval = d;
+          else if (strcmp(deviceSettingName, "altitudeCompensation") == 0)
+            nodeSetting->altitudeCompensation = d;
+          else if (strcmp(deviceSettingName, "ambientPressure") == 0)
+            nodeSetting->ambientPressure = d;
+          else if (strcmp(deviceSettingName, "temperatureOffset") == 0)
+            nodeSetting->temperatureOffset = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PHT_MS8607:
+        {
+          struct_MS8607 *nodeSetting = (struct_MS8607 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logHumidity") == 0)
+            nodeSetting->logHumidity = d;
+          else if (strcmp(deviceSettingName, "logPressure") == 0)
+            nodeSetting->logPressure = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else if (strcmp(deviceSettingName, "enableHeater") == 0)
+            nodeSetting->enableHeater = d;
+          else if (strcmp(deviceSettingName, "pressureResolution") == 0)
+            nodeSetting->pressureResolution = (MS8607_pressure_resolution)d;
+          else if (strcmp(deviceSettingName, "humidityResolution") == 0)
+            nodeSetting->humidityResolution = (MS8607_humidity_resolution)d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_TEMPERATURE_MCP9600:
+        {
+          struct_MCP9600 *nodeSetting = (struct_MCP9600 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else if (strcmp(deviceSettingName, "logAmbientTemperature") == 0)
+            nodeSetting->logAmbientTemperature = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_HUMIDITY_AHT20:
+        {
+          struct_AHT20 *nodeSetting = (struct_AHT20 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logHumidity") == 0)
+            nodeSetting->logHumidity = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_HUMIDITY_SHTC3:
+        {
+          struct_SHTC3 *nodeSetting = (struct_SHTC3 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logHumidity") == 0)
+            nodeSetting->logHumidity = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
           else
             Serial.printf("Unknown device setting: %s\n", deviceSettingName);
         }
