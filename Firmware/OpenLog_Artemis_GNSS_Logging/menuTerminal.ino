@@ -5,19 +5,19 @@ void menuLogRate()
     Serial.println();
     Serial.println(F("Menu: Configure Logging"));
 
-    Serial.print(F("1) Log to microSD                               : "));
+    Serial.print(F("1) Log to microSD                                         : "));
     if (settings.logData == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 
-    Serial.print(F("2) Log to Terminal                              : "));
+    Serial.print(F("2) Log to Terminal                                        : "));
     if (settings.enableTerminalOutput == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 
-    Serial.print(F("3) Set Serial Baud Rate                         : "));
+    Serial.print(F("3) Set Serial Baud Rate                                   : "));
     Serial.print(settings.serialTerminalBaudRate);
     Serial.println(F(" bps"));
 
-    Serial.print(F("4) Set Log Rate in Hz                           : "));
+    Serial.print(F("4) Set Log Rate in Hz                                     : "));
     if (settings.usBetweenReadings < 1000000UL) //Take more than one measurement per second
     {
       //Display Integer Hertz
@@ -31,7 +31,7 @@ void menuLogRate()
       Serial.printf("%.06lf\n", 1.0 / logRateSeconds);
     }
 
-    Serial.print(F("5) Set Log Rate in seconds between readings     : "));
+    Serial.print(F("5) Set Log Rate in seconds between readings               : "));
     if (settings.usBetweenReadings > 1000000UL) //Take more than one measurement per second
     {
       Serial.printf("%llu\n", settings.usBetweenReadings / 1000000UL);
@@ -41,15 +41,15 @@ void menuLogRate()
       Serial.printf("%.03lf\n", settings.usBetweenReadings / 1000000.0);
     }
     
-    Serial.print(F("6) Set logging duration in seconds              : "));
+    Serial.print(F("6) Set logging duration in seconds                        : "));
     Serial.printf("%llu\n", settings.usLoggingDuration / 1000000UL);
 
-    Serial.print(F("7) Set sleep duration in seconds (0=continuous) : "));
+    Serial.print(F("7) Set sleep duration in seconds (0 = continuous logging) : "));
     Serial.printf("%llu\n", settings.usSleepDuration / 1000000UL);
 
-    Serial.print(F("8) Open new log file after sleep                : "));
-    if (settings.openNewLogFile == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    Serial.print(F("8) Open new log file after sleep                          : "));
+    if (settings.openNewLogFile == true) Serial.println(F("Yes"));
+    else Serial.println(F("No"));
 
     Serial.println(F("x) Exit"));
 

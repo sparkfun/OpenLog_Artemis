@@ -2,6 +2,7 @@
   OpenLog Artemis GNSS Logging
   By: Paul Clark (PaulZC)
   Date: May 24th, 2020
+  Version: V1.0
 
   This firmware runs on the OpenLog Artemis and is dedicated to logging UBX
   messages from the u-blox F9 and M9 GNSS receivers.
@@ -59,7 +60,7 @@
 
   Only UBX data is logged to SD. ACKs and NACKs are automatically stripped out.
 
-  Based on:
+  Based extensively on:
   OpenLog Artemis
   By: Nathan Seidle
   SparkFun Electronics
@@ -72,7 +73,7 @@
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 1;
+const int FIRMWARE_VERSION_MINOR = 0;
 
 #include "settings.h"
 
@@ -171,7 +172,6 @@ struct minfoStructure // Structure to hold the GNSS module info
 {
   char swVersion[30];
   char hwVersion[10];
-  char extension[10][30];
   int protVerMajor;
   int protVerMinor;
   char mod[8]; //The module type from the "MOD=" extension (7 chars + NULL)

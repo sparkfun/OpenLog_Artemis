@@ -311,6 +311,38 @@ bool beginSensors()
   return(true);
 }
 
+//Let's see what's on the I2C bus
+bool detectQwiicDevices()
+{
+  bool somethingDetected = false;
+
+  qwiic.setClock(100000); //During detection, go slow
+
+  qwiic.setPullups(0); //Disable pull-ups as the u-blox modules have their own pull-ups
+
+  //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
+  //Give sensors, specifically those with a low I2C address, time to turn on
+  delay(100); //SCD30 required >50ms to turn on
+
+  uint8_t address = settings.sensor_uBlox.ubloxI2Caddress;
+  
+  qwiic.beginTransmission(address);
+  if (qwiic.endTransmission() == 0)
+  {
+    if (settings.printMinorDebugMessages == true)
+    {
+      Serial.printf("Device found at address 0x%02X\n", address);
+    }
+    if (gpsSensor_ublox.begin(qwiic, address) == true) //Wire port, address
+    {
+      qwiicAvailable.uBlox = true;
+      somethingDetected = true;
+    }
+  }
+
+  return (somethingDetected);
+}
+
 //Close the current log file and open a new one
 //This should probably be defined in OpenLog_Artemis_GNSS_Logging as it involves files
 //but it is defined here as it is uBlox-specific

@@ -52,7 +52,7 @@ struct struct_settings {
   uint64_t usBetweenReadings = 1000000ULL; //1000,000us = 1000ms = 1 readings per second.
   uint64_t usLoggingDuration = 10000000ULL; //10,000,000us = 10s logging duration
   uint64_t usSleepDuration = 0ULL; //0us = do not sleep (continuous logging)
-  bool openNewLogFile = true; //false;
+  bool openNewLogFile = true;
   bool enableSD = true;
   bool enableTerminalOutput = true;
   bool logData = true;

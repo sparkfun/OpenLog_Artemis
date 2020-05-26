@@ -16,7 +16,9 @@ void menuMain()
 
     Serial.println(F("1) Configure Logging"));
 
-    Serial.println(F("2) Detect / Configure Attached Devices"));
+    Serial.println(F("2) Configure GNSS Device"));
+
+    Serial.println(F("3) Configure Qwiic Bus"));
 
     if (settings.logData && online.microSD && online.dataLogging)
     {
@@ -39,7 +41,9 @@ void menuMain()
     if (incoming == '1')
       menuLogRate();
     else if (incoming == '2')
-      menuAttachedDevices();
+      menuConfigure_uBlox();
+    else if (incoming == '3')
+      menuConfigure_QwiicBus();
     else if (incoming == 'f')
       openNewLogFile();
     else if (incoming == 'g')
@@ -95,5 +99,44 @@ void menuMain()
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
   measurementStartTime = rtcMillis();
+
+}
+
+void menuConfigure_QwiicBus()
+{
+  while (1)
+  {
+    Serial.println();
+    Serial.println(F("Menu: Configure Qwiic Bus"));
+
+    Serial.print(F("1) Turn off bus power when sleeping : "));
+    if (settings.powerDownQwiicBusBetweenReads == true) Serial.println(F("Yes"));
+    else Serial.println(F("No"));
+
+    Serial.print(F("2) Set Max Qwiic Bus Speed          : "));
+    Serial.println(settings.qwiicBusMaxSpeed);
+
+    Serial.println(F("x) Exit"));
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      settings.powerDownQwiicBusBetweenReads ^= 1;
+    else if (incoming == '2')
+    {
+      Serial.print(F("Enter max frequency to run Qwiic bus: (100000 to 400000): "));
+      int amt = getNumber(menuTimeout);
+      if (amt >= 100000 && amt <= 400000)
+        settings.qwiicBusMaxSpeed = amt;
+      else
+        Serial.println(F("Error: Out of range"));
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
 
 }

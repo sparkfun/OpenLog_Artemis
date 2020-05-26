@@ -352,14 +352,25 @@ bool storeData(void)
                   {
                     if (((UBXbuffer[25] & 0x04) == 0x04) && (rtcNeedsSync == true))//If the validUTC flag bit is set and a sync is needed
                     {
-                      //UBX-NAV-TIMEUTC includes the nanoseconds as a signed int32_t (-1e9 .. 1e9), so let's just ignore that!
                       uint16_t rtcYear = ((uint16_t)UBXbuffer[18]) | (((uint16_t)UBXbuffer[19]) << 8); //RTC year
-                      myRTC.setTime(UBXbuffer[22], UBXbuffer[23], UBXbuffer[24], 0, UBXbuffer[21], UBXbuffer[20], (rtcYear - 2000)); //Set the RTC
+                      union {
+                        int32_t signed32;
+                        uint32_t unsigned32;
+                      } nanos; //union for accurate conversion to int32_t without needing a cast
+                      //Assemble the nanos
+                      nanos.unsigned32 = ((uint32_t)UBXbuffer[14]) | (((uint32_t)UBXbuffer[15]) << 8) | (((uint32_t)UBXbuffer[16]) << 16) | (((uint32_t)UBXbuffer[17]) << 24);
+                      //If nanos is negative, set it to zero
+                      //The ZED-F9P Integration Manual says: "the nano value can range from -5000000 (i.e. -5 ms) to +994999999 (i.e. nearly 995 ms)."
+                      //"if a resolution of one hundredth of a second is adequate, negative nano values can simply be rounded up to 0 and effectively ignored."
+                      if (nanos.signed32 < 0)
+                        nanos.signed32 = 0;
+                      uint8_t centis = (uint8_t)(nanos.unsigned32 / 10000000); //Convert nanos to hundredths (centiseconds)
+                      myRTC.setTime(UBXbuffer[22], UBXbuffer[23], UBXbuffer[24], centis, UBXbuffer[21], UBXbuffer[20], (rtcYear - 2000)); //Set the RTC
                       rtcHasBeenSyncd = true; //Set rtcHasBeenSyncd to show RTC has been sync'd
                       rtcNeedsSync = false; //Clear rtcNeedsSync so we don't set the RTC multiple times
                       if (settings.printMinorDebugMessages == true)
                       {
-                        Serial.printf("storeData: RTC sync'd to %04d/%02d/%02d %02d:%02d:%02d\n", rtcYear, UBXbuffer[20], UBXbuffer[21], UBXbuffer[22], UBXbuffer[23], UBXbuffer[24]);
+                        Serial.printf("storeData: RTC sync'd to %04d/%02d/%02d %02d:%02d:%02d.%02d\n", rtcYear, UBXbuffer[20], UBXbuffer[21], UBXbuffer[22], UBXbuffer[23], UBXbuffer[24], centis);
                         myRTC.getTime();
                         Serial.printf("storeData: RTC time is   %04d/%02d/%02d %02d:%02d:%02d.%02d\n", (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
                       }
@@ -368,7 +379,7 @@ bool storeData(void)
                 }
               }
 
-              //Copy this frame into teh GNSS buffer
+              //Copy this frame into the GNSS buffer
               for (size_t i = 0; i < UBXpointer; i++) //For each char in the frame
               {
                 //TO DO: speed this up by doing some form of memory copy
