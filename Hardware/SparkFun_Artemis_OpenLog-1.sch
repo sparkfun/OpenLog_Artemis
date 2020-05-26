@@ -9,34 +9,34 @@
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
-<layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
-<layer number="3" name="Route3" color="4" fill="3" visible="no" active="no"/>
-<layer number="4" name="Route4" color="1" fill="4" visible="no" active="no"/>
-<layer number="5" name="Route5" color="4" fill="4" visible="no" active="no"/>
-<layer number="6" name="Route6" color="1" fill="8" visible="no" active="no"/>
-<layer number="7" name="Route7" color="4" fill="8" visible="no" active="no"/>
-<layer number="8" name="Route8" color="1" fill="2" visible="no" active="no"/>
-<layer number="9" name="Route9" color="4" fill="2" visible="no" active="no"/>
-<layer number="10" name="Route10" color="1" fill="7" visible="no" active="no"/>
-<layer number="11" name="Route11" color="4" fill="7" visible="no" active="no"/>
-<layer number="12" name="Route12" color="1" fill="5" visible="no" active="no"/>
-<layer number="13" name="Route13" color="4" fill="5" visible="no" active="no"/>
-<layer number="14" name="Route14" color="1" fill="6" visible="no" active="no"/>
-<layer number="15" name="Route15" color="4" fill="6" visible="no" active="no"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="no"/>
-<layer number="17" name="Pads" color="2" fill="1" visible="no" active="no"/>
-<layer number="18" name="Vias" color="2" fill="1" visible="no" active="no"/>
-<layer number="19" name="Unrouted" color="6" fill="1" visible="no" active="no"/>
-<layer number="20" name="Dimension" color="24" fill="1" visible="no" active="no"/>
-<layer number="21" name="tPlace" color="16" fill="1" visible="no" active="no"/>
-<layer number="22" name="bPlace" color="14" fill="1" visible="no" active="no"/>
-<layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="no"/>
-<layer number="24" name="bOrigins" color="15" fill="1" visible="no" active="no"/>
-<layer number="25" name="tNames" color="7" fill="1" visible="no" active="no"/>
-<layer number="26" name="bNames" color="7" fill="1" visible="no" active="no"/>
-<layer number="27" name="tValues" color="7" fill="1" visible="no" active="no"/>
-<layer number="28" name="bValues" color="7" fill="1" visible="no" active="no"/>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="no"/>
+<layer number="2" name="Route2" color="1" fill="3" visible="yes" active="no"/>
+<layer number="3" name="Route3" color="4" fill="3" visible="yes" active="no"/>
+<layer number="4" name="Route4" color="1" fill="4" visible="yes" active="no"/>
+<layer number="5" name="Route5" color="4" fill="4" visible="yes" active="no"/>
+<layer number="6" name="Route6" color="1" fill="8" visible="yes" active="no"/>
+<layer number="7" name="Route7" color="4" fill="8" visible="yes" active="no"/>
+<layer number="8" name="Route8" color="1" fill="2" visible="yes" active="no"/>
+<layer number="9" name="Route9" color="4" fill="2" visible="yes" active="no"/>
+<layer number="10" name="Route10" color="1" fill="7" visible="yes" active="no"/>
+<layer number="11" name="Route11" color="4" fill="7" visible="yes" active="no"/>
+<layer number="12" name="Route12" color="1" fill="5" visible="yes" active="no"/>
+<layer number="13" name="Route13" color="4" fill="5" visible="yes" active="no"/>
+<layer number="14" name="Route14" color="1" fill="6" visible="yes" active="no"/>
+<layer number="15" name="Route15" color="4" fill="6" visible="yes" active="no"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="no"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="no"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="no"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="no"/>
+<layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="no"/>
+<layer number="21" name="tPlace" color="16" fill="1" visible="yes" active="no"/>
+<layer number="22" name="bPlace" color="14" fill="1" visible="yes" active="no"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="no"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="no"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="no"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="no"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="no"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="no"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="no"/>
 <layer number="30" name="bStop" color="7" fill="6" visible="no" active="no"/>
 <layer number="31" name="tCream" color="7" fill="4" visible="no" active="no"/>
@@ -45,8 +45,8 @@
 <layer number="34" name="bFinish" color="6" fill="6" visible="no" active="no"/>
 <layer number="35" name="tGlue" color="7" fill="4" visible="no" active="no"/>
 <layer number="36" name="bGlue" color="7" fill="5" visible="no" active="no"/>
-<layer number="37" name="tTest" color="7" fill="1" visible="no" active="no"/>
-<layer number="38" name="bTest" color="7" fill="1" visible="no" active="no"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="yes" active="no"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="yes" active="no"/>
 <layer number="39" name="tKeepout" color="4" fill="11" visible="no" active="no"/>
 <layer number="40" name="bKeepout" color="1" fill="11" visible="no" active="no"/>
 <layer number="41" name="tRestrict" color="4" fill="10" visible="no" active="no"/>
@@ -54,19 +54,19 @@
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="no"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="no"/>
 <layer number="45" name="Holes" color="7" fill="1" visible="no" active="no"/>
-<layer number="46" name="Milling" color="3" fill="1" visible="no" active="no"/>
-<layer number="47" name="Measures" color="7" fill="1" visible="no" active="no"/>
-<layer number="48" name="Document" color="7" fill="1" visible="no" active="no"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="no" active="no"/>
-<layer number="50" name="dxf" color="7" fill="1" visible="no" active="no"/>
-<layer number="51" name="tDocu" color="6" fill="1" visible="no" active="no"/>
-<layer number="52" name="bDocu" color="7" fill="1" visible="no" active="no"/>
-<layer number="53" name="tGND_GNDA" color="7" fill="9" visible="no" active="no"/>
-<layer number="54" name="bGND_GNDA" color="1" fill="9" visible="no" active="no"/>
-<layer number="56" name="wert" color="7" fill="1" visible="no" active="no"/>
-<layer number="57" name="tCAD" color="7" fill="1" visible="no" active="no"/>
-<layer number="59" name="tCarbon" color="7" fill="1" visible="no" active="no"/>
-<layer number="60" name="bCarbon" color="7" fill="1" visible="no" active="no"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="yes" active="no"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="yes" active="no"/>
+<layer number="48" name="Document" color="7" fill="1" visible="yes" active="no"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="no"/>
+<layer number="50" name="dxf" color="7" fill="1" visible="yes" active="no"/>
+<layer number="51" name="tDocu" color="6" fill="1" visible="yes" active="no"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="no"/>
+<layer number="53" name="tGND_GNDA" color="7" fill="9" visible="yes" active="no"/>
+<layer number="54" name="bGND_GNDA" color="1" fill="9" visible="yes" active="no"/>
+<layer number="56" name="wert" color="7" fill="1" visible="yes" active="no"/>
+<layer number="57" name="tCAD" color="7" fill="1" visible="yes" active="no"/>
+<layer number="59" name="tCarbon" color="7" fill="1" visible="yes" active="no"/>
+<layer number="60" name="bCarbon" color="7" fill="1" visible="yes" active="no"/>
 <layer number="88" name="SimResults" color="9" fill="1" visible="no" active="no"/>
 <layer number="89" name="SimProbes" color="9" fill="1" visible="no" active="no"/>
 <layer number="90" name="Modules" color="5" fill="1" visible="no" active="yes"/>
@@ -26375,6 +26375,8 @@ Also software controlled</text>
 <wire x1="297.18" y1="210.82" x2="383.54" y2="210.82" width="0.2032" layer="97" style="longdash"/>
 <wire x1="383.54" y1="210.82" x2="383.54" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 <wire x1="383.54" y1="144.78" x2="320.04" y2="144.78" width="0.2032" layer="97" style="longdash"/>
+<<<<<<< Updated upstream
+=======
 <text x="393.7" y="91.44" size="1.27" layer="91">Analog to Qwiic VCC</text>
 <text x="154.178" y="14.478" size="1.27" layer="91">On v10:
 ICM PWR moved from 22 to 27
@@ -26385,6 +26387,7 @@ Add SDIO connection to SD</text>
 <wire x1="320.04" y1="68.58" x2="383.54" y2="68.58" width="0.2032" layer="97" style="longdash"/>
 <wire x1="383.54" y1="210.82" x2="383.54" y2="279.4" width="0.2032" layer="97" style="longdash"/>
 <wire x1="383.54" y1="68.58" x2="383.54" y2="144.78" width="0.2032" layer="97" style="longdash"/>
+>>>>>>> Stashed changes
 </plain>
 <instances>
 <instance part="LOGO2" gate="G$1" x="416.56" y="45.72" smashed="yes"/>
@@ -26618,9 +26621,9 @@ Add SDIO connection to SD</text>
 <attribute name="NAME" x="231.14" y="33.274" size="1.778" layer="95" font="vector"/>
 <attribute name="VALUE" x="231.14" y="14.986" size="1.778" layer="96" font="vector" align="top-left"/>
 </instance>
-<instance part="C51" gate="G$1" x="218.44" y="12.7" smashed="yes">
-<attribute name="NAME" x="212.598" y="15.494" size="1.778" layer="95" font="vector"/>
-<attribute name="VALUE" x="210.566" y="10.414" size="1.778" layer="96" font="vector"/>
+<instance part="C51" gate="G$1" x="213.36" y="12.7" smashed="yes">
+<attribute name="NAME" x="214.884" y="15.621" size="1.778" layer="95" font="vector"/>
+<attribute name="VALUE" x="214.884" y="10.541" size="1.778" layer="96" font="vector"/>
 </instance>
 <instance part="C52" gate="G$1" x="233.68" y="60.96" smashed="yes">
 <attribute name="NAME" x="235.204" y="63.881" size="1.778" layer="95" font="vector"/>
@@ -26633,8 +26636,8 @@ Add SDIO connection to SD</text>
 <instance part="GND80" gate="1" x="226.06" y="12.7" smashed="yes">
 <attribute name="VALUE" x="226.06" y="12.446" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="GND81" gate="1" x="218.44" y="5.08" smashed="yes">
-<attribute name="VALUE" x="218.44" y="4.826" size="1.778" layer="96" align="top-center"/>
+<instance part="GND81" gate="1" x="213.36" y="5.08" smashed="yes">
+<attribute name="VALUE" x="213.36" y="4.826" size="1.778" layer="96" align="top-center"/>
 </instance>
 <instance part="GND82" gate="1" x="233.68" y="53.34" smashed="yes">
 <attribute name="VALUE" x="233.68" y="53.086" size="1.778" layer="96" align="top-center"/>
@@ -26675,17 +26678,17 @@ Add SDIO connection to SD</text>
 <instance part="SUPPLY70" gate="G$1" x="200.66" y="137.16" smashed="yes">
 <attribute name="VALUE" x="200.66" y="139.954" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="Q7" gate="NMOS" x="284.48" y="55.88" smashed="yes" rot="R270">
-<attribute name="NAME" x="282.448" y="50.038" size="1.778" layer="95" font="vector"/>
-<attribute name="VALUE" x="269.748" y="47.244" size="1.778" layer="96" font="vector"/>
+<instance part="Q7" gate="NMOS" x="287.02" y="55.88" smashed="yes" rot="R270">
+<attribute name="NAME" x="284.988" y="50.038" size="1.778" layer="95" font="vector"/>
+<attribute name="VALUE" x="272.288" y="47.244" size="1.778" layer="96" font="vector"/>
 </instance>
 <instance part="R44" gate="G$1" x="276.86" y="60.96" smashed="yes" rot="R90">
 <attribute name="NAME" x="275.336" y="60.96" size="1.778" layer="95" font="vector" rot="R90" align="bottom-center"/>
 <attribute name="VALUE" x="278.384" y="60.96" size="1.778" layer="96" font="vector" rot="R90" align="top-center"/>
 </instance>
-<instance part="R45" gate="G$1" x="292.1" y="60.96" smashed="yes" rot="R90">
-<attribute name="NAME" x="290.576" y="60.96" size="1.778" layer="95" font="vector" rot="R90" align="bottom-center"/>
-<attribute name="VALUE" x="293.624" y="60.96" size="1.778" layer="96" font="vector" rot="R90" align="top-center"/>
+<instance part="R45" gate="G$1" x="294.64" y="60.96" smashed="yes" rot="R90">
+<attribute name="NAME" x="293.116" y="60.96" size="1.778" layer="95" font="vector" rot="R90" align="bottom-center"/>
+<attribute name="VALUE" x="296.164" y="60.96" size="1.778" layer="96" font="vector" rot="R90" align="top-center"/>
 </instance>
 <instance part="SUPPLY72" gate="G$1" x="276.86" y="68.58" smashed="yes">
 <attribute name="VALUE" x="276.86" y="71.374" size="1.778" layer="96" align="bottom-center"/>
@@ -26693,8 +26696,8 @@ Add SDIO connection to SD</text>
 <instance part="SUPPLY73" gate="G$1" x="177.8" y="71.12" smashed="yes">
 <attribute name="VALUE" x="177.8" y="73.914" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="SUPPLY75" gate="G$1" x="292.1" y="68.58" smashed="yes">
-<attribute name="VALUE" x="292.1" y="71.374" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY75" gate="G$1" x="294.64" y="68.58" smashed="yes">
+<attribute name="VALUE" x="294.64" y="71.374" size="1.778" layer="96" align="bottom-center"/>
 </instance>
 <instance part="GND85" gate="1" x="195.58" y="53.34" smashed="yes">
 <attribute name="VALUE" x="195.58" y="53.086" size="1.778" layer="96" align="top-center"/>
@@ -26705,8 +26708,8 @@ Add SDIO connection to SD</text>
 <instance part="SUPPLY77" gate="G$1" x="205.74" y="132.08" smashed="yes">
 <attribute name="VALUE" x="205.74" y="134.874" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="SUPPLY79" gate="G$1" x="281.94" y="63.5" smashed="yes">
-<attribute name="VALUE" x="281.94" y="66.294" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY79" gate="G$1" x="284.48" y="63.5" smashed="yes">
+<attribute name="VALUE" x="284.48" y="66.294" size="1.778" layer="96" align="bottom-center"/>
 </instance>
 <instance part="SUPPLY80" gate="G$1" x="226.06" y="33.02" smashed="yes">
 <attribute name="VALUE" x="226.06" y="35.814" size="1.778" layer="96" align="bottom-center"/>
@@ -27043,7 +27046,7 @@ Add SDIO connection to SD</text>
 <segment>
 <pinref part="C51" gate="G$1" pin="2"/>
 <pinref part="GND81" gate="1" pin="GND"/>
-<wire x1="218.44" y1="10.16" x2="218.44" y2="7.62" width="0.1524" layer="91"/>
+<wire x1="213.36" y1="10.16" x2="213.36" y2="7.62" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND80" gate="1" pin="GND"/>
@@ -27205,7 +27208,7 @@ Add SDIO connection to SD</text>
 </segment>
 <segment>
 <pinref part="R45" gate="G$1" pin="2"/>
-<wire x1="292.1" y1="66.04" x2="292.1" y2="68.58" width="0.1524" layer="91"/>
+<wire x1="294.64" y1="66.04" x2="294.64" y2="68.58" width="0.1524" layer="91"/>
 <pinref part="SUPPLY75" gate="G$1" pin="3.3V"/>
 </segment>
 <segment>
@@ -27730,9 +27733,9 @@ Add SDIO connection to SD</text>
 <net name="N$30" class="0">
 <segment>
 <pinref part="U13" gate="G$1" pin="REGOUT"/>
-<wire x1="228.6" y1="20.32" x2="218.44" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="228.6" y1="20.32" x2="213.36" y2="20.32" width="0.1524" layer="91"/>
 <pinref part="C51" gate="G$1" pin="1"/>
-<wire x1="218.44" y1="20.32" x2="218.44" y2="17.78" width="0.1524" layer="91"/>
+<wire x1="213.36" y1="20.32" x2="213.36" y2="17.78" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="ICM-20948-LV_INT" class="0">
@@ -27743,7 +27746,7 @@ Add SDIO connection to SD</text>
 </segment>
 <segment>
 <pinref part="Q7" gate="NMOS" pin="S"/>
-<wire x1="276.86" y1="53.34" x2="279.4" y2="53.34" width="0.1524" layer="91"/>
+<wire x1="276.86" y1="53.34" x2="281.94" y2="53.34" width="0.1524" layer="91"/>
 <wire x1="274.32" y1="53.34" x2="276.86" y2="53.34" width="0.1524" layer="91"/>
 <pinref part="R44" gate="G$1" pin="1"/>
 <wire x1="276.86" y1="55.88" x2="276.86" y2="53.34" width="0.1524" layer="91"/>
@@ -27849,7 +27852,7 @@ Add SDIO connection to SD</text>
 <pinref part="Q3" gate="NMOS" pin="G"/>
 </segment>
 <segment>
-<wire x1="281.94" y1="63.5" x2="281.94" y2="60.96" width="0.1524" layer="91"/>
+<wire x1="284.48" y1="63.5" x2="284.48" y2="60.96" width="0.1524" layer="91"/>
 <pinref part="SUPPLY79" gate="G$1" pin="1.8V"/>
 <pinref part="Q7" gate="NMOS" pin="G"/>
 </segment>
@@ -27877,12 +27880,12 @@ Add SDIO connection to SD</text>
 <net name="ICM_INT" class="0">
 <segment>
 <pinref part="R45" gate="G$1" pin="1"/>
-<wire x1="292.1" y1="55.88" x2="292.1" y2="53.34" width="0.1524" layer="91"/>
+<wire x1="294.64" y1="55.88" x2="294.64" y2="53.34" width="0.1524" layer="91"/>
 <pinref part="Q7" gate="NMOS" pin="D"/>
-<wire x1="289.56" y1="53.34" x2="292.1" y2="53.34" width="0.1524" layer="91"/>
 <wire x1="292.1" y1="53.34" x2="294.64" y2="53.34" width="0.1524" layer="91"/>
-<junction x="292.1" y="53.34"/>
-<label x="294.64" y="53.34" size="1.27" layer="95" xref="yes"/>
+<wire x1="294.64" y1="53.34" x2="297.18" y2="53.34" width="0.1524" layer="91"/>
+<junction x="294.64" y="53.34"/>
+<label x="297.18" y="53.34" size="1.27" layer="95" xref="yes"/>
 </segment>
 <segment>
 <pinref part="U8" gate="U1" pin="(TX1/PDMCLK/SCCIO)~D37"/>
