@@ -278,6 +278,9 @@ void menuConfigure_QwiicBus()
     Serial.print("2) Set Max Qwiic Bus Speed: ");
     Serial.println(settings.qwiicBusMaxSpeed);
 
+    Serial.print("3) Set Qwiic bus power up delay: ");
+    Serial.println(settings.qwiicBusPowerUpDelayMs);
+
     Serial.println("x) Exit");
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -290,6 +293,15 @@ void menuConfigure_QwiicBus()
       int amt = getNumber(menuTimeout);
       if (amt >= 100000 && amt <= 400000)
         settings.qwiicBusMaxSpeed = amt;
+      else
+        Serial.println("Error: Out of range");
+    }
+    else if (incoming == '3')
+    {
+      Serial.print("Enter number of milliseconds to wait for Qwiic VCC to stabilize before communication: (1 to 1000): ");
+      int amt = getNumber(menuTimeout);
+      if (amt >= 1 && amt <= 1000)
+        settings.qwiicBusPowerUpDelayMs = amt;
       else
         Serial.println("Error: Out of range");
     }

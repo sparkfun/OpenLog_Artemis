@@ -683,166 +683,211 @@ void printHelperText()
         case DEVICE_DISTANCE_VL53L1X:
           {
             struct_VL53L1X *nodeSetting = (struct_VL53L1X *)temp->configPtr;
-            if (nodeSetting->logDistance)
-              strcat(helperText, "distance_mm,");
-            if (nodeSetting->logRangeStatus)
-              strcat(helperText, "distance_rangeStatus(0=good),");
-            if (nodeSetting->logSignalRate)
-              strcat(helperText, "distance_signalRate,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logDistance)
+                strcat(helperText, "distance_mm,");
+              if (nodeSetting->logRangeStatus)
+                strcat(helperText, "distance_rangeStatus(0=good),");
+              if (nodeSetting->logSignalRate)
+                strcat(helperText, "distance_signalRate,");
+            }
           }
           break;
         case DEVICE_GPS_UBLOX:
           {
             struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
-            if (nodeSetting->logDate)
-              strcat(helperText, "gps_Date,");
-            if (nodeSetting->logTime)
-              strcat(helperText, "gps_Time,");
-            if (nodeSetting->logPosition)
-              strcat(helperText, "gps_Lat,gps_Long,");
-            if (nodeSetting->logAltitude)
-              strcat(helperText, "gps_Alt,");
-            if (nodeSetting->logAltitudeMSL)
-              strcat(helperText, "gps_AltMSL,");
-            if (nodeSetting->logSIV)
-              strcat(helperText, "gps_SIV,");
-            if (nodeSetting->logFixType)
-              strcat(helperText, "gps_FixType,");
-            if (nodeSetting->logCarrierSolution)
-              strcat(helperText, "gps_CarrierSolution,");
-            if (nodeSetting->logGroundSpeed)
-              strcat(helperText, "gps_GroundSpeed,");
-            if (nodeSetting->logHeadingOfMotion)
-              strcat(helperText, "gps_Heading,");
-            if (nodeSetting->logpDOP)
-              strcat(helperText, "gps_pDOP,");
-            if (nodeSetting->logiTOW)
-              strcat(helperText, "gps_iTOW,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logDate)
+                strcat(helperText, "gps_Date,");
+              if (nodeSetting->logTime)
+                strcat(helperText, "gps_Time,");
+              if (nodeSetting->logPosition)
+                strcat(helperText, "gps_Lat,gps_Long,");
+              if (nodeSetting->logAltitude)
+                strcat(helperText, "gps_Alt,");
+              if (nodeSetting->logAltitudeMSL)
+                strcat(helperText, "gps_AltMSL,");
+              if (nodeSetting->logSIV)
+                strcat(helperText, "gps_SIV,");
+              if (nodeSetting->logFixType)
+                strcat(helperText, "gps_FixType,");
+              if (nodeSetting->logCarrierSolution)
+                strcat(helperText, "gps_CarrierSolution,");
+              if (nodeSetting->logGroundSpeed)
+                strcat(helperText, "gps_GroundSpeed,");
+              if (nodeSetting->logHeadingOfMotion)
+                strcat(helperText, "gps_Heading,");
+              if (nodeSetting->logpDOP)
+                strcat(helperText, "gps_pDOP,");
+              if (nodeSetting->logiTOW)
+                strcat(helperText, "gps_iTOW,");
+            }
           }
           break;
         case DEVICE_PROXIMITY_VCNL4040:
           {
             struct_VCNL4040 *nodeSetting = (struct_VCNL4040 *)temp->configPtr;
-            if (nodeSetting->logProximity)
-              strcat(helperText, "prox(no unit),");
-            if (nodeSetting->logAmbientLight)
-              strcat(helperText, "ambient_lux,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logProximity)
+                strcat(helperText, "prox(no unit),");
+              if (nodeSetting->logAmbientLight)
+                strcat(helperText, "ambient_lux,");
+            }
           }
           break;
         case DEVICE_TEMPERATURE_TMP117:
           {
             struct_TMP117 *nodeSetting = (struct_TMP117 *)temp->configPtr;
-            if (nodeSetting->logTemperature)
-              strcat(helperText, "degC,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "degC,");
+            }
           }
           break;
         case DEVICE_PRESSURE_MS5637:
           {
             struct_MS5637 *nodeSetting = (struct_MS5637 *)temp->configPtr;
-            if (nodeSetting->logPressure)
-              strcat(helperText, "pressure_hPa,");
-            if (nodeSetting->logTemperature)
-              strcat(helperText, "pressure_degC,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressure)
+                strcat(helperText, "pressure_hPa,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "pressure_degC,");
+            }
           }
           break;
         case DEVICE_PRESSURE_LPS25HB:
           {
             struct_LPS25HB *nodeSetting = (struct_LPS25HB *)temp->configPtr;
-            if (nodeSetting->logPressure)
-              strcat(helperText, "pressure_hPa,");
-            if (nodeSetting->logTemperature)
-              strcat(helperText, "pressure_degC,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressure)
+                strcat(helperText, "pressure_hPa,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "pressure_degC,");
+            }
           }
           break;
         case DEVICE_PHT_BME280:
           {
             struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr;
-            if (nodeSetting->logPressure)
-              strcat(helperText, "pressure_Pa,");
-            if (nodeSetting->logHumidity)
-              strcat(helperText, "humidity_%,");
-            if (nodeSetting->logAltitude)
-              strcat(helperText, "altitude_m,");
-            if (nodeSetting->logTemperature)
-              strcat(helperText, "temp_degC,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressure)
+                strcat(helperText, "pressure_Pa,");
+              if (nodeSetting->logHumidity)
+                strcat(helperText, "humidity_%,");
+              if (nodeSetting->logAltitude)
+                strcat(helperText, "altitude_m,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "temp_degC,");
+            }
           }
           break;
         case DEVICE_UV_VEML6075:
           {
             struct_VEML6075 *nodeSetting = (struct_VEML6075 *)temp->configPtr;
-            if (nodeSetting->logUVA)
-              strcat(helperText, "uva,");
-            if (nodeSetting->logUVB)
-              strcat(helperText, "uvb,");
-            if (nodeSetting->logUVIndex)
-              strcat(helperText, "uvIndex,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logUVA)
+                strcat(helperText, "uva,");
+              if (nodeSetting->logUVB)
+                strcat(helperText, "uvb,");
+              if (nodeSetting->logUVIndex)
+                strcat(helperText, "uvIndex,");
+            }
           }
           break;
         case DEVICE_VOC_CCS811:
           {
             struct_CCS811 *nodeSetting = (struct_CCS811 *)temp->configPtr;
-            if (nodeSetting->logTVOC)
-              strcat(helperText, "tvoc_ppb,");
-            if (nodeSetting->logCO2)
-              strcat(helperText, "co2_ppm,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logTVOC)
+                strcat(helperText, "tvoc_ppb,");
+              if (nodeSetting->logCO2)
+                strcat(helperText, "co2_ppm,");
+            }
           }
           break;
         case DEVICE_VOC_SGP30:
           {
             struct_SGP30 *nodeSetting = (struct_SGP30 *)temp->configPtr;
-            if (nodeSetting->logTVOC)
-              strcat(helperText, "tvoc_ppb,");
-            if (nodeSetting->logCO2)
-              strcat(helperText, "co2_ppm,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logTVOC)
+                strcat(helperText, "tvoc_ppb,");
+              if (nodeSetting->logCO2)
+                strcat(helperText, "co2_ppm,");
+            }
           }
           break;
         case DEVICE_CO2_SCD30:
           {
             struct_SCD30 *nodeSetting = (struct_SCD30 *)temp->configPtr;
-            if (nodeSetting->logCO2)
-              strcat(helperText, "co2_ppm,");
-            if (nodeSetting->logHumidity)
-              strcat(helperText, "humidity_%,");
-            if (nodeSetting->logTemperature)
-              strcat(helperText, "degC,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logCO2)
+                strcat(helperText, "co2_ppm,");
+              if (nodeSetting->logHumidity)
+                strcat(helperText, "humidity_%,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "degC,");
+            }
           }
           break;
         case DEVICE_PHT_MS8607:
           {
             struct_MS8607 *nodeSetting = (struct_MS8607 *)temp->configPtr;
-            if (nodeSetting->logHumidity)
-              strcat(helperText, "humidity_%,");
-            if (nodeSetting->logPressure)
-              strcat(helperText, "hPa,");
-            if (nodeSetting->logTemperature)
-              strcat(helperText, "degC,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logHumidity)
+                strcat(helperText, "humidity_%,");
+              if (nodeSetting->logPressure)
+                strcat(helperText, "hPa,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "degC,");
+            }
           }
           break;
         case DEVICE_TEMPERATURE_MCP9600:
           {
             struct_MCP9600 *nodeSetting = (struct_MCP9600 *)temp->configPtr;
-            if (nodeSetting->logTemperature)
-              strcat(helperText, "thermo_degC,");
-            if (nodeSetting->logAmbientTemperature)
-              strcat(helperText, "thermo_ambientDegC,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "thermo_degC,");
+              if (nodeSetting->logAmbientTemperature)
+                strcat(helperText, "thermo_ambientDegC,");
+            }
           }
           break;
         case DEVICE_HUMIDITY_AHT20:
           {
             struct_AHT20 *nodeSetting = (struct_AHT20 *)temp->configPtr;
-            if (nodeSetting->logHumidity)
-              strcat(helperText, "humidity_%,");
-            if (nodeSetting->logTemperature)
-              strcat(helperText, "degC,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logHumidity)
+                strcat(helperText, "humidity_%,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "degC,");
+            }
           }
           break;
         case DEVICE_HUMIDITY_SHTC3:
           {
             struct_SHTC3 *nodeSetting = (struct_SHTC3 *)temp->configPtr;
-            if (nodeSetting->logHumidity)
-              strcat(helperText, "humidity_%,");
-            if (nodeSetting->logTemperature)
-              strcat(helperText, "degC,");
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logHumidity)
+                strcat(helperText, "humidity_%,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "degC,");
+            }
           }
           break;
         default:

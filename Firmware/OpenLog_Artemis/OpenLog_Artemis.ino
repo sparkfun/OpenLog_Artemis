@@ -34,7 +34,9 @@
   Log four pressure sensors and graph them on plotter
   Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
   Test NAU7802s
+  Should we add a 'does not like to be powered cycled' setting for each device type.
 */
+
 
 const int FIRMWARE_VERSION_MAJOR = 1;
 const int FIRMWARE_VERSION_MINOR = 4;

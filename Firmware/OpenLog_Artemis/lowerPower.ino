@@ -195,7 +195,8 @@ void wakeFromSleep()
 
   beginSD(); //285 - 293ms
 
-  beginQwiic();
+  beginQwiic(); //Power up Qwiic bus
+  long powerStartTime = millis();
 
   beginDataLogging(); //180ms
 
@@ -206,7 +207,11 @@ void wakeFromSleep()
   //If we powered down the Qwiic bus, then re-begin and re-configure everything
   if (settings.powerDownQwiicBusBetweenReads == true)
   {
-    //detectQwiicDevices();
+    //Before we talk to Qwiic devices we need to allow the power rail to settle
+    //This a
+    while (millis() - powerStartTime < settings.qwiicBusPowerUpDelayMs) //Testing, 100 too short, 200 is ok
+      delay(1); //Wait
+
     beginQwiicDevices();
     loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
   }
