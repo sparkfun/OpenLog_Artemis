@@ -26315,6 +26315,8 @@ Battery Characteristics:
 <part name="LOGO4" library="SparkFun-Aesthetics" deviceset="SFE_LOGO_FLAME" device=".1_INCH"/>
 <part name="LOGO1" library="SparkFun-Aesthetics" deviceset="SFE_LOGO_NAME" device=".1_INCH"/>
 <part name="LOGO5" library="SparkFun-Aesthetics" deviceset="SFE_LOGO_FLAME" device=".1_INCH"/>
+<part name="R3" library="SparkFun-Resistors" deviceset="220KOHM" device="-0402T-1/16W-1%" value="220k"/>
+<part name="GND9" library="SparkFun-PowerSymbols" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -26339,8 +26341,7 @@ Iq: 55uA</text>
 (1000V/Rprog)</text>
 <text x="129.794" y="155.956" size="2.54" layer="94" align="center">SWD Program/Debug Interface</text>
 <text x="88.9" y="106.68" size="2.54" layer="94" align="center">Artemis</text>
-<text x="83.82" y="96.52" size="1.778" layer="97">Artemis VCC Range:
-1.76-3.6V</text>
+<text x="93.98" y="96.52" size="1.778" layer="97" align="center">Artemis VCC Range: 1.76-3.6V</text>
 <text x="228.854" y="266.446" size="2.54" layer="94" font="vector" align="center">Linear 3.3V</text>
 <text x="178.816" y="263.652" size="1.778" layer="97" font="vector">Open jumper to switch
 or measure power</text>
@@ -26355,7 +26356,7 @@ or measure power</text>
 <wire x1="170.18" y1="0" x2="320.04" y2="0" width="0.2032" layer="97" style="longdash"/>
 <wire x1="170.18" y1="144.78" x2="297.18" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 <wire x1="297.18" y1="144.78" x2="320.04" y2="144.78" width="0.2032" layer="97" style="longdash"/>
-<text x="351.282" y="134.366" size="2.54" layer="94" font="vector" rot="R180" align="center">Qwiic</text>
+<text x="358.902" y="134.366" size="2.54" layer="94" font="vector" rot="R180" align="center">Qwiic</text>
 <text x="51.054" y="162.306" size="2.54" layer="94" font="vector" align="center">RTC Battery</text>
 <text x="197.358" y="215.9" size="1.778" layer="97" font="vector" align="center">Optional External Switch
 Also software controlled</text>
@@ -26372,19 +26373,18 @@ Also software controlled</text>
 0.3V drop at 10mA</text>
 <text x="25.4" y="119.38" size="1.778" layer="97">~20 minute charge time</text>
 <text x="25.4" y="121.92" size="1.778" layer="97">1mAhr Capacity</text>
-<wire x1="297.18" y1="210.82" x2="383.54" y2="210.82" width="0.2032" layer="97" style="longdash"/>
-<wire x1="383.54" y1="210.82" x2="383.54" y2="144.78" width="0.2032" layer="97" style="longdash"/>
-<wire x1="383.54" y1="144.78" x2="320.04" y2="144.78" width="0.2032" layer="97" style="longdash"/>
-<text x="393.7" y="91.44" size="1.27" layer="91">Analog to Qwiic VCC</text>
-<text x="154.178" y="14.478" size="1.27" layer="91">On v10:
+<wire x1="297.18" y1="210.82" x2="388.62" y2="210.82" width="0.2032" layer="97" style="longdash"/>
+<wire x1="388.62" y1="210.82" x2="388.62" y2="144.78" width="0.2032" layer="97" style="longdash"/>
+<wire x1="388.62" y1="144.78" x2="320.04" y2="144.78" width="0.2032" layer="97" style="longdash"/>
+<text x="9.398" y="9.398" size="1.27" layer="97">Change from X04 to V10:
 ICM PWR moved from 22 to 27
 SD CS moved from 10 to 23
 Add PWR_LED on 29
 Add VREG_EN on 25
 Add SDIO connection to SD</text>
-<wire x1="320.04" y1="68.58" x2="383.54" y2="68.58" width="0.2032" layer="97" style="longdash"/>
-<wire x1="383.54" y1="210.82" x2="383.54" y2="279.4" width="0.2032" layer="97" style="longdash"/>
-<wire x1="383.54" y1="68.58" x2="383.54" y2="144.78" width="0.2032" layer="97" style="longdash"/>
+<wire x1="320.04" y1="68.58" x2="388.62" y2="68.58" width="0.2032" layer="97" style="longdash"/>
+<wire x1="388.62" y1="210.82" x2="388.62" y2="279.4" width="0.2032" layer="97" style="longdash"/>
+<wire x1="388.62" y1="68.58" x2="388.62" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 </plain>
 <instances>
 <instance part="LOGO2" gate="G$1" x="416.56" y="45.72" smashed="yes"/>
@@ -26756,12 +26756,12 @@ Add SDIO connection to SD</text>
 <instance part="SUPPLY87" gate="G$1" x="281.94" y="104.14" smashed="yes">
 <attribute name="VALUE" x="281.94" y="106.934" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="J11" gate="G$1" x="345.44" y="86.36" smashed="yes">
-<attribute name="VALUE" x="340.36" y="80.264" size="1.778" layer="96" font="vector" align="top-left"/>
-<attribute name="NAME" x="340.36" y="94.234" size="1.778" layer="95" font="vector"/>
+<instance part="J11" gate="G$1" x="350.52" y="86.36" smashed="yes">
+<attribute name="VALUE" x="345.44" y="80.264" size="1.778" layer="96" font="vector" align="top-left"/>
+<attribute name="NAME" x="345.44" y="94.234" size="1.778" layer="95" font="vector"/>
 </instance>
-<instance part="GND11" gate="1" x="355.6" y="78.74" smashed="yes" rot="MR0">
-<attribute name="VALUE" x="355.6" y="78.486" size="1.778" layer="96" rot="MR0" align="top-center"/>
+<instance part="GND11" gate="1" x="360.68" y="78.74" smashed="yes" rot="MR0">
+<attribute name="VALUE" x="360.68" y="78.486" size="1.778" layer="96" rot="MR0" align="top-center"/>
 </instance>
 <instance part="U3" gate="G$1" x="231.14" y="246.38" smashed="yes">
 <attribute name="NAME" x="223.52" y="254.254" size="1.778" layer="95" font="vector"/>
@@ -26885,12 +26885,12 @@ Add SDIO connection to SD</text>
 <attribute name="NAME" x="14.224" y="156.718" size="1.778" layer="95" font="vector" rot="R270"/>
 <attribute name="VALUE" x="7.62" y="139.7" size="1.778" layer="96" font="vector" rot="MR90" align="top-left"/>
 </instance>
-<instance part="C5" gate="G$1" x="370.84" y="114.3" smashed="yes">
-<attribute name="NAME" x="372.364" y="117.221" size="1.778" layer="95" font="vector"/>
-<attribute name="VALUE" x="372.364" y="112.141" size="1.778" layer="96" font="vector"/>
+<instance part="C5" gate="G$1" x="378.46" y="114.3" smashed="yes">
+<attribute name="NAME" x="379.984" y="117.221" size="1.778" layer="95" font="vector"/>
+<attribute name="VALUE" x="379.984" y="112.141" size="1.778" layer="96" font="vector"/>
 </instance>
-<instance part="GND6" gate="1" x="370.84" y="106.68" smashed="yes" rot="MR0">
-<attribute name="VALUE" x="370.84" y="106.426" size="1.778" layer="96" rot="MR0" align="top-center"/>
+<instance part="GND6" gate="1" x="378.46" y="106.68" smashed="yes" rot="MR0">
+<attribute name="VALUE" x="378.46" y="106.426" size="1.778" layer="96" rot="MR0" align="top-center"/>
 </instance>
 <instance part="Q2" gate="G$1" x="322.58" y="190.5" smashed="yes" rot="MR180">
 <attribute name="NAME" x="327.66" y="195.58" size="1.778" layer="95" font="vector" rot="MR180"/>
@@ -26903,19 +26903,19 @@ Add SDIO connection to SD</text>
 <attribute name="NAME" x="358.14" y="185.928" size="1.778" layer="95"/>
 <attribute name="VALUE" x="358.14" y="157.48" size="1.778" layer="96"/>
 </instance>
-<instance part="U4" gate="G$1" x="347.98" y="116.84" smashed="yes">
-<attribute name="NAME" x="340.36" y="124.714" size="1.778" layer="95" font="vector"/>
-<attribute name="VALUE" x="340.36" y="108.966" size="1.778" layer="96" font="vector" align="top-left"/>
+<instance part="U4" gate="G$1" x="355.6" y="116.84" smashed="yes">
+<attribute name="NAME" x="347.98" y="124.714" size="1.778" layer="95" font="vector"/>
+<attribute name="VALUE" x="347.98" y="108.966" size="1.778" layer="96" font="vector" align="top-left"/>
 </instance>
-<instance part="C7" gate="G$1" x="360.68" y="114.3" smashed="yes">
-<attribute name="NAME" x="362.204" y="117.221" size="1.778" layer="95" font="vector"/>
-<attribute name="VALUE" x="362.204" y="112.141" size="1.778" layer="96" font="vector"/>
+<instance part="C7" gate="G$1" x="368.3" y="114.3" smashed="yes">
+<attribute name="NAME" x="369.824" y="117.221" size="1.778" layer="95" font="vector"/>
+<attribute name="VALUE" x="369.824" y="112.141" size="1.778" layer="96" font="vector"/>
 </instance>
-<instance part="GND10" gate="1" x="360.68" y="106.68" smashed="yes">
-<attribute name="VALUE" x="360.68" y="106.426" size="1.778" layer="96" align="top-center"/>
+<instance part="GND10" gate="1" x="368.3" y="106.68" smashed="yes">
+<attribute name="VALUE" x="368.3" y="106.426" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="GND12" gate="1" x="335.28" y="106.68" smashed="yes">
-<attribute name="VALUE" x="335.28" y="106.426" size="1.778" layer="96" align="top-center"/>
+<instance part="GND12" gate="1" x="342.9" y="106.68" smashed="yes">
+<attribute name="VALUE" x="342.9" y="106.426" size="1.778" layer="96" align="top-center"/>
 </instance>
 <instance part="VREG" gate="G$1" x="147.32" y="43.18" smashed="yes">
 <attribute name="NAME" x="144.272" y="39.624" size="1.778" layer="95" font="vector"/>
@@ -26925,6 +26925,13 @@ Add SDIO connection to SD</text>
 <instance part="LOGO4" gate="G$1" x="367.792" y="46.228" smashed="yes"/>
 <instance part="LOGO1" gate="G$1" x="335.534" y="36.068" smashed="yes"/>
 <instance part="LOGO5" gate="G$1" x="367.792" y="46.228" smashed="yes"/>
+<instance part="R3" gate="G$1" x="335.28" y="109.22" smashed="yes" rot="R90">
+<attribute name="NAME" x="333.756" y="109.22" size="1.778" layer="95" font="vector" rot="R90" align="bottom-center"/>
+<attribute name="VALUE" x="336.804" y="109.22" size="1.778" layer="96" font="vector" rot="R90" align="top-center"/>
+</instance>
+<instance part="GND9" gate="1" x="335.28" y="99.06" smashed="yes">
+<attribute name="VALUE" x="335.28" y="98.806" size="1.778" layer="96" align="top-center"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -27074,8 +27081,8 @@ Add SDIO connection to SD</text>
 </segment>
 <segment>
 <pinref part="J11" gate="G$1" pin="1"/>
-<wire x1="353.06" y1="83.82" x2="355.6" y2="83.82" width="0.1524" layer="91"/>
-<wire x1="355.6" y1="83.82" x2="355.6" y2="81.28" width="0.1524" layer="91"/>
+<wire x1="358.14" y1="83.82" x2="360.68" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="360.68" y1="83.82" x2="360.68" y2="81.28" width="0.1524" layer="91"/>
 <pinref part="GND11" gate="1" pin="GND"/>
 </segment>
 <segment>
@@ -27141,7 +27148,7 @@ Add SDIO connection to SD</text>
 <segment>
 <pinref part="C5" gate="G$1" pin="2"/>
 <pinref part="GND6" gate="1" pin="GND"/>
-<wire x1="370.84" y1="109.22" x2="370.84" y2="111.76" width="0.1524" layer="91"/>
+<wire x1="378.46" y1="109.22" x2="378.46" y2="111.76" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="LED1" gate="G$1" pin="C"/>
@@ -27151,13 +27158,18 @@ Add SDIO connection to SD</text>
 <segment>
 <pinref part="C7" gate="G$1" pin="2"/>
 <pinref part="GND10" gate="1" pin="GND"/>
-<wire x1="360.68" y1="109.22" x2="360.68" y2="111.76" width="0.1524" layer="91"/>
+<wire x1="368.3" y1="109.22" x2="368.3" y2="111.76" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="U4" gate="G$1" pin="GND"/>
-<wire x1="337.82" y1="111.76" x2="335.28" y2="111.76" width="0.1524" layer="91"/>
-<wire x1="335.28" y1="111.76" x2="335.28" y2="109.22" width="0.1524" layer="91"/>
+<wire x1="345.44" y1="111.76" x2="342.9" y2="111.76" width="0.1524" layer="91"/>
+<wire x1="342.9" y1="111.76" x2="342.9" y2="109.22" width="0.1524" layer="91"/>
 <pinref part="GND12" gate="1" pin="GND"/>
+</segment>
+<segment>
+<pinref part="R3" gate="G$1" pin="1"/>
+<pinref part="GND9" gate="1" pin="GND"/>
+<wire x1="335.28" y1="101.6" x2="335.28" y2="104.14" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="3.3V" class="0">
@@ -27268,9 +27280,9 @@ Add SDIO connection to SD</text>
 </segment>
 <segment>
 <pinref part="U4" gate="G$1" pin="IN"/>
-<wire x1="337.82" y1="121.92" x2="335.28" y2="121.92" width="0.1524" layer="91"/>
-<wire x1="335.28" y1="121.92" x2="335.28" y2="124.46" width="0.1524" layer="91"/>
-<label x="335.28" y="124.46" size="1.27" layer="95" rot="R90" xref="yes"/>
+<wire x1="345.44" y1="121.92" x2="342.9" y2="121.92" width="0.1524" layer="91"/>
+<wire x1="342.9" y1="121.92" x2="342.9" y2="124.46" width="0.1524" layer="91"/>
+<label x="342.9" y="124.46" size="1.27" layer="95" rot="R90" xref="yes"/>
 </segment>
 </net>
 <net name="N$7" class="0">
@@ -27627,8 +27639,8 @@ Add SDIO connection to SD</text>
 </segment>
 <segment>
 <pinref part="J11" gate="G$1" pin="4"/>
-<wire x1="353.06" y1="91.44" x2="355.6" y2="91.44" width="0.1524" layer="91"/>
-<label x="355.6" y="91.44" size="1.27" layer="95" rot="MR180" xref="yes"/>
+<wire x1="358.14" y1="91.44" x2="360.68" y2="91.44" width="0.1524" layer="91"/>
+<label x="360.68" y="91.44" size="1.27" layer="95" rot="MR180" xref="yes"/>
 </segment>
 </net>
 <net name="SDA" class="0">
@@ -27639,8 +27651,8 @@ Add SDIO connection to SD</text>
 </segment>
 <segment>
 <pinref part="J11" gate="G$1" pin="3"/>
-<wire x1="353.06" y1="88.9" x2="355.6" y2="88.9" width="0.1524" layer="91"/>
-<label x="355.6" y="88.9" size="1.27" layer="95" rot="MR180" xref="yes"/>
+<wire x1="358.14" y1="88.9" x2="360.68" y2="88.9" width="0.1524" layer="91"/>
+<label x="360.68" y="88.9" size="1.27" layer="95" rot="MR180" xref="yes"/>
 </segment>
 </net>
 <net name="ICM_PWR" class="0">
@@ -28029,8 +28041,12 @@ Add SDIO connection to SD</text>
 </segment>
 <segment>
 <pinref part="U4" gate="G$1" pin="EN"/>
-<wire x1="335.28" y1="116.84" x2="337.82" y2="116.84" width="0.1524" layer="91"/>
-<label x="335.28" y="116.84" size="1.27" layer="95" rot="R180" xref="yes"/>
+<label x="332.74" y="116.84" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="332.74" y1="116.84" x2="335.28" y2="116.84" width="0.1524" layer="91"/>
+<pinref part="R3" gate="G$1" pin="2"/>
+<wire x1="335.28" y1="116.84" x2="345.44" y2="116.84" width="0.1524" layer="91"/>
+<wire x1="335.28" y1="114.3" x2="335.28" y2="116.84" width="0.1524" layer="91"/>
+<junction x="335.28" y="116.84"/>
 </segment>
 </net>
 <net name="SD_PWR" class="0">
@@ -28085,20 +28101,20 @@ Add SDIO connection to SD</text>
 <segment>
 <pinref part="U4" gate="G$1" pin="OUT"/>
 <pinref part="C7" gate="G$1" pin="1"/>
-<wire x1="355.6" y1="121.92" x2="360.68" y2="121.92" width="0.1524" layer="91"/>
-<wire x1="360.68" y1="121.92" x2="360.68" y2="119.38" width="0.1524" layer="91"/>
-<wire x1="360.68" y1="121.92" x2="370.84" y2="121.92" width="0.1524" layer="91"/>
-<junction x="360.68" y="121.92"/>
-<label x="370.84" y="124.46" size="1.27" layer="95" rot="R90" xref="yes"/>
+<wire x1="363.22" y1="121.92" x2="368.3" y2="121.92" width="0.1524" layer="91"/>
+<wire x1="368.3" y1="121.92" x2="368.3" y2="119.38" width="0.1524" layer="91"/>
+<wire x1="368.3" y1="121.92" x2="378.46" y2="121.92" width="0.1524" layer="91"/>
+<junction x="368.3" y="121.92"/>
+<label x="378.46" y="124.46" size="1.27" layer="95" rot="R90" xref="yes"/>
 <pinref part="C5" gate="G$1" pin="1"/>
-<wire x1="370.84" y1="121.92" x2="370.84" y2="124.46" width="0.1524" layer="91"/>
-<wire x1="370.84" y1="119.38" x2="370.84" y2="121.92" width="0.1524" layer="91"/>
-<junction x="370.84" y="121.92"/>
+<wire x1="378.46" y1="121.92" x2="378.46" y2="124.46" width="0.1524" layer="91"/>
+<wire x1="378.46" y1="119.38" x2="378.46" y2="121.92" width="0.1524" layer="91"/>
+<junction x="378.46" y="121.92"/>
 </segment>
 <segment>
 <pinref part="J11" gate="G$1" pin="2"/>
-<wire x1="353.06" y1="86.36" x2="355.6" y2="86.36" width="0.1524" layer="91"/>
-<label x="355.6" y="86.36" size="1.27" layer="95" xref="yes"/>
+<wire x1="358.14" y1="86.36" x2="360.68" y2="86.36" width="0.1524" layer="91"/>
+<label x="360.68" y="86.36" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="VREG_EN1" class="0">
