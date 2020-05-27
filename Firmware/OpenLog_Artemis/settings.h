@@ -143,6 +143,8 @@ struct struct_SGP30 {
   bool log = true;
   bool logTVOC = true;
   bool logCO2 = true;
+  bool logH2 = true;
+  bool logEthanol = true;
 };
 
 struct struct_VEML6075 {

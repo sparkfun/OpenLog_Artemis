@@ -25,9 +25,8 @@ void loadSettings()
   //Read current settings
   EEPROM.get(0, settings);
 
-  //Load any settings from config file
-  if (loadSystemSettingsFromFile() == true)
-    recordSystemSettingsToFile(); //Record these new settings to EEPROM and config file
+  loadSystemSettingsFromFile(); //Load any settings from config file. This will over-write any pre-existing EEPROM settings.
+  recordSystemSettings(); //Record these new settings to EEPROM and config file to be sure they are the same
 }
 
 //Record the current settings struct to EEPROM and then to config file
@@ -445,6 +444,8 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logTVOC=" + nodeSetting->logTVOC);
             settingsFile.println((String)base + "logCO2=" + nodeSetting->logCO2);
+            settingsFile.println((String)base + "logH2=" + nodeSetting->logH2);
+            settingsFile.println((String)base + "logEthanol=" + nodeSetting->logEthanol);
           }
           break;
         case DEVICE_CO2_SCD30:
@@ -552,7 +553,8 @@ bool loadDeviceSettingsFromFile()
     }
     else
     {
-      Serial.println("No device config file found. Using device defaults.");
+      Serial.println("No device config file found. Creating one with device faults.");
+      recordDeviceSettingsToFile(); //Record the current settings to create the initial file
       return (false);
     }
   }
@@ -836,6 +838,10 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logTVOC = d;
           else if (strcmp(deviceSettingName, "logCO2") == 0)
             nodeSetting->logCO2 = d;
+          else if (strcmp(deviceSettingName, "logH2") == 0)
+            nodeSetting->logH2 = d;
+          else if (strcmp(deviceSettingName, "logEthanol") == 0)
+            nodeSetting->logEthanol = d;
           else
             Serial.printf("Unknown device setting: %s\n", deviceSettingName);
         }

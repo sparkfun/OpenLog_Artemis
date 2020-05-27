@@ -59,7 +59,7 @@ bool detectQwiicDevices()
 
   //First scan for Muxes. Valid addresses are 0x70 to 0x77.
   //If any are found, they will be begin()'d causing their ports to turn off
-  Serial.println("Scanning for multiplexers");
+  //Serial.println("Scanning for multiplexers");
   uint8_t muxCount = 0;
   for (uint8_t address = 0x70 ; address < 0x78 ; address++)
   {
@@ -75,10 +75,10 @@ bool detectQwiicDevices()
     }
   }
 
-  if(muxCount > 0) beginQwiicDevices(); //Because we are about to use a multiplexer, begin() the muxes.
+  if (muxCount > 0) beginQwiicDevices(); //Because we are about to use a multiplexer, begin() the muxes.
 
   //Before going into sub branches, complete the scan of the main branch for all devices
-  Serial.println("Scanning main bus");
+  //Serial.println("Scanning main bus");
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
     qwiic.beginTransmission(address);
@@ -134,7 +134,7 @@ bool detectQwiicDevices()
   } //End mux > 0
 
   bubbleSortDevices(head); //This may destroy mux alignment to node 0.
-  
+
   qwiic.setPullups(0); //We've detected something on the bus so disable pullups
 
   setMaxI2CSpeed(); //Try for 400kHz but reduce to 100kHz or low if certain devices are attached
@@ -1052,6 +1052,14 @@ void menuConfigure_SGP30(void *configPtr)
       Serial.print("3) Log CO2: ");
       if (sensorSetting->logCO2 == true) Serial.println("Enabled");
       else Serial.println("Disabled");
+
+      Serial.print("4) Log H2: ");
+      if (sensorSetting->logH2 == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("5) Log Ethanol: ");
+      if (sensorSetting->logEthanol == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
     }
     Serial.println("x) Exit");
 
@@ -1065,6 +1073,10 @@ void menuConfigure_SGP30(void *configPtr)
         sensorSetting->logTVOC ^= 1;
       else if (incoming == '3')
         sensorSetting->logCO2 ^= 1;
+      else if (incoming == '4')
+        sensorSetting->logH2 ^= 1;
+      else if (incoming == '5')
+        sensorSetting->logEthanol ^= 1;
       else if (incoming == 'x')
         break;
       else if (incoming == STATUS_GETBYTE_TIMEOUT)

@@ -458,6 +458,8 @@ void gatherDeviceValues()
             if (nodeSetting->log == true)
             {
               nodeDevice->measureAirQuality();
+              nodeDevice->measureRawSignals(); //To get H2 and Ethanol
+
               if (nodeSetting->logTVOC)
               {
                 sprintf(tempData, "%d,", nodeDevice->TVOC);
@@ -466,6 +468,16 @@ void gatherDeviceValues()
               if (nodeSetting->logCO2)
               {
                 sprintf(tempData, "%d,", nodeDevice->CO2);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logH2)
+              {
+                sprintf(tempData, "%d,", nodeDevice->H2);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logEthanol)
+              {
+                sprintf(tempData, "%d,", nodeDevice->ethanol);
                 strcat(outputData, tempData);
               }
             }
@@ -798,6 +810,10 @@ void printHelperText()
                 strcat(helperText, "tvoc_ppb,");
               if (nodeSetting->logCO2)
                 strcat(helperText, "co2_ppm,");
+              if (nodeSetting->logH2)
+                strcat(helperText, "unknown,");
+              if (nodeSetting->logEthanol)
+                strcat(helperText, "unknown,");
             }
           }
           break;

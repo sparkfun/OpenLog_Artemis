@@ -22,10 +22,13 @@ TwoWire qwiic(1); //Will use pads 8/9
 #include "SparkFun_SHTC3.h" // Click here to get the library: http://librarymanager/All#SparkFun_SHTC3
 SHTC3 mySHTC3;              // Declare an instance of the SHTC3 class
 
+const byte PIN_QWIIC_POWER = 18;
+
 void setup() {
   Serial.begin(115200);
 
   qwiic.begin();
+  qwiicPowerOn();
 
   Serial.println("SHTC3 Example");
 
@@ -46,4 +49,15 @@ void loop() {
   Serial.println("C");
 
   delay(10);
+}
+
+void qwiicPowerOn()
+{
+  pinMode(PIN_QWIIC_POWER, OUTPUT);
+  digitalWrite(PIN_QWIIC_POWER, HIGH);
+}
+void qwiicPowerOff()
+{
+  pinMode(PIN_QWIIC_POWER, OUTPUT);
+  digitalWrite(PIN_QWIIC_POWER, LOW);
 }

@@ -226,12 +226,14 @@ void wakeFromSleep()
 void qwiicPowerOn()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-  digitalWrite(PIN_QWIIC_POWER, LOW);
+  digitalWrite(PIN_QWIIC_POWER, LOW); //x04
+  //digitalWrite(PIN_QWIIC_POWER, HIGH); //v10
 }
 void qwiicPowerOff()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-  digitalWrite(PIN_QWIIC_POWER, HIGH);
+  digitalWrite(PIN_QWIIC_POWER, HIGH); //x04
+  //digitalWrite(PIN_QWIIC_POWER, LOW); //v10
 }
 
 void microSDPowerOn()

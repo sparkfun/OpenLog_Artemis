@@ -1,5 +1,5 @@
 /*
-  
+
 */
 
 #include <Wire.h>
@@ -16,59 +16,66 @@ void setup()
   Serial.println("LPS25HB Pressure Sensor Example 1 - Basic Readings");
   Serial.println();
 
+  qwiicPowerOn();
+  delay(200);
+
   qwiic.begin();
+  qwiic.setPullups(0); //Disable pull up resistors to avoid back feeding power to peripherals from SDA/SCL lines
+  qwiic.setClock(400000);
 }
 
-int testAmount = 20;
+int delayBeforeBegin = 5; //Min of 3
+int delayBeforeMeasurement = 40; //Min of 38
 void loop()
 {
-  if(Serial.available())
+  if (Serial.available())
   {
     byte incoming = Serial.read();
-    if(incoming == 'a') testAmount++;
-    else if(incoming == 'z') testAmount--;
-    else if(incoming == '+') testAmount += 10;
-    else if(incoming == '-') testAmount -= 10;
+    if (incoming == 'a') delayBeforeMeasurement++;
+    else if (incoming == 'z') delayBeforeMeasurement--;
+    else if (incoming == '+') delayBeforeMeasurement += 10;
+    else if (incoming == '-') delayBeforeMeasurement -= 10;
+
+    else if (incoming == 's') delayBeforeBegin++;
+    else if (incoming == 'x') delayBeforeBegin--;
+    else if (incoming == '1') delayBeforeBegin += 10;
+    else if (incoming == '2') delayBeforeBegin -= 10;
+
+    Serial.printf("delayBeforeBegin: %d ", delayBeforeBegin);
+    Serial.printf("delayBeforeMeasurement: %d\n", delayBeforeMeasurement);
   }
-  
+
   qwiicPowerOff();
-  qwiic.setPullups(0); //0.14V and dropping, but causes OLA to power reset
-  //qwiic.setPullups(1); //No reset, 1.96V (power LED dim)
-  //qwiic.setPullups(10); //No reset, 1.27V off
-  //qwiic.setPullups(27); //Max pull up resistors. 1.08V
-  delay(4000);
-  
+  qwiic.setPullups(0); //Disable pull up resistors to avoid back feeding power to peripherals from SDA/SCL lines
+  delay(200); //Make sure peripherals have powered down
+
   qwiicPowerOn();
-  delay(1000);
-  delay(testAmount);
-  
-  pressureSensor.begin(qwiic); // Begin links an I2C port and I2C address to the sensor, sets an I2C speed, begins I2C on the main board, and then sets default settings
+  delay(delayBeforeBegin);
 
-  if (pressureSensor.isConnected() == false) // The library supports some different error codes such as "DISCONNECTED"
-  {
-    Serial.println("LPS25HB disconnected. Reset the board to try again.");     // Alert the user that the device cannot be reached
-    Serial.println("Are you using the right Wire port and I2C address?");      // Suggest possible fixes
-    Serial.println("See Example2_I2C_Configuration for how to change these."); // Suggest possible fixes
-    Serial.println("");
-    //while (1)
-      //;
-  }
-  
+  pressureSensor.begin(qwiic);
+
+  if (pressureSensor.isConnected() == false)
+    Serial.println("LPS25HB disconnected!");
+
+  delay(delayBeforeMeasurement);
+  float pressure = pressureSensor.getPressure_hPa();
+  float temperature = pressureSensor.getTemperature_degC();
+
   Serial.print("Pressure in hPa: ");
-  Serial.print(pressureSensor.getPressure_hPa()); // Get the pressure reading in hPa
+  Serial.print(pressure);
   Serial.print(", Temperature (degC): ");
-  Serial.println(pressureSensor.getTemperature_degC()); // Get the temperature in degrees C
+  Serial.println(temperature);
 
-  delay(40); // Wait - 40 ms corresponds to the maximum update rate of the sensor (25 Hz)
+  //delay(40); // Wait - 40 ms corresponds to the maximum update rate of the sensor (25 Hz)
 }
 
 void qwiicPowerOn()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-  digitalWrite(PIN_QWIIC_POWER, LOW);
+  digitalWrite(PIN_QWIIC_POWER, HIGH);
 }
 void qwiicPowerOff()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-  digitalWrite(PIN_QWIIC_POWER, HIGH);
+  digitalWrite(PIN_QWIIC_POWER, LOW);
 }

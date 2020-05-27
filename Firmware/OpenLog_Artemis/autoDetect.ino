@@ -401,8 +401,6 @@ void printOnlineDevice()
     char sensorOnlineText[75];
     if (temp->online)
     {
-      configureDevice(temp); //Configure this device with the node's config settings
-
       if (temp->muxAddress == 0)
         sprintf(sensorOnlineText, "%s online at address 0x%02X\n", getDeviceName(temp->deviceType), temp->address);
       else
