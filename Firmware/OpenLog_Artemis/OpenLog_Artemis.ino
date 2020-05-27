@@ -76,7 +76,7 @@ const byte PIN_MICROSD_POWER = 15; //x04
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 #define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 
-//#define USE_EXFAT 1
+#define USE_EXFAT 1
 
 #ifdef USE_EXFAT
 //ExFat
@@ -210,12 +210,13 @@ void setup() {
   if (detectQwiicDevices() == true) //159 - 865ms but varies based on number of devices attached
   {
     beginQwiicDevices(); //Begin() each device in the node list
+    loadDeviceSettingsFromFile(); //Load config settings into node list
+    configureQwiicDevices(); //Apply config settings to each device in the node list
     printOnlineDevice();
   }
   else
     msg("No Qwiic devices detected");
 
-  loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
 
   if (settings.showHelperText == true) printHelperText();
 

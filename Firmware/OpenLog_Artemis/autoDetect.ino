@@ -574,6 +574,19 @@ void configureDevice(node * temp)
   }
 }
 
+//Apply device settings to each node
+void configureQwiicDevices()
+{
+  //Step through the list
+  node *temp = head;
+
+  while (temp != NULL)
+  {
+    configureDevice(temp);
+    temp = temp->next;
+  }
+}
+
 //Returns a pointer to the menu function that configures this particular device type
 FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
 {

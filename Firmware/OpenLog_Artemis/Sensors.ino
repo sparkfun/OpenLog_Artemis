@@ -156,6 +156,10 @@ void getData()
     strcat(outputData, tempData);
   }
 
+  //Debugging
+  sprintf(tempData, "%d,", measurementCount);
+  strcat(outputData, tempData);
+
   strcat(outputData, "\n");
 
   totalCharactersPrinted += strlen(outputData);
@@ -174,6 +178,8 @@ void gatherDeviceValues()
     //If this node successfully begin()'d
     if (temp->online == true)
     {
+      openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+
       //Switch on device type to set proper class and setting struct
       switch (temp->deviceType)
       {
@@ -189,8 +195,6 @@ void gatherDeviceValues()
 
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
-
               float currentWeight = nodeDevice->getWeight(false, nodeSetting->averageAmount); //Do not allow negative weights, take average of X readings
               sprintf(tempData, "%.*f,", nodeSetting->decimalPlaces, currentWeight);
               strcat(outputData, tempData);
@@ -204,8 +208,6 @@ void gatherDeviceValues()
 
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logDistance)
               {
                 sprintf(tempData, "%d,", nodeDevice->getDistance());
@@ -231,8 +233,6 @@ void gatherDeviceValues()
 
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logDate)
               {
                 if (settings.americanDateStyle == true)
@@ -307,10 +307,9 @@ void gatherDeviceValues()
             VCNL4040 *nodeDevice = (VCNL4040 *)temp->classPtr;
             struct_VCNL4040 *nodeSetting = (struct_VCNL4040 *)temp->configPtr;
 
+            //Get ambient takes 80ms minimum and may not play properly with power cycling
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logProximity)
               {
                 sprintf(tempData, "%d,", nodeDevice->getProximity());
@@ -331,8 +330,6 @@ void gatherDeviceValues()
 
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logTemperature)
               {
                 sprintf(tempData, "%.04f,", nodeDevice->readTempC()); //Resolution to 0.0078°C, accuracy of 0.1°C
@@ -348,8 +345,6 @@ void gatherDeviceValues()
 
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logPressure)
               {
                 sprintf(tempData, "%.02f,", nodeDevice->getPressure());
@@ -369,8 +364,6 @@ void gatherDeviceValues()
             struct_LPS25HB *nodeSetting = (struct_LPS25HB *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logPressure)
               {
                 sprintf(tempData, "%.02f,", nodeDevice->getPressure_hPa());
@@ -390,8 +383,6 @@ void gatherDeviceValues()
             struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logPressure)
               {
                 sprintf(tempData, "%.02f,", nodeDevice->readFloatPressure());
@@ -421,8 +412,6 @@ void gatherDeviceValues()
             struct_VEML6075 *nodeSetting = (struct_VEML6075 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logUVA)
               {
                 sprintf(tempData, "%.02f,", nodeDevice->uva());
@@ -448,8 +437,6 @@ void gatherDeviceValues()
             struct_CCS811 *nodeSetting = (struct_CCS811 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               nodeDevice->readAlgorithmResults();
               if (nodeSetting->logTVOC)
               {
@@ -470,8 +457,6 @@ void gatherDeviceValues()
             struct_SGP30 *nodeSetting = (struct_SGP30 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               nodeDevice->measureAirQuality();
               if (nodeSetting->logTVOC)
               {
@@ -492,8 +477,6 @@ void gatherDeviceValues()
             struct_SCD30 *nodeSetting = (struct_SCD30 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logCO2)
               {
                 sprintf(tempData, "%d,", nodeDevice->getCO2());
@@ -518,8 +501,6 @@ void gatherDeviceValues()
             struct_MS8607 *nodeSetting = (struct_MS8607 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logHumidity)
               {
                 sprintf(tempData, "%.02f,", nodeDevice->getHumidity());
@@ -544,8 +525,6 @@ void gatherDeviceValues()
             struct_MCP9600 *nodeSetting = (struct_MCP9600 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logTemperature)
               {
                 sprintf(tempData, "%.02f,", nodeDevice->getThermocoupleTemp());
@@ -565,8 +544,6 @@ void gatherDeviceValues()
             struct_AHT20 *nodeSetting = (struct_AHT20 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               if (nodeSetting->logHumidity)
               {
                 sprintf(tempData, "%.02f,", nodeDevice->getHumidity());
@@ -586,8 +563,6 @@ void gatherDeviceValues()
             struct_SHTC3 *nodeSetting = (struct_SHTC3 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              openConnection(temp->muxAddress, temp->portNumber);
-
               nodeDevice->update();
               if (nodeSetting->logHumidity)
               {

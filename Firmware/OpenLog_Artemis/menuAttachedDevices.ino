@@ -275,11 +275,9 @@ void menuConfigure_QwiicBus()
     if (settings.powerDownQwiicBusBetweenReads == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("2) Set Max Qwiic Bus Speed: ");
-    Serial.println(settings.qwiicBusMaxSpeed);
+    Serial.printf("2) Set Max Qwiic Bus Speed: %d Hz\n", settings.qwiicBusMaxSpeed);
 
-    Serial.print("3) Set Qwiic bus power up delay: ");
-    Serial.println(settings.qwiicBusPowerUpDelayMs);
+    Serial.printf("3) Set Qwiic bus power up delay: %d ms\n", settings.qwiicBusPowerUpDelayMs);
 
     Serial.println("x) Exit");
 

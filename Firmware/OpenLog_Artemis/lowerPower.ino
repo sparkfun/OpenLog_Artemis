@@ -71,7 +71,7 @@ void goToSleep()
   uint32_t msToSleep = settings.usBetweenReadings / 1000;
   uint32_t sysTicksToSleep = msToSleep * 32768L / 1000; //Counter/Timer 6 will use the 32kHz clock
 
-  sysTicksToSleep = 100 * 32768L / 1000; //For testing! Sleep for 100ms
+  //sysTicksToSleep = 10 * 32768L / 1000; //For testing! Sleep for 10ms
 
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent voltage supervisor from waking us from sleep
 
@@ -213,7 +213,8 @@ void wakeFromSleep()
       delay(1); //Wait
 
     beginQwiicDevices();
-    loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
+    //loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
+    configureQwiicDevices(); //Apply config settings to each device in the node list
   }
 
   //Serial.printf("Wake up time: %.02f ms\n", (micros() - startTime) / 1000.0);
