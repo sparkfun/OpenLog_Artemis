@@ -841,9 +841,12 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     case 0x42:
       {
         //Confidence: High - Sends/receives CRC checked data response
+      
+        qwiic.setPullups(0); //Disable pullups to minimize CRC issues
         SFE_UBLOX_GPS sensor;
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
           return (DEVICE_GPS_UBLOX);
+        qwiic.setPullups(1); //Re-enable pullups for normal discovery
       }
       break;
     case 0x48:

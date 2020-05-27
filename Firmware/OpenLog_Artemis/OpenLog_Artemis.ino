@@ -20,22 +20,21 @@
   (done on larger Strings) Remove String dependencies.
   (done) Bubble sort list of devices.
   (done) Remove listing for muxes.
-  Currently device settings are not recorded to EEPROM, only deviceSettings.txt
-  (done) Change settings extension to txt
-  (done) Fix max I2C speed to use linked list
-  Is there a better way to dynamically create size of outputData array so we don't every get larger than X sensors outputting?
-
   (done) Verify the printing of all sensors is %f, %d correct
   (done) Add begin function seperate from everything, call after wakeup instead of detect
   (done) Add counter to output to look for memory leaks on long runs
   (done) Add AHT20 support
   (done) Add SHTC3 support
+  (done) Change settings extension to txt
+  (done) Fix max I2C speed to use linked list
+  Currently device settings are not recorded to EEPROM, only deviceSettings.txt
+  Is there a better way to dynamically create size of outputData array so we don't every get larger than X sensors outputting?
   Find way to store device configs into EEPROM
   Log four pressure sensors and graph them on plotter
   Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
   Test NAU7802s
   Test SCD30s
-  Should we add a 'does not like to be powered cycled' setting for each device type.
+  Add a 'does not like to be powered cycled' setting for each device type.
 */
 
 
