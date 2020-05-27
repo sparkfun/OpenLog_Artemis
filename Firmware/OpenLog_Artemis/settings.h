@@ -237,6 +237,7 @@ struct struct_settings {
   bool powerDownQwiicBusBetweenReads = true;
   int qwiicBusMaxSpeed = 400000;
   int qwiicBusPowerUpDelayMs = 250;
+  bool printMeasurementCount = false;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

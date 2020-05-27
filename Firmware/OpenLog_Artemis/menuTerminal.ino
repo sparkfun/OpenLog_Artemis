@@ -59,6 +59,10 @@ void menuLogRate()
     if (settings.showHelperText == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
+    Serial.print("9) Output Measurement Count: ");
+    if (settings.printMeasurementCount == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
     Serial.println("x) Exit");
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -139,6 +143,8 @@ void menuLogRate()
       settings.logHertz ^= 1;
     else if (incoming == '8')
       settings.showHelperText ^= 1;
+    else if (incoming == '9')
+      settings.printMeasurementCount ^= 1;
     else if (incoming == 'x')
       return;
     else if (incoming == STATUS_GETBYTE_TIMEOUT)

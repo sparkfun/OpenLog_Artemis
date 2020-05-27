@@ -156,9 +156,11 @@ void getData()
     strcat(outputData, tempData);
   }
 
-  //Debugging
-  sprintf(tempData, "%d,", measurementCount);
-  strcat(outputData, tempData);
+  if (settings.printMeasurementCount)
+  {
+    sprintf(tempData, "%d,", measurementCount);
+    strcat(outputData, tempData);
+  }
 
   strcat(outputData, "\n");
 

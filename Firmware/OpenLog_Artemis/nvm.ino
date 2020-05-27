@@ -96,6 +96,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("powerDownQwiicBusBetweenReads=" + (String)settings.powerDownQwiicBusBetweenReads);
     settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
     settingsFile.println("qwiicBusPowerUpDelayMs=" + (String)settings.qwiicBusPowerUpDelayMs);
+    settingsFile.println("printMeasurementCount=" + (String)settings.printMeasurementCount);
     settingsFile.close();
   }
 }
@@ -292,6 +293,8 @@ bool parseLine(char* str) {
     settings.qwiicBusMaxSpeed = d;
   else if (strcmp(settingName, "qwiicBusPowerUpDelayMs") == 0)
     settings.qwiicBusPowerUpDelayMs = d;
+  else if (strcmp(settingName, "printMeasurementCount") == 0)
+    settings.printMeasurementCount = d;
   else
     Serial.printf("Unknown setting %s on line: %s\n", settingName, str);
 
