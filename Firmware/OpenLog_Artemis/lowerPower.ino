@@ -71,7 +71,9 @@ void goToSleep()
   uint32_t msToSleep = settings.usBetweenReadings / 1000;
   uint32_t sysTicksToSleep = msToSleep * 32768L / 1000; //Counter/Timer 6 will use the 32kHz clock
 
-  //sysTicksToSleep = 10 * 32768L / 1000; //For testing! Sleep for 10ms
+#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
+  sysTicksToSleep = 50 * 32768L / 1000; //For testing! Sleep for 50ms
+#endif
 
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent voltage supervisor from waking us from sleep
 
@@ -226,14 +228,24 @@ void wakeFromSleep()
 void qwiicPowerOn()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-  digitalWrite(PIN_QWIIC_POWER, LOW); //x04
-  //digitalWrite(PIN_QWIIC_POWER, HIGH); //v10
+#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
+  digitalWrite(PIN_QWIIC_POWER, LOW);
+#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
+  digitalWrite(PIN_QWIIC_POWER, HIGH);
+#elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
+  digitalWrite(PIN_QWIIC_POWER, HIGH);
+#endif
 }
 void qwiicPowerOff()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-  digitalWrite(PIN_QWIIC_POWER, HIGH); //x04
-  //digitalWrite(PIN_QWIIC_POWER, LOW); //v10
+#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
+  digitalWrite(PIN_QWIIC_POWER, HIGH);
+#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
+  digitalWrite(PIN_QWIIC_POWER, LOW);
+#elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
+  digitalWrite(PIN_QWIIC_POWER, LOW);
+#endif
 }
 
 void microSDPowerOn()

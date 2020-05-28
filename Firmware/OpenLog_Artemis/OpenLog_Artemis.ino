@@ -43,9 +43,33 @@ const int FIRMWARE_VERSION_MINOR = 4;
 
 #include "settings.h"
 
-const byte PIN_STAT_LED = 19;
+//Define the pin functions
+//Depends on hardware version. This can be found as a marking on the PCB.
+//x04 was a the SparkX 'black' version.
+//v10 was the first red version.
+#define HARDWARE_VERSION_MAJOR 0
+#define HARDWARE_VERSION_MINOR 5
+
+#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
+const byte PIN_MICROSD_CHIP_SELECT = 10;
+const byte PIN_IMU_POWER = 22;
+#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
+const byte PIN_MICROSD_CHIP_SELECT = 10;
+const byte PIN_IMU_POWER = 22;
+#elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
+const byte PIN_MICROSD_CHIP_SELECT = 23;
+const byte PIN_IMU_POWER = 27;
+const byte PIN_PWR_LED = 29;
+const byte PIN_VREG_ENABLE = 25;
+#endif
+
 const byte PIN_POWER_LOSS = 3;
 const byte PIN_LOGIC_DEBUG = 11; //TODO remove from production
+const byte PIN_MICROSD_POWER = 15;
+const byte PIN_QWIIC_POWER = 18;
+const byte PIN_STAT_LED = 19;
+const byte PIN_IMU_INT = 37;
+const byte PIN_IMU_CHIP_SELECT = 44;
 
 enum returnStatus {
   STATUS_GETBYTE_TIMEOUT = 255,
@@ -57,7 +81,6 @@ enum returnStatus {
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <Wire.h>
 TwoWire qwiic(1); //Will use pads 8/9
-const byte PIN_QWIIC_POWER = 18;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //EEPROM for storing settings
@@ -70,8 +93,6 @@ const byte PIN_QWIIC_POWER = 18;
 #include <SPI.h>
 #include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed: https://github.com/greiman/SdFat-beta
 
-const byte PIN_MICROSD_CHIP_SELECT = 10;
-const byte PIN_MICROSD_POWER = 15; //x04
 
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 #define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
@@ -114,9 +135,6 @@ int charsReceived = 0; //Used for verifying/debugging serial reception
 //Add ICM IMU interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
-const byte PIN_IMU_CHIP_SELECT = 44;
-const byte PIN_IMU_POWER = 22;
-const byte PIN_IMU_INT = 37;
 ICM_20948_SPI myICM;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
