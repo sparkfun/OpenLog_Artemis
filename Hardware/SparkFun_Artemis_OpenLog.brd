@@ -17,10 +17,10 @@
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
 <layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="yes"/>
-<layer number="21" name="tPlace" color="16" fill="1" visible="no" active="yes"/>
-<layer number="22" name="bPlace" color="14" fill="1" visible="no" active="yes"/>
-<layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="yes"/>
-<layer number="24" name="bOrigins" color="15" fill="1" visible="no" active="yes"/>
+<layer number="21" name="tPlace" color="16" fill="1" visible="yes" active="yes"/>
+<layer number="22" name="bPlace" color="14" fill="1" visible="yes" active="yes"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="25" name="tNames" color="7" fill="1" visible="no" active="yes"/>
 <layer number="26" name="bNames" color="7" fill="1" visible="no" active="yes"/>
 <layer number="27" name="tValues" color="7" fill="1" visible="no" active="yes"/>
@@ -5858,10 +5858,10 @@ high temperature heat resistance.
 <element name="LOGO4" library="SparkFun-Aesthetics" package="SFE_LOGO_FLAME_.1" value="SFE_LOGO_FLAME.1_INCH" x="28.067" y="6.223" smashed="yes"/>
 <element name="LOGO1" library="SparkFun-Aesthetics" package="SFE_LOGO_NAME_.1" value="SFE_LOGO_NAME.1_INCH" x="15.24" y="28.829" smashed="yes" rot="MR0"/>
 <element name="LOGO5" library="SparkFun-Aesthetics" package="SFE_LOGO_FLAME_.1" value="SFE_LOGO_FLAME.1_INCH" x="15.113" y="3.556" smashed="yes" rot="MR0"/>
-<element name="R3" library="SparkFun-Resistors" package="0402-TIGHT" value="220k" x="-3.81" y="-29.21" smashed="yes">
-<attribute name="NAME" x="-3.81" y="-28.648" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
-<attribute name="PROD_ID" value="RES-15094" x="-3.81" y="-29.21" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
-<attribute name="VALUE" x="-3.81" y="-29.772" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
+<element name="R3" library="SparkFun-Resistors" package="0402-TIGHT" value="220k" x="21.463" y="18.796" smashed="yes" rot="R90">
+<attribute name="NAME" x="20.901" y="18.796" size="0.6096" layer="25" font="vector" ratio="20" rot="R90" align="bottom-center"/>
+<attribute name="PROD_ID" value="RES-15094" x="21.463" y="18.796" size="1.778" layer="27" font="vector" ratio="15" rot="R90" display="off"/>
+<attribute name="VALUE" x="22.025" y="18.796" size="0.6096" layer="27" font="vector" ratio="20" rot="R90" align="top-center"/>
 </element>
 </elements>
 <signals>
@@ -5990,7 +5990,8 @@ high temperature heat resistance.
 <contactref element="U4" pad="2"/>
 <via x="23.876" y="16.002" extent="1-16" drill="0.3048"/>
 <contactref element="R3" pad="1"/>
-<wire x1="11.43" y1="1.27" x2="-4.31" y2="-29.21" width="0" layer="19" extent="1-1"/>
+<wire x1="24.9221" y1="15.621" x2="24.257" y2="15.621" width="0.4572" layer="1"/>
+<wire x1="24.257" y1="15.621" x2="23.876" y2="16.002" width="0.4572" layer="1"/>
 </signal>
 <signal name="3.3V">
 <contactref element="C41" pad="1"/>
@@ -7088,13 +7089,15 @@ high temperature heat resistance.
 <signal name="QWIIC_PWR">
 <contactref element="U8" pad="~D18"/>
 <wire x1="19.74" y1="20.9" x2="21.505" y2="20.9" width="0.1524" layer="1"/>
-<wire x1="21.505" y1="20.9" x2="21.86405625" y2="20.54094375" width="0.1524" layer="1"/>
+<wire x1="21.505" y1="20.9" x2="22.11805625" y2="20.28694375" width="0.1524" layer="1"/>
 <contactref element="U4" pad="3"/>
-<wire x1="21.86405625" y1="18.26794375" x2="21.86405625" y2="20.54094375" width="0.1524" layer="1"/>
+<wire x1="22.11805625" y1="18.01394375" x2="22.11805625" y2="19.304" width="0.1524" layer="1"/>
+<wire x1="22.11805625" y1="19.304" x2="22.11805625" y2="20.28694375" width="0.1524" layer="1"/>
 <wire x1="24.9221" y1="16.571" x2="23.561" y2="16.571" width="0.1524" layer="1"/>
-<wire x1="23.561" y1="16.571" x2="21.86405625" y2="18.26794375" width="0.1524" layer="1"/>
+<wire x1="23.561" y1="16.571" x2="22.11805625" y2="18.01394375" width="0.1524" layer="1"/>
 <contactref element="R3" pad="2"/>
-<wire x1="-3.31" y1="-29.21" x2="24.9221" y2="16.571" width="0" layer="19" extent="1-1"/>
+<wire x1="21.463" y1="19.296" x2="22.11005625" y2="19.296" width="0.1524" layer="1"/>
+<wire x1="22.11005625" y1="19.296" x2="22.11805625" y2="19.304" width="0.1524" layer="1"/>
 </signal>
 <signal name="SD_PWR">
 <contactref element="C46" pad="1"/>
@@ -7202,6 +7205,52 @@ high temperature heat resistance.
 <approved hash="3,1,309d32c5cd7e4f6e"/>
 <approved hash="3,1,53e6609660525322"/>
 <approved hash="3,1,3eef1e9f1e9c3eec"/>
+<approved hash="5,1,93d3dabecba03236"/>
+<approved hash="5,16,3b97eb632e22e5d6"/>
+<approved hash="5,16,7e1d1ae135846566"/>
+<approved hash="5,16,c032d20eaed06bb5"/>
+<approved hash="5,16,4111e83aeb8d9f09"/>
+<approved hash="5,16,2bdef512f7b5d9a8"/>
+<approved hash="5,16,4725baa7add9aca7"/>
+<approved hash="5,16,4529babfadc1aeab"/>
+<approved hash="5,16,4941e06aeb8d94e0"/>
+<approved hash="5,16,4ef89fd40febefcb"/>
+<approved hash="5,16,a2427db262814222"/>
+<approved hash="5,16,ba46380401c0787b"/>
+<approved hash="5,16,ae402c0401c0787d"/>
+<approved hash="5,16,b52838041ff07721"/>
+<approved hash="5,16,c92a44041ff07723"/>
+<approved hash="5,16,db2a3e2a17503a45"/>
+<approved hash="5,16,fc6a07080bc905de"/>
+<approved hash="5,16,50bd55336ad2c736"/>
+<approved hash="5,16,337e9e515d6e6a1a"/>
+<approved hash="5,16,6d2ea4415271c86f"/>
+<approved hash="5,16,b9050ed2b1bf7f37"/>
+<approved hash="5,16,4b3dbaa7add9a0bf"/>
+<approved hash="5,16,c644440401c07879"/>
+<approved hash="5,16,b0dfd03bc58897e7"/>
+<approved hash="5,16,25b2a5191ccef1ed"/>
+<approved hash="5,16,3dd4d4a1bdd9ac56"/>
+<approved hash="5,16,2de2b6af0293f9bd"/>
+<approved hash="5,16,bff6abdfc21ef439"/>
+<approved hash="5,16,b7b92a9d3c048be7"/>
+<approved hash="5,16,ea0fa7311032e9d6"/>
+<approved hash="5,16,a90785600b765297"/>
+<approved hash="5,16,9430ab253c89670c"/>
+<approved hash="5,16,9430ab253c89670c"/>
+<approved hash="5,16,a12e2c041ff07727"/>
+<approved hash="5,16,c201fd7d53fe7752"/>
+<approved hash="5,16,be7e828ad5792783"/>
+<approved hash="5,16,0d26d2ba502ebb1d"/>
+<approved hash="5,16,31ccd4a1bdd9a04e"/>
+<approved hash="5,16,3fd8d4b9bdc1ae5a"/>
+<approved hash="5,16,4625f7f52a32359c"/>
+<approved hash="5,16,280bae8523fe775c"/>
+<approved hash="5,16,84cb5e3a4b684db5"/>
+<approved hash="5,16,1553bcb78018b52a"/>
+<approved hash="5,16,67503ca342c8c238"/>
+<approved hash="5,16,3853c9728365bb50"/>
+<approved hash="5,16,bde0fc0953dfd74b"/>
 </errors>
 </board>
 </drawing>
