@@ -1,5 +1,5 @@
 //Needed for the MS8607 struct below
-#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+#include "SparkFun_PHT_MS8607_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_PHT_MS8607
 
 typedef enum
 {
