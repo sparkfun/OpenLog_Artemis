@@ -26894,11 +26894,14 @@ ICM PWR moved from 22 to 27
 SD CS moved from 10 to 23
 Add PWR_LED on 29
 Add VREG_EN on 25
-Add SDIO connection to SD</text>
+Add SDIO connection to SD
+Add VIN monitor on AD34 (R6/R7)
+QWIIC_PWR (18) will be active high</text>
 <wire x1="320.04" y1="68.58" x2="388.62" y2="68.58" width="0.2032" layer="97" style="longdash"/>
 <wire x1="388.62" y1="210.82" x2="388.62" y2="279.4" width="0.2032" layer="97" style="longdash"/>
 <wire x1="388.62" y1="68.58" x2="388.62" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 <text x="262.636" y="263.652" size="1.778" layer="97" font="vector">VIN monitor</text>
+<text x="342.9" y="269.24" size="2.54" layer="94" align="center">LEDs</text>
 </plain>
 <instances>
 <instance part="LOGO2" gate="G$1" x="416.56" y="45.72" smashed="yes"/>
@@ -28714,6 +28717,7 @@ Add SDIO connection to SD</text>
 <approved hash="113,1,75.5227,190.568,J4,,,,,"/>
 <approved hash="113,1,13.414,237.469,J5,,,,,"/>
 <approved hash="113,1,194.903,223.452,J3,,,,,"/>
+<approved hash="113,1,131.403,189.298,J7,,,,,"/>
 </errors>
 </schematic>
 </drawing>

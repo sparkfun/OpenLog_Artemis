@@ -6149,6 +6149,7 @@ high temperature heat resistance.
 <wire x1="25.781" y1="14.224" x2="25.781" y2="15.494" width="0.2032" layer="1"/>
 <contactref element="R6" pad="1"/>
 <via x="3.048" y="17.653" extent="1-16" drill="0.3048"/>
+<via x="5.334" y="0.889" extent="1-16" drill="0.3048"/>
 </signal>
 <signal name="3.3V">
 <contactref element="C41" pad="1"/>
@@ -6558,9 +6559,10 @@ high temperature heat resistance.
 <wire x1="13.39765625" y1="16.5226" x2="12.82625625" y2="15.9512" width="0.1524" layer="1"/>
 <wire x1="16.24" y1="18.1957125" x2="14.5668875" y2="16.5226" width="0.1524" layer="1"/>
 <wire x1="12.82625625" y1="15.9512" x2="9.0508" y2="15.9512" width="0.1524" layer="1"/>
-<wire x1="9.0508" y1="15.9512" x2="7.1966" y2="14.097" width="0.1524" layer="1"/>
-<wire x1="7.1966" y1="14.097" x2="3.937" y2="14.097" width="0.1524" layer="1"/>
-<wire x1="3.937" y1="14.097" x2="1.27" y2="11.43" width="0.1524" layer="1"/>
+<wire x1="9.0508" y1="15.9512" x2="7.8316" y2="14.732" width="0.1524" layer="1"/>
+<wire x1="7.8316" y1="14.732" x2="4.064" y2="14.732" width="0.1524" layer="1"/>
+<wire x1="4.064" y1="14.732" x2="1.27" y2="11.938" width="0.1524" layer="1"/>
+<wire x1="1.27" y1="11.938" x2="1.27" y2="11.43" width="0.1524" layer="1"/>
 </signal>
 <signal name="ARTEMIS_~AD32">
 <contactref element="U8" pad="~AD32"/>
@@ -7412,7 +7414,6 @@ high temperature heat resistance.
 <approved hash="5,16,0d26d2ba502ebb1d"/>
 <approved hash="5,16,b9050ed2b1bf7f37"/>
 <approved hash="5,16,4111e83aeb8d9f09"/>
-<approved hash="5,16,2bdef512f7b5d9a8"/>
 <approved hash="5,16,be7e828ad5792783"/>
 <approved hash="5,16,a12e2c041ff07727"/>
 <approved hash="5,16,b52838041ff07721"/>
@@ -7423,8 +7424,6 @@ high temperature heat resistance.
 <approved hash="5,16,25b2a5191ccef1ed"/>
 <approved hash="5,16,31ccd4a1bdd9a04e"/>
 <approved hash="5,16,b7b92a9d3c048be7"/>
-<approved hash="5,16,7fff2e79c8a8bb20"/>
-<approved hash="5,16,7512a1c478380290"/>
 <approved hash="5,16,3c1f088403d5ad15"/>
 <approved hash="5,16,1553bcb78018b52a"/>
 <approved hash="5,16,67503ca342c8c238"/>
@@ -7438,8 +7437,6 @@ high temperature heat resistance.
 <approved hash="5,16,b9e33c47cf6efe10"/>
 <approved hash="5,16,c92a44041ff07723"/>
 <approved hash="5,16,c201fd7d53fe7752"/>
-<approved hash="5,16,929e41cac8a32fe9"/>
-<approved hash="5,16,bae3b5d3f3c6e7f6"/>
 <approved hash="5,16,fc6a07080bc905de"/>
 <approved hash="5,16,f4a3919ba4a769f5"/>
 <approved hash="5,16,c032d20eaed06bb5"/>
@@ -7449,6 +7446,11 @@ high temperature heat resistance.
 <approved hash="5,16,ba46380401c0787b"/>
 <approved hash="5,16,9430ab253c89670c"/>
 <approved hash="5,16,9430ab253c89670c"/>
+<approved hash="5,16,4625f7f52a32359c"/>
+<approved hash="5,16,f512f7b5d9a82bde"/>
+<approved hash="5,16,929e41cac8a32fe9"/>
+<approved hash="5,16,bff6abdfc21ef439"/>
+<approved hash="5,16,bae3b5d3f3c6e7f6"/>
 </errors>
 </board>
 </drawing>
