@@ -61,6 +61,7 @@ const byte PIN_MICROSD_CHIP_SELECT = 23;
 const byte PIN_IMU_POWER = 27;
 const byte PIN_PWR_LED = 29;
 const byte PIN_VREG_ENABLE = 25;
+const byte PIN_VIN_MONITOR = 34; // VIN/3 (1M/2M - will require a correction factor)
 #endif
 
 const byte PIN_POWER_LOSS = 3;

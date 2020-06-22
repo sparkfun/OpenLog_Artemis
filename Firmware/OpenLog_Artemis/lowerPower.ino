@@ -270,6 +270,20 @@ void imuPowerOff()
   digitalWrite(PIN_IMU_POWER, LOW);
 }
 
+//Read the VIN voltage
+float readVIN()
+{
+  // Only supported on V10 hardware
+#if(HARDWARE_VERSION_MAJOR == 0)
+  return(0.0); // Return 0.0V on old hardware
+#else
+  int div3 = analogRead(PIN_VIN_MONITOR); //Read VIN across a 1/3 resistor divider
+  float vcc = (float)div3 * 3.0 * 2.0 / 16384.0; //Convert 1/3 VCC to VCC (14-bit resolution)
+  vcc = vcc * 1.021; //Correct for divider impedance
+  return (vcc);
+#endif
+}
+
 //Returns the number of milliseconds according to the RTC
 //Watch out for 24 hour roll over at 86,400,000ms
 uint32_t rtcMillis()
