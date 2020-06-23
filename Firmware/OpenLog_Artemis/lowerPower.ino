@@ -70,8 +70,9 @@ void goToSleep()
 {
   uint32_t msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
 
+  printDebug("Sleeping for ");
   printDebug(String(msToSleep));
-  printDebug(" msToSleep\n");
+  printDebug("ms\n");
 
   //Counter/Timer 6 will use the 32kHz clock
   //Calculate how many 32768Hz system ticks we need to sleep for:

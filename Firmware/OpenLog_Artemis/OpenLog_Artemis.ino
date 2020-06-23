@@ -36,7 +36,7 @@
   Test SCD30s
   Add a 'does not like to be powered cycled' setting for each device type.
   Add support for logging VIN
-  Investigate error in time between logs (https://github.com/sparkfun/OpenLog_Artemis/issues/13)
+  (done?) Investigate error in time between logs (https://github.com/sparkfun/OpenLog_Artemis/issues/13)
   Invesigate RTC reset issue (https://github.com/sparkfun/OpenLog_Artemis/issues/13 + https://forum.sparkfun.com/viewtopic.php?f=123&t=53157)
   Investigate requires-reset issue on battery power (") (X04 + CCS811/BME280 enviro combo)
   Investigate why MS8607 and MS5637 appear together when only MS8607 is connected
@@ -52,7 +52,7 @@ const int FIRMWARE_VERSION_MINOR = 4;
 
 //Define the pin functions
 //Depends on hardware version. This can be found as a marking on the PCB.
-//x04 was a the SparkX 'black' version.
+//x04 was the SparkX 'black' version.
 //v10 was the first red version.
 #define HARDWARE_VERSION_MAJOR 0
 #define HARDWARE_VERSION_MINOR 4 // 5

@@ -60,12 +60,36 @@ void recordSystemSettingsToFile()
     settingsFile.println("nextSerialLogNumber=" + (String)settings.nextSerialLogNumber);
     settingsFile.println("nextDataLogNumber=" + (String)settings.nextDataLogNumber);
 
-    char tempTime[20];
-    // *** This seems to fail for large values (> 32 bits ???) ***
-    sprintf(tempTime, "%lu", settings.usBetweenReadings);
+    // Convert uint64_t to string
+    // Based on printLLNumber by robtillaart
+    // https://forum.arduino.cc/index.php?topic=143584.msg1519824#msg1519824
+    char tempTimeRev[20]; // Char array to hold to usBetweenReadings (reversed order)
+    char tempTime[20]; // Char array to hold to usBetweenReadings (correct order)
+    uint64_t usBR = settings.usBetweenReadings;
+    unsigned int i = 0;
+    if (usBR == 0ULL) // if usBetweenReadings is zero, set tempTime to "0"
+    {
+      tempTime[0] = '0';
+      tempTime[1] = 0;
+    }
+    else
+    {
+      while (usBR > 0)
+      {
+        tempTimeRev[i++] = (usBR % 10) + '0'; // divide by 10, convert the remainder to char
+        usBR /= 10; // divide by 10
+      }
+      unsigned int j = 0;
+      while (i > 0)
+      {
+        tempTime[j++] = tempTimeRev[--i]; // reverse the order
+        tempTime[j] = 0; // mark the end with a NULL
+      }
+    }
+    
     settingsFile.println("usBetweenReadings=" + (String)tempTime);
 
-    printDebug("Saving usBetweenReadings to SD card. Value is ");
+    printDebug("Saving usBetweenReadings to SD card: ");
     printDebug((String)tempTime);
     printDebug("\n");
 
@@ -235,7 +259,7 @@ bool parseLine(char* str) {
   else if (strcmp(settingName, "usBetweenReadings") == 0)
   {
     settings.usBetweenReadings = d;
-    printDebug("Read usBetweenReadings from SD card. Value is ");
+    printDebug("Read usBetweenReadings from SD card: ");
     printDebug(String(d));
     printDebug("\n");
   }
