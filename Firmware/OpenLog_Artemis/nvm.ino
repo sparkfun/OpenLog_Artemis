@@ -61,8 +61,13 @@ void recordSystemSettingsToFile()
     settingsFile.println("nextDataLogNumber=" + (String)settings.nextDataLogNumber);
 
     char tempTime[20];
+    // *** This seems to fail for large values (> 32 bits ???) ***
     sprintf(tempTime, "%lu", settings.usBetweenReadings);
     settingsFile.println("usBetweenReadings=" + (String)tempTime);
+
+    printDebug("Saving usBetweenReadings to SD card. Value is ");
+    printDebug((String)tempTime);
+    printDebug("\n");
 
     settingsFile.println("logMaxRate=" + (String)settings.logMaxRate);
     settingsFile.println("enableRTC=" + (String)settings.enableRTC);
@@ -228,7 +233,12 @@ bool parseLine(char* str) {
   else if (strcmp(settingName, "nextDataLogNumber") == 0)
     settings.nextDataLogNumber = d;
   else if (strcmp(settingName, "usBetweenReadings") == 0)
+  {
     settings.usBetweenReadings = d;
+    printDebug("Read usBetweenReadings from SD card. Value is ");
+    printDebug(String(d));
+    printDebug("\n");
+  }
   else if (strcmp(settingName, "logMaxRate") == 0)
     settings.logMaxRate = d;
   else if (strcmp(settingName, "enableRTC") == 0)

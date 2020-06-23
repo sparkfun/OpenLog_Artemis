@@ -21,16 +21,16 @@ void menuLogRate()
     if (settings.logMaxRate == true) Serial.println("Max rate enabled");
     else
     {
-      if (settings.usBetweenReadings < 1000000UL) //Take more than one measurement per second
+      if (settings.usBetweenReadings < 1000000ULL) //Take more than one measurement per second
       {
         //Display Integer Hertz
-        int logRate = 1000000UL / settings.usBetweenReadings;
+        int logRate = (int)(1000000ULL / settings.usBetweenReadings);
         Serial.printf("%d\n", logRate);
       }
       else
       {
         //Display fractional Hertz
-        uint32_t logRateSeconds = settings.usBetweenReadings / 1000000UL;
+        uint32_t logRateSeconds = (uint32_t)(settings.usBetweenReadings / 1000000ULL);
         Serial.printf("%.06lf\n", 1.0 / logRateSeconds);
       }
     }
@@ -39,11 +39,15 @@ void menuLogRate()
     if (settings.logMaxRate == true) Serial.println("Max rate enabled");
     else
     {
-      if (settings.usBetweenReadings > 1000000UL) //Take more than one measurement per second
-        Serial.printf("%llu\n", settings.usBetweenReadings / 1000000UL);
+      if (settings.usBetweenReadings > 1000000ULL) //Take more than one measurement per second
+      {
+        uint32_t interval = (uint32_t)(settings.usBetweenReadings / 1000000ULL);
+        Serial.printf("%d\n", interval);
+      }
       else
       {
-        Serial.printf("%.06lf\n", settings.usBetweenReadings / 1000000.0);
+        float rate = (float)(settings.usBetweenReadings / 1000000.0);
+        Serial.printf("%.06f\n", rate);
       }
     }
 
@@ -100,17 +104,20 @@ void menuLogRate()
       if (tempRPS < 1 || tempRPS > maxOutputRate)
         Serial.println("Error: Readings Per Second out of range");
       else
-        settings.usBetweenReadings = 1000000UL / tempRPS;
+        settings.usBetweenReadings = 1000000ULL / tempRPS;
     }
     else if (incoming == '5')
     {
-      Serial.println("How many seconds would you like to sleep between readings? (1 to 6,000,000,000):");
+      //The Deep Sleep duration is set with am_hal_stimer_compare_delta_set, the duration of which is uint32_t
+      //So the maximum we can sleep for is 2^32 / 32768 = 131072 seconds = 36.4 hours
+      //Let's limit this to 36 hours = 129600 seconds
+      Serial.println("How many seconds would you like to sleep between readings? (1 to 129,600):");
       uint64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
-      if (tempSeconds < 1 || tempSeconds > 6000000000ULL)
+      if (tempSeconds < 1 || tempSeconds > 129600ULL)
         Serial.println("Error: Readings Per Second out of range");
       else
         //settings.recordPerSecond = tempRPS;
-        settings.usBetweenReadings = 1000000UL * tempSeconds;
+        settings.usBetweenReadings = 1000000ULL * tempSeconds;
     }
     else if (incoming == '6')
     {

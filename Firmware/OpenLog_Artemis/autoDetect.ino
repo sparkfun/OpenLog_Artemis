@@ -471,8 +471,8 @@ void configureDevice(node * temp)
 
         //sensor->setAutoPVT(true); //Tell the GPS to "send" each solution
         sensor->setAutoPVT(false); //We will poll the device for PVT solutions
-        if (1000000UL / settings.usBetweenReadings <= 10) //If we are slower than 10Hz logging rate
-          sensor->setNavigationFrequency(1000000 / settings.usBetweenReadings); //Set output rate equal to our query rate
+        if (1000000ULL / settings.usBetweenReadings <= 10) //If we are slower than 10Hz logging rate
+          sensor->setNavigationFrequency(1000000ULL / settings.usBetweenReadings); //Set output rate equal to our query rate
         else
           sensor->setNavigationFrequency(10); //Set nav freq to 10Hz. Max output depends on the module used.
 

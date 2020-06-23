@@ -68,12 +68,30 @@ void powerDown()
 //Power everything down and wait for interrupt wakeup
 void goToSleep()
 {
-  uint32_t msToSleep = settings.usBetweenReadings / 1000;
-  uint32_t sysTicksToSleep = msToSleep * 32768L / 1000; //Counter/Timer 6 will use the 32kHz clock
+  uint32_t msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
 
-#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
-  sysTicksToSleep = 50 * 32768L / 1000; //For testing! Sleep for 50ms
-#endif
+  printDebug(String(msToSleep));
+  printDebug(" msToSleep\n");
+
+  //Counter/Timer 6 will use the 32kHz clock
+  //Calculate how many 32768Hz system ticks we need to sleep for:
+  //sysTicksToSleep = msToSleep * 32768L / 1000
+  //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
+  uint32_t sysTicksToSleep;
+  if (msToSleep < 131000)
+  {
+    sysTicksToSleep = msToSleep * 32768L; // Do the multiply first for short intervals
+    sysTicksToSleep = sysTicksToSleep / 1000L; // Now do the divide
+  }
+  else
+  {
+    sysTicksToSleep = msToSleep / 1000L; // Do the division first for long intervals (to avoid an overflow)
+    sysTicksToSleep = sysTicksToSleep * 32768L; // Now do the multiply
+  }
+  
+  printDebug("Sleeping for ");
+  printDebug(String(sysTicksToSleep));
+  printDebug(" 32.768kHz clock cycles\n");
 
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent voltage supervisor from waking us from sleep
 
@@ -141,7 +159,7 @@ void goToSleep()
 
   //Adjust sysTicks down by the amount we've be at 48MHz
   uint32_t msBeenAwake = millis();
-  uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000; //Convert to 32kHz systicks
+  uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
   sysTicksToSleep -= sysTicksAwake;
 
   //Setup interrupt to trigger when the number of ms have elapsed
@@ -285,15 +303,62 @@ float readVIN()
 }
 
 //Returns the number of milliseconds according to the RTC
-//Watch out for 24 hour roll over at 86,400,000ms
-uint32_t rtcMillis()
+//(In increments of 10ms)
+//Watch out for the year roll-over!
+uint64_t rtcMillis()
 {
   myRTC.getTime();
-  uint32_t millisToday = 0;
-  millisToday += (myRTC.hour * 3600000UL);
-  millisToday += (myRTC.minute * 60000UL);
-  millisToday += (myRTC.seconds * 1000UL);
-  millisToday += (myRTC.hundredths * 10UL);
+  uint64_t millisToday = 0;
+  int dayOfYear = calculateDayOfYear(myRTC.dayOfMonth, myRTC.month, myRTC.year + 2000);
+  millisToday += ((uint64_t)dayOfYear * 86400000ULL);
+  millisToday += ((uint64_t)myRTC.hour * 3600000ULL);
+  millisToday += ((uint64_t)myRTC.minute * 60000ULL);
+  millisToday += ((uint64_t)myRTC.seconds * 1000ULL);
+  millisToday += ((uint64_t)myRTC.hundredths * 10ULL);
 
   return (millisToday);
+}
+
+//Returns the day of year
+//https://gist.github.com/jrleeman/3b7c10712112e49d8607
+int calculateDayOfYear(int day, int month, int year)
+{  
+  // Given a day, month, and year (4 digit), returns 
+  // the day of year. Errors return 999.
+  
+  int daysInMonth[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+  
+  // Verify we got a 4-digit year
+  if (year < 1000) {
+    return 999;
+  }
+  
+  // Check if it is a leap year, this is confusing business
+  // See: https://support.microsoft.com/en-us/kb/214019
+  if (year%4  == 0) {
+    if (year%100 != 0) {
+      daysInMonth[1] = 29;
+    }
+    else {
+      if (year%400 == 0) {
+        daysInMonth[1] = 29;
+      }
+    }
+   }
+
+  // Make sure we are on a valid day of the month
+  if (day < 1) 
+  {
+    return 999;
+  } else if (day > daysInMonth[month-1]) {
+    return 999;
+  }
+  
+  int doy = 0;
+  for (int i = 0; i < month - 1; i++) {
+    doy += daysInMonth[i];
+  }
+  
+  doy += day;
+  return doy;
 }
