@@ -39,9 +39,7 @@
   (done?) Investigate error in time between logs (https://github.com/sparkfun/OpenLog_Artemis/issues/13)
   Invesigate RTC reset issue (https://github.com/sparkfun/OpenLog_Artemis/issues/13 + https://forum.sparkfun.com/viewtopic.php?f=123&t=53157)
   Investigate requires-reset issue on battery power (") (X04 + CCS811/BME280 enviro combo)
-  Investigate why MS8607 and MS5637 appear together when only MS8607 is connected
-    MS8607 has two I2C addresses: 0x40 for humidity; 0x76 for pressure - which is the same as the MS5637
-    Check if we need to add a test to ignore the MS5637 if a MS8607 is connected (on the same bus)?
+  (done) Add a fix so that the MS8607 does not also appear as an MS5637
   (done) Add "set RTC from GPS" functionality
   (done) Add UTCoffset functionality (including support for negative numbers)
 */

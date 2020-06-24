@@ -79,6 +79,7 @@ bool detectQwiicDevices()
 
   //Before going into sub branches, complete the scan of the main branch for all devices
   //Serial.println("Scanning main bus");
+  bool foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
     qwiic.beginTransmission(address);
@@ -87,10 +88,21 @@ bool detectQwiicDevices()
       deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType != DEVICE_UNKNOWN_DEVICE)
       {
-        if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
+        if ((foundType == DEVICE_PRESSURE_MS5637) && (foundMS8607 == true))
         {
-          //Serial.printf("-Added %s at address 0x%02X\n", getDeviceName(foundType), address);
+          ; // Skip MS5637 as we have already found an MS8607
         }
+        else
+        {
+          if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
+          {
+            //Serial.printf("-Added %s at address 0x%02X\n", getDeviceName(foundType), address);
+          }
+        }
+        if (foundType == DEVICE_PHT_MS8607)
+        {
+          foundMS8607 = true; // Flag that we have found an MS8607
+        }        
       }
     }
   }
@@ -110,7 +122,8 @@ bool detectQwiicDevices()
       for (int portNumber = 0 ; portNumber < 7 ; portNumber++)
       {
         myMux->setPort(portNumber);
-
+        foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
+        
         //Scan this new bus for new addresses
         for (uint8_t address = 1 ; address < 127 ; address++)
         {
@@ -122,10 +135,21 @@ bool detectQwiicDevices()
             deviceType_e foundType = testDevice(address, muxNode->address, portNumber);
             if (foundType != DEVICE_UNKNOWN_DEVICE)
             {
-              if (addDevice(foundType, address, muxNode->address, portNumber) == true) //Record this device, with mux port specifics.
+              if ((foundType == DEVICE_PRESSURE_MS5637) && (foundMS8607 == true))
               {
-                //Serial.printf("-Added %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+                ; // Skip MS5637 as we have already found an MS8607
               }
+              else
+              {
+                if (addDevice(foundType, address, muxNode->address, portNumber) == true) //Record this device, with mux port specifics.
+                {
+                  //Serial.printf("-Added %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+                }
+              }
+              if (foundType == DEVICE_PHT_MS8607)
+              {
+                foundMS8607 = true; // Flag that we have found an MS8607
+              }        
             }
           } //End I2c check
         } //End I2C scanning
