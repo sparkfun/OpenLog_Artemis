@@ -42,6 +42,8 @@
   Investigate why MS8607 and MS5637 appear together when only MS8607 is connected
     MS8607 has two I2C addresses: 0x40 for humidity; 0x76 for pressure - which is the same as the MS5637
     Check if we need to add a test to ignore the MS5637 if a MS8607 is connected (on the same bus)?
+  (done) Add "set RTC from GPS" functionality
+  (done) Add UTCoffset functionality (including support for negative numbers)
 */
 
 

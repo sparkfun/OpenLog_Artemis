@@ -4,14 +4,17 @@
 //Adjust the date as necessary
 //Returns a string according to user's settings
 //Leap year is taken into account but does not interact with DST (DST happens later in March)
-String getGPSDateTime() {
+//
+//Note: this function should only be called if we know that a u-blox GNSS is actually connected
+//
+String getGPSDateTimeAsStr() {
   //Get latested date/time from GPS
-  //  int year = gpsSensor_ublox.getYear();
-  //  int month = gpsSensor_ublox.getMonth();
-  //  int day = gpsSensor_ublox.getDay();
-  //  int hour = gpsSensor_ublox.getHour();
-  //  int minute = gpsSensor_ublox.getMinute();
-  //  int second = gpsSensor_ublox.getSecond();
+//  int year = gpsSensor_ublox.getYear();
+//  int month = gpsSensor_ublox.getMonth();
+//  int day = gpsSensor_ublox.getDay();
+//  int hour = gpsSensor_ublox.getHour();
+//  int minute = gpsSensor_ublox.getMinute();
+//  int second = gpsSensor_ublox.getSecond();
 
   int year = 19;
   int month = 1;
@@ -46,6 +49,20 @@ String getGPSDateTime() {
   myTime += ",";
 
   return (myTime);
+}
+
+//Gets the current time from GPS
+//Adjust the hour by local hour offset
+//Adjust the date as necessary
+//
+//Note: this function should only be called if we know that a u-blox GNSS is actually connected
+//
+void getGPSDateTime(int &year, int &month, int &day, int &hour, int &minute, int &second, int &millisecond) {
+  //Get latested date/time from GPS
+  //These will be extracted from a single PVT packet
+  getUbloxDateTime(year, month, day, hour, minute, second, millisecond);
+
+  adjustToLocalDateTime(year, month, day, hour, settings.localUTCOffset);
 }
 
 //Given the date and hour, calculate local date/time

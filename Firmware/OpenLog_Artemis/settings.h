@@ -232,7 +232,7 @@ struct struct_settings {
   bool logA13 = false;
   bool logA32 = false;
   bool logAnalogVoltages = true;
-  int localUTCOffset = -7; //Default to Denver because we can
+  int localUTCOffset = 0; //Default to UTC because we should
   bool printDebugMessages = false;
   bool powerDownQwiicBusBetweenReads = true;
   int qwiicBusMaxSpeed = 400000;

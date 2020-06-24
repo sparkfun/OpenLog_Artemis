@@ -838,15 +838,66 @@ void menuConfigure_uBlox(void *configPtr)
       }
       else if (incoming == STATUS_PRESSED_X)
         break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
       else
         printUnknown(incoming);
     }
     else if (incoming == STATUS_PRESSED_X)
       break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
     else
       printUnknown(incoming);
   }
 
+}
+
+bool isUbloxAttached()
+{
+  //Step through node list
+  node *temp = head;
+
+  while (temp != NULL)
+  {
+    switch (temp->deviceType)
+    {
+      case DEVICE_GPS_UBLOX:
+        return (true);
+    }
+    temp = temp->next;
+  }
+
+  return(false);
+}
+
+void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, int &second, int &millisecond)
+{
+  //Step through node list
+  node *temp = head;
+
+  while (temp != NULL)
+  {
+    switch (temp->deviceType)
+    {
+      case DEVICE_GPS_UBLOX:
+      {
+        SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
+        struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+
+        //Get latested date/time from GPS
+        //These will be extracted from a single PVT packet
+        year = nodeDevice->getYear();
+        month = nodeDevice->getMonth();
+        day = nodeDevice->getDay();
+        hour = nodeDevice->getHour();
+        minute = nodeDevice->getMinute();
+        second = nodeDevice->getSecond();
+        millisecond = nodeDevice->getMillisecond();
+      }
+    }
+    temp = temp->next;
+  }
 }
 
 void menuConfigure_MCP9600(void *configPtr)

@@ -55,7 +55,7 @@ uint8_t getByteChoice(int numberOfSeconds)
 
     if ( (millis() - startTime) / 1000 >= numberOfSeconds)
     {
-      Serial.println("No user input recieved.");
+      Serial.println("No user input received.");
       return (STATUS_GETBYTE_TIMEOUT); //Timeout. No user input.
     }
 
@@ -86,7 +86,7 @@ int64_t getNumber(int numberOfSeconds)
       {
         if (spot == 0)
         {
-          Serial.println("No user input recieved. Do you have line endings turned on?");
+          Serial.println("No user input received. Do you have line endings turned on?");
           return (STATUS_GETNUMBER_TIMEOUT); //Timeout. No user input.
         }
         else if (spot > 0)
@@ -110,7 +110,7 @@ int64_t getNumber(int numberOfSeconds)
       break;
     }
 
-    if (isDigit(incoming) == true)
+    if ((isDigit(incoming) == true) || ((incoming == '-') && (spot == 0))) // Check for digits and a minus sign
     {
       Serial.write(incoming); //Echo user's typing
       cleansed[spot++] = (char)incoming;
@@ -124,12 +124,20 @@ int64_t getNumber(int numberOfSeconds)
 
   cleansed[spot] = '\0';
 
-  uint64_t largeNumber = 0;
-  for(int x = 0 ; x < spot ; x++)
+  int64_t largeNumber = 0;
+  int x = 0;
+  if (cleansed[0] == '-') // If our number is negative
+  {
+    x = 1; // Skip the minus
+  }
+  for( ; x < spot ; x++)
   {
     largeNumber *= 10;
     largeNumber += (cleansed[x] - '0');
   }
-
+  if (cleansed[0] == '-') // If our number is negative
+  {
+    largeNumber = 0 - largeNumber; // Make it negative
+  }
   return (largeNumber);
 }
