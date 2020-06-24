@@ -42,6 +42,8 @@
   (done) Add a fix so that the MS8607 does not also appear as an MS5637
   (done) Add "set RTC from GPS" functionality
   (done) Add UTCoffset functionality (including support for negative numbers)
+  Figure out how to give the u-blox time to establish a fix if it has been powered down between log intervals.
+    Maybe add a waitForValidFix feature? Or maybe we can work around using a big value for "Set Qwiic bus power up delay"?
 */
 
 
@@ -187,12 +189,15 @@ const byte menuTimeout = 45; //Menus will exit/timeout after this number of seco
 #define DUMP(varname) {Serial.printf("%s: %llu\n", #varname, varname);}
 
 void setup() {
+  pinMode(PIN_STAT_LED, OUTPUT);
+  digitalWrite(PIN_STAT_LED, HIGH); // Turn the STAT LED on while we configure everything
+
+  delay(1000); // Let the bus voltage stabilize before calling attachInterrupt
+  
   //If 3.3V rail drops below 3V, system will power down and maintain RTC
+  //Only a reset can bring the system out of powerDown
   pinMode(PIN_POWER_LOSS, INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
-
-  pinMode(PIN_STAT_LED, OUTPUT);
-  digitalWrite(PIN_STAT_LED, LOW);
 
   Serial.begin(115200); //Default for initial debug messages if necessary
   Serial.println();
@@ -252,6 +257,8 @@ void setup() {
     measurementStartTime = millis();
 
   //Serial.printf("Setup time: %.02f ms\n", (micros() - startTime) / 1000.0);
+
+  digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
 
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something

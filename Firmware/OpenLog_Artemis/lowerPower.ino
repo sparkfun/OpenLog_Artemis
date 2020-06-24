@@ -229,7 +229,6 @@ void wakeFromSleep()
   if (settings.powerDownQwiicBusBetweenReads == true)
   {
     //Before we talk to Qwiic devices we need to allow the power rail to settle
-    //This a
     while (millis() - powerStartTime < settings.qwiicBusPowerUpDelayMs) //Testing, 100 too short, 200 is ok
       delay(1); //Wait
 
