@@ -13,6 +13,12 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
 {
   File newFile; //This will contain the file for SD writing
 
+  if (newFileNumber < 2) //If the settings have been reset, let's warn the user that this could take a while!
+  {
+    Serial.println(F("Finding the next available log file."));
+    Serial.println(F("This could take a long time if the SD card contains many existing log files."));
+  }
+
   if (newFileNumber > 0)
     newFileNumber--; //Check if last log file was empty
 

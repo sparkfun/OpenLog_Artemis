@@ -3,19 +3,25 @@
 //This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
 //With leakage across the 3.3V protection diode, it's approx 3.00uA.
 void powerDown()
-{
-  //digitalWrite(LOGIC_DEBUG, HIGH);
+{ 
+  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent repeat interrupts
 
-  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent voltage supervisor from waking us from sleep
+  // We are still in an ISR so things are weird...
+  // We need to do this otherwise the WDT can't interrupt us
+  am_hal_interrupt_master_enable();
+
+  lowPowerSeen = true; // Set flag
 
   //Save files before going to sleep
   //  if (online.dataLogging == true)
   //  {
   //    sensorDataFile.sync();
+  //    sensorDataFile.close();
   //  }
   //  if (online.serialLogging == true)
   //  {
   //    serialDataFile.sync();
+  //    serialDataFile.close();
   //  }
 
   //Serial.flush(); //Don't waste time waiting for prints to finish
@@ -41,9 +47,26 @@ void powerDown()
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
-  //Disable all pads
+  //Disable pads
   for (int x = 0; x < 50; x++)
-    am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
+  {
+    if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
+      (x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+      (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
+      (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
+      (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+    {
+      am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
+    }
+  }
+
+  //powerLEDOff();
+  
+  //Make sure PIN_POWER_LOSS is configured as an input
+  //pinMode(PIN_POWER_LOSS, INPUT_PULLUP); // TODO: check if the pullup increases sleep current
+
+  //pinMode(PIN_LOGIC_DEBUG, OUTPUT);
+  //digitalWrite(PIN_LOGIC_DEBUG, LOW);
 
   //We can't leave these power control pins floating
   qwiicPowerOff();
@@ -62,7 +85,14 @@ void powerDown()
 
   //digitalWrite(LOGIC_DEBUG, LOW);
 
-  am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP); //Sleep forever
+  while (1) // Stay in deep sleep until we get reset (by the user or WDT)
+  {
+    // We are still in an ISR so things are weird...
+    // We need to do this otherwise the WDT can't interrupt us
+    am_hal_interrupt_master_enable();
+
+    am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP); //Sleep forever (until reset)
+  }
 }
 
 //Power everything down and wait for interrupt wakeup
@@ -131,9 +161,18 @@ void goToSleep()
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
-  //Disable all pads
+  //Disable pads
   for (int x = 0; x < 50; x++)
-    am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
+  {
+    if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
+      (x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+      (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
+      (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
+      (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+    {
+      am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
+    }
+  }
 
   //We can't leave these power control pins floating
   imuPowerOff();
@@ -147,6 +186,12 @@ void goToSleep()
     qwiicPowerOff();
   else
     qwiicPowerOn(); //Make sure pins stays as output
+
+  //Leave the power LED on if the user desires it
+  if (settings.enablePwrLedDuringSleep == true)
+    powerLEDOn();
+  //else
+  //  powerLEDOff();
 
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE);         //Turn off CACHE
@@ -180,7 +225,7 @@ void goToSleep()
   //Turn off interrupt
   NVIC_DisableIRQ(STIMER_CMPR6_IRQn);
 
-  am_hal_stimer_int_disable(AM_HAL_STIMER_INT_COMPAREG); //Enable C/T G=6
+  am_hal_stimer_int_disable(AM_HAL_STIMER_INT_COMPAREG); //Disable C/T G=6
 
   //We're BACK!
   wakeFromSleep();
@@ -204,11 +249,14 @@ void wakeFromSleep()
   //Run setup again
 
   //If 3.3V rail drops below 3V, system will enter low power mode and maintain RTC
+  //pinMode(PIN_POWER_LOSS, INPUT_PULLUP); // TODO: check if the pullup increases sleep current
   pinMode(PIN_POWER_LOSS, INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
 
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, LOW);
+
+  powerLEDOn();
 
   Serial.begin(settings.serialTerminalBaudRate);
 
@@ -286,6 +334,21 @@ void imuPowerOff()
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
   digitalWrite(PIN_IMU_POWER, LOW);
+}
+
+void powerLEDOn()
+{
+#if(HARDWARE_VERSION_MAJOR >= 1)
+  pinMode(PIN_STAT_LED, OUTPUT);
+  digitalWrite(PIN_STAT_LED, HIGH); // Turn the Power LED on  
+#endif  
+}
+void powerLEDOff()
+{
+#if(HARDWARE_VERSION_MAJOR >= 1)
+  pinMode(PIN_STAT_LED, OUTPUT);
+  digitalWrite(PIN_STAT_LED, LOW); // Turn the Power LED off
+#endif  
 }
 
 //Read the VIN voltage

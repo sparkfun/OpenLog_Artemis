@@ -23,6 +23,8 @@ void menuMain()
 
     Serial.println("6) Detect / Configure Attached Devices");
 
+    Serial.println("7) Configure Power Options");
+
     Serial.println("r) Reset all settings to default");
 
     //Serial.println("d) Debug Menu");
@@ -43,6 +45,8 @@ void menuMain()
       menuAnalogLogging();
     else if (incoming == '6')
       menuAttachedDevices();
+    else if (incoming == '7')
+      menuPower();
     else if (incoming == 'd')
       menuDebug();
     else if (incoming == 'r')

@@ -35,6 +35,10 @@ void recordSystemSettings()
   settings.sizeOfSettings = sizeof(settings);
   EEPROM.put(0, settings);
   recordSystemSettingsToFile();
+
+  // Update volatile copies of settings (e.g. wakeOnPowerReconnect)
+  // Putting this here means it covers loadSettings too
+  wakeOnPowerReconnect = settings.wakeOnPowerReconnect;
 }
 
 //Export the current settings to a config file

@@ -296,8 +296,8 @@ void menuConfigure_QwiicBus()
     Serial.println("Menu: Configure Qwiic Bus");
 
     Serial.print("1) If sensor read time is greater than 2s, turn off bus power: ");
-    if (settings.powerDownQwiicBusBetweenReads == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    if (settings.powerDownQwiicBusBetweenReads == true) Serial.println("Yes");
+    else Serial.println("No");
 
     Serial.printf("2) Set Max Qwiic Bus Speed: %d Hz\n", settings.qwiicBusMaxSpeed);
 

@@ -44,6 +44,9 @@
   (done) Add UTCoffset functionality (including support for negative numbers)
   Figure out how to give the u-blox time to establish a fix if it has been powered down between log intervals.
     Maybe add a waitForValidFix feature? Or maybe we can work around using a big value for "Set Qwiic bus power up delay"?
+  Add support for VREG_ENABLE
+  (done) Add support for PWR_LED
+  Figure out how to let the WDT interrupts be serviced during the powerDown ISR
 */
 
 
@@ -182,6 +185,8 @@ unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate 
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 45; //Menus will exit/timeout after this number of seconds
+volatile bool wakeOnPowerReconnect = true; // volatile copy of settings.wakeOnPowerReconnect for the ISR
+volatile bool lowPowerSeen = false; // volatile flag to indicate if a low power interrupt has been seen
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //unsigned long startTime = 0;
@@ -189,13 +194,18 @@ const byte menuTimeout = 45; //Menus will exit/timeout after this number of seco
 #define DUMP(varname) {Serial.printf("%s: %llu\n", #varname, varname);}
 
 void setup() {
+//  startWatchdog(); // Set up and start the WDT
+  
+  powerLEDOn(); // Turn the power LED on - if the hardware supports it
+  
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, HIGH); // Turn the STAT LED on while we configure everything
 
-  delay(1000); // Let the bus voltage stabilize before calling attachInterrupt
-  
+  //pinMode(PIN_LOGIC_DEBUG, OUTPUT);
+  //digitalWrite(PIN_LOGIC_DEBUG, LOW);
+
   //If 3.3V rail drops below 3V, system will power down and maintain RTC
-  //Only a reset can bring the system out of powerDown
+  //pinMode(PIN_POWER_LOSS, INPUT_PULLUP); // TODO: check if the pullup increases sleep current
   pinMode(PIN_POWER_LOSS, INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
 
@@ -553,5 +563,67 @@ extern "C" void am_stimer_cmpr6_isr(void)
   if (ui32Status & AM_HAL_STIMER_INT_COMPAREG)
   {
     am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);
+  }
+}
+
+//WatchDog Timer code by Adam Garbo:
+//https://forum.sparkfun.com/viewtopic.php?f=169&t=52431&p=213296#p213296
+
+// Watchdog timer configuration structure.
+am_hal_wdt_config_t g_sWatchdogConfig = {
+
+  // Configuration values for generated watchdog timer event.
+  .ui32Config = AM_HAL_WDT_LFRC_CLK_16HZ | AM_HAL_WDT_ENABLE_RESET | AM_HAL_WDT_ENABLE_INTERRUPT,
+
+  // Number of watchdog timer ticks allowed before a watchdog interrupt event is generated.
+  .ui16InterruptCount = 16, // Set WDT interrupt timeout for 1 second.
+
+  // Number of watchdog timer ticks allowed before the watchdog will issue a system reset.
+  .ui16ResetCount = 20 // Set WDT reset timeout for 1.25 seconds.
+};
+
+void startWatchdog()
+{
+  // Set the clock frequency.
+  //am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_SYSCLK_MAX, 0);
+
+  // Set the default cache configuration
+  am_hal_cachectrl_config(&am_hal_cachectrl_defaults);
+  am_hal_cachectrl_enable();
+
+  // Configure the board for low power operation.
+  am_bsp_low_power_init();
+
+  // Clear reset status register for next time we reset.
+  am_hal_reset_control(AM_HAL_RESET_CONTROL_STATUSCLEAR, 0);
+
+  // LFRC must be turned on for this example as the watchdog only runs off of the LFRC.
+  am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_LFRC_START, 0);
+
+  // Configure the watchdog.
+  am_hal_wdt_init(&g_sWatchdogConfig);
+
+  // Enable the interrupt for the watchdog in the NVIC.
+  NVIC_EnableIRQ(WDT_IRQn);
+  //NVIC_SetPriority(WDT_IRQn, 15);
+  am_hal_interrupt_master_enable();
+
+  // Enable the watchdog.
+  am_hal_wdt_start();  
+}
+
+// Interrupt handler for the watchdog.
+extern "C" void am_watchdog_isr(void) {
+  // Clear the watchdog interrupt.
+  am_hal_wdt_int_clear();
+
+  // Always restart the watchdog unless wakeOnPowerReconnect is true and 
+  // and lowPowerSeen is true and PIN_POWER_LOSS has gone high;
+  // indicating power has been reapplied and we should let the WDT reset everything
+  if (!((wakeOnPowerReconnect == true) && (lowPowerSeen == true) && 
+    (digitalRead(PIN_POWER_LOSS) == HIGH)))
+  {
+    // Restart the watchdog.
+    am_hal_wdt_restart(); // "Pet" the dog.
   }
 }
