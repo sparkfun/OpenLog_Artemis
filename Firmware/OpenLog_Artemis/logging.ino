@@ -26,6 +26,8 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
   static char newFileName[40];
   while (1)
   {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    
     sprintf(newFileName, "%s%05u.TXT", fileLeader, newFileNumber); //Splice the new file number into this file name
 
     if (sd.exists(newFileName) == false) break; //File name not found so we will use it.
