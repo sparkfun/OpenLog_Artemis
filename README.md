@@ -9,9 +9,9 @@ The OpenLog Artemis is an open source datalogger the comes preprogrammed to auto
 
 Included on every OpenLog Artemis is an IMU for built-in logging of triple axis accelerometer, gyro, and magnetometer. Whereas the original [9DOF Razor](https://www.sparkfun.com/products/14001) used the old MPU-9250, the OpenLog Artemis uses the latest [ICM-20948](https://www.sparkfun.com/products/15335) capable of nearly 1kHz logging of all 9 axis. We then took over a decade of experience with the original [OpenLog](https://www.sparkfun.com/products/13712) and took it much farther. Simply power up OpenLog Artemis and all incoming serial data is automatically recorded to a log file. Baud rates up to 921600bps are supported! Additionally, based on feedback from users we've added an onboard RTC so that all data can be time stamped.
 
-OpenLog Artemis is highly configurable over an easy to use serial interface. Simply plug in a USB C cable and open a terminal at 115200kbps. The logging output is automatically streamed to both the terminal and the microSD. Pressing any key will open the configuration menu. 
+OpenLog Artemis is highly configurable over an easy to use serial interface. Simply plug in a USB C cable and open a terminal at 115200kbps. The logging output is automatically streamed to both the terminal and the microSD. Pressing any key will open the configuration menu.
 
-The OpenLog Artemis automatically scans, detects, configures, and logs various Qwiic sensors plugged into the board (no soldering required!). Currently, auto-detection is supported on the following Qwiic products: 
+The OpenLog Artemis automatically scans, detects, configures, and logs various Qwiic sensors plugged into the board (no soldering required!). Currently, auto-detection is supported on the following Qwiic products:
 
 * uBlox GPS Modules (Lat/Long, Altitude, Velocity, SIV, Time, Date) - [ZED-F9P](https://www.sparkfun.com/products/15136), [SAM-M8Q](https://www.sparkfun.com/products/15193), [ZOE-M8Q](https://www.sparkfun.com/products/15193), [NEO-M9N](https://www.sparkfun.com/products/15712), [NEO-M8P-2](https://www.sparkfun.com/products/15005)
 * [MCP9600 Thermocouple Amplifier](https://www.sparkfun.com/products/16294)
@@ -26,29 +26,37 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [VEML6075 UV Sensor](https://www.sparkfun.com/products/15089)
 * [VCNL4040 Proximity Sensor](https://www.sparkfun.com/products/15177)
 * [VL53L1X LIDAR Distance Sensor](https://www.sparkfun.com/products/14722)
+* [MS8607 Pressure Humidity Temperature Sensor](https://www.sparkfun.com/products/16298)
+* [AHT20 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16618)
+* [SHTC3 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16467)
 * More boards are being added all the time!
 
 Very low power logging is supported. OpenLog Artemis can be configured to take readings at 500 times a second, or as slow as 1 reading every 24 hours. You choose! When there is more than 2 seconds between readings OLA will automatically power down itself and the sensors on the bus resulting in a sleep current of approximately 250uA. This means a normal [2Ah battery](https://www.sparkfun.com/products/13855) will enable logging for more than 300 days! OpenLog Artemis has built-in LiPo charging set at 450mA/hr.
 
-New features are constantly being added so we’ve released an easy to use firmware upgrade tool. No need to install Arduino or a bunch of libraries, simply open the [Artemis Firmware Upload GUI](https://github.com/sparkfun/Artemis-Firmware-Upload-GUI), load the latest OLA firmware, and add features to OpenLog Artemis as the come out!
+New features are constantly being added so we’ve released an easy to use firmware upgrade tool. No need to install Arduino or a bunch of libraries, simply open the [Artemis Firmware Upload GUI](https://github.com/sparkfun/Artemis-Firmware-Upload-GUI), load the latest OLA firmware, and add features to OpenLog Artemis as they come out! Full instructions are available in [UPGRADE.md](UPGRADE.md).
+
+The OLA can be tailored to many different applications and we will be releasing custom versions of the firmware for those too:
+
+* [GNSS Logger](https://github.com/sparkfun/OpenLog_Artemis_GNSS_Logger) - advanced data logging with the uBlox F9 and M9 GNSS modules including support for RAWX and RELPOSNED
 
 Repository Contents
 -------------------
 
+* **/Binaries** - The binary files for the different versions of the OLA firmware
 * **/Firmware** - The main sketch that runs OpenLog Artemis as well as a variety of sketches to test various sensor interfaces and power saving states.
 * **/Hardware** - Eagle files
 
 Documentation
 --------------
 
-* **[Artemis Firmware Upload GUI](https://github.com/sparkfun/Artemis-Firmware-Upload-GUI)** - Used to upgrade the firmware on OLA
+* **[UPGRADE.md](UPGRADE.md)** - contains full instructions on how to upgrade the firmware on the OLA using the [Artemis Firmware Upload GUI](https://github.com/sparkfun/Artemis-Firmware-Upload-GUI)
 * **[Installing an Arduino Library Guide](https://learn.sparkfun.com/tutorials/installing-an-arduino-library)** - OLA includes a large number of libraries that will need to be installed before compiling will work.
 * **Hookup Guide** - Coming soon!
 
 License Information
 -------------------
 
-This product is _**open source**_! 
+This product is _**open source**_!
 
 Various bits of the code have different licenses applied. Anything SparkFun wrote is beerware; if you see me (or any other SparkFun employee) at the local, and you've found our code helpful, please buy us a round!
 

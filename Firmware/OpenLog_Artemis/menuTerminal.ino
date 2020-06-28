@@ -21,16 +21,16 @@ void menuLogRate()
     if (settings.logMaxRate == true) Serial.println("Max rate enabled");
     else
     {
-      if (settings.usBetweenReadings < 1000000UL) //Take more than one measurement per second
+      if (settings.usBetweenReadings < 1000000ULL) //Take more than one measurement per second
       {
         //Display Integer Hertz
-        int logRate = 1000000UL / settings.usBetweenReadings;
+        int logRate = (int)(1000000ULL / settings.usBetweenReadings);
         Serial.printf("%d\n", logRate);
       }
       else
       {
         //Display fractional Hertz
-        uint32_t logRateSeconds = settings.usBetweenReadings / 1000000UL;
+        uint32_t logRateSeconds = (uint32_t)(settings.usBetweenReadings / 1000000ULL);
         Serial.printf("%.06lf\n", 1.0 / logRateSeconds);
       }
     }
@@ -39,11 +39,15 @@ void menuLogRate()
     if (settings.logMaxRate == true) Serial.println("Max rate enabled");
     else
     {
-      if (settings.usBetweenReadings > 1000000UL) //Take more than one measurement per second
-        Serial.printf("%llu\n", settings.usBetweenReadings / 1000000UL);
+      if (settings.usBetweenReadings > 1000000ULL) //Take more than one measurement per second
+      {
+        uint32_t interval = (uint32_t)(settings.usBetweenReadings / 1000000ULL);
+        Serial.printf("%d\n", interval);
+      }
       else
       {
-        Serial.printf("%.06lf\n", settings.usBetweenReadings / 1000000.0);
+        float rate = (float)(settings.usBetweenReadings / 1000000.0);
+        Serial.printf("%.06f\n", rate);
       }
     }
 
@@ -57,6 +61,10 @@ void menuLogRate()
 
     Serial.print("8) Output Column Titles: ");
     if (settings.showHelperText == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    Serial.print("9) Output Measurement Count: ");
+    if (settings.printMeasurementCount == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
     Serial.println("x) Exit");
@@ -78,7 +86,8 @@ void menuLogRate()
       else
       {
         settings.serialTerminalBaudRate = newBaud;
-        recordSettings();
+        recordSystemSettings(); //Normally recorded upon all menu exits
+        recordDeviceSettingsToFile(); //Normally recorded upon all menu exits
         Serial.printf("Terminal now set at %dbps. Please reset device and open terminal at new baud rate. Freezing...\n", settings.serialTerminalBaudRate);
         while (1);
       }
@@ -88,24 +97,27 @@ void menuLogRate()
       int maxOutputRate = settings.serialTerminalBaudRate / 10 / (totalCharactersPrinted / measurementCount);
       maxOutputRate = (maxOutputRate * 90) / 100; //Fudge reduction of 10%
 
-      if(maxOutputRate < 10) maxOutputRate = 10; //TODO this is forced. Needed when multi seconds between readings.
+      if (maxOutputRate < 10) maxOutputRate = 10; //TODO this is forced. Needed when multi seconds between readings.
 
       Serial.printf("How many readings per second would you like to log? (Current max is %d): ", maxOutputRate);
       int tempRPS = getNumber(menuTimeout); //Timeout after x seconds
       if (tempRPS < 1 || tempRPS > maxOutputRate)
         Serial.println("Error: Readings Per Second out of range");
       else
-        settings.usBetweenReadings = 1000000UL / tempRPS;
+        settings.usBetweenReadings = 1000000ULL / tempRPS;
     }
     else if (incoming == '5')
     {
-      Serial.println("How many seconds would you like to sleep between readings? (1 to 6,000,000,000):");
+      //The Deep Sleep duration is set with am_hal_stimer_compare_delta_set, the duration of which is uint32_t
+      //So the maximum we can sleep for is 2^32 / 32768 = 131072 seconds = 36.4 hours
+      //Let's limit this to 36 hours = 129600 seconds
+      Serial.println("How many seconds would you like to sleep between readings? (1 to 129,600):");
       uint64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
-      if (tempSeconds < 1 || tempSeconds > 6000000000ULL)
+      if (tempSeconds < 1 || tempSeconds > 129600ULL)
         Serial.println("Error: Readings Per Second out of range");
       else
         //settings.recordPerSecond = tempRPS;
-        settings.usBetweenReadings = 1000000UL * tempSeconds;
+        settings.usBetweenReadings = 1000000ULL * tempSeconds;
     }
     else if (incoming == '6')
     {
@@ -124,7 +136,8 @@ void menuLogRate()
           serialDataFile.close();
           sensorDataFile.close();
 
-          recordSettings(); //Normally recorded upon all menu exits
+          recordSystemSettings(); //Normally recorded upon all menu exits
+          recordDeviceSettingsToFile(); //Normally recorded upon all menu exits
 
           Serial.println("OpenLog Artemis configured for max data rate. Please reset. Freezing...");
           while (1);
@@ -137,6 +150,8 @@ void menuLogRate()
       settings.logHertz ^= 1;
     else if (incoming == '8')
       settings.showHelperText ^= 1;
+    else if (incoming == '9')
+      settings.printMeasurementCount ^= 1;
     else if (incoming == 'x')
       return;
     else if (incoming == STATUS_GETBYTE_TIMEOUT)

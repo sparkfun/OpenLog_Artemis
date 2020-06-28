@@ -24,9 +24,16 @@ void printUnknown(int unknownValue)
 //Blocking wait for user input
 void waitForInput()
 {
-  delay(10); //Wait for any incoming chars to hit buffer
+  for (int i = 0; i < 10; i++) //Wait for any incoming chars to hit buffer
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
+  }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
-  while (Serial.available() == 0);
+  while (Serial.available() == 0)
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+  }
 }
 
 //Get single byte from user
@@ -36,7 +43,11 @@ void waitForInput()
 uint8_t getByteChoice(int numberOfSeconds)
 {
   Serial.flush();
-  delay(50); //Wait for any incoming chars to hit buffer
+  for (int i = 0; i < 50; i++) //Wait for any incoming chars to hit buffer
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
+  }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   long startTime = millis();
@@ -55,11 +66,12 @@ uint8_t getByteChoice(int numberOfSeconds)
 
     if ( (millis() - startTime) / 1000 >= numberOfSeconds)
     {
-      Serial.println("No user input recieved.");
+      Serial.println("No user input received.");
       return (STATUS_GETBYTE_TIMEOUT); //Timeout. No user input.
     }
 
-    delay(10);
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
   }
 
   return (incoming);
@@ -70,7 +82,11 @@ uint8_t getByteChoice(int numberOfSeconds)
 //Returns STATUS_PRESSED_X if user presses 'x'
 int64_t getNumber(int numberOfSeconds)
 {
-  delay(10); //Wait for any incoming chars to hit buffer
+  for (int i = 0; i < 10; i++) //Wait for any incoming chars to hit buffer
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
+  }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   //Get input from user
@@ -86,7 +102,7 @@ int64_t getNumber(int numberOfSeconds)
       {
         if (spot == 0)
         {
-          Serial.println("No user input recieved. Do you have line endings turned on?");
+          Serial.println("No user input received. Do you have line endings turned on?");
           return (STATUS_GETNUMBER_TIMEOUT); //Timeout. No user input.
         }
         else if (spot > 0)
@@ -94,6 +110,7 @@ int64_t getNumber(int numberOfSeconds)
           break; //Timeout, but we have data
         }
       }
+      if (lowPowerSeen == true) powerDown(); //Power down if required
     }
 
     //See if we timed out waiting for a line ending
@@ -110,7 +127,7 @@ int64_t getNumber(int numberOfSeconds)
       break;
     }
 
-    if (isDigit(incoming) == true)
+    if ((isDigit(incoming) == true) || ((incoming == '-') && (spot == 0))) // Check for digits and a minus sign
     {
       Serial.write(incoming); //Echo user's typing
       cleansed[spot++] = (char)incoming;
@@ -122,14 +139,24 @@ int64_t getNumber(int numberOfSeconds)
     }
   }
 
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
   cleansed[spot] = '\0';
 
-  uint64_t largeNumber = 0;
-  for(int x = 0 ; x < spot ; x++)
+  int64_t largeNumber = 0;
+  int x = 0;
+  if (cleansed[0] == '-') // If our number is negative
+  {
+    x = 1; // Skip the minus
+  }
+  for( ; x < spot ; x++)
   {
     largeNumber *= 10;
     largeNumber += (cleansed[x] - '0');
   }
-
+  if (cleansed[0] == '-') // If our number is negative
+  {
+    largeNumber = 0 - largeNumber; // Make it negative
+  }
   return (largeNumber);
 }

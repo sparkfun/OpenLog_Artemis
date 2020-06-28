@@ -19,9 +19,11 @@ void menuMain()
 
     Serial.println("4) Configure Serial Logging");
 
-    Serial.println("5) Configure Analog Pin Logging");
+    Serial.println("5) Configure Analog Logging");
 
     Serial.println("6) Detect / Configure Attached Devices");
+
+    Serial.println("7) Configure Power Options");
 
     Serial.println("r) Reset all settings to default");
 
@@ -43,6 +45,8 @@ void menuMain()
       menuAnalogLogging();
     else if (incoming == '6')
       menuAttachedDevices();
+    else if (incoming == '7')
+      menuPower();
     else if (incoming == 'd')
       menuDebug();
     else if (incoming == 'r')
@@ -52,8 +56,10 @@ void menuMain()
       if (bContinue == 'y')
       {
         EEPROM.erase();
-        if (sd.exists("OLA_settings.cfg"))
-          sd.remove("OLA_settings.cfg");
+        if (sd.exists("OLA_settings.txt"))
+          sd.remove("OLA_settings.txt");
+        if (sd.exists("OLA_deviceSettings.txt"))
+          sd.remove("OLA_deviceSettings.txt");
 
         Serial.println("Settings erased. Please reset OpenLog Artemis and open a terminal at 115200bps...");
         while (1);
@@ -69,9 +75,9 @@ void menuMain()
       printUnknown(incoming);
   }
 
-  recordSettings(); //Once all menus have exited, record the new settings to EEPROM and config file
+  recordSystemSettings(); //Once all menus have exited, record the new settings to EEPROM and config file
 
-  beginSensors(); //Once all menus have exited, start any sensors that are available, logging, but not yet online/begun.
+  recordDeviceSettingsToFile(); //Record the current devices settings to device config file
 
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 
@@ -86,6 +92,6 @@ void menuMain()
 
   //Edge case: after 10Hz reading, user sets the log rate above 2s mark. We never go to sleep because 
   //takeReading is not true. And since we don't wake up, takeReading never gets set to true.
-  //Se we force it here.
+  //So we force it here.
   takeReading = true; 
 }

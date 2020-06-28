@@ -1,10 +1,62 @@
-#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+//Needed for the MS8607 struct below
+#include "SparkFun_PHT_MS8607_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_PHT_MS8607
+
+typedef enum
+{
+  DEVICE_MULTIPLEXER = 0,
+  DEVICE_LOADCELL_NAU7802,
+  DEVICE_DISTANCE_VL53L1X,
+  DEVICE_GPS_UBLOX,
+  DEVICE_PROXIMITY_VCNL4040,
+  DEVICE_TEMPERATURE_TMP117,
+  DEVICE_PRESSURE_MS5637,
+  DEVICE_PRESSURE_LPS25HB,
+  DEVICE_PHT_BME280,
+  DEVICE_UV_VEML6075,
+  DEVICE_VOC_CCS811,
+  DEVICE_VOC_SGP30,
+  DEVICE_CO2_SCD30,
+  DEVICE_PHT_MS8607,
+  DEVICE_TEMPERATURE_MCP9600,
+  DEVICE_HUMIDITY_AHT20,
+  DEVICE_HUMIDITY_SHTC3,
+
+  DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
+  DEVICE_UNKNOWN_DEVICE,
+} deviceType_e;
+
+struct node
+{
+  deviceType_e deviceType;
+
+  uint8_t address = 0;
+  uint8_t portNumber = 0;
+  uint8_t muxAddress = 0;
+  bool online = false; //Goes true once successfully begin()'d
+
+  void *classPtr; //Pointer to this devices' class instantiation
+  void *configPtr; //The struct containing this devices logging options
+  node *next;
+};
+
+node *head = NULL;
+node *tail = NULL;
+
+typedef void (*FunctionPointer)(void*); //Used for pointing to device config menus
+
+//Begin specific sensor config structs
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+struct struct_multiplexer {
+  //There is nothing about a multiplexer that we want to configure
+  //Ignore certain ports at detection step?
+};
 
 //Add the new sensor settings below
 struct struct_LPS25HB {
   bool log = true;
   bool logPressure = true;
-  bool logTemp = true;
+  bool logTemperature = true;
 };
 
 struct struct_NAU7802 {
@@ -17,8 +69,8 @@ struct struct_NAU7802 {
 
 struct struct_MCP9600 {
   bool log = true;
-  bool logTemp = true;
-  bool logAmbientTemp = true;
+  bool logTemperature= true;
+  bool logAmbientTemperature = true;
 };
 
 struct struct_VCNL4040 {
@@ -62,13 +114,13 @@ struct struct_VL53L1X {
   int crosstalk = 0;
 };
 
-#define TMP1117_MODE_CONTINUOUS 0
-#define TMP1117_MODE_SHUTDOWN 1
-#define TMP1117_MODE_ONESHOT 2
+#define TMP117_MODE_CONTINUOUS 0
+#define TMP117_MODE_SHUTDOWN 1
+#define TMP117_MODE_ONESHOT 2
 struct struct_TMP117 {
   bool log = true;
-  bool logTemp = true;
-  int conversionMode = TMP1117_MODE_CONTINUOUS;
+  bool logTemperature= true;
+  int conversionMode = TMP117_MODE_CONTINUOUS;
   int conversionAverageMode = 0; //Setup for 15.5ms reads
   int conversionCycle = 0;
 };
@@ -84,13 +136,15 @@ struct struct_BME280 {
   bool logHumidity = true;
   bool logPressure = true;
   bool logAltitude = true;
-  bool logTemp = true;
+  bool logTemperature = true;
 };
 
 struct struct_SGP30 {
   bool log = true;
   bool logTVOC = true;
   bool logCO2 = true;
+  bool logH2 = true;
+  bool logEthanol = true;
 };
 
 struct struct_VEML6075 {
@@ -103,7 +157,7 @@ struct struct_VEML6075 {
 struct struct_MS5637 {
   bool log = true;
   bool logPressure = true;
-  bool logTemp = true;
+  bool logTemperature= true;
 };
 
 struct struct_SCD30 {
@@ -117,7 +171,6 @@ struct struct_SCD30 {
   int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
 };
 
-
 struct struct_MS8607 {
   bool log = true;
   bool logHumidity = true;
@@ -128,6 +181,18 @@ struct struct_MS8607 {
   MS8607_humidity_resolution humidityResolution = MS8607_humidity_resolution_12b; //12-bit
 };
 
+struct struct_AHT20 {
+  bool log = true;
+  bool logHumidity = true;
+  bool logTemperature = true;
+};
+
+struct struct_SHTC3 {
+  bool log = true;
+  bool logHumidity = true;
+  bool logTemperature = true;
+};
+
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
   int sizeOfSettings = 0;
@@ -136,7 +201,7 @@ struct struct_settings {
   //unsigned int recordPerSecond = 10;
   //uint32_t: Largest is 4,294,967,295 or 4,294s or 71 minutes between readings.
   //uint64_t: Largest is 9,223,372,036,854,775,807 or 9,223,372,036,854s or 292,471 years between readings.
-  uint64_t usBetweenReadings = 100000; //100,000us = 100ms = 10 readings per second.
+  uint64_t usBetweenReadings = 100000ULL; //100,000us = 100ms = 10 readings per second.
   //100,000 / 1000 = 100ms. 1 / 100ms = 10Hz
   //recordPerSecond (Hz) = 1 / ((usBetweenReadings / 1000UL) / 1000UL)
   //recordPerSecond (Hz) = 1,000,000 / usBetweenReadings
@@ -167,24 +232,15 @@ struct struct_settings {
   bool logA13 = false;
   bool logA32 = false;
   bool logAnalogVoltages = true;
-  int localUTCOffset = -7; //Default to Denver because we can
+  int localUTCOffset = 0; //Default to UTC because we should
   bool printDebugMessages = false;
   bool powerDownQwiicBusBetweenReads = true;
   int qwiicBusMaxSpeed = 400000;
-  struct_LPS25HB sensor_LPS25HB;
-  struct_uBlox sensor_uBlox;
-  struct_VL53L1X sensor_VL53L1X;
-  struct_NAU7802 sensor_NAU7802;
-  struct_MCP9600 sensor_MCP9600;
-  struct_VCNL4040 sensor_VCNL4040;
-  struct_TMP117 sensor_TMP117;
-  struct_CCS811 sensor_CCS811;
-  struct_BME280 sensor_BME280;
-  struct_SGP30 sensor_SGP30;
-  struct_VEML6075 sensor_VEML6075;
-  struct_MS5637 sensor_MS5637;
-  struct_SCD30 sensor_SCD30;
-  struct_MS8607 sensor_MS8607;
+  int qwiicBusPowerUpDelayMs = 250;
+  bool printMeasurementCount = false;
+  bool wakeOnPowerReconnect = true;
+  bool enablePwrLedDuringSleep = true;
+  bool logVIN = false;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
@@ -194,58 +250,3 @@ struct struct_online {
   bool serialLogging = false;
   bool IMU = false;
 } online;
-
-//These structs define supported sensors and if they are available and online(started).
-struct struct_QwiicSensors {
-  bool LPS25HB;
-  bool MCP9600;
-  bool BH1749NUC;
-  bool NAU7802;
-  bool uBlox;
-  bool VL53L1X;
-  bool VCNL4040;
-  bool TMP117;
-  bool CCS811;
-  bool BME280;
-  bool SGP30;
-  bool VEML6075;
-  bool MS5637;
-  bool SCD30;
-  bool MS8607;
-};
-
-struct_QwiicSensors qwiicAvailable = {
-  .LPS25HB = false,
-  .MCP9600 = false,
-  .BH1749NUC = false,
-  .NAU7802 = false,
-  .uBlox = false,
-  .VL53L1X = false,
-  .VCNL4040 = false,
-  .TMP117 = false,
-  .CCS811 = false,
-  .BME280 = false,
-  .SGP30 = false,
-  .VEML6075 = false,
-  .MS5637 = false,
-  .SCD30 = false,
-  .MS8607 = false,
-};
-
-struct_QwiicSensors qwiicOnline = {
-  .LPS25HB = false,
-  .MCP9600 = false,
-  .BH1749NUC = false,
-  .NAU7802 = false,
-  .uBlox = false,
-  .VL53L1X = false,
-  .VCNL4040 = false,
-  .TMP117 = false,
-  .CCS811 = false,
-  .BME280 = false,
-  .SGP30 = false,
-  .VEML6075 = false,
-  .MS5637 = false,
-  .SCD30 = false,
-  .MS8607 = false,
-};

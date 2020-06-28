@@ -13,7 +13,7 @@ void menuTimeStamp()
     else
       sprintf(rtcDate, "%02d/%02d/20%02d", myRTC.dayOfMonth, myRTC.month, myRTC.year);
 
-    Serial.print((String)rtcDate);
+    Serial.print(rtcDate);
     Serial.print(" ");
 
     char rtcTime[12]; //09:14:37.41
@@ -23,7 +23,7 @@ void menuTimeStamp()
       if (adjustedHour > 12) adjustedHour -= 12;
     }
     sprintf(rtcTime, "%02d:%02d:%02d.%02d", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-    Serial.println((String)rtcTime);
+    Serial.println(rtcTime);
 
     Serial.print("1) Log Date: ");
     if (settings.logDate == true) Serial.println("Enabled");
@@ -61,28 +61,23 @@ void menuTimeStamp()
       //      Serial.print("8) Correct time/date using USA Daylight Savings Time rules: ");
       //      if (settings.correctForDST == true) Serial.println("Enabled");
       //      else Serial.println("Disabled");
-    }
 
-    //    Serial.print("4) Synchronize RTC to GPS: ");
-    //    if (qwiicOnline.uBlox == false)
-    //    {
-    //      Serial.println("GPS offline");
-    //    }
-    //    else
-    //    {
-    //      Serial.println("TODO");
-    //    }
-    //    Serial.print("5) Use GPS as timestamp source: ");
-    //    if (qwiicOnline.uBlox)
-    //    {
-    //      if (settings.getRTCfromGPS == true) Serial.println("Enabled");
-    //      else Serial.println("Disabled");
-    //    }
-    //    else
-    //      Serial.println("GPS offline");
-    //    Serial.print("9) Local offset from GPS UTC: ");
-    //    Serial.println(settings.localUTCOffset);
-    //
+      if (isUbloxAttached() == true)
+      {
+        Serial.println("8) Synchronize RTC to GPS");
+      }
+//      Serial.print("5) Use GPS as timestamp source: ");
+//      if (qwiicOnline.uBlox)
+//      {
+//        if (settings.getRTCfromGPS == true) Serial.println("Enabled");
+//        else Serial.println("Disabled");
+//      }
+//      else
+//        Serial.println("GPS offline");
+      Serial.print("9) Local offset from UTC: ");
+      Serial.println(settings.localUTCOffset);
+  
+    }
 
     Serial.println("x) Exit");
 
@@ -99,7 +94,7 @@ void menuTimeStamp()
 
     if (settings.logDate == true || settings.logTime == true)
     {
-      //Options 3 and 8
+      //Options 3, 8, 9
       if (incoming == 3)
       {
         myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
@@ -109,6 +104,22 @@ void menuTimeStamp()
       //      {
       //        settings.correctForDST ^= 1;
       //      }
+      else if ((incoming == 8) && (isUbloxAttached() == true))
+      {
+        myRTC.getTime(); // Get the RTC date and time (just in case getGPSDateTime fails)
+        int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds, ms = (myRTC.hundredths * 10);
+        getGPSDateTime(yy, mm, dd, h, m, s, ms); // Get the GPS date and time, corrected for localUTCOffset
+        myRTC.setTime(h, m, s, (ms / 10), dd, mm, (yy - 2000)); //Manually set RTC
+      }
+      else if (incoming == 9)
+      {
+        Serial.print("Enter the local hour offset from UTC (-12 to 14): ");
+        int offset = getNumber(menuTimeout); //Timeout after x seconds
+        if (offset < -12 || offset > 14)
+          Serial.println("Error: Offset is out of range");
+        else
+          settings.localUTCOffset = offset;
+      }
     }
 
     if (settings.logDate == true)
