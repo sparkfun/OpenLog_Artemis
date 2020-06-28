@@ -1,16 +1,17 @@
+//Low Power Interrupt Service Routine
+void lowPowerISR()
+{
+  lowPowerSeen = true; // Set flag  
+}
+
 //Power down the entire system but maintain running of RTC
 //This function takes 100us to run including GPIO setting
 //This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
 //With leakage across the 3.3V protection diode, it's approx 3.00uA.
 void powerDown()
 { 
-  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent repeat interrupts
-
-  // We are still in an ISR so things are weird...
-  // We need to do this otherwise the WDT can't interrupt us
-  am_hal_interrupt_master_enable();
-
-  lowPowerSeen = true; // Set flag
+  //Prevent voltage supervisor from waking us from sleep
+  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
   //Save files before going to sleep
   //  if (online.dataLogging == true)
@@ -51,7 +52,7 @@ void powerDown()
   for (int x = 0; x < 50; x++)
   {
     if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-      (x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+      //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
       (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
       (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
       (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
@@ -62,17 +63,17 @@ void powerDown()
 
   //powerLEDOff();
   
-  //Make sure PIN_POWER_LOSS is configured as an input
-  //pinMode(PIN_POWER_LOSS, INPUT_PULLUP); // TODO: check if the pullup increases sleep current
-
-  //pinMode(PIN_LOGIC_DEBUG, OUTPUT);
-  //digitalWrite(PIN_LOGIC_DEBUG, LOW);
+  //Make sure PIN_POWER_LOSS is configured as an input for the WDT
+  pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
 
   //We can't leave these power control pins floating
   qwiicPowerOff();
   imuPowerOff();
   microSDPowerOff();
 
+  //Flag that we are ready for reset by the WDT
+  waitingForReset = true;
+  
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE);         //Turn off CACHE
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K);    //Turn off everything but lower 512k
@@ -83,15 +84,9 @@ void powerDown()
   am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
   am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ);
 
-  //digitalWrite(LOGIC_DEBUG, LOW);
-
   while (1) // Stay in deep sleep until we get reset (by the user or WDT)
   {
-    // We are still in an ISR so things are weird...
-    // We need to do this otherwise the WDT can't interrupt us
-    am_hal_interrupt_master_enable();
-
-    am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP); //Sleep forever (until reset)
+    am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP); //Sleep
   }
 }
 
@@ -124,7 +119,8 @@ void goToSleep()
   printDebug(String(sysTicksToSleep));
   printDebug(" 32.768kHz clock cycles\n");
 
-  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent voltage supervisor from waking us from sleep
+  //Prevent voltage supervisor from waking us from sleep
+  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
   //Save files before going to sleep
   if (online.dataLogging == true)
@@ -165,7 +161,7 @@ void goToSleep()
   for (int x = 0; x < 50; x++)
   {
     if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-      (x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+      //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
       (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
       (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
       (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
@@ -173,6 +169,9 @@ void goToSleep()
       am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
     }
   }
+
+  //Make sure PIN_POWER_LOSS is configured as an input for the WDT
+  pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
 
   //We can't leave these power control pins floating
   imuPowerOff();
@@ -219,12 +218,17 @@ void goToSleep()
   //Enable the timer interrupt in the NVIC.
   NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
 
-  //Go to Deep Sleep.
+  //Halt the WDT otherwise this will bring us out of deep sleep
+  am_hal_wdt_halt();
+
+  //Deep Sleep
   am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
+
+  //(Re)start the WDT
+  am_hal_wdt_start();
 
   //Turn off interrupt
   NVIC_DisableIRQ(STIMER_CMPR6_IRQn);
-
   am_hal_stimer_int_disable(AM_HAL_STIMER_INT_COMPAREG); //Disable C/T G=6
 
   //We're BACK!
@@ -249,9 +253,14 @@ void wakeFromSleep()
   //Run setup again
 
   //If 3.3V rail drops below 3V, system will enter low power mode and maintain RTC
-  //pinMode(PIN_POWER_LOSS, INPUT_PULLUP); // TODO: check if the pullup increases sleep current
-  pinMode(PIN_POWER_LOSS, INPUT);
-  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
+  pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
+
+  delay(1); // Let PIN_POWER_LOSS stabilize
+
+  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), lowPowerISR, FALLING);
+
+  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDown(); //Check PIN_POWER_LOSS just in case we missed the falling edge
+  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, LOW);
@@ -264,12 +273,20 @@ void wakeFromSleep()
 
   beginSD(); //285 - 293ms
 
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
   beginQwiic(); //Power up Qwiic bus
   long powerStartTime = millis();
 
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
   beginDataLogging(); //180ms
 
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
   beginSerialLogging(); //20 - 99ms
+
+  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   beginIMU(); //61ms
 
@@ -278,9 +295,13 @@ void wakeFromSleep()
   {
     //Before we talk to Qwiic devices we need to allow the power rail to settle
     while (millis() - powerStartTime < settings.qwiicBusPowerUpDelayMs) //Testing, 100 too short, 200 is ok
+    {
+      if (lowPowerSeen == true) powerDown(); //Power down if required
       delay(1); //Wait
+    }
 
     beginQwiicDevices();
+    if (lowPowerSeen == true) powerDown(); //Power down if required
     //loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
@@ -339,30 +360,16 @@ void imuPowerOff()
 void powerLEDOn()
 {
 #if(HARDWARE_VERSION_MAJOR >= 1)
-  pinMode(PIN_STAT_LED, OUTPUT);
-  digitalWrite(PIN_STAT_LED, HIGH); // Turn the Power LED on  
+  pinMode(PIN_PWR_LED, OUTPUT);
+  digitalWrite(PIN_PWR_LED, HIGH); // Turn the Power LED on  
 #endif  
 }
 void powerLEDOff()
 {
 #if(HARDWARE_VERSION_MAJOR >= 1)
-  pinMode(PIN_STAT_LED, OUTPUT);
-  digitalWrite(PIN_STAT_LED, LOW); // Turn the Power LED off
+  pinMode(PIN_PWR_LED, OUTPUT);
+  digitalWrite(PIN_PWR_LED, LOW); // Turn the Power LED off
 #endif  
-}
-
-//Read the VIN voltage
-float readVIN()
-{
-  // Only supported on >= V10 hardware
-#if(HARDWARE_VERSION_MAJOR == 0)
-  return(0.0); // Return 0.0V on old hardware
-#else
-  int div3 = analogRead(PIN_VIN_MONITOR); //Read VIN across a 1/3 resistor divider
-  float vin = (float)div3 * 3.0 * 2.0 / 16384.0; //Convert 1/3 VIN to VIN (14-bit resolution)
-  vin = vin * 1.021; //Correct for divider impedance (determined experimentally)
-  return (vin);
-#endif
 }
 
 //Returns the number of milliseconds according to the RTC

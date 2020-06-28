@@ -240,6 +240,7 @@ struct struct_settings {
   bool printMeasurementCount = false;
   bool wakeOnPowerReconnect = true;
   bool enablePwrLedDuringSleep = true;
+  bool logVIN = false;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

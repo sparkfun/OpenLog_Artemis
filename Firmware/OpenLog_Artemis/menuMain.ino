@@ -19,7 +19,7 @@ void menuMain()
 
     Serial.println("4) Configure Serial Logging");
 
-    Serial.println("5) Configure Analog Pin Logging");
+    Serial.println("5) Configure Analog Logging");
 
     Serial.println("6) Detect / Configure Attached Devices");
 

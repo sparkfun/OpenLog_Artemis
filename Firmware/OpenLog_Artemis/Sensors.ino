@@ -1,4 +1,3 @@
-
 //Query each enabled sensor for its most recent data
 void getData()
 {
@@ -42,6 +41,8 @@ void getData()
     }
   }
 
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
   if (settings.logA11)
   {
     unsigned int analog11 = analogRead(11);
@@ -56,6 +57,8 @@ void getData()
 
     strcat(outputData, tempData);
   }
+
+  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   if (settings.logA12)
   {
@@ -72,6 +75,8 @@ void getData()
     strcat(outputData, tempData);
   }
 
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
   if (settings.logA13)
   {
     unsigned int analog13 = analogRead(13);
@@ -87,6 +92,8 @@ void getData()
     strcat(outputData, tempData);
   }
 
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
   if (settings.logA32)
   {
     unsigned int analog32 = analogRead(32);
@@ -101,6 +108,17 @@ void getData()
 
     strcat(outputData, tempData);
   }
+
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
+  if (settings.logVIN)
+  {
+    float voltage = readVIN();
+    sprintf(tempData, "%.2f,", voltage);
+    strcat(outputData, tempData);
+  }
+
+  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   if (online.IMU)
   {
@@ -131,6 +149,8 @@ void getData()
     }
   }
 
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
   //Append all external sensor data on linked list to outputData
   gatherDeviceValues();
 
@@ -156,6 +176,8 @@ void getData()
     strcat(outputData, tempData);
   }
 
+  if (lowPowerSeen == true) powerDown(); //Power down if required
+
   if (settings.printMeasurementCount)
   {
     sprintf(tempData, "%d,", measurementCount);
@@ -177,6 +199,8 @@ void gatherDeviceValues()
   node *temp = head;
   while (temp != NULL)
   {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    
     //If this node successfully begin()'d
     if (temp->online == true)
     {
@@ -229,6 +253,9 @@ void gatherDeviceValues()
           }
           break;
         case DEVICE_GPS_UBLOX:
+        // This is a problem for low power events as the first get function will wait for a PVT message
+        // which can take up to a second to arrive.
+        // TODO: add a callback function so we can abort waiting for UBX data
           {
             SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
             struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
@@ -634,6 +661,9 @@ void printHelperText()
   if (settings.logA32)
     strcat(helperText, "analog_32,");
 
+  if (settings.logVIN)
+    strcat(helperText, "VIN,");
+
   if (online.IMU)
   {
     if (settings.logIMUAccel)
@@ -932,4 +962,18 @@ void setMaxI2CSpeed()
     maxSpeed = settings.qwiicBusMaxSpeed;
 
   qwiic.setClock(maxSpeed);
+}
+
+//Read the VIN voltage
+float readVIN()
+{
+  // Only supported on >= V10 hardware
+#if(HARDWARE_VERSION_MAJOR == 0)
+  return(0.0); // Return 0.0V on old hardware
+#else
+  int div3 = analogRead(PIN_VIN_MONITOR); //Read VIN across a 1/3 resistor divider
+  float vin = (float)div3 * 3.0 * 2.0 / 16384.0; //Convert 1/3 VIN to VIN (14-bit resolution)
+  vin = vin * 1.021; //Correct for divider impedance (determined experimentally)
+  return (vin);
+#endif
 }

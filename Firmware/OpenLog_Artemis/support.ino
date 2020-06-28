@@ -24,9 +24,16 @@ void printUnknown(int unknownValue)
 //Blocking wait for user input
 void waitForInput()
 {
-  delay(10); //Wait for any incoming chars to hit buffer
+  for (int i = 0; i < 10; i++) //Wait for any incoming chars to hit buffer
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
+  }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
-  while (Serial.available() == 0);
+  while (Serial.available() == 0)
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+  }
 }
 
 //Get single byte from user
@@ -36,7 +43,11 @@ void waitForInput()
 uint8_t getByteChoice(int numberOfSeconds)
 {
   Serial.flush();
-  delay(50); //Wait for any incoming chars to hit buffer
+  for (int i = 0; i < 50; i++) //Wait for any incoming chars to hit buffer
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
+  }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   long startTime = millis();
@@ -59,7 +70,8 @@ uint8_t getByteChoice(int numberOfSeconds)
       return (STATUS_GETBYTE_TIMEOUT); //Timeout. No user input.
     }
 
-    delay(10);
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
   }
 
   return (incoming);
@@ -70,7 +82,11 @@ uint8_t getByteChoice(int numberOfSeconds)
 //Returns STATUS_PRESSED_X if user presses 'x'
 int64_t getNumber(int numberOfSeconds)
 {
-  delay(10); //Wait for any incoming chars to hit buffer
+  for (int i = 0; i < 10; i++) //Wait for any incoming chars to hit buffer
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
+  }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   //Get input from user
@@ -94,6 +110,7 @@ int64_t getNumber(int numberOfSeconds)
           break; //Timeout, but we have data
         }
       }
+      if (lowPowerSeen == true) powerDown(); //Power down if required
     }
 
     //See if we timed out waiting for a line ending
@@ -121,6 +138,8 @@ int64_t getNumber(int numberOfSeconds)
       return (STATUS_PRESSED_X);
     }
   }
+
+  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   cleansed[spot] = '\0';
 

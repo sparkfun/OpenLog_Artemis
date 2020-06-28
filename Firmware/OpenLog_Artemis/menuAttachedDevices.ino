@@ -55,7 +55,11 @@ bool detectQwiicDevices()
 
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
-  delay(100); //SCD30 required >50ms to turn on
+  for (int i = 0; i < 100; i++) //SCD30 required >50ms to turn on
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
+  }
 
   //First scan for Muxes. Valid addresses are 0x70 to 0x77.
   //If any are found, they will be begin()'d causing their ports to turn off
@@ -344,7 +348,11 @@ void menuConfigure_Multiplexer(void *configPtr)
   Serial.println("Menu: Configure Multiplexer");
 
   Serial.println("There are currently no configurable options for this device.");
-  delay(500);
+  for (int i = 0; i < 500; i++)
+  {
+    if (lowPowerSeen == true) powerDown(); //Power down if required
+    delay(1);
+  }
 }
 
 //There is short and long range mode
@@ -645,7 +653,11 @@ void menuConfigure_NAU7802(void *configPtr)
   if (temp == NULL)
   {
     Serial.println("NAU7802 node not found. Returning.");
-    delay(1000);
+    for (int i = 0; i < 1000; i++)
+    {
+      if (lowPowerSeen == true) powerDown(); //Power down if required
+      delay(1);
+    }
     return;
   }
 
@@ -1292,7 +1304,11 @@ void menuConfigure_SCD30(void *configPtr)
   if (temp == NULL)
   {
     Serial.println("SCD30 node not found. Returning.");
-    delay(1000);
+    for (int i = 0; i < 1000; i++)
+    {
+      if (lowPowerSeen == true) powerDown(); //Power down if required
+      delay(1);
+    }
     return;
   }
 
