@@ -130,6 +130,9 @@ void recordSystemSettingsToFile()
     settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
     settingsFile.println("qwiicBusPowerUpDelayMs=" + (String)settings.qwiicBusPowerUpDelayMs);
     settingsFile.println("printMeasurementCount=" + (String)settings.printMeasurementCount);
+    settingsFile.println("wakeOnPowerReconnect=" + (String)settings.wakeOnPowerReconnect);
+    settingsFile.println("enablePwrLedDuringSleep=" + (String)settings.enablePwrLedDuringSleep);
+    settingsFile.println("logVIN=" + (String)settings.logVIN);
     settingsFile.close();
   }
 }
@@ -333,6 +336,12 @@ bool parseLine(char* str) {
     settings.qwiicBusPowerUpDelayMs = d;
   else if (strcmp(settingName, "printMeasurementCount") == 0)
     settings.printMeasurementCount = d;
+  else if (strcmp(settingName, "wakeOnPowerReconnect") == 0)
+    settings.wakeOnPowerReconnect = d;
+  else if (strcmp(settingName, "enablePwrLedDuringSleep") == 0)
+    settings.enablePwrLedDuringSleep = d;
+  else if (strcmp(settingName, "logVIN") == 0)
+    settings.logVIN = d;
   else
     Serial.printf("Unknown setting %s on line: %s\n", settingName, str);
 
