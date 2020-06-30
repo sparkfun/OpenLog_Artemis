@@ -299,7 +299,7 @@ void menuConfigure_QwiicBus()
     Serial.println();
     Serial.println("Menu: Configure Qwiic Bus");
 
-    Serial.print("1) If sensor read time is greater than 2s, turn off bus power: ");
+    Serial.print("1) Turn off bus power between readings (>2s): ");
     if (settings.powerDownQwiicBusBetweenReads == true) Serial.println("Yes");
     else Serial.println("No");
 
@@ -907,7 +907,7 @@ bool isUbloxAttached()
   return(false);
 }
 
-void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, int &second, int &millisecond)
+void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, int &second, int &millisecond, bool &dateValid, bool &timeValid)
 {
   //Step through node list
   node *temp = head;
@@ -929,6 +929,8 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
         hour = nodeDevice->getHour();
         minute = nodeDevice->getMinute();
         second = nodeDevice->getSecond();
+        dateValid = nodeDevice->getDateValid();
+        timeValid = nodeDevice->getTimeValid();
         millisecond = nodeDevice->getMillisecond();
       }
     }

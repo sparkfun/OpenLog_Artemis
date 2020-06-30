@@ -58,22 +58,10 @@ void menuTimeStamp()
 
     if (settings.logDate == true || settings.logTime == true)
     {
-      //      Serial.print("8) Correct time/date using USA Daylight Savings Time rules: ");
-      //      if (settings.correctForDST == true) Serial.println("Enabled");
-      //      else Serial.println("Disabled");
-
       if (isUbloxAttached() == true)
       {
         Serial.println("8) Synchronize RTC to GPS");
       }
-//      Serial.print("5) Use GPS as timestamp source: ");
-//      if (qwiicOnline.uBlox)
-//      {
-//        if (settings.getRTCfromGPS == true) Serial.println("Enabled");
-//        else Serial.println("Disabled");
-//      }
-//      else
-//        Serial.println("GPS offline");
       Serial.print("9) Local offset from UTC: ");
       Serial.println(settings.localUTCOffset);
   
@@ -100,16 +88,18 @@ void menuTimeStamp()
         myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
         Serial.println("RTC set to compiler time");
       }
-      //      else if (incoming == 8)
-      //      {
-      //        settings.correctForDST ^= 1;
-      //      }
       else if ((incoming == 8) && (isUbloxAttached() == true))
       {
         myRTC.getTime(); // Get the RTC date and time (just in case getGPSDateTime fails)
         int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds, ms = (myRTC.hundredths * 10);
-        getGPSDateTime(yy, mm, dd, h, m, s, ms); // Get the GPS date and time, corrected for localUTCOffset
+        bool dateValid, timeValid;
+        getGPSDateTime(yy, mm, dd, h, m, s, ms, dateValid, timeValid); // Get the GPS date and time, corrected for localUTCOffset
         myRTC.setTime(h, m, s, (ms / 10), dd, mm, (yy - 2000)); //Manually set RTC
+        Serial.println("RTC set to GPS (UTC) time");
+        if ((dateValid == false) || (timeValid == false))
+        {
+          Serial.println("\nWarning: the GPS time or date was not valid. Please try again.\n");
+        }
       }
       else if (incoming == 9)
       {
@@ -172,19 +162,5 @@ void menuTimeStamp()
         settings.hour24Style ^= 1;
       }
     }
-
-    //GPS functions not yet implemented
-    //    else if (incoming == 5)
-    //      settings.getRTCfromGPS ^= 1;
-    //    else if (incoming == 9)
-    //    {
-    //      Serial.print("Enter the local hour offset from UTC (-12 to 14): ");
-    //      int offset = getNumber(menuTimeout); //Timeout after x seconds
-    //      if (offset < -12 || offset > 14)
-    //        Serial.println("Error: Offset is out of range");
-    //      else
-    //        settings.localUTCOffset = offset;
-    //    }
-
   }
 }

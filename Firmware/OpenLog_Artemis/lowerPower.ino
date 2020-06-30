@@ -67,9 +67,18 @@ void powerDown()
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
 
   //We can't leave these power control pins floating
-  qwiicPowerOff();
   imuPowerOff();
   microSDPowerOff();
+
+  //Keep Qwiic bus powered on if user desires it - but only for X04 to avoid a brown-out
+#if(HARDWARE_VERSION_MAJOR == 0)
+  if (settings.powerDownQwiicBusBetweenReads == true)
+    qwiicPowerOff();
+  else
+    qwiicPowerOn(); //Make sure pins stays as output
+#else
+  qwiicPowerOff();
+#endif
 
   //Flag that we are ready for reset by the WDT
   waitingForReset = true;
@@ -205,31 +214,36 @@ void goToSleep()
   //Adjust sysTicks down by the amount we've be at 48MHz
   uint32_t msBeenAwake = millis();
   uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
-  sysTicksToSleep -= sysTicksAwake;
 
-  //Setup interrupt to trigger when the number of ms have elapsed
-  am_hal_stimer_compare_delta_set(6, sysTicksToSleep);
-
-  //We use counter/timer 6 to cause us to wake up from sleep but 0 to 7 are available
-  //CT 7 is used for Software Serial. All CTs are used for Servo.
-  am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);  //Clear CT6
-  am_hal_stimer_int_enable(AM_HAL_STIMER_INT_COMPAREG); //Enable C/T G=6
-
-  //Enable the timer interrupt in the NVIC.
-  NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
-
-  //Halt the WDT otherwise this will bring us out of deep sleep
-  am_hal_wdt_halt();
-
-  //Deep Sleep
-  am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
-
-  //(Re)start the WDT
-  am_hal_wdt_start();
-
-  //Turn off interrupt
-  NVIC_DisableIRQ(STIMER_CMPR6_IRQn);
-  am_hal_stimer_int_disable(AM_HAL_STIMER_INT_COMPAREG); //Disable C/T G=6
+  //Check that sysTicksToSleep is >> sysTicksAwake
+  if (sysTicksToSleep > (sysTicksAwake + 3277)) // Abort if we are trying to sleep for < 100ms
+  {
+    sysTicksToSleep -= sysTicksAwake;
+  
+    //Setup interrupt to trigger when the number of ms have elapsed
+    am_hal_stimer_compare_delta_set(6, sysTicksToSleep);
+  
+    //We use counter/timer 6 to cause us to wake up from sleep but 0 to 7 are available
+    //CT 7 is used for Software Serial. All CTs are used for Servo.
+    am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);  //Clear CT6
+    am_hal_stimer_int_enable(AM_HAL_STIMER_INT_COMPAREG); //Enable C/T G=6
+  
+    //Enable the timer interrupt in the NVIC.
+    NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
+  
+    //Halt the WDT otherwise this will bring us out of deep sleep
+    am_hal_wdt_halt();
+  
+    //Deep Sleep
+    am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
+  
+    //(Re)start the WDT
+    am_hal_wdt_start();
+  
+    //Turn off interrupt
+    NVIC_DisableIRQ(STIMER_CMPR6_IRQn);
+    am_hal_stimer_int_disable(AM_HAL_STIMER_INT_COMPAREG); //Disable C/T G=6
+  }
 
   //We're BACK!
   wakeFromSleep();
