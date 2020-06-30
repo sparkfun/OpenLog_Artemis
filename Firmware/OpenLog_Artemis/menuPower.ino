@@ -9,7 +9,7 @@ void menuPower()
     if (settings.wakeOnPowerReconnect == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
-    Serial.print("2) If sensor read time is greater than 2s, turn off Qwiic bus power: ");
+    Serial.print("2) Turn off Qwiic bus power between readings (>2s): ");
     if (settings.powerDownQwiicBusBetweenReads == true) Serial.println("Yes");
     else Serial.println("No");
 

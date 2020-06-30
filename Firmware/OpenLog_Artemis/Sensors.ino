@@ -50,7 +50,7 @@ void getData()
     if (settings.logAnalogVoltages == true)
     {
       float voltage = analog11 * 2 / 16384.0;
-      sprintf(tempData, "%.2f", voltage);
+      sprintf(tempData, "%.2f,", voltage);
     }
     else
       sprintf(tempData, "%d,", analog11);
@@ -67,7 +67,7 @@ void getData()
     if (settings.logAnalogVoltages == true)
     {
       float voltage = analog12 * 2 / 16384.0;
-      sprintf(tempData, "%.2f", voltage);
+      sprintf(tempData, "%.2f,", voltage);
     }
     else
       sprintf(tempData, "%d,", analog12);
@@ -84,7 +84,7 @@ void getData()
     if (settings.logAnalogVoltages == true)
     {
       float voltage = analog13 * 2 / 16384.0;
-      sprintf(tempData, "%.2f", voltage);
+      sprintf(tempData, "%.2f,", voltage);
     }
     else
       sprintf(tempData, "%d,", analog13);
@@ -923,6 +923,9 @@ void printHelperText()
 
   if (settings.logHertz)
     strcat(helperText, "output_Hz,");
+
+  if (settings.printMeasurementCount)
+    strcat(helperText, "count,");
 
   strcat(helperText, "\n");
 

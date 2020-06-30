@@ -49,6 +49,7 @@
   (done) Use the WDT to reset the Artemis when power is reconnected (previously the Artemis would have stayed in deep sleep)
   Add a callback function to the u-blox library so we can abort waiting for UBX data if the power goes low
   Add support for the Qwiic PT100
+  Investigate why usBetweenReadings appears to be ~0.8s longer than expected
 */
 
 
@@ -379,7 +380,7 @@ void loop() {
     }
 
     //Go to sleep if time between readings is greater than 2 seconds
-    if (settings.usBetweenReadings > maxUsBeforeSleep)
+    if (settings.usBetweenReadings >= maxUsBeforeSleep)
     {
       goToSleep();
     }

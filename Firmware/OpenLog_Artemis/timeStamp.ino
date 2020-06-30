@@ -57,10 +57,10 @@ String getGPSDateTimeAsStr() {
 //
 //Note: this function should only be called if we know that a u-blox GNSS is actually connected
 //
-void getGPSDateTime(int &year, int &month, int &day, int &hour, int &minute, int &second, int &millisecond) {
+void getGPSDateTime(int &year, int &month, int &day, int &hour, int &minute, int &second, int &millisecond, bool &dateValid, bool &timeValid) {
   //Get latested date/time from GPS
   //These will be extracted from a single PVT packet
-  getUbloxDateTime(year, month, day, hour, minute, second, millisecond);
+  getUbloxDateTime(year, month, day, hour, minute, second, millisecond, dateValid, timeValid);
 
   adjustToLocalDateTime(year, month, day, hour, settings.localUTCOffset);
 }
