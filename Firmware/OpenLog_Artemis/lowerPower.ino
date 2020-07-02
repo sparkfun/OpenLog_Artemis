@@ -102,16 +102,11 @@ void powerDown()
 //Power everything down and wait for interrupt wakeup
 void goToSleep()
 {
-  uint32_t msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
-
-  printDebug("Sleeping for ");
-  printDebug(String(msToSleep));
-  printDebug("ms\n");
-
   //Counter/Timer 6 will use the 32kHz clock
   //Calculate how many 32768Hz system ticks we need to sleep for:
   //sysTicksToSleep = msToSleep * 32768L / 1000
   //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
+  uint32_t msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
   uint32_t sysTicksToSleep;
   if (msToSleep < 131000)
   {
@@ -124,10 +119,6 @@ void goToSleep()
     sysTicksToSleep = sysTicksToSleep * 32768L; // Now do the multiply
   }
   
-  printDebug("Sleeping for ");
-  printDebug(String(sysTicksToSleep));
-  printDebug(" 32.768kHz clock cycles\n");
-
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
@@ -142,6 +133,8 @@ void goToSleep()
     serialDataFile.sync();
     serialDataFile.close();
   }
+
+  delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
 
   Serial.flush(); //Finish any prints
 
@@ -184,10 +177,12 @@ void goToSleep()
 
   //We can't leave these power control pins floating
   imuPowerOff();
-  //microSDPowerOff();
-
-  //Testing file record issues
-  microSDPowerOn();
+#if((HARDWARE_VERSION_MAJOR == 0) && (HARDWARE_VERSION_MINOR == 5))
+  // For high speed logging tests on x04:
+  microSDPowerOff();
+#else  
+  microSDPowerOff();
+#endif
 
   //Keep Qwiic bus powered on if user desires it
   if (settings.powerDownQwiicBusBetweenReads == true)
@@ -215,8 +210,13 @@ void goToSleep()
   uint32_t msBeenAwake = millis();
   uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
 
+#if((HARDWARE_VERSION_MAJOR == 0) && (HARDWARE_VERSION_MINOR == 5))
+  // For high speed logging tests on x04, always sleep for the full sysTicksToSleep
+  sysTicksToSleep += sysTicksAwake;
+#else
   //Check that sysTicksToSleep is >> sysTicksAwake
   if (sysTicksToSleep > (sysTicksAwake + 3277)) // Abort if we are trying to sleep for < 100ms
+#endif
   {
     sysTicksToSleep -= sysTicksAwake;
   

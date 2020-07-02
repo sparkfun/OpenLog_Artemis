@@ -27,6 +27,8 @@ void menuMain()
 
     Serial.println("r) Reset all settings to default");
 
+    Serial.println("q) Quit: Close log files and power down");
+
     //Serial.println("d) Debug Menu");
 
     Serial.println("x) Return to logging");
@@ -51,7 +53,7 @@ void menuMain()
       menuDebug();
     else if (incoming == 'r')
     {
-      Serial.println("\n\rResetting to factory defaults. Continue? Press 'y':");
+      Serial.println("\n\rResetting to factory defaults. Press 'y' to confirm:");
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
@@ -66,6 +68,31 @@ void menuMain()
       }
       else
         Serial.println("Reset aborted");
+    }
+    else if (incoming == 'q')
+    {
+      Serial.println("\n\rQuit? Press 'y' to confirm:");
+      byte bContinue = getByteChoice(menuTimeout);
+      if (bContinue == 'y')
+      {
+        //Save files before going to sleep
+        if (online.dataLogging == true)
+        {
+          sensorDataFile.sync();
+          sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
+        }
+        if (online.serialLogging == true)
+        {
+          serialDataFile.sync();
+          serialDataFile.close();
+        }
+        Serial.println("Log files are closed. Please reset OpenLog Artemis and open a terminal at 115200bps...");
+        delay(sdPowerDownDelay); // Give the SD card time to shut down
+        wakeOnPowerReconnect = false; // Disable automatic wake - but don't save to EEPROM or SD
+        powerDown();
+      }
+      else
+        Serial.println("Quit aborted");
     }
     else if (incoming == 'x')
       break;

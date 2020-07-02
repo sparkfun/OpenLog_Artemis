@@ -24,6 +24,7 @@ File serialDataFile; //File that all incoming serial data is written to
 
 char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
 char serialDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
+const int sdPowerDownDelay = 100; //Delay for this many ms before turning off the SD card power
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 uint32_t msToSleep = 3000; //This is the user editable number of ms to sleep between RTC checks
@@ -73,6 +74,8 @@ void goToSleep()
 
   Serial.flush();
   Serial.end(); //Power down UART
+
+  delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
 
   power_adc_disable(); //Power down ADC
 

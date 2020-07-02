@@ -198,10 +198,9 @@ struct struct_settings {
   int sizeOfSettings = 0;
   int nextSerialLogNumber = 1;
   int nextDataLogNumber = 1;
-  //unsigned int recordPerSecond = 10;
   //uint32_t: Largest is 4,294,967,295 or 4,294s or 71 minutes between readings.
   //uint64_t: Largest is 9,223,372,036,854,775,807 or 9,223,372,036,854s or 292,471 years between readings.
-  uint64_t usBetweenReadings = 100000ULL; //100,000us = 100ms = 10 readings per second.
+  uint64_t usBetweenReadings = 100000ULL; //Default to 100,000us = 100ms = 10 readings per second.
   //100,000 / 1000 = 100ms. 1 / 100ms = 10Hz
   //recordPerSecond (Hz) = 1 / ((usBetweenReadings / 1000UL) / 1000UL)
   //recordPerSecond (Hz) = 1,000,000 / usBetweenReadings
@@ -241,6 +240,7 @@ struct struct_settings {
   bool wakeOnPowerReconnect = true;
   bool enablePwrLedDuringSleep = true;
   bool logVIN = false;
+  unsigned long openNewLogFilesAfter = 0; //Default to 0 (Never) seconds
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
