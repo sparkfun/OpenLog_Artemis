@@ -67,15 +67,20 @@ void menuLogRate()
     if (settings.printMeasurementCount == true) Serial.println("Enabled");
     else Serial.println("Disabled");
 
+    Serial.print("10) Open New Log Files After (s): ");
+    Serial.printf("%d", settings.openNewLogFilesAfter);
+    if (settings.openNewLogFilesAfter == 0) Serial.println(" (Never)");
+    else Serial.println();
+
     Serial.println("x) Exit");
 
-    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
 
-    if (incoming == '1')
+    if (incoming == 1)
       settings.logData ^= 1;
-    else if (incoming == '2')
+    else if (incoming == 2)
       settings.enableTerminalOutput ^= 1;
-    else if (incoming == '3')
+    else if (incoming == 3)
     {
       Serial.print("Enter baud rate (1200 to 500000): ");
       int newBaud = getNumber(menuTimeout); //Timeout after x seconds
@@ -92,7 +97,7 @@ void menuLogRate()
         while (1);
       }
     }
-    else if (incoming == '4')
+    else if (incoming == 4)
     {
       int maxOutputRate = settings.serialTerminalBaudRate / 10 / (totalCharactersPrinted / measurementCount);
       maxOutputRate = (maxOutputRate * 90) / 100; //Fudge reduction of 10%
@@ -104,22 +109,21 @@ void menuLogRate()
       if (tempRPS < 1 || tempRPS > maxOutputRate)
         Serial.println("Error: Readings Per Second out of range");
       else
-        settings.usBetweenReadings = 1000000ULL / tempRPS;
+        settings.usBetweenReadings = 1000000ULL / ((uint64_t)tempRPS);
     }
-    else if (incoming == '5')
+    else if (incoming == 5)
     {
       //The Deep Sleep duration is set with am_hal_stimer_compare_delta_set, the duration of which is uint32_t
       //So the maximum we can sleep for is 2^32 / 32768 = 131072 seconds = 36.4 hours
       //Let's limit this to 36 hours = 129600 seconds
       Serial.println("How many seconds would you like to sleep between readings? (1 to 129,600):");
-      uint64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
-      if (tempSeconds < 1 || tempSeconds > 129600ULL)
+      int64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
+      if (tempSeconds < 1 || tempSeconds > 129600)
         Serial.println("Error: Readings Per Second out of range");
       else
-        //settings.recordPerSecond = tempRPS;
-        settings.usBetweenReadings = 1000000ULL * tempSeconds;
+        settings.usBetweenReadings = 1000000ULL * ((uint64_t)tempSeconds);
     }
-    else if (incoming == '6')
+    else if (incoming == 6)
     {
       if (settings.logMaxRate == false)
       {
@@ -144,17 +148,37 @@ void menuLogRate()
         }
       }
       else
+      {
         settings.logMaxRate = false;
+        //settings.usBetweenReadings = 100000ULL; //Default to 100,000us = 100ms = 10 readings per second.
+      }
     }
-    else if (incoming == '7')
+    else if (incoming == 7)
       settings.logHertz ^= 1;
-    else if (incoming == '8')
+    else if (incoming == 8)
       settings.showHelperText ^= 1;
-    else if (incoming == '9')
+    else if (incoming == 9)
       settings.printMeasurementCount ^= 1;
-    else if (incoming == 'x')
+    else if (incoming == 10)
+    {
+#if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Allow 1s for Version 0-5
+      Serial.println("Open new log files after this many seconds (0 or 10 to 129,600) (0 = Never):");
+#else
+      Serial.println("Open new log files after this many seconds (0 to 129,600) (0 = Never):");
+#endif
+      int64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
+#if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Allow 1s for Version 0-5
+      if ((tempSeconds < 0) || ((tempSeconds > 0) && (tempSeconds < 10)) || (tempSeconds > 129600ULL))
+#else
+      if ((tempSeconds < 0) || (tempSeconds > 129600ULL))
+#endif
+        Serial.println("Error: Readings Per Second out of range");
+      else
+        settings.openNewLogFilesAfter = tempSeconds;
+    }
+    else if (incoming == STATUS_PRESSED_X)
       return;
-    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
       return;
     else
       printUnknown(incoming);

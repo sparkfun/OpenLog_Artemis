@@ -133,6 +133,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("wakeOnPowerReconnect=" + (String)settings.wakeOnPowerReconnect);
     settingsFile.println("enablePwrLedDuringSleep=" + (String)settings.enablePwrLedDuringSleep);
     settingsFile.println("logVIN=" + (String)settings.logVIN);
+    settingsFile.println("openNewLogFilesAfter=" + (String)settings.openNewLogFilesAfter);
     settingsFile.close();
   }
 }
@@ -342,6 +343,8 @@ bool parseLine(char* str) {
     settings.enablePwrLedDuringSleep = d;
   else if (strcmp(settingName, "logVIN") == 0)
     settings.logVIN = d;
+  else if (strcmp(settingName, "openNewLogFilesAfter") == 0)
+    settings.openNewLogFilesAfter = d;
   else
     Serial.printf("Unknown setting %s on line: %s\n", settingName, str);
 

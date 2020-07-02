@@ -930,6 +930,8 @@ void printHelperText()
   strcat(helperText, "\n");
 
   Serial.print(helperText);
+  if ((settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
+    sensorDataFile.print(helperText);
 }
 //If certain devices are attached, we need to reduce the I2C max speed
 void setMaxI2CSpeed()

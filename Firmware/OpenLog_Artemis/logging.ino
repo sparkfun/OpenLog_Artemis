@@ -20,7 +20,7 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
   }
 
   if (newFileNumber > 0)
-    newFileNumber--; //Check if last log file was empty
+    newFileNumber--; //Check if last log file was empty. Reuse it if it is.
 
   //Search for next available log spot
   static char newFileName[40];
@@ -28,7 +28,7 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
   {
     if (lowPowerSeen == true) powerDown(); //Power down if required
     
-    sprintf(newFileName, "%s%05u.TXT", fileLeader, newFileNumber); //Splice the new file number into this file name
+    sprintf(newFileName, "%s%05u.TXT", fileLeader, newFileNumber); //Splice the new file number into this file name. Max no. is 99999.
 
     if (sd.exists(newFileName) == false) break; //File name not found so we will use it.
 
@@ -38,19 +38,34 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
 #else
     newFile = sd.open(newFileName, O_READ);
 #endif
-    if (newFile.size() == 0) break; // File is empty so we will use it.
+    if (newFile.size() == 0) break; // File is empty so we will use it. Note: we need to make the user aware that this can happen!
 
     newFile.close(); // Close this existing file we just opened.
 
     newFileNumber++; //Try the next number
+    if (newFileNumber >= 100000) break; // Have we hit the maximum number of files?
   }
+  
   newFile.close(); //Close this new file we just opened
 
   newFileNumber++; //Increment so the next power up uses the next file #
-  recordSystemSettings(); //Record new file number to EEPROM and to config file
 
-  Serial.print(F("Created log file: "));
-  Serial.println(newFileName);
+  if (newFileNumber >= 100000) // Have we hit the maximum number of files?
+  {
+    Serial.print(F("***** WARNING! File number limit reached! (Overwriting "));
+    Serial.print(newFileName);
+    Serial.println(F(") *****"));
+    newFileNumber = 100000; // This will overwrite Log99999.TXT next time thanks to the newFileNumber-- above
+  }
+  else
+  {
+    Serial.print(F("Logging to: "));
+    Serial.println(newFileName);    
+  }
+
+  //Record new file number to EEPROM and to config file
+  //This works because newFileNumber is a pointer to settings.newFileNumber
+  recordSystemSettings();
 
   return (newFileName);
 }

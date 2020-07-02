@@ -95,6 +95,7 @@ void menuTimeStamp()
         bool dateValid, timeValid;
         getGPSDateTime(yy, mm, dd, h, m, s, ms, dateValid, timeValid); // Get the GPS date and time, corrected for localUTCOffset
         myRTC.setTime(h, m, s, (ms / 10), dd, mm, (yy - 2000)); //Manually set RTC
+        lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
         Serial.println("RTC set to GPS (UTC) time");
         if ((dateValid == false) || (timeValid == false))
         {
@@ -131,6 +132,7 @@ void menuTimeStamp()
         dd = getNumber(menuTimeout); //Timeout after x seconds
 
         myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
+        lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
       }
       else if (incoming == 5)
       {
@@ -156,6 +158,7 @@ void menuTimeStamp()
         s = getNumber(menuTimeout); //Timeout after x seconds
 
         myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
+        lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
       }
       else if (incoming == 7)
       {

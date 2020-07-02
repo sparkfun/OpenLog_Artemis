@@ -62,6 +62,7 @@ const int FIRMWARE_VERSION_MINOR = 4;
 //Depends on hardware version. This can be found as a marking on the PCB.
 //x04 was the SparkX 'black' version.
 //v10 was the first red version.
+//(Hardware version 0-5 does not exist. It is just an easy way to test high speed logging on the x04 hardware.)
 #define HARDWARE_VERSION_MAJOR 0
 #define HARDWARE_VERSION_MINOR 4
 
@@ -107,13 +108,14 @@ TwoWire qwiic(1); //Will use pads 8/9
 //microSD Interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
-#include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed: https://github.com/greiman/SdFat-beta
 
+#include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed: https://github.com/greiman/SdFat-beta
 
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 #define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
 
 #define USE_EXFAT 1
+//#define PRINT_LAST_WRITE_TIME // Uncomment this line to enable the 'measure the time between writes' diagnostic
 
 #ifdef USE_EXFAT
 //ExFat
@@ -129,6 +131,7 @@ File serialDataFile; //File that all incoming serial data is written to
 
 char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
 char serialDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
+const int sdPowerDownDelay = 100; //Delay for this many ms before turning off the SD card power
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Add RTC interface for Artemis
@@ -180,6 +183,7 @@ ICM_20948_SPI myICM;
 //Global variables
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 uint64_t measurementStartTime; //Used to calc the actual update rate. Max is ~80,000,000ms in a 24 hour period.
+uint64_t lastSDFileNameChangeTime; //Used to calculate the interval since the last SD filename change
 unsigned long measurementCount = 0; //Used to calc the actual update rate.
 char outputData[512 * 2]; //Factor of 512 for easier recording to SD in 512 chunks
 unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
@@ -188,9 +192,9 @@ unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate 
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
-volatile bool wakeOnPowerReconnect = true; // volatile copy of settings.wakeOnPowerReconnect for the ISR
-volatile bool lowPowerSeen = false; // volatile flag to indicate if a low power interrupt has been seen
-volatile bool waitingForReset = false; // volatile flag to indicate if we are waiting for a reset (used by the WDT ISR)
+volatile static bool wakeOnPowerReconnect = true; // volatile copy of settings.wakeOnPowerReconnect for the ISR
+volatile static bool lowPowerSeen = false; // volatile flag to indicate if a low power interrupt has been seen
+volatile static bool waitingForReset = false; // volatile flag to indicate if we are waiting for a reset (used by the WDT ISR)
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //unsigned long startTime = 0;
@@ -236,6 +240,7 @@ void setup() {
   analogReadResolution(14); //Increase from default of 10
 
   beginDataLogging(); //180ms
+  lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
 
   if (lowPowerSeen == true) powerDown(); //Power down if required
 
@@ -247,17 +252,17 @@ void setup() {
 
   if (lowPowerSeen == true) powerDown(); //Power down if required
 
-  if (online.microSD == true) msg("SD card online");
-  else msg("SD card offline");
+  if (online.microSD == true) Serial.println("SD card online");
+  else Serial.println("SD card offline");
 
-  if (online.dataLogging == true) msg("Data logging online");
-  else msg("Datalogging offline");
+  if (online.dataLogging == true) Serial.println("Data logging online");
+  else Serial.println("Datalogging offline");
 
-  if (online.serialLogging == true) msg("Serial logging online");
-  else msg("Serial logging offline");
+  if (online.serialLogging == true) Serial.println("Serial logging online");
+  else Serial.println("Serial logging offline");
 
-  if (online.IMU == true) msg("IMU online");
-  else msg("IMU offline");
+  if (online.IMU == true) Serial.println("IMU online");
+  else Serial.println("IMU offline");
 
   if (settings.logMaxRate == true) Serial.println("Logging analog pins at max data rate");
 
@@ -274,7 +279,7 @@ void setup() {
     printOnlineDevice();
   }
   else
-    msg("No Qwiic devices detected");
+    Serial.println("No Qwiic devices detected");
 
   if (settings.showHelperText == true) printHelperText();
 
@@ -310,7 +315,9 @@ void loop() {
         incomingBuffer[incomingBufferSpot++] = SerialLog.read();
         if (incomingBufferSpot == sizeof(incomingBuffer))
         {
+          digitalWrite(PIN_STAT_LED, HIGH);
           serialDataFile.write(incomingBuffer, sizeof(incomingBuffer)); //Record the buffer to the card
+          digitalWrite(PIN_STAT_LED, LOW);
           incomingBufferSpot = 0;
         }
         charsReceived++;
@@ -329,8 +336,10 @@ void loop() {
         if (incomingBufferSpot > 0)
         {
           //Write the remainder of the buffer
+          digitalWrite(PIN_STAT_LED, HIGH);
           serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
           serialDataFile.sync();
+          digitalWrite(PIN_STAT_LED, LOW);
 
           incomingBufferSpot = 0;
         }
@@ -355,6 +364,42 @@ void loop() {
     takeReading = false;
     lastReadTime = micros();
 
+#ifdef PRINT_LAST_WRITE_TIME
+    if (settings.printDebugMessages)
+    {
+      // Print how long it has been since the last write
+      char tempTimeRev[20]; // Char array to hold to usBR (reversed order)
+      char tempTime[20]; // Char array to hold to usBR (correct order)
+      static uint64_t lastWriteTime; //Used to calculate the time since the last SD write (sleep-proof)
+      unsigned long usBR = rtcMillis() - lastWriteTime;
+      unsigned int i = 0;
+      if (usBR == 0ULL) // if usBetweenReadings is zero, set tempTime to "0"
+      {
+        tempTime[0] = '0';
+        tempTime[1] = 0;
+      }
+      else
+      {
+        while (usBR > 0)
+        {
+          tempTimeRev[i++] = (usBR % 10) + '0'; // divide by 10, convert the remainder to char
+          usBR /= 10; // divide by 10
+        }
+        unsigned int j = 0;
+        while (i > 0)
+        {
+          tempTime[j++] = tempTimeRev[--i]; // reverse the order
+          tempTime[j] = 0; // mark the end with a NULL
+        }
+      }
+      
+      //printDebug("ms since last write: " + (String)tempTime + "\n");
+      printDebug("\n" + (String)tempTime + "\n");
+
+      lastWriteTime = rtcMillis();
+    }
+#endif
+    
     getData(); //Query all enabled sensors for data
 
     //Print to terminal
@@ -366,21 +411,52 @@ void loop() {
     {
       if (settings.enableSD && online.microSD)
       {
-        sensorDataFile.write(outputData, strlen(outputData)); //Record the buffer to the card
+        digitalWrite(PIN_STAT_LED, HIGH);
+        if (sensorDataFile.write(outputData, strlen(outputData)) != strlen(outputData)) //Record the buffer to the card
+        {
+          printDebug("*** sensorDataFile.write data length mismatch! ***\n");
+        }
 
         //Force sync every 500ms
         if (millis() - lastDataLogSyncTime > 500)
         {
           lastDataLogSyncTime = millis();
-          digitalWrite(PIN_STAT_LED, HIGH);
           sensorDataFile.sync();
-          digitalWrite(PIN_STAT_LED, LOW);
         }
+        
+        //Check if it is time to open a new log file
+        uint64_t secsSinceLastFileNameChange = rtcMillis() - lastSDFileNameChangeTime; // Calculate how long we have been logging for
+        secsSinceLastFileNameChange /= 1000ULL; // Convert to secs
+        if ((settings.openNewLogFilesAfter > 0) && (((unsigned long)secsSinceLastFileNameChange) >= settings.openNewLogFilesAfter))
+        {
+          //Close existings files
+          if (online.dataLogging == true)
+          {
+            sensorDataFile.sync();
+            sensorDataFile.close();
+            strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
+            beginDataLogging(); //180ms
+            if (settings.showHelperText == true) printHelperText();
+          }
+          if (online.serialLogging == true)
+          {
+            serialDataFile.sync();
+            serialDataFile.close();
+            strcpy(serialDataFileName, findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"));
+            beginSerialLogging();
+          }
+
+          lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
+        }
+
+        digitalWrite(PIN_STAT_LED, LOW);
       }
     }
 
-    //Go to sleep if time between readings is greater than 2 seconds
+#if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Version 0-5 always sleeps!
+    //Go to sleep only if time between readings is greater than maxUsBeforeSleep (2 seconds)
     if (settings.usBetweenReadings >= maxUsBeforeSleep)
+#endif
     {
       goToSleep();
     }
@@ -428,6 +504,7 @@ void beginSD()
     //    {
     if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
     {
+      printDebug("SD init failed (first attempt). Trying again...\n");
       for (int i = 0; i < 250; i++) //Give SD more time to power up, then try again
       {
         if (lowPowerSeen == true) powerDown(); //Power down if required
@@ -435,7 +512,7 @@ void beginSD()
       }
       if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
       {
-        Serial.println("SD init failed. Is card present? Formatted?");
+        Serial.println("SD init failed (second attempt). Is card present? Formatted?");
         digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
         online.microSD = false;
         return;
