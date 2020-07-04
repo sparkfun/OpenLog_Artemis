@@ -219,6 +219,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_SHTC3;
       }
       break;
+    case DEVICE_ADC_ADS122C04:
+      {
+        temp->classPtr = new SFE_ADS122C04;
+        temp->configPtr = new struct_ADS122C04;
+      }
+      break;
     default:
       Serial.printf("addDevice Device type not found: %d\n", deviceType);
       break;
@@ -369,6 +375,13 @@ bool beginQwiicDevices()
         {
           SHTC3 *tempDevice = (SHTC3 *)temp->classPtr;
           if (tempDevice->begin(qwiic) == 0) //Wire port. Returns 0 on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_ADC_ADS122C04:
+        {
+          SFE_ADS122C04 *tempDevice = (SFE_ADS122C04 *)temp->classPtr;
+          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
             temp->online = true;
         }
         break;
@@ -572,6 +585,27 @@ void configureDevice(node * temp)
     case DEVICE_HUMIDITY_SHTC3:
       //Nothing to configure
       break;
+    case DEVICE_ADC_ADS122C04:
+      {
+        SFE_ADS122C04 *sensor = (SFE_ADS122C04 *)temp->classPtr;
+        struct_ADS122C04 *sensorSetting = (struct_ADS122C04 *)temp->configPtr;
+
+        //Configure the wite mode for readPT100Centigrade and readPT100Fahrenheit
+        //(readInternalTemperature and readRawVoltage change and restore the mode automatically)
+        if (sensorSetting->useFourWireMode)
+          sensor->configureADCmode(ADS122C04_4WIRE_MODE);
+        else if (sensorSetting->useThreeWireMode)
+          sensor->configureADCmode(ADS122C04_3WIRE_MODE);
+        else if (sensorSetting->useTwoWireMode)
+          sensor->configureADCmode(ADS122C04_2WIRE_MODE);
+        else if (sensorSetting->useFourWireHighTemperatureMode)
+          sensor->configureADCmode(ADS122C04_4WIRE_HI_TEMP);
+        else if (sensorSetting->useThreeWireHighTemperatureMode)
+          sensor->configureADCmode(ADS122C04_3WIRE_HI_TEMP);
+        else if (sensorSetting->useTwoWireHighTemperatureMode)
+          sensor->configureADCmode(ADS122C04_2WIRE_HI_TEMP);
+      }
+      break;
     default:
       Serial.printf("configureDevice: Unknown device type %d: %s\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
@@ -653,6 +687,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_HUMIDITY_SHTC3:
       ptr = (FunctionPointer)menuConfigure_SHTC3;
+      break;
+    case DEVICE_ADC_ADS122C04:
+      ptr = (FunctionPointer)menuConfigure_ADS122C04;
       break;
     default:
       Serial.println("getConfigFunctionPtr: Unknown device type");
@@ -782,6 +819,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_AHT20 0x38
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
 #define ADR_UBLOX 0x42 //But can be set to any address
+#define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_SGP30 0x58
 #define ADR_CCS811_2 0x5A
@@ -843,6 +881,19 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         MS8607 sensor;
         if (sensor.begin(qwiic) == true) //Wire port
           return (DEVICE_PHT_MS8607);
+
+        //Confidence: High - Configures ADC mode
+        SFE_ADS122C04 sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_ADC_ADS122C04);
+      }
+      break;
+    case 0x41:
+      {
+        //Confidence: High - Configures ADC mode
+        SFE_ADS122C04 sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_ADC_ADS122C04);
       }
       break;
     case 0x42:
@@ -854,6 +905,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
           return (DEVICE_GPS_UBLOX);
         qwiic.setPullups(1); //Re-enable pullups for normal discovery
+      }
+      break;
+    case 0x44:
+    case 0x45:
+      {
+        //Confidence: High - Configures ADC mode
+        SFE_ADS122C04 sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_ADC_ADS122C04);
       }
       break;
     case 0x48:
@@ -1167,6 +1227,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_HUMIDITY_SHTC3:
       return "Humidity-SHTC3";
+      break;
+    case DEVICE_ADC_ADS122C04:
+      return "ADC-ADS122C04";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:

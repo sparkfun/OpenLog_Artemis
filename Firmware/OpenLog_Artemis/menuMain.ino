@@ -25,6 +25,8 @@ void menuMain()
 
     Serial.println("7) Configure Power Options");
 
+    Serial.println("h) Print Sensor Helper Text (and return to logging)");
+
     Serial.println("r) Reset all settings to default");
 
     Serial.println("q) Quit: Close log files and power down");
@@ -49,6 +51,11 @@ void menuMain()
       menuAttachedDevices();
     else if (incoming == '7')
       menuPower();
+    else if (incoming == 'h')
+    {
+      printHelperText(true); //printHelperText to terminal only
+      break; //return to logging
+    }
     else if (incoming == 'd')
       menuDebug();
     else if (incoming == 'r')

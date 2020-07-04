@@ -72,6 +72,9 @@ const byte PIN_IMU_POWER = 22;
 #elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
 const byte PIN_MICROSD_CHIP_SELECT = 10;
 const byte PIN_IMU_POWER = 22;
+#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 6)
+const byte PIN_MICROSD_CHIP_SELECT = 10;
+const byte PIN_IMU_POWER = 22;
 #elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
 const byte PIN_MICROSD_CHIP_SELECT = 23;
 const byte PIN_IMU_POWER = 27;
@@ -177,6 +180,7 @@ ICM_20948_SPI myICM;
 #include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
 #include "SparkFun_Qwiic_Humidity_AHT20.h" //Click here to get the library: http://librarymanager/All#Qwiic_Humidity_AHT20 by SparkFun
 #include "SparkFun_SHTC3.h" // Click here to get the library: http://librarymanager/All#SparkFun_SHTC3
+#include "SparkFun_ADS122C04_ADC_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_ADS122C04
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -281,7 +285,7 @@ void setup() {
   else
     Serial.println("No Qwiic devices detected");
 
-  if (settings.showHelperText == true) printHelperText();
+  if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
   if (settings.usBetweenReadings >= maxUsBeforeSleep)
@@ -436,7 +440,7 @@ void loop() {
             sensorDataFile.close();
             strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
             beginDataLogging(); //180ms
-            if (settings.showHelperText == true) printHelperText();
+            if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
           }
           if (online.serialLogging == true)
           {
