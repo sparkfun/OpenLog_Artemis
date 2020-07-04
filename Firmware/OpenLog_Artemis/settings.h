@@ -20,6 +20,7 @@ typedef enum
   DEVICE_TEMPERATURE_MCP9600,
   DEVICE_HUMIDITY_AHT20,
   DEVICE_HUMIDITY_SHTC3,
+  DEVICE_ADC_ADS122C04,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -191,6 +192,20 @@ struct struct_SHTC3 {
   bool log = true;
   bool logHumidity = true;
   bool logTemperature = true;
+};
+
+struct struct_ADS122C04 {
+  bool log = true;
+  bool logCentigrade = true;
+  bool logFahrenheit = false;
+  bool logInternalTemperature = true;
+  bool logRawVoltage = false;
+  bool useFourWireMode = true;
+  bool useThreeWireMode = false;
+  bool useTwoWireMode = false;
+  bool useFourWireHighTemperatureMode = false;
+  bool useThreeWireHighTemperatureMode = false;
+  bool useTwoWireHighTemperatureMode = false;
 };
 
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.

@@ -254,6 +254,9 @@ void menuAttachedDevices()
           case DEVICE_HUMIDITY_SHTC3:
             Serial.printf("%s SHTC3 Humidity Sensor %s\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_ADC_ADS122C04:
+            Serial.printf("%s ADS122C04 ADC (Qwiic PT100) %s\n", strDeviceMenu, strAddress);
+            break;
           default:
             Serial.printf("Unknown device type %d in menuAttachedDevices\n", temp->deviceType);
             break;
@@ -1634,6 +1637,147 @@ void menuConfigure_SHTC3(void *configPtr)
     else if (incoming == 'x')
       break;
     else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_ADS122C04(void *configPtr)
+{
+  struct_ADS122C04 *sensorSetting = (struct_ADS122C04*)configPtr;
+
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: Configure ADS122C04 ADC (Qwiic PT100)");
+
+    Serial.print("1) Sensor Logging: ");
+    if (sensorSetting->log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (sensorSetting->log == true)
+    {
+      Serial.print("2) Log Centigrade: ");
+      if (sensorSetting->logCentigrade == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Fahrenheit: ");
+      if (sensorSetting->logFahrenheit == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("4) Log Internal Temperature: ");
+      if (sensorSetting->logInternalTemperature == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("5) Log Raw Voltage: ");
+      if (sensorSetting->logRawVoltage == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("6) Use 4-Wire Mode: ");
+      if (sensorSetting->useFourWireMode == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("7) Use 3-Wire Mode: ");
+      if (sensorSetting->useThreeWireMode == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("8) Use 2-Wire Mode: ");
+      if (sensorSetting->useTwoWireMode == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("9) Use 4-Wire High Temperature Mode: ");
+      if (sensorSetting->useFourWireHighTemperatureMode == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("10) Use 3-Wire High Temperature Mode: ");
+      if (sensorSetting->useThreeWireHighTemperatureMode == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("11) Use 2-Wire High Temperature Mode: ");
+      if (sensorSetting->useTwoWireHighTemperatureMode == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+      }
+    Serial.println("x) Exit");
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logCentigrade ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logFahrenheit ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logInternalTemperature ^= 1;
+      else if (incoming == 5)
+        sensorSetting->logRawVoltage ^= 1;
+      else if (incoming == 6)
+      {
+        sensorSetting->useFourWireMode = true;
+        sensorSetting->useThreeWireMode = false;
+        sensorSetting->useTwoWireMode = false;
+        sensorSetting->useFourWireHighTemperatureMode = false;
+        sensorSetting->useThreeWireHighTemperatureMode = false;
+        sensorSetting->useTwoWireHighTemperatureMode = false;
+      }
+      else if (incoming == 7)
+      {
+        sensorSetting->useFourWireMode = false;
+        sensorSetting->useThreeWireMode = true;
+        sensorSetting->useTwoWireMode = false;
+        sensorSetting->useFourWireHighTemperatureMode = false;
+        sensorSetting->useThreeWireHighTemperatureMode = false;
+        sensorSetting->useTwoWireHighTemperatureMode = false;
+      }
+      else if (incoming == 8)
+      {
+        sensorSetting->useFourWireMode = false;
+        sensorSetting->useThreeWireMode = false;
+        sensorSetting->useTwoWireMode = true;
+        sensorSetting->useFourWireHighTemperatureMode = false;
+        sensorSetting->useThreeWireHighTemperatureMode = false;
+        sensorSetting->useTwoWireHighTemperatureMode = false;
+      }
+      else if (incoming == 9)
+      {
+        sensorSetting->useFourWireMode = false;
+        sensorSetting->useThreeWireMode = false;
+        sensorSetting->useTwoWireMode = false;
+        sensorSetting->useFourWireHighTemperatureMode = true;
+        sensorSetting->useThreeWireHighTemperatureMode = false;
+        sensorSetting->useTwoWireHighTemperatureMode = false;
+      }
+      else if (incoming == 10)
+      {
+        sensorSetting->useFourWireMode = false;
+        sensorSetting->useThreeWireMode = false;
+        sensorSetting->useTwoWireMode = false;
+        sensorSetting->useFourWireHighTemperatureMode = false;
+        sensorSetting->useThreeWireHighTemperatureMode = true;
+        sensorSetting->useTwoWireHighTemperatureMode = false;
+      }
+      else if (incoming == 11)
+      {
+        sensorSetting->useFourWireMode = false;
+        sensorSetting->useThreeWireMode = false;
+        sensorSetting->useTwoWireMode = false;
+        sensorSetting->useFourWireHighTemperatureMode = false;
+        sensorSetting->useThreeWireHighTemperatureMode = false;
+        sensorSetting->useTwoWireHighTemperatureMode = true;
+      }
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
       break;
     else
       printUnknown(incoming);

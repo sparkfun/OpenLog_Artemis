@@ -618,6 +618,74 @@ void gatherDeviceValues()
             }
           }
           break;
+        case DEVICE_ADC_ADS122C04:
+          {
+            SFE_ADS122C04 *nodeDevice = (SFE_ADS122C04 *)temp->classPtr;
+            struct_ADS122C04 *nodeSetting = (struct_ADS122C04 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              // The ADS122C04 supports sampling up to 2kHz but the library functions default to 20Hz.
+              // To be able to log faster than 20Hz we need to use setDataRate to change the data rate (sample speed).
+              // Note: readInternalTemperature and readRawVoltage are hard wired to 20Hz in the library and
+              //       - at the moment - there's nothing we can do about that! If you want to log faster than
+              //       20Hz, you'll need to disable readInternalTemperature and readRawVoltage.
+              // At the time of writing, the maximum achieveable sample rate is ~156Hz.
+
+              //It looks like configureDevice will take care of this. No need to do it here.
+              //if (nodeSetting->useFourWireMode)
+              //  nodeDevice->configureADCmode(ADS122C04_4WIRE_MODE);
+              //else if (nodeSetting->useThreeWireMode)
+              //  nodeDevice->configureADCmode(ADS122C04_3WIRE_MODE);
+              //else if (nodeSetting->useTwoWireMode)
+              //  nodeDevice->configureADCmode(ADS122C04_2WIRE_MODE);
+              //else if (nodeSetting->useFourWireHighTemperatureMode)
+              //  nodeDevice->configureADCmode(ADS122C04_4WIRE_HI_TEMP);
+              //else if (nodeSetting->useThreeWireHighTemperatureMode)
+              //  nodeDevice->configureADCmode(ADS122C04_3WIRE_HI_TEMP);
+              //else if (nodeSetting->useTwoWireHighTemperatureMode)
+              //  nodeDevice->configureADCmode(ADS122C04_2WIRE_HI_TEMP);
+
+              if (settings.usBetweenReadings < 50000ULL) // Check if we are trying to sample quicker than 20Hz
+              {
+                if (settings.usBetweenReadings <= 1000ULL) // Check if we are trying to sample at 1kHz
+                  nodeDevice->setDataRate(ADS122C04_DATA_RATE_1000SPS);
+                else if (settings.usBetweenReadings <= 1667ULL) // Check if we are trying to sample at 600Hz
+                  nodeDevice->setDataRate(ADS122C04_DATA_RATE_600SPS);
+                else if (settings.usBetweenReadings <= 3031ULL) // Check if we are trying to sample at 330Hz
+                  nodeDevice->setDataRate(ADS122C04_DATA_RATE_330SPS);
+                else if (settings.usBetweenReadings <= 5715ULL) // Check if we are trying to sample at 175Hz
+                  nodeDevice->setDataRate(ADS122C04_DATA_RATE_175SPS);
+                else if (settings.usBetweenReadings <= 11112ULL) // Check if we are trying to sample at 90Hz
+                  nodeDevice->setDataRate(ADS122C04_DATA_RATE_90SPS);
+                else if (settings.usBetweenReadings <= 22223ULL) // Check if we are trying to sample at 45Hz
+                  nodeDevice->setDataRate(ADS122C04_DATA_RATE_45SPS);
+              }
+              else
+                nodeDevice->setDataRate(ADS122C04_DATA_RATE_20SPS); // Default to 20Hz
+              
+              if (nodeSetting->logCentigrade)
+              {
+                sprintf(tempData, "%.03f,", nodeDevice->readPT100Centigrade());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logFahrenheit)
+              {
+                sprintf(tempData, "%.03f,", nodeDevice->readPT100Fahrenheit());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logInternalTemperature)
+              {
+                sprintf(tempData, "%.03f,", nodeDevice->readInternalTemperature());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logRawVoltage)
+              {
+                sprintf(tempData, "%d,", nodeDevice->readRawVoltage());
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
         default:
           Serial.printf("printDeviceValue unknown device type: %s\n", getDeviceName(temp->deviceType));
           break;
@@ -629,7 +697,7 @@ void gatherDeviceValues()
 }
 
 //Step through the node list and print helper text for the enabled readings
-void printHelperText()
+void printHelperText(bool terminalOnly)
 {
   char helperText[1000];
   helperText[0] = '\0';
@@ -843,9 +911,9 @@ void printHelperText()
               if (nodeSetting->logCO2)
                 strcat(helperText, "co2_ppm,");
               if (nodeSetting->logH2)
-                strcat(helperText, "unknown,");
+                strcat(helperText, "H2,");
               if (nodeSetting->logEthanol)
-                strcat(helperText, "unknown,");
+                strcat(helperText, "ethanol,");
             }
           }
           break;
@@ -913,6 +981,22 @@ void printHelperText()
             }
           }
           break;
+        case DEVICE_ADC_ADS122C04:
+          {
+            struct_ADS122C04 *nodeSetting = (struct_ADS122C04 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logCentigrade)
+                strcat(helperText, "degC,");
+              if (nodeSetting->logFahrenheit)
+                strcat(helperText, "degF,");
+              if (nodeSetting->logInternalTemperature)
+                strcat(helperText, "degC,");
+              if (nodeSetting->logRawVoltage)
+                strcat(helperText, "V*2.048/2^23,");
+            }
+          }
+          break;
         default:
           Serial.printf("\nprinterHelperText device not found: %d\n", temp->deviceType);
           break;
@@ -930,7 +1014,7 @@ void printHelperText()
   strcat(helperText, "\n");
 
   Serial.print(helperText);
-  if ((settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
+  if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
     sensorDataFile.print(helperText);
 }
 //If certain devices are attached, we need to reduce the I2C max speed
