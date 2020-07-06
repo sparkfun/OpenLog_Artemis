@@ -550,6 +550,22 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
           }
           break;
+        case DEVICE_ADC_ADS122C04:
+          {
+            struct_ADS122C04 *nodeSetting = (struct_ADS122C04 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logCentigrade=" + nodeSetting->logCentigrade);
+            settingsFile.println((String)base + "logFahrenheit=" + nodeSetting->logFahrenheit);
+            settingsFile.println((String)base + "logInternalTemperature=" + nodeSetting->logInternalTemperature);
+            settingsFile.println((String)base + "logRawVoltage=" + nodeSetting->logRawVoltage);
+            settingsFile.println((String)base + "useFourWireMode=" + nodeSetting->useFourWireMode);
+            settingsFile.println((String)base + "useThreeWireMode=" + nodeSetting->useThreeWireMode);
+            settingsFile.println((String)base + "useTwoWireMode=" + nodeSetting->useTwoWireMode);
+            settingsFile.println((String)base + "useFourWireHighTemperatureMode=" + nodeSetting->useFourWireHighTemperatureMode);
+            settingsFile.println((String)base + "useThreeWireHighTemperatureMode=" + nodeSetting->useThreeWireHighTemperatureMode);
+            settingsFile.println((String)base + "useTwoWireHighTemperatureMode=" + nodeSetting->useTwoWireHighTemperatureMode);
+          }
+          break;
         default:
           Serial.printf("recordSettingsToFile Unknown device: %s\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
@@ -982,7 +998,35 @@ bool parseDeviceLine(char* str) {
             Serial.printf("Unknown device setting: %s\n", deviceSettingName);
         }
         break;
-
+      case DEVICE_ADC_ADS122C04:
+        {
+          struct_ADS122C04 *nodeSetting = (struct_ADS122C04 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logCentigrade") == 0)
+            nodeSetting->logCentigrade = d;
+          else if (strcmp(deviceSettingName, "logFahrenheit") == 0)
+            nodeSetting->logFahrenheit = d;
+          else if (strcmp(deviceSettingName, "logInternalTemperature") == 0)
+            nodeSetting->logInternalTemperature = d;
+          else if (strcmp(deviceSettingName, "logRawVoltage") == 0)
+            nodeSetting->logRawVoltage = d;
+          else if (strcmp(deviceSettingName, "useFourWireMode") == 0)
+            nodeSetting->useFourWireMode = d;
+          else if (strcmp(deviceSettingName, "useThreeWireMode") == 0)
+            nodeSetting->useThreeWireMode = d;
+          else if (strcmp(deviceSettingName, "useTwoWireMode") == 0)
+            nodeSetting->useTwoWireMode = d;
+          else if (strcmp(deviceSettingName, "useFourWireHighTemperatureMode") == 0)
+            nodeSetting->useFourWireHighTemperatureMode = d;
+          else if (strcmp(deviceSettingName, "useThreeWireHighTemperatureMode") == 0)
+            nodeSetting->useThreeWireHighTemperatureMode = d;
+          else if (strcmp(deviceSettingName, "useTwoWireHighTemperatureMode") == 0)
+            nodeSetting->useTwoWireHighTemperatureMode = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
       default:
         Serial.printf("Unknown device type: %d\n", deviceType);
         Serial.flush();
