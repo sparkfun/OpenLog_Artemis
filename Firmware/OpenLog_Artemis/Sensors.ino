@@ -41,8 +41,6 @@ void getData()
     }
   }
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   if (settings.logA11)
   {
     unsigned int analog11 = analogRead(11);
@@ -57,8 +55,6 @@ void getData()
 
     strcat(outputData, tempData);
   }
-
-  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   if (settings.logA12)
   {
@@ -75,8 +71,6 @@ void getData()
     strcat(outputData, tempData);
   }
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   if (settings.logA13)
   {
     unsigned int analog13 = analogRead(13);
@@ -91,8 +85,6 @@ void getData()
 
     strcat(outputData, tempData);
   }
-
-  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   if (settings.logA32)
   {
@@ -109,16 +101,12 @@ void getData()
     strcat(outputData, tempData);
   }
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   if (settings.logVIN)
   {
     float voltage = readVIN();
     sprintf(tempData, "%.2f,", voltage);
     strcat(outputData, tempData);
   }
-
-  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   if (online.IMU)
   {
@@ -149,8 +137,6 @@ void getData()
     }
   }
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   //Append all external sensor data on linked list to outputData
   gatherDeviceValues();
 
@@ -176,8 +162,6 @@ void getData()
     strcat(outputData, tempData);
   }
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   if (settings.printMeasurementCount)
   {
     sprintf(tempData, "%d,", measurementCount);
@@ -199,8 +183,6 @@ void gatherDeviceValues()
   node *temp = head;
   while (temp != NULL)
   {
-    if (lowPowerSeen == true) powerDown(); //Power down if required
-    
     //If this node successfully begin()'d
     if (temp->online == true)
     {
@@ -1062,7 +1044,7 @@ float readVIN()
 #else
   int div3 = analogRead(PIN_VIN_MONITOR); //Read VIN across a 1/3 resistor divider
   float vin = (float)div3 * 3.0 * 2.0 / 16384.0; //Convert 1/3 VIN to VIN (14-bit resolution)
-  vin = vin * 1.021; //Correct for divider impedance (determined experimentally)
+  vin = vin * settings.vinCorrectionFactor; //Correct for divider impedance (determined experimentally)
   return (vin);
 #endif
 }

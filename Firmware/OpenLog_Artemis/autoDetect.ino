@@ -263,7 +263,6 @@ bool beginQwiicDevices()
 
   while (temp != NULL)
   {
-    if (lowPowerSeen == true) powerDown(); //Power down if required
     openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
 
     //Attempt to begin the device
@@ -620,7 +619,6 @@ void configureQwiicDevices()
 
   while (temp != NULL)
   {
-    if (lowPowerSeen == true) powerDown(); //Power down if required
     configureDevice(temp);
     temp = temp->next;
   }

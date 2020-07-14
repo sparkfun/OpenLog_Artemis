@@ -35,10 +35,6 @@ void recordSystemSettings()
   settings.sizeOfSettings = sizeof(settings);
   EEPROM.put(0, settings);
   recordSystemSettingsToFile();
-
-  // Update volatile copies of settings (e.g. wakeOnPowerReconnect)
-  // Putting this here means it covers loadSettings too
-  wakeOnPowerReconnect = settings.wakeOnPowerReconnect;
 }
 
 //Export the current settings to a config file
@@ -49,11 +45,7 @@ void recordSystemSettingsToFile()
     if (sd.exists("OLA_settings.txt"))
       sd.remove("OLA_settings.txt");
 
-#ifdef USE_EXFAT
-    FsFile settingsFile; //exFat
-#else
-    File settingsFile; //FAT16/32
-#endif
+    SdFile settingsFile; //FAT32
     if (settingsFile.open("OLA_settings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create settings file");
@@ -130,10 +122,10 @@ void recordSystemSettingsToFile()
     settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
     settingsFile.println("qwiicBusPowerUpDelayMs=" + (String)settings.qwiicBusPowerUpDelayMs);
     settingsFile.println("printMeasurementCount=" + (String)settings.printMeasurementCount);
-    settingsFile.println("wakeOnPowerReconnect=" + (String)settings.wakeOnPowerReconnect);
     settingsFile.println("enablePwrLedDuringSleep=" + (String)settings.enablePwrLedDuringSleep);
     settingsFile.println("logVIN=" + (String)settings.logVIN);
     settingsFile.println("openNewLogFilesAfter=" + (String)settings.openNewLogFilesAfter);
+    settingsFile.println("vinCorrectionFactor=" + (String)settings.vinCorrectionFactor);
     settingsFile.close();
   }
 }
@@ -148,11 +140,7 @@ bool loadSystemSettingsFromFile()
   {
     if (sd.exists("OLA_settings.txt"))
     {
-#ifdef USE_EXFAT
-      FsFile settingsFile; //exFat
-#else
-      File settingsFile; //FAT16/32
-#endif
+      SdFile settingsFile; //FAT32
       if (settingsFile.open("OLA_settings.txt", O_READ) == false)
       {
         Serial.println("Failed to open settings file");
@@ -337,14 +325,14 @@ bool parseLine(char* str) {
     settings.qwiicBusPowerUpDelayMs = d;
   else if (strcmp(settingName, "printMeasurementCount") == 0)
     settings.printMeasurementCount = d;
-  else if (strcmp(settingName, "wakeOnPowerReconnect") == 0)
-    settings.wakeOnPowerReconnect = d;
   else if (strcmp(settingName, "enablePwrLedDuringSleep") == 0)
     settings.enablePwrLedDuringSleep = d;
   else if (strcmp(settingName, "logVIN") == 0)
     settings.logVIN = d;
   else if (strcmp(settingName, "openNewLogFilesAfter") == 0)
     settings.openNewLogFilesAfter = d;
+  else if (strcmp(settingName, "vinCorrectionFactor") == 0)
+    settings.vinCorrectionFactor = d;
   else
     Serial.printf("Unknown setting %s on line: %s\n", settingName, str);
 
@@ -359,11 +347,7 @@ void recordDeviceSettingsToFile()
     if (sd.exists("OLA_deviceSettings.txt"))
       sd.remove("OLA_deviceSettings.txt");
 
-#ifdef USE_EXFAT
-    FsFile settingsFile; //exFat
-#else
-    File settingsFile; //FAT16/32
-#endif
+    SdFile settingsFile; //FAT32
     if (settingsFile.open("OLA_deviceSettings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create device settings file");
@@ -587,11 +571,7 @@ bool loadDeviceSettingsFromFile()
   {
     if (sd.exists("OLA_deviceSettings.txt"))
     {
-#ifdef USE_EXFAT
-      FsFile settingsFile; //exFat
-#else
-      File settingsFile; //FAT16/32
-#endif
+      SdFile settingsFile; //FAT32
       if (settingsFile.open("OLA_deviceSettings.txt", O_READ) == false)
       {
         Serial.println("Failed to open device settings file");
@@ -622,7 +602,7 @@ bool loadDeviceSettingsFromFile()
     }
     else
     {
-      Serial.println("No device config file found. Creating one with device faults.");
+      Serial.println("No device config file found. Creating one with device defaults.");
       recordDeviceSettingsToFile(); //Record the current settings to create the initial file
       return (false);
     }

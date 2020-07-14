@@ -172,7 +172,7 @@ void menuLogRate()
 #else
       if ((tempSeconds < 0) || (tempSeconds > 129600ULL))
 #endif
-        Serial.println("Error: Readings Per Second out of range");
+        Serial.println("Error: Invalid interval");
       else
         settings.openNewLogFilesAfter = tempSeconds;
     }

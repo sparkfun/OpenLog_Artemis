@@ -70,7 +70,9 @@ void menuMain()
         if (sd.exists("OLA_deviceSettings.txt"))
           sd.remove("OLA_deviceSettings.txt");
 
-        Serial.println("Settings erased. Please reset OpenLog Artemis and open a terminal at 115200bps...");
+        Serial.print("Settings erased. Please reset OpenLog Artemis and open a terminal at ");
+        Serial.print((String)settings.serialTerminalBaudRate);
+        Serial.println("bps...");
         while (1);
       }
       else
@@ -93,9 +95,10 @@ void menuMain()
           serialDataFile.sync();
           serialDataFile.close();
         }
-        Serial.println("Log files are closed. Please reset OpenLog Artemis and open a terminal at 115200bps...");
+        Serial.print("Log files are closed. Please reset OpenLog Artemis and open a terminal at ");
+        Serial.print((String)settings.serialTerminalBaudRate);
+        Serial.println("bps...");
         delay(sdPowerDownDelay); // Give the SD card time to shut down
-        wakeOnPowerReconnect = false; // Disable automatic wake - but don't save to EEPROM or SD
         powerDown();
       }
       else
