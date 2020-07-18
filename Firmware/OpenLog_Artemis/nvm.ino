@@ -8,8 +8,8 @@ void loadSettings()
   uint32_t testRead = 0;
   if (EEPROM.get(0, testRead) == 0xFFFFFFFF)
   {
+    Serial.println("EEPROM is blank. Default settings applied");
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
-    Serial.println("Default settings applied");
   }
 
   //Check that the current settings struct size matches what is stored in EEPROM
@@ -22,11 +22,23 @@ void loadSettings()
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 
+  //Check that the olaIdentifier is correct
+  //(It is possible for two different versions of the code to have the same sizeOfSettings - which causes problems!)
+  int tempIdentifier = 0;
+  EEPROM.get(sizeof(int), tempIdentifier); //Load the identifier from the EEPROM location after sizeOfSettings (int)
+  if (tempIdentifier != OLA_IDENTIFIER)
+  {
+    Serial.println("Settings are not valid for this variant of the OLA. Default settings applied");
+    recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
+  }
+
   //Read current settings
   EEPROM.get(0, settings);
 
   loadSystemSettingsFromFile(); //Load any settings from config file. This will over-write any pre-existing EEPROM settings.
-  recordSystemSettings(); //Record these new settings to EEPROM and config file to be sure they are the same
+  //Record these new settings to EEPROM and config file to be sure they are the same
+  //(do this even if loadSystemSettingsFromFile returned false)
+  recordSystemSettings();
 }
 
 //Record the current settings struct to EEPROM and then to config file
@@ -53,6 +65,7 @@ void recordSystemSettingsToFile()
     }
 
     settingsFile.println("sizeOfSettings=" + (String)settings.sizeOfSettings);
+    settingsFile.println("olaIdentifier=" + (String)settings.olaIdentifier);
     settingsFile.println("nextSerialLogNumber=" + (String)settings.nextSerialLogNumber);
     settingsFile.println("nextDataLogNumber=" + (String)settings.nextDataLogNumber);
 
@@ -147,7 +160,7 @@ bool loadSystemSettingsFromFile()
         return (false);
       }
 
-      char line[50];
+      char line[60];
       int lineNumber = 0;
 
       while (settingsFile.available()) {
@@ -213,7 +226,7 @@ bool parseLine(char* str) {
   if (!str) return false;
 
   //Store this setting name
-  char settingName[30];
+  char settingName[40];
   sprintf(settingName, "%s", str);
 
   //Move pointer to end of line
@@ -248,6 +261,8 @@ bool parseLine(char* str) {
       Serial.printf("Warning: Settings size is %d but current firmware expects %d. Attempting to use settings from file.\n", d, sizeof(settings));
 
   }
+  else if (strcmp(settingName, "olaIdentifier") == 0)
+    settings.olaIdentifier = d;
   else if (strcmp(settingName, "nextSerialLogNumber") == 0)
     settings.nextSerialLogNumber = d;
   else if (strcmp(settingName, "nextDataLogNumber") == 0)

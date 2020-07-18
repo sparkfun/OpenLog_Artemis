@@ -116,6 +116,8 @@ void menuMain()
 
   recordDeviceSettingsToFile(); //Record the current devices settings to device config file
 
+  configureQwiicDevices(); //Reconfigure the qwiic devices in case any settings have changed
+
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 
   //Reset measurements

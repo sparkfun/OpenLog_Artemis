@@ -210,7 +210,8 @@ struct struct_ADS122C04 {
 
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
-  int sizeOfSettings = 0;
+  int sizeOfSettings = 0; //sizeOfSettings **must** be the first entry and must be int
+  int olaIdentifier = OLA_IDENTIFIER; // olaIdentifier **must** be the second entry
   int nextSerialLogNumber = 1;
   int nextDataLogNumber = 1;
   //uint32_t: Largest is 4,294,967,295 or 4,294s or 71 minutes between readings.
@@ -238,19 +239,19 @@ struct struct_settings {
   bool correctForDST = false;
   bool americanDateStyle = true;
   bool hour24Style = true;
-  int serialTerminalBaudRate = 115200;
-  int serialLogBaudRate = 9600;
+  int  serialTerminalBaudRate = 115200;
+  int  serialLogBaudRate = 9600;
   bool showHelperText = true;
   bool logA11 = false;
   bool logA12 = false;
   bool logA13 = false;
   bool logA32 = false;
   bool logAnalogVoltages = true;
-  int localUTCOffset = 0; //Default to UTC because we should
+  int  localUTCOffset = 0; //Default to UTC because we should
   bool printDebugMessages = false;
-  bool powerDownQwiicBusBetweenReads = true;
-  int qwiicBusMaxSpeed = 400000;
-  int qwiicBusPowerUpDelayMs = 250;
+  bool powerDownQwiicBusBetweenReads = true; // 29 chars!
+  int  qwiicBusMaxSpeed = 400000;
+  int  qwiicBusPowerUpDelayMs = 250;
   bool printMeasurementCount = false;
   bool enablePwrLedDuringSleep = true;
   bool logVIN = false;

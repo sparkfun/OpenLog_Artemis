@@ -235,10 +235,9 @@ void gatherDeviceValues()
           }
           break;
         case DEVICE_GPS_UBLOX:
-        // This is a problem for low power events as the first get function will wait for a PVT message
-        // which can take up to a second to arrive.
-        // TODO: add a callback function so we can abort waiting for UBX data
           {
+            qwiic.setPullups(0); //Disable pullups to minimize CRC issues
+
             SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
             struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
@@ -311,6 +310,8 @@ void gatherDeviceValues()
                 strcat(outputData, tempData);
               }
             }
+
+            qwiic.setPullups(QWIIC_PULLUPS); //Re-enable pullups
           }
           break;
         case DEVICE_PROXIMITY_VCNL4040:

@@ -31,13 +31,15 @@
   Is there a better way to dynamically create size of outputData array so we don't ever get larger than X sensors outputting?
   Find way to store device configs into EEPROM
   Log four pressure sensors and graph them on plotter
-  Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
+  (checked) Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
   Test NAU7802s
   Test SCD30s
   Add a 'does not like to be powered cycled' setting for each device type.
   (done) Add support for logging VIN
   (done) Investigate error in time between logs (https://github.com/sparkfun/OpenLog_Artemis/issues/13)
-  Invesigate RTC reset issue (https://github.com/sparkfun/OpenLog_Artemis/issues/13 + https://forum.sparkfun.com/viewtopic.php?f=123&t=53157)
+  (done) Invesigate RTC reset issue (https://github.com/sparkfun/OpenLog_Artemis/issues/13 + https://forum.sparkfun.com/viewtopic.php?f=123&t=53157)
+    The solution is to make sure that the OLA goes into deep sleep as soon as the voltage monitor detects that the power has failed.
+    The user will need to press the reset button once power has been restored. Using the WDT to check the monitor and do a POR wasn't reliable.
   (done) Investigate requires-reset issue on battery power (") (X04 + CCS811/BME280 enviro combo)
   (done) Add a fix so that the MS8607 does not also appear as an MS5637
   (done) Add "set RTC from GPS" functionality
@@ -50,11 +52,25 @@
   Add a callback function to the u-blox library so we can abort waiting for UBX data if the power goes low
   (done) Add support for the ADS122C04 ADC (Qwiic PT100)
   Investigate why usBetweenReadings appears to be ~0.8s longer than expected
+  (done) Correct u-blox pull-ups
+  (done) Add an olaIdentifier to prevent problems when using two code variants that have the same sizeOfSettings
+  Add a fix for the IMU wake-up issue identified in https://github.com/sparkfun/OpenLog_Artemis/issues/18
+  Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an alaog input
 */
 
 
 const int FIRMWARE_VERSION_MAJOR = 1;
 const int FIRMWARE_VERSION_MINOR = 4;
+
+//Define the OLA board identifier:
+//  This is an int which is unique to this variant of the OLA and which allows us
+//  to make sure that the settings in EEPROM are correct for this version of the OLA
+//  (sizeOfSettings is not necessarily unique and we want to avoid problems when swapping from one variant to another)
+//  It is the sum of:
+//    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
+//    the major firmware version * 0x10
+//    the minor firmware version
+#define OLA_IDENTIFIER 0x114
 
 #include "settings.h"
 
@@ -62,7 +78,7 @@ const int FIRMWARE_VERSION_MINOR = 4;
 //Depends on hardware version. This can be found as a marking on the PCB.
 //x04 was the SparkX 'black' version.
 //v10 was the first red version.
-//(Hardware version 0-5 does not exist. It is just an easy way to test high speed logging on the x04 hardware.)
+//(Hardware versions 0-5 and 0-6 do not actually exist. It is just an easy way to test out new features on X04.)
 #define HARDWARE_VERSION_MAJOR 0
 #define HARDWARE_VERSION_MINOR 4
 
@@ -101,6 +117,7 @@ enum returnStatus {
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <Wire.h>
 TwoWire qwiic(1); //Will use pads 8/9
+#define QWIIC_PULLUPS 1 // Default to 1k pull-ups on the Qwiic bus
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //EEPROM for storing settings
@@ -111,7 +128,7 @@ TwoWire qwiic(1); //Will use pads 8/9
 //microSD Interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
-#include <SdFat.h> //Standard SdFat (FAT32) by Bill Greiman: http://librarymanager/All#SdFat
+#include <SdFat.h> //SdFat (FAT32) by Bill Greiman: http://librarymanager/All#SdFat
 SdFat sd;
 SdFile sensorDataFile; //File that all sensor data is written to
 SdFile serialDataFile; //File that all incoming serial data is written to
@@ -215,6 +232,7 @@ void setup() {
   Serial.printf("Artemis OpenLog v%d.%d\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
 
   beginQwiic();
+  delay(settings.qwiicBusPowerUpDelayMs); // Give the qwiic bus time to power up
 
   analogReadResolution(14); //Increase from default of 10
 
@@ -433,6 +451,7 @@ void beginQwiic()
   pinMode(PIN_QWIIC_POWER, OUTPUT);
   qwiicPowerOn();
   qwiic.begin();
+  qwiic.setPullups(QWIIC_PULLUPS); //Just to make it really clear what pull-ups are being used, set pullups here.
 }
 
 void beginSD()
