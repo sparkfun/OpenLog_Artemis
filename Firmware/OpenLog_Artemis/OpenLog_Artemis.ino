@@ -561,7 +561,7 @@ void beginIMU()
       if (myICM.status != ICM_20948_Stat_Ok)
       {
         digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
-        msg("ICM-20948 failed to init.");
+        Serial.println("ICM-20948 failed to init.");
         imuPowerOff();
         online.IMU = false;
         return;
@@ -600,21 +600,6 @@ void beginDataLogging()
   }
   else
     online.dataLogging = false;
-
-
-  //  else if (settings.logData == false && online.microSD == true)
-  //  {
-  //      online.dataLogging = false;
-  //  }
-  //  else if (online.microSD == false)
-  //  {
-  //    Serial.println("Data logging disabled because microSD offline");
-  //    online.serialLogging = false;
-  //  }
-  //  else
-  //  {
-  //    Serial.println("Unknown microSD state");
-  //  }
 }
 
 void beginSerialLogging()
@@ -641,22 +626,6 @@ void beginSerialLogging()
   }
   else
     online.serialLogging = false;
-
-
-  //  else if (settings.logSerial == false && online.microSD == true)
-  //  {
-  //    msg("Serial logging disabled");
-  //    online.serialLogging = false;
-  //  }
-  //  else if (online.microSD == false)
-  //  {
-  //    Serial.println("Serial logging disabled because microSD offline");
-  //    online.serialLogging = false;
-  //  }
-  //  else
-  //  {
-  //    Serial.println("Unknown microSD state");
-  //  }
 }
 
 //Called once number of milliseconds has passed
