@@ -7,6 +7,13 @@ void powerDown()
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
+  //Prevent stop logging button from waking us from sleep
+  if (settings.useGPIO32ForStopLogging == true)
+  {
+    detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+    pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+  }
+
   //WE NEED TO POWER DOWN ASAP - we don't have time to close the SD files
   //Save files before going to sleep
   //  if (online.dataLogging == true)
@@ -114,6 +121,13 @@ void goToSleep()
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
+  //Prevent stop logging button from waking us from sleep
+  if (settings.useGPIO32ForStopLogging == true)
+  {
+    detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+    pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+  }
+  
   //Save files before going to sleep
   if (online.dataLogging == true)
   {
@@ -267,6 +281,14 @@ void wakeFromSleep()
 
   if (digitalRead(PIN_POWER_LOSS) == LOW) powerDown(); //Check PIN_POWER_LOSS just in case we missed the falling edge
 
+  if (settings.useGPIO32ForStopLogging == true)
+  {
+    pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
+    delay(1); // Let the pin stabilize
+    attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+    stopLoggingSeen = false; // Make sure the flag is clear
+  }
+
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, LOW);
 
@@ -305,6 +327,29 @@ void wakeFromSleep()
 
   //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
   takeReading = true;
+}
+
+void stopLogging(void)
+{
+  detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+  
+  //Save files before going to sleep
+  if (online.dataLogging == true)
+  {
+    sensorDataFile.sync();
+    sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
+  }
+  if (online.serialLogging == true)
+  {
+    serialDataFile.sync();
+    serialDataFile.close();
+  }
+  
+  Serial.print("Logging is stopped. Please reset OpenLog Artemis and open a terminal at ");
+  Serial.print((String)settings.serialTerminalBaudRate);
+  Serial.println("bps...");
+  delay(sdPowerDownDelay); // Give the SD card time to shut down
+  powerDown();
 }
 
 void qwiicPowerOn()

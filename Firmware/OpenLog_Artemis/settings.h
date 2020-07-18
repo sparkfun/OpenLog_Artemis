@@ -257,6 +257,7 @@ struct struct_settings {
   bool logVIN = false;
   unsigned long openNewLogFilesAfter = 0; //Default to 0 (Never) seconds
   float vinCorrectionFactor = 1.021; //Correction factor for the VIN measurement; to compensate for the divider impedance
+  bool useGPIO32ForStopLogging = false; //If true, use GPIO as a stop logging button
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

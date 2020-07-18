@@ -55,7 +55,7 @@
   (done) Correct u-blox pull-ups
   (done) Add an olaIdentifier to prevent problems when using two code variants that have the same sizeOfSettings
   Add a fix for the IMU wake-up issue identified in https://github.com/sparkfun/OpenLog_Artemis/issues/18
-  Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an alaog input
+  (done)Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an analog input
 */
 
 
@@ -106,6 +106,7 @@ const byte PIN_QWIIC_POWER = 18;
 const byte PIN_STAT_LED = 19;
 const byte PIN_IMU_INT = 37;
 const byte PIN_IMU_CHIP_SELECT = 44;
+const byte PIN_STOP_LOGGING = 32;
 
 enum returnStatus {
   STATUS_GETBYTE_TIMEOUT = 255,
@@ -198,6 +199,7 @@ unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate 
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
+volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //unsigned long startTime = 0;
@@ -230,6 +232,15 @@ void setup() {
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
   Serial.printf("Artemis OpenLog v%d.%d\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
+
+  if (settings.useGPIO32ForStopLogging == true)
+  {
+    Serial.println("Stop Logging is enabled. Pull GPIO pin 32 to GND to stop logging.");
+    pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
+    delay(1); // Let the pin stabilize
+    attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+    stopLoggingSeen = false; // Make sure the flag is clear
+  }
 
   beginQwiic();
   delay(settings.qwiicBusPowerUpDelayMs); // Give the qwiic bus time to power up
@@ -434,6 +445,11 @@ void loop() {
 
         digitalWrite(PIN_STAT_LED, LOW);
       }
+    }
+
+    if ((settings.useGPIO32ForStopLogging == true) && (stopLoggingSeen == true)) // Has the user pressed the stop logging button?
+    {
+      stopLogging();
     }
 
 #if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Version 0-5 always sleeps!
@@ -651,4 +667,10 @@ extern "C" void am_stimer_cmpr6_isr(void)
   {
     am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);
   }
+}
+
+//Stop Logging ISR
+void stopLoggingISR(void)
+{
+  stopLoggingSeen = true;
 }

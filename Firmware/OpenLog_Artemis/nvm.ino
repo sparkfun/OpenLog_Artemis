@@ -139,6 +139,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("logVIN=" + (String)settings.logVIN);
     settingsFile.println("openNewLogFilesAfter=" + (String)settings.openNewLogFilesAfter);
     settingsFile.println("vinCorrectionFactor=" + (String)settings.vinCorrectionFactor);
+    settingsFile.println("useGPIO32ForStopLogging=" + (String)settings.useGPIO32ForStopLogging);
     settingsFile.close();
   }
 }
@@ -348,6 +349,8 @@ bool parseLine(char* str) {
     settings.openNewLogFilesAfter = d;
   else if (strcmp(settingName, "vinCorrectionFactor") == 0)
     settings.vinCorrectionFactor = d;
+  else if (strcmp(settingName, "useGPIO32ForStopLogging") == 0)
+    settings.useGPIO32ForStopLogging = d;
   else
     Serial.printf("Unknown setting %s on line: %s\n", settingName, str);
 
