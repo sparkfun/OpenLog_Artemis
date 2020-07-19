@@ -56,6 +56,7 @@
   (done) Add an olaIdentifier to prevent problems when using two code variants that have the same sizeOfSettings
   Add a fix for the IMU wake-up issue identified in https://github.com/sparkfun/OpenLog_Artemis/issues/18
   (done)Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an analog input
+  Add support for low battery monitoring using VIN
 */
 
 
@@ -269,6 +270,16 @@ void setup() {
   if (settings.logMaxRate == true) Serial.println("Logging analog pins at max data rate");
 
   if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
+
+  if ((online.microSD == false) || (online.dataLogging == false))
+  {
+    // If we're not using the SD card, everything will have happened much qwicker than usual.
+    // Allow extra time for a u-blox module to start. It seems to need 1sec total.
+    if (settings.qwiicBusPowerUpDelayMs < 1000)
+    {
+      delay(1000 - settings.qwiicBusPowerUpDelayMs);
+    }
+  }
 
   if (detectQwiicDevices() == true) //159 - 865ms but varies based on number of devices attached
   {

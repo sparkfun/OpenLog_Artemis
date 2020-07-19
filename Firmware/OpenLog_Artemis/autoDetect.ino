@@ -486,6 +486,8 @@ void configureDevice(node * temp)
 
         sensor->setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
 
+        sensor->saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the current ioPortsettings to flash and BBR
+
         //sensor->setAutoPVT(true); //Tell the GPS to "send" each solution
         sensor->setAutoPVT(false); //We will poll the device for PVT solutions
         if (1000000ULL / settings.usBetweenReadings <= 1) //If we are slower than 1Hz logging rate
@@ -497,8 +499,6 @@ void configureDevice(node * temp)
           sensor->setNavigationFrequency((uint8_t)(1000000ULL / settings.usBetweenReadings)); //Set output rate equal to our query rate
         else
           sensor->setNavigationFrequency(10); //Set nav freq to 10Hz. Max output depends on the module used.
-
-        sensor->saveConfiguration(); //Save the current settings to flash and BBR
 
         qwiic.setPullups(QWIIC_PULLUPS); //Re-enable pullups.
       }
@@ -903,9 +903,9 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     case 0x42:
       {
         //Confidence: High - Sends/receives CRC checked data response
-      
         qwiic.setPullups(0); //Disable pullups to minimize CRC issues
         SFE_UBLOX_GPS sensor;
+        if(settings.printDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
         {
           qwiic.setPullups(QWIIC_PULLUPS); //Re-enable pullups to prevent ghosts at 0x43 onwards

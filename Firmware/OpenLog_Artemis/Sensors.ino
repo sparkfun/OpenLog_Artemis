@@ -1003,7 +1003,7 @@ void printHelperText(bool terminalOnly)
 //If certain devices are attached, we need to reduce the I2C max speed
 void setMaxI2CSpeed()
 {
-  uint32_t maxSpeed = 400000; //Assume 400kHz
+  uint32_t maxSpeed = 400000; //Assume 400kHz - but beware! 400kHz with no pull-ups can cause u-blox issues.
 
   //Search nodes for MCP9600s and Ublox modules
   node *temp = head;
