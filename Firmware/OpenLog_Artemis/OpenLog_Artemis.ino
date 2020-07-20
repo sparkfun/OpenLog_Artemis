@@ -55,7 +55,8 @@
   (done) Correct u-blox pull-ups
   (done) Add an olaIdentifier to prevent problems when using two code variants that have the same sizeOfSettings
   Add a fix for the IMU wake-up issue identified in https://github.com/sparkfun/OpenLog_Artemis/issues/18
-  (done)Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an analog input
+  (done) Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an analog input
+  (done) Allow the user to set the default qwiic bus pull-up resistance (u-blox will still use 'none')
   Add support for low battery monitoring using VIN
 */
 
@@ -119,7 +120,6 @@ enum returnStatus {
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <Wire.h>
 TwoWire qwiic(1); //Will use pads 8/9
-#define QWIIC_PULLUPS 1 // Default to 1k pull-ups on the Qwiic bus
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //EEPROM for storing settings
@@ -478,7 +478,7 @@ void beginQwiic()
   pinMode(PIN_QWIIC_POWER, OUTPUT);
   qwiicPowerOn();
   qwiic.begin();
-  qwiic.setPullups(QWIIC_PULLUPS); //Just to make it really clear what pull-ups are being used, set pullups here.
+  qwiic.setPullups(settings.qwiicBusPullUps); //Just to make it really clear what pull-ups are being used, set pullups here.
 }
 
 void beginSD()

@@ -311,7 +311,7 @@ void gatherDeviceValues()
               }
             }
 
-            qwiic.setPullups(QWIIC_PULLUPS); //Re-enable pullups
+            qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
           }
           break;
         case DEVICE_PROXIMITY_VCNL4040:

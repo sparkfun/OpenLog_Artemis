@@ -34,7 +34,7 @@ bool detectQwiicDevices()
 
   qwiic.setClock(100000); //During detection, go slow
 
-  qwiic.setPullups(QWIIC_PULLUPS); //Set pullups. (Redundant. beginQwiic has done this too.) If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+  qwiic.setPullups(settings.qwiicBusPullUps); //Set pullups. (Redundant. beginQwiic has done this too.) If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   //24k causes a bunch of unknown devices to be falsely detected.
   //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
@@ -311,6 +311,18 @@ void menuConfigure_QwiicBus()
 
     Serial.printf("3) Set Qwiic bus power up delay: %d ms\n", settings.qwiicBusPowerUpDelayMs);
 
+    Serial.print("4) Qwiic bus pull-ups (internal to the Artemis): ");
+    if (settings.qwiicBusPullUps == 1)
+      Serial.println("1.5k");
+    else if (settings.qwiicBusPullUps == 6)
+      Serial.println("6k");
+    else if (settings.qwiicBusPullUps == 12)
+      Serial.println("12k");
+    else if (settings.qwiicBusPullUps == 24)
+      Serial.println("24k");
+    else
+      Serial.println("None");
+
     Serial.println("x) Exit");
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -334,6 +346,15 @@ void menuConfigure_QwiicBus()
         settings.qwiicBusPowerUpDelayMs = amt;
       else
         Serial.println("Error: Out of range");
+    }
+    else if (incoming == '4')
+    {
+      Serial.print("Enter the Artemis pull-up resistance (0 = None; 1 = 1.5k; 6 = 6k; 12 = 12k; 24 = 24k): ");
+      uint32_t pur = (uint32_t)getNumber(menuTimeout);
+      if ((pur == 0) || (pur == 1) || (pur == 6) || (pur == 12) || (pur == 24))
+        settings.qwiicBusPullUps = pur;
+      else
+        Serial.println("Error: Invalid resistance. Possible values are 0,1,6,12,24.");
     }
     else if (incoming == 'x')
       break;
@@ -937,7 +958,7 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
         timeValid = nodeDevice->getTimeValid();
         millisecond = nodeDevice->getMillisecond();
 
-        qwiic.setPullups(QWIIC_PULLUPS); //Re-enable pullups
+        qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
       }
     }
     temp = temp->next;

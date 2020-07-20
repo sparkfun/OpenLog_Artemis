@@ -258,6 +258,7 @@ struct struct_settings {
   unsigned long openNewLogFilesAfter = 0; //Default to 0 (Never) seconds
   float vinCorrectionFactor = 1.021; //Correction factor for the VIN measurement; to compensate for the divider impedance
   bool useGPIO32ForStopLogging = false; //If true, use GPIO as a stop logging button
+  uint32_t qwiicBusPullUps = 1; //Default to 1.5k I2C pull-ups - internal to the Artemis
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
