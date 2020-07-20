@@ -31,13 +31,15 @@
   Is there a better way to dynamically create size of outputData array so we don't ever get larger than X sensors outputting?
   Find way to store device configs into EEPROM
   Log four pressure sensors and graph them on plotter
-  Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
+  (checked) Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
   Test NAU7802s
   Test SCD30s
   Add a 'does not like to be powered cycled' setting for each device type.
   (done) Add support for logging VIN
   (done) Investigate error in time between logs (https://github.com/sparkfun/OpenLog_Artemis/issues/13)
-  Invesigate RTC reset issue (https://github.com/sparkfun/OpenLog_Artemis/issues/13 + https://forum.sparkfun.com/viewtopic.php?f=123&t=53157)
+  (done) Invesigate RTC reset issue (https://github.com/sparkfun/OpenLog_Artemis/issues/13 + https://forum.sparkfun.com/viewtopic.php?f=123&t=53157)
+    The solution is to make sure that the OLA goes into deep sleep as soon as the voltage monitor detects that the power has failed.
+    The user will need to press the reset button once power has been restored. Using the WDT to check the monitor and do a POR wasn't reliable.
   (done) Investigate requires-reset issue on battery power (") (X04 + CCS811/BME280 enviro combo)
   (done) Add a fix so that the MS8607 does not also appear as an MS5637
   (done) Add "set RTC from GPS" functionality
@@ -48,13 +50,29 @@
   (done) Add support for PWR_LED
   (done) Use the WDT to reset the Artemis when power is reconnected (previously the Artemis would have stayed in deep sleep)
   Add a callback function to the u-blox library so we can abort waiting for UBX data if the power goes low
-  Add support for the Qwiic PT100
+  (done) Add support for the ADS122C04 ADC (Qwiic PT100)
   Investigate why usBetweenReadings appears to be ~0.8s longer than expected
+  (done) Correct u-blox pull-ups
+  (done) Add an olaIdentifier to prevent problems when using two code variants that have the same sizeOfSettings
+  Add a fix for the IMU wake-up issue identified in https://github.com/sparkfun/OpenLog_Artemis/issues/18
+  (done) Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an analog input
+  (done) Allow the user to set the default qwiic bus pull-up resistance (u-blox will still use 'none')
+  Add support for low battery monitoring using VIN
 */
 
 
 const int FIRMWARE_VERSION_MAJOR = 1;
 const int FIRMWARE_VERSION_MINOR = 4;
+
+//Define the OLA board identifier:
+//  This is an int which is unique to this variant of the OLA and which allows us
+//  to make sure that the settings in EEPROM are correct for this version of the OLA
+//  (sizeOfSettings is not necessarily unique and we want to avoid problems when swapping from one variant to another)
+//  It is the sum of:
+//    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
+//    the major firmware version * 0x10
+//    the minor firmware version
+#define OLA_IDENTIFIER 0x114
 
 #include "settings.h"
 
@@ -62,7 +80,7 @@ const int FIRMWARE_VERSION_MINOR = 4;
 //Depends on hardware version. This can be found as a marking on the PCB.
 //x04 was the SparkX 'black' version.
 //v10 was the first red version.
-//(Hardware version 0-5 does not exist. It is just an easy way to test high speed logging on the x04 hardware.)
+//(Hardware versions 0-5 and 0-6 do not actually exist. It is just an easy way to test out new features on X04.)
 #define HARDWARE_VERSION_MAJOR 0
 #define HARDWARE_VERSION_MINOR 4
 
@@ -90,6 +108,7 @@ const byte PIN_QWIIC_POWER = 18;
 const byte PIN_STAT_LED = 19;
 const byte PIN_IMU_INT = 37;
 const byte PIN_IMU_CHIP_SELECT = 44;
+const byte PIN_STOP_LOGGING = 32;
 
 enum returnStatus {
   STATUS_GETBYTE_TIMEOUT = 255,
@@ -111,26 +130,11 @@ TwoWire qwiic(1); //Will use pads 8/9
 //microSD Interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
-
-#include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed: https://github.com/greiman/SdFat-beta
-
-#define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
-#define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
-
-#define USE_EXFAT 1
-//#define PRINT_LAST_WRITE_TIME // Uncomment this line to enable the 'measure the time between writes' diagnostic
-
-#ifdef USE_EXFAT
-//ExFat
-SdFs sd;
-FsFile sensorDataFile; //File that all sensor data is written to
-FsFile serialDataFile; //File that all incoming serial data is written to
-#else
-//Fat16/32
+#include <SdFat.h> //SdFat (FAT32) by Bill Greiman: http://librarymanager/All#SdFat
 SdFat sd;
-File sensorDataFile; //File that all sensor data is written to
-File serialDataFile; //File that all incoming serial data is written to
-#endif
+SdFile sensorDataFile; //File that all sensor data is written to
+SdFile serialDataFile; //File that all incoming serial data is written to
+//#define PRINT_LAST_WRITE_TIME // Uncomment this line to enable the 'measure the time between writes' diagnostic
 
 char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
 char serialDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
@@ -196,9 +200,7 @@ unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate 
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
-volatile static bool wakeOnPowerReconnect = true; // volatile copy of settings.wakeOnPowerReconnect for the ISR
-volatile static bool lowPowerSeen = false; // volatile flag to indicate if a low power interrupt has been seen
-volatile static bool waitingForReset = false; // volatile flag to indicate if we are waiting for a reset (used by the WDT ISR)
+volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //unsigned long startTime = 0;
@@ -211,16 +213,13 @@ void setup() {
   
   delay(1); // Let PIN_POWER_LOSS stabilize
 
-  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), lowPowerISR, FALLING);
+  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDown(); //Check PIN_POWER_LOSS just in case we missed the falling edge
+  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
 
-  startWatchdog(); // Set up and start the WDT
-  
   powerLEDOn(); // Turn the power LED on - if the hardware supports it
   
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, HIGH); // Turn the STAT LED on while we configure everything
-
-  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDown(); //Check PIN_POWER_LOSS just in case we missed the falling edge
 
   Serial.begin(115200); //Default for initial debug messages if necessary
   Serial.println();
@@ -229,32 +228,32 @@ void setup() {
 
   beginSD(); //285 - 293ms
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   loadSettings(); //50 - 250ms
-
-  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
   Serial.printf("Artemis OpenLog v%d.%d\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
 
+  if (settings.useGPIO32ForStopLogging == true)
+  {
+    Serial.println("Stop Logging is enabled. Pull GPIO pin 32 to GND to stop logging.");
+    pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
+    delay(1); // Let the pin stabilize
+    attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+    stopLoggingSeen = false; // Make sure the flag is clear
+  }
+
   beginQwiic();
+  delay(settings.qwiicBusPowerUpDelayMs); // Give the qwiic bus time to power up
 
   analogReadResolution(14); //Increase from default of 10
 
   beginDataLogging(); //180ms
   lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   beginSerialLogging(); //20 - 99ms
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   beginIMU(); //61ms
-
-  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   if (online.microSD == true) Serial.println("SD card online");
   else Serial.println("SD card offline");
@@ -272,14 +271,21 @@ void setup() {
 
   if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
 
+  if ((online.microSD == false) || (online.dataLogging == false))
+  {
+    // If we're not using the SD card, everything will have happened much qwicker than usual.
+    // Allow extra time for a u-blox module to start. It seems to need 1sec total.
+    if (settings.qwiicBusPowerUpDelayMs < 1000)
+    {
+      delay(1000 - settings.qwiicBusPowerUpDelayMs);
+    }
+  }
+
   if (detectQwiicDevices() == true) //159 - 865ms but varies based on number of devices attached
   {
     beginQwiicDevices(); //Begin() each device in the node list
-    if (lowPowerSeen == true) powerDown(); //Power down if required
     loadDeviceSettingsFromFile(); //Load config settings into node list
-    if (lowPowerSeen == true) powerDown(); //Power down if required
     configureQwiicDevices(); //Apply config settings to each device in the node list
-    if (lowPowerSeen == true) powerDown(); //Power down if required
     printOnlineDevice();
   }
   else
@@ -297,8 +303,6 @@ void setup() {
 
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something
   if (settings.usBetweenReadings >= maxUsBeforeSleep)
@@ -306,8 +310,6 @@ void setup() {
 }
 
 void loop() {
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-  
   if (Serial.available()) menuMain(); //Present user menu
 
   if (settings.logSerial == true && online.serialLogging == true)
@@ -325,7 +327,6 @@ void loop() {
           incomingBufferSpot = 0;
         }
         charsReceived++;
-        if (lowPowerSeen == true) powerDown(); //Power down if required
       }
 
       lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
@@ -457,6 +458,11 @@ void loop() {
       }
     }
 
+    if ((settings.useGPIO32ForStopLogging == true) && (stopLoggingSeen == true)) // Has the user pressed the stop logging button?
+    {
+      stopLogging();
+    }
+
 #if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Version 0-5 always sleeps!
     //Go to sleep only if time between readings is greater than maxUsBeforeSleep (2 seconds)
     if (settings.usBetweenReadings >= maxUsBeforeSleep)
@@ -472,6 +478,7 @@ void beginQwiic()
   pinMode(PIN_QWIIC_POWER, OUTPUT);
   qwiicPowerOn();
   qwiic.begin();
+  qwiic.setPullups(settings.qwiicBusPullUps); //Just to make it really clear what pull-ups are being used, set pullups here.
 }
 
 void beginSD()
@@ -488,33 +495,17 @@ void beginSD()
     //Max current is 200mA average across 1s, peak 300mA
     for (int i = 0; i < 10; i++) //Wait
     {
-      if (lowPowerSeen == true) powerDown(); //Power down if required
       delay(1);
     }
 
-    //We can get faster SPI transfer rates if we have only one device enabled on the SPI bus
-    //But we have a chicken and egg problem: We need to load settings before we enable SD, but we
-    //need the SD to load the settings file. For now, we will disable the logMaxRate option.
-    //    if (settings.logMaxRate == true)
-    //    {
-    //      if (sd.begin(SD_CONFIG_MAX_SPEED) == false) //Very Fast SdFat Beta (dedicated SPI, no IMU)
-    //      {
-    //        Serial.println("SD init failed. Do you have the correct board selected in Arduino? Is card present? Formatted?");
-    //        online.microSD = false;
-    //        return;
-    //      }
-    //    }
-    //    else
-    //    {
-    if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
+    if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
     {
       printDebug("SD init failed (first attempt). Trying again...\n");
       for (int i = 0; i < 250; i++) //Give SD more time to power up, then try again
       {
-        if (lowPowerSeen == true) powerDown(); //Power down if required
         delay(1);
       }
-      if (sd.begin(SD_CONFIG) == false) //Slightly Faster SdFat Beta (we don't have dedicated SPI)
+      if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
       {
         Serial.println("SD init failed (second attempt). Is card present? Formatted?");
         digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
@@ -522,7 +513,6 @@ void beginSD()
         return;
       }
     }
-    //    }
 
     //Change to root directory. All new file creation will be in root.
     if (sd.chdir() == false)
@@ -553,13 +543,11 @@ void beginIMU()
     imuPowerOff();
     for (int i = 0; i < 10; i++) //10 is fine
     {
-      if (lowPowerSeen == true) powerDown(); //Power down if required
       delay(1);
     }
     imuPowerOn();
     for (int i = 0; i < 25; i++) //Allow ICM to come online. Typical is 11ms. Max is 100ms. https://cdn.sparkfun.com/assets/7/f/e/c/d/DS-000189-ICM-20948-v1.3.pdf
     {
-      if (lowPowerSeen == true) powerDown(); //Power down if required
       delay(1);
     }
 
@@ -572,13 +560,11 @@ void beginIMU()
       imuPowerOff();
       for (int i = 0; i < 10; i++) //10 is fine
       {
-        if (lowPowerSeen == true) powerDown(); //Power down if required
         delay(1);
       }
       imuPowerOn();
       for (int i = 0; i < 100; i++) //Allow ICM to come online. Typical is 11ms. Max is 100ms.
       {
-        if (lowPowerSeen == true) powerDown(); //Power down if required
         delay(1);
       }
 
@@ -586,7 +572,7 @@ void beginIMU()
       if (myICM.status != ICM_20948_Stat_Ok)
       {
         digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
-        msg("ICM-20948 failed to init.");
+        Serial.println("ICM-20948 failed to init.");
         imuPowerOff();
         online.IMU = false;
         return;
@@ -625,21 +611,6 @@ void beginDataLogging()
   }
   else
     online.dataLogging = false;
-
-
-  //  else if (settings.logData == false && online.microSD == true)
-  //  {
-  //      online.dataLogging = false;
-  //  }
-  //  else if (online.microSD == false)
-  //  {
-  //    Serial.println("Data logging disabled because microSD offline");
-  //    online.serialLogging = false;
-  //  }
-  //  else
-  //  {
-  //    Serial.println("Unknown microSD state");
-  //  }
 }
 
 void beginSerialLogging()
@@ -666,22 +637,6 @@ void beginSerialLogging()
   }
   else
     online.serialLogging = false;
-
-
-  //  else if (settings.logSerial == false && online.microSD == true)
-  //  {
-  //    msg("Serial logging disabled");
-  //    online.serialLogging = false;
-  //  }
-  //  else if (online.microSD == false)
-  //  {
-  //    Serial.println("Serial logging disabled because microSD offline");
-  //    online.serialLogging = false;
-  //  }
-  //  else
-  //  {
-  //    Serial.println("Unknown microSD state");
-  //  }
 }
 
 //Called once number of milliseconds has passed
@@ -694,63 +649,8 @@ extern "C" void am_stimer_cmpr6_isr(void)
   }
 }
 
-//WatchDog Timer code by Adam Garbo:
-//https://forum.sparkfun.com/viewtopic.php?f=169&t=52431&p=213296#p213296
-
-// Watchdog timer configuration structure.
-am_hal_wdt_config_t g_sWatchdogConfig = {
-
-  // Configuration values for generated watchdog timer event.
-  .ui32Config = AM_HAL_WDT_LFRC_CLK_16HZ | AM_HAL_WDT_ENABLE_RESET | AM_HAL_WDT_ENABLE_INTERRUPT,
-
-  // Number of watchdog timer ticks allowed before a watchdog interrupt event is generated.
-  .ui16InterruptCount = 16, // Set WDT interrupt timeout for 1 second.
-
-  // Number of watchdog timer ticks allowed before the watchdog will issue a system reset.
-  .ui16ResetCount = 20 // Set WDT reset timeout for 1.25 seconds.
-};
-
-void startWatchdog()
+//Stop Logging ISR
+void stopLoggingISR(void)
 {
-  // Set the clock frequency.
-  //am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_SYSCLK_MAX, 0); // ap3_initialization.cpp does this - no need to do it here
-
-  // Set the default cache configuration
-  //am_hal_cachectrl_config(&am_hal_cachectrl_defaults); // ap3_initialization.cpp does this - no need to do it here
-  //am_hal_cachectrl_enable(); // ap3_initialization.cpp does this - no need to do it here
-
-  // Configure the board for low power operation.
-  //am_bsp_low_power_init(); // ap3_initialization.cpp does this - no need to do it here
-
-  // Clear reset status register for next time we reset.
-  //am_hal_reset_control(AM_HAL_RESET_CONTROL_STATUSCLEAR, 0); // Nice - but we don't really care what caused the reset
-
-  // LFRC must be turned on for this example as the watchdog only runs off of the LFRC.
-  am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_LFRC_START, 0);
-
-  // Configure the watchdog.
-  am_hal_wdt_init(&g_sWatchdogConfig);
-
-  // Enable the interrupt for the watchdog in the NVIC.
-  NVIC_EnableIRQ(WDT_IRQn);
-  //NVIC_SetPriority(WDT_IRQn, 0); // Set the interrupt priority to 0 = highest (255 = lowest)
-  //am_hal_interrupt_master_enable(); // ap3_initialization.cpp does this - no need to do it here
-
-  // Enable the watchdog.
-  am_hal_wdt_start();
-}
-
-// Interrupt handler for the watchdog.
-extern "C" void am_watchdog_isr(void) {
-  // Clear the watchdog interrupt.
-  am_hal_wdt_int_clear();
-
-  // Always restart the watchdog unless wakeOnPowerReconnect is true and 
-  // and waitingForReset is true and PIN_POWER_LOSS has gone high
-  // (indicating power has been reapplied and we should let the WDT reset everything)
-  if ((wakeOnPowerReconnect == false) || (waitingForReset == false) || (digitalRead(PIN_POWER_LOSS) == LOW))
-  {
-    // Restart the watchdog.
-    am_hal_wdt_restart(); // "Pet" the dog.
-  }
+  stopLoggingSeen = true;
 }

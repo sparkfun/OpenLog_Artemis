@@ -263,7 +263,6 @@ bool beginQwiicDevices()
 
   while (temp != NULL)
   {
-    if (lowPowerSeen == true) powerDown(); //Power down if required
     openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
 
     //Attempt to begin the device
@@ -292,9 +291,11 @@ bool beginQwiicDevices()
         break;
       case DEVICE_GPS_UBLOX:
         {
+          qwiic.setPullups(0); //Disable pullups for u-blox comms.
           SFE_UBLOX_GPS *tempDevice = (SFE_UBLOX_GPS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr; //Create a local pointer that points to same spot as node does
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
+          qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups.
         }
         break;
       case DEVICE_PROXIMITY_VCNL4040:
@@ -478,10 +479,14 @@ void configureDevice(node * temp)
       break;
     case DEVICE_GPS_UBLOX:
       {
+        qwiic.setPullups(0); //Disable pullups for u-blox comms.
+
         SFE_UBLOX_GPS *sensor = (SFE_UBLOX_GPS *)temp->classPtr;
         struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
         sensor->setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+
+        sensor->saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the current ioPortsettings to flash and BBR
 
         //sensor->setAutoPVT(true); //Tell the GPS to "send" each solution
         sensor->setAutoPVT(false); //We will poll the device for PVT solutions
@@ -495,7 +500,7 @@ void configureDevice(node * temp)
         else
           sensor->setNavigationFrequency(10); //Set nav freq to 10Hz. Max output depends on the module used.
 
-        sensor->saveConfiguration(); //Save the current settings to flash and BBR
+        qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups.
       }
       break;
     case DEVICE_PROXIMITY_VCNL4040:
@@ -620,7 +625,6 @@ void configureQwiicDevices()
 
   while (temp != NULL)
   {
-    if (lowPowerSeen == true) powerDown(); //Power down if required
     configureDevice(temp);
     temp = temp->next;
   }
@@ -899,12 +903,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     case 0x42:
       {
         //Confidence: High - Sends/receives CRC checked data response
-      
         qwiic.setPullups(0); //Disable pullups to minimize CRC issues
         SFE_UBLOX_GPS sensor;
+        if(settings.printDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
+        {
+          qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups to prevent ghosts at 0x43 onwards
           return (DEVICE_GPS_UBLOX);
-        qwiic.setPullups(1); //Re-enable pullups for normal discovery
+        }
+        qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups for normal discovery
       }
       break;
     case 0x44:

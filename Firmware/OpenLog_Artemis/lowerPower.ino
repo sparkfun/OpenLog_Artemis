@@ -1,9 +1,3 @@
-//Low Power Interrupt Service Routine
-void lowPowerISR()
-{
-  lowPowerSeen = true; // Set flag  
-}
-
 //Power down the entire system but maintain running of RTC
 //This function takes 100us to run including GPIO setting
 //This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
@@ -13,6 +7,14 @@ void powerDown()
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
+  //Prevent stop logging button from waking us from sleep
+  if (settings.useGPIO32ForStopLogging == true)
+  {
+    detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+    pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+  }
+
+  //WE NEED TO POWER DOWN ASAP - we don't have time to close the SD files
   //Save files before going to sleep
   //  if (online.dataLogging == true)
   //  {
@@ -80,9 +82,6 @@ void powerDown()
   qwiicPowerOff();
 #endif
 
-  //Flag that we are ready for reset by the WDT
-  waitingForReset = true;
-  
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE);         //Turn off CACHE
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K);    //Turn off everything but lower 512k
@@ -93,7 +92,7 @@ void powerDown()
   am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
   am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ);
 
-  while (1) // Stay in deep sleep until we get reset (by the user or WDT)
+  while (1) // Stay in deep sleep until we get reset
   {
     am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP); //Sleep
   }
@@ -122,6 +121,13 @@ void goToSleep()
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
+  //Prevent stop logging button from waking us from sleep
+  if (settings.useGPIO32ForStopLogging == true)
+  {
+    detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+    pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+  }
+  
   //Save files before going to sleep
   if (online.dataLogging == true)
   {
@@ -271,10 +277,17 @@ void wakeFromSleep()
 
   delay(1); // Let PIN_POWER_LOSS stabilize
 
-  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), lowPowerISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
 
   if (digitalRead(PIN_POWER_LOSS) == LOW) powerDown(); //Check PIN_POWER_LOSS just in case we missed the falling edge
-  if (lowPowerSeen == true) powerDown(); //Power down if required
+
+  if (settings.useGPIO32ForStopLogging == true)
+  {
+    pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
+    delay(1); // Let the pin stabilize
+    attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+    stopLoggingSeen = false; // Make sure the flag is clear
+  }
 
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, LOW);
@@ -287,20 +300,12 @@ void wakeFromSleep()
 
   beginSD(); //285 - 293ms
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   beginQwiic(); //Power up Qwiic bus
   long powerStartTime = millis();
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   beginDataLogging(); //180ms
 
-  if (lowPowerSeen == true) powerDown(); //Power down if required
-
   beginSerialLogging(); //20 - 99ms
-
-  if (lowPowerSeen == true) powerDown(); //Power down if required
 
   beginIMU(); //61ms
 
@@ -310,12 +315,10 @@ void wakeFromSleep()
     //Before we talk to Qwiic devices we need to allow the power rail to settle
     while (millis() - powerStartTime < settings.qwiicBusPowerUpDelayMs) //Testing, 100 too short, 200 is ok
     {
-      if (lowPowerSeen == true) powerDown(); //Power down if required
       delay(1); //Wait
     }
 
     beginQwiicDevices();
-    if (lowPowerSeen == true) powerDown(); //Power down if required
     //loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
@@ -324,6 +327,29 @@ void wakeFromSleep()
 
   //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
   takeReading = true;
+}
+
+void stopLogging(void)
+{
+  detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+  
+  //Save files before going to sleep
+  if (online.dataLogging == true)
+  {
+    sensorDataFile.sync();
+    sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
+  }
+  if (online.serialLogging == true)
+  {
+    serialDataFile.sync();
+    serialDataFile.close();
+  }
+  
+  Serial.print("Logging is stopped. Please reset OpenLog Artemis and open a terminal at ");
+  Serial.print((String)settings.serialTerminalBaudRate);
+  Serial.println("bps...");
+  delay(sdPowerDownDelay); // Give the SD card time to shut down
+  powerDown();
 }
 
 void qwiicPowerOn()

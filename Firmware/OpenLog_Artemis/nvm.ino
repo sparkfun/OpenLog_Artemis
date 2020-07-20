@@ -8,8 +8,8 @@ void loadSettings()
   uint32_t testRead = 0;
   if (EEPROM.get(0, testRead) == 0xFFFFFFFF)
   {
+    Serial.println("EEPROM is blank. Default settings applied");
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
-    Serial.println("Default settings applied");
   }
 
   //Check that the current settings struct size matches what is stored in EEPROM
@@ -22,11 +22,23 @@ void loadSettings()
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 
+  //Check that the olaIdentifier is correct
+  //(It is possible for two different versions of the code to have the same sizeOfSettings - which causes problems!)
+  int tempIdentifier = 0;
+  EEPROM.get(sizeof(int), tempIdentifier); //Load the identifier from the EEPROM location after sizeOfSettings (int)
+  if (tempIdentifier != OLA_IDENTIFIER)
+  {
+    Serial.println("Settings are not valid for this variant of the OLA. Default settings applied");
+    recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
+  }
+
   //Read current settings
   EEPROM.get(0, settings);
 
   loadSystemSettingsFromFile(); //Load any settings from config file. This will over-write any pre-existing EEPROM settings.
-  recordSystemSettings(); //Record these new settings to EEPROM and config file to be sure they are the same
+  //Record these new settings to EEPROM and config file to be sure they are the same
+  //(do this even if loadSystemSettingsFromFile returned false)
+  recordSystemSettings();
 }
 
 //Record the current settings struct to EEPROM and then to config file
@@ -35,10 +47,6 @@ void recordSystemSettings()
   settings.sizeOfSettings = sizeof(settings);
   EEPROM.put(0, settings);
   recordSystemSettingsToFile();
-
-  // Update volatile copies of settings (e.g. wakeOnPowerReconnect)
-  // Putting this here means it covers loadSettings too
-  wakeOnPowerReconnect = settings.wakeOnPowerReconnect;
 }
 
 //Export the current settings to a config file
@@ -49,11 +57,7 @@ void recordSystemSettingsToFile()
     if (sd.exists("OLA_settings.txt"))
       sd.remove("OLA_settings.txt");
 
-#ifdef USE_EXFAT
-    FsFile settingsFile; //exFat
-#else
-    File settingsFile; //FAT16/32
-#endif
+    SdFile settingsFile; //FAT32
     if (settingsFile.open("OLA_settings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create settings file");
@@ -61,6 +65,7 @@ void recordSystemSettingsToFile()
     }
 
     settingsFile.println("sizeOfSettings=" + (String)settings.sizeOfSettings);
+    settingsFile.println("olaIdentifier=" + (String)settings.olaIdentifier);
     settingsFile.println("nextSerialLogNumber=" + (String)settings.nextSerialLogNumber);
     settingsFile.println("nextDataLogNumber=" + (String)settings.nextDataLogNumber);
 
@@ -130,10 +135,11 @@ void recordSystemSettingsToFile()
     settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
     settingsFile.println("qwiicBusPowerUpDelayMs=" + (String)settings.qwiicBusPowerUpDelayMs);
     settingsFile.println("printMeasurementCount=" + (String)settings.printMeasurementCount);
-    settingsFile.println("wakeOnPowerReconnect=" + (String)settings.wakeOnPowerReconnect);
     settingsFile.println("enablePwrLedDuringSleep=" + (String)settings.enablePwrLedDuringSleep);
     settingsFile.println("logVIN=" + (String)settings.logVIN);
     settingsFile.println("openNewLogFilesAfter=" + (String)settings.openNewLogFilesAfter);
+    settingsFile.println("vinCorrectionFactor=" + (String)settings.vinCorrectionFactor);
+    settingsFile.println("useGPIO32ForStopLogging=" + (String)settings.useGPIO32ForStopLogging);
     settingsFile.close();
   }
 }
@@ -148,18 +154,14 @@ bool loadSystemSettingsFromFile()
   {
     if (sd.exists("OLA_settings.txt"))
     {
-#ifdef USE_EXFAT
-      FsFile settingsFile; //exFat
-#else
-      File settingsFile; //FAT16/32
-#endif
+      SdFile settingsFile; //FAT32
       if (settingsFile.open("OLA_settings.txt", O_READ) == false)
       {
         Serial.println("Failed to open settings file");
         return (false);
       }
 
-      char line[50];
+      char line[60];
       int lineNumber = 0;
 
       while (settingsFile.available()) {
@@ -225,7 +227,7 @@ bool parseLine(char* str) {
   if (!str) return false;
 
   //Store this setting name
-  char settingName[30];
+  char settingName[40];
   sprintf(settingName, "%s", str);
 
   //Move pointer to end of line
@@ -260,6 +262,8 @@ bool parseLine(char* str) {
       Serial.printf("Warning: Settings size is %d but current firmware expects %d. Attempting to use settings from file.\n", d, sizeof(settings));
 
   }
+  else if (strcmp(settingName, "olaIdentifier") == 0)
+    settings.olaIdentifier = d;
   else if (strcmp(settingName, "nextSerialLogNumber") == 0)
     settings.nextSerialLogNumber = d;
   else if (strcmp(settingName, "nextDataLogNumber") == 0)
@@ -337,14 +341,16 @@ bool parseLine(char* str) {
     settings.qwiicBusPowerUpDelayMs = d;
   else if (strcmp(settingName, "printMeasurementCount") == 0)
     settings.printMeasurementCount = d;
-  else if (strcmp(settingName, "wakeOnPowerReconnect") == 0)
-    settings.wakeOnPowerReconnect = d;
   else if (strcmp(settingName, "enablePwrLedDuringSleep") == 0)
     settings.enablePwrLedDuringSleep = d;
   else if (strcmp(settingName, "logVIN") == 0)
     settings.logVIN = d;
   else if (strcmp(settingName, "openNewLogFilesAfter") == 0)
     settings.openNewLogFilesAfter = d;
+  else if (strcmp(settingName, "vinCorrectionFactor") == 0)
+    settings.vinCorrectionFactor = d;
+  else if (strcmp(settingName, "useGPIO32ForStopLogging") == 0)
+    settings.useGPIO32ForStopLogging = d;
   else
     Serial.printf("Unknown setting %s on line: %s\n", settingName, str);
 
@@ -359,11 +365,7 @@ void recordDeviceSettingsToFile()
     if (sd.exists("OLA_deviceSettings.txt"))
       sd.remove("OLA_deviceSettings.txt");
 
-#ifdef USE_EXFAT
-    FsFile settingsFile; //exFat
-#else
-    File settingsFile; //FAT16/32
-#endif
+    SdFile settingsFile; //FAT32
     if (settingsFile.open("OLA_deviceSettings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       Serial.println("Failed to create device settings file");
@@ -550,6 +552,22 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
           }
           break;
+        case DEVICE_ADC_ADS122C04:
+          {
+            struct_ADS122C04 *nodeSetting = (struct_ADS122C04 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logCentigrade=" + nodeSetting->logCentigrade);
+            settingsFile.println((String)base + "logFahrenheit=" + nodeSetting->logFahrenheit);
+            settingsFile.println((String)base + "logInternalTemperature=" + nodeSetting->logInternalTemperature);
+            settingsFile.println((String)base + "logRawVoltage=" + nodeSetting->logRawVoltage);
+            settingsFile.println((String)base + "useFourWireMode=" + nodeSetting->useFourWireMode);
+            settingsFile.println((String)base + "useThreeWireMode=" + nodeSetting->useThreeWireMode);
+            settingsFile.println((String)base + "useTwoWireMode=" + nodeSetting->useTwoWireMode);
+            settingsFile.println((String)base + "useFourWireHighTemperatureMode=" + nodeSetting->useFourWireHighTemperatureMode);
+            settingsFile.println((String)base + "useThreeWireHighTemperatureMode=" + nodeSetting->useThreeWireHighTemperatureMode);
+            settingsFile.println((String)base + "useTwoWireHighTemperatureMode=" + nodeSetting->useTwoWireHighTemperatureMode);
+          }
+          break;
         default:
           Serial.printf("recordSettingsToFile Unknown device: %s\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
@@ -571,11 +589,7 @@ bool loadDeviceSettingsFromFile()
   {
     if (sd.exists("OLA_deviceSettings.txt"))
     {
-#ifdef USE_EXFAT
-      FsFile settingsFile; //exFat
-#else
-      File settingsFile; //FAT16/32
-#endif
+      SdFile settingsFile; //FAT32
       if (settingsFile.open("OLA_deviceSettings.txt", O_READ) == false)
       {
         Serial.println("Failed to open device settings file");
@@ -606,7 +620,7 @@ bool loadDeviceSettingsFromFile()
     }
     else
     {
-      Serial.println("No device config file found. Creating one with device faults.");
+      Serial.println("No device config file found. Creating one with device defaults.");
       recordDeviceSettingsToFile(); //Record the current settings to create the initial file
       return (false);
     }
@@ -982,7 +996,35 @@ bool parseDeviceLine(char* str) {
             Serial.printf("Unknown device setting: %s\n", deviceSettingName);
         }
         break;
-
+      case DEVICE_ADC_ADS122C04:
+        {
+          struct_ADS122C04 *nodeSetting = (struct_ADS122C04 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logCentigrade") == 0)
+            nodeSetting->logCentigrade = d;
+          else if (strcmp(deviceSettingName, "logFahrenheit") == 0)
+            nodeSetting->logFahrenheit = d;
+          else if (strcmp(deviceSettingName, "logInternalTemperature") == 0)
+            nodeSetting->logInternalTemperature = d;
+          else if (strcmp(deviceSettingName, "logRawVoltage") == 0)
+            nodeSetting->logRawVoltage = d;
+          else if (strcmp(deviceSettingName, "useFourWireMode") == 0)
+            nodeSetting->useFourWireMode = d;
+          else if (strcmp(deviceSettingName, "useThreeWireMode") == 0)
+            nodeSetting->useThreeWireMode = d;
+          else if (strcmp(deviceSettingName, "useTwoWireMode") == 0)
+            nodeSetting->useTwoWireMode = d;
+          else if (strcmp(deviceSettingName, "useFourWireHighTemperatureMode") == 0)
+            nodeSetting->useFourWireHighTemperatureMode = d;
+          else if (strcmp(deviceSettingName, "useThreeWireHighTemperatureMode") == 0)
+            nodeSetting->useThreeWireHighTemperatureMode = d;
+          else if (strcmp(deviceSettingName, "useTwoWireHighTemperatureMode") == 0)
+            nodeSetting->useTwoWireHighTemperatureMode = d;
+          else
+            Serial.printf("Unknown device setting: %s\n", deviceSettingName);
+        }
+        break;
       default:
         Serial.printf("Unknown device type: %d\n", deviceType);
         Serial.flush();

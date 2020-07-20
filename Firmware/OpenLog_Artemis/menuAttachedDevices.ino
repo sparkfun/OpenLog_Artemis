@@ -34,10 +34,17 @@ bool detectQwiicDevices()
 
   qwiic.setClock(100000); //During detection, go slow
 
-  qwiic.setPullups(1); //Set pullups to 1k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+  qwiic.setPullups(settings.qwiicBusPullUps); //Set pullups. (Redundant. beginQwiic has done this too.) If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   //24k causes a bunch of unknown devices to be falsely detected.
   //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+
+  //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
+  //Give sensors, specifically those with a low I2C address, time to turn on
+  for (int i = 0; i < 100; i++) //SCD30 required >50ms to turn on.
+  {
+    delay(1);
+  }
 
   //Do a prelim scan to see if anything is out there
   for (uint8_t address = 1 ; address < 127 ; address++)
@@ -52,14 +59,6 @@ bool detectQwiicDevices()
   if (somethingDetected == false) return (false);
 
   Serial.println("Identifying Qwiic Devices...");
-
-  //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
-  //Give sensors, specifically those with a low I2C address, time to turn on
-  for (int i = 0; i < 100; i++) //SCD30 required >50ms to turn on
-  {
-    if (lowPowerSeen == true) powerDown(); //Power down if required
-    delay(1);
-  }
 
   //First scan for Muxes. Valid addresses are 0x70 to 0x77.
   //If any are found, they will be begin()'d causing their ports to turn off
@@ -100,7 +99,8 @@ bool detectQwiicDevices()
         {
           if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
           {
-            //Serial.printf("-Added %s at address 0x%02X\n", getDeviceName(foundType), address);
+            if(settings.printDebugMessages == true)
+              Serial.printf("-Added %s at address 0x%02X\n", getDeviceName(foundType), address);
           }
         }
         if (foundType == DEVICE_PHT_MS8607)
@@ -163,7 +163,8 @@ bool detectQwiicDevices()
 
   bubbleSortDevices(head); //This may destroy mux alignment to node 0.
 
-  qwiic.setPullups(0); //We've detected something on the bus so disable pullups
+  //*** PaulZC commented this. Let's leave pull-ups set to 1k and only disable them when taking to a u-blox device ***
+  //qwiic.setPullups(0); //We've detected something on the bus so disable pullups.
 
   setMaxI2CSpeed(); //Try for 400kHz but reduce to 100kHz or low if certain devices are attached
 
@@ -310,6 +311,18 @@ void menuConfigure_QwiicBus()
 
     Serial.printf("3) Set Qwiic bus power up delay: %d ms\n", settings.qwiicBusPowerUpDelayMs);
 
+    Serial.print("4) Qwiic bus pull-ups (internal to the Artemis): ");
+    if (settings.qwiicBusPullUps == 1)
+      Serial.println("1.5k");
+    else if (settings.qwiicBusPullUps == 6)
+      Serial.println("6k");
+    else if (settings.qwiicBusPullUps == 12)
+      Serial.println("12k");
+    else if (settings.qwiicBusPullUps == 24)
+      Serial.println("24k");
+    else
+      Serial.println("None");
+
     Serial.println("x) Exit");
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -334,6 +347,15 @@ void menuConfigure_QwiicBus()
       else
         Serial.println("Error: Out of range");
     }
+    else if (incoming == '4')
+    {
+      Serial.print("Enter the Artemis pull-up resistance (0 = None; 1 = 1.5k; 6 = 6k; 12 = 12k; 24 = 24k): ");
+      uint32_t pur = (uint32_t)getNumber(menuTimeout);
+      if ((pur == 0) || (pur == 1) || (pur == 6) || (pur == 12) || (pur == 24))
+        settings.qwiicBusPullUps = pur;
+      else
+        Serial.println("Error: Invalid resistance. Possible values are 0,1,6,12,24.");
+    }
     else if (incoming == 'x')
       break;
     else if (incoming == STATUS_GETBYTE_TIMEOUT)
@@ -353,7 +375,6 @@ void menuConfigure_Multiplexer(void *configPtr)
   Serial.println("There are currently no configurable options for this device.");
   for (int i = 0; i < 500; i++)
   {
-    if (lowPowerSeen == true) powerDown(); //Power down if required
     delay(1);
   }
 }
@@ -658,7 +679,6 @@ void menuConfigure_NAU7802(void *configPtr)
     Serial.println("NAU7802 node not found. Returning.");
     for (int i = 0; i < 1000; i++)
     {
-      if (lowPowerSeen == true) powerDown(); //Power down if required
       delay(1);
     }
     return;
@@ -921,6 +941,8 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
     {
       case DEVICE_GPS_UBLOX:
       {
+        qwiic.setPullups(0); //Disable pullups to minimize CRC issues
+
         SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
         struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
@@ -935,6 +957,8 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
         dateValid = nodeDevice->getDateValid();
         timeValid = nodeDevice->getTimeValid();
         millisecond = nodeDevice->getMillisecond();
+
+        qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
       }
     }
     temp = temp->next;
@@ -1311,7 +1335,6 @@ void menuConfigure_SCD30(void *configPtr)
     Serial.println("SCD30 node not found. Returning.");
     for (int i = 0; i < 1000; i++)
     {
-      if (lowPowerSeen == true) powerDown(); //Power down if required
       delay(1);
     }
     return;
