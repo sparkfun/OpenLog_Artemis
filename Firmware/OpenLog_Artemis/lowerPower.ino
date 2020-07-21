@@ -300,6 +300,18 @@ void wakeFromSleep()
 
   beginSD(); //285 - 293ms
 
+  //Add CIPO pull-up
+  ap3_err_t retval = AP3_OK;
+  am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
+  cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
+  cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
+  cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
+  cipoPinCfg.uIOMnum = AP3_SPI_IOM;
+  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  padMode(MISO, cipoPinCfg, &retval);
+  if (retval != AP3_OK)
+    printDebug("Setting CIPO padMode failed!");
+    
   beginQwiic(); //Power up Qwiic bus
   long powerStartTime = millis();
 

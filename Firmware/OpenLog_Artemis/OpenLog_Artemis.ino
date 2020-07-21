@@ -81,8 +81,8 @@ const int FIRMWARE_VERSION_MINOR = 4;
 //x04 was the SparkX 'black' version.
 //v10 was the first red version.
 //(Hardware versions 0-5 and 0-6 do not actually exist. It is just an easy way to test out new features on X04.)
-#define HARDWARE_VERSION_MAJOR 0
-#define HARDWARE_VERSION_MINOR 4
+#define HARDWARE_VERSION_MAJOR 1
+#define HARDWARE_VERSION_MINOR 0
 
 #if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
 const byte PIN_MICROSD_CHIP_SELECT = 10;
@@ -210,14 +210,14 @@ volatile static bool stopLoggingSeen = false; //Flag to indicate if we should st
 void setup() {
   //If 3.3V rail drops below 3V, system will power down and maintain RTC
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
-  
+
   delay(1); // Let PIN_POWER_LOSS stabilize
 
   if (digitalRead(PIN_POWER_LOSS) == LOW) powerDown(); //Check PIN_POWER_LOSS just in case we missed the falling edge
   attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
 
   powerLEDOn(); // Turn the power LED on - if the hardware supports it
-  
+
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, HIGH); // Turn the STAT LED on while we configure everything
 
@@ -227,6 +227,18 @@ void setup() {
   SPI.begin(); //Needed if SD is disabled
 
   beginSD(); //285 - 293ms
+
+  //Add CIPO pull-up
+  ap3_err_t retval = AP3_OK;
+  am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
+  cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
+  cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
+  cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
+  cipoPinCfg.uIOMnum = AP3_SPI_IOM;
+  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  padMode(MISO, cipoPinCfg, &retval);
+  if (retval != AP3_OK)
+    printDebug("Setting CIPO padMode failed!");
 
   loadSettings(); //50 - 250ms
 
@@ -397,14 +409,14 @@ void loop() {
           tempTime[j] = 0; // mark the end with a NULL
         }
       }
-      
+
       //printDebug("ms since last write: " + (String)tempTime + "\n");
       printDebug("\n" + (String)tempTime + "\n");
 
       lastWriteTime = rtcMillis();
     }
 #endif
-    
+
     getData(); //Query all enabled sensors for data
 
     //Print to terminal
@@ -428,7 +440,7 @@ void loop() {
           lastDataLogSyncTime = millis();
           sensorDataFile.sync();
         }
-        
+
         //Check if it is time to open a new log file
         uint64_t secsSinceLastFileNameChange = rtcMillis() - lastSDFileNameChangeTime; // Calculate how long we have been logging for
         secsSinceLastFileNameChange /= 1000ULL; // Convert to secs
