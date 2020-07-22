@@ -77,7 +77,6 @@ bool detectQwiicDevices()
       }
     }
   }
-
   if (muxCount > 0) beginQwiicDevices(); //Because we are about to use a multiplexer, begin() the muxes.
 
   //Before going into sub branches, complete the scan of the main branch for all devices
@@ -99,14 +98,14 @@ bool detectQwiicDevices()
         {
           if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
           {
-            if(settings.printDebugMessages == true)
+            if (settings.printDebugMessages == true)
               Serial.printf("-Added %s at address 0x%02X\n", getDeviceName(foundType), address);
           }
         }
         if (foundType == DEVICE_PHT_MS8607)
         {
           foundMS8607 = true; // Flag that we have found an MS8607
-        }        
+        }
       }
     }
   }
@@ -123,11 +122,11 @@ bool detectQwiicDevices()
       node *muxNode = getNodePointer(muxNumber);
       QWIICMUX *myMux = (QWIICMUX *)muxNode->classPtr;
 
-      for (int portNumber = 0 ; portNumber < 7 ; portNumber++)
+      for (int portNumber = 0 ; portNumber < 8 ; portNumber++) //Assumes we are using a mux with 8 ports max 
       {
         myMux->setPort(portNumber);
         foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
-        
+
         //Scan this new bus for new addresses
         for (uint8_t address = 1 ; address < 127 ; address++)
         {
@@ -153,7 +152,7 @@ bool detectQwiicDevices()
               if (foundType == DEVICE_PHT_MS8607)
               {
                 foundMS8607 = true; // Flag that we have found an MS8607
-              }        
+              }
             }
           } //End I2c check
         } //End I2C scanning
@@ -927,7 +926,7 @@ bool isUbloxAttached()
     temp = temp->next;
   }
 
-  return(false);
+  return (false);
 }
 
 void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, int &second, int &millisecond, bool &dateValid, bool &timeValid)
@@ -940,26 +939,26 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
     switch (temp->deviceType)
     {
       case DEVICE_GPS_UBLOX:
-      {
-        qwiic.setPullups(0); //Disable pullups to minimize CRC issues
+        {
+          qwiic.setPullups(0); //Disable pullups to minimize CRC issues
 
-        SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
-        struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+          SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
+          struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
-        //Get latested date/time from GPS
-        //These will be extracted from a single PVT packet
-        year = nodeDevice->getYear();
-        month = nodeDevice->getMonth();
-        day = nodeDevice->getDay();
-        hour = nodeDevice->getHour();
-        minute = nodeDevice->getMinute();
-        second = nodeDevice->getSecond();
-        dateValid = nodeDevice->getDateValid();
-        timeValid = nodeDevice->getTimeValid();
-        millisecond = nodeDevice->getMillisecond();
+          //Get latested date/time from GPS
+          //These will be extracted from a single PVT packet
+          year = nodeDevice->getYear();
+          month = nodeDevice->getMonth();
+          day = nodeDevice->getDay();
+          hour = nodeDevice->getHour();
+          minute = nodeDevice->getMinute();
+          second = nodeDevice->getSecond();
+          dateValid = nodeDevice->getDateValid();
+          timeValid = nodeDevice->getTimeValid();
+          millisecond = nodeDevice->getMillisecond();
 
-        qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
-      }
+          qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
+        }
     }
     temp = temp->next;
   }
@@ -1720,7 +1719,7 @@ void menuConfigure_ADS122C04(void *configPtr)
       Serial.print("11) Use 2-Wire High Temperature Mode: ");
       if (sensorSetting->useTwoWireHighTemperatureMode == true) Serial.println("Enabled");
       else Serial.println("Disabled");
-      }
+    }
     Serial.println("x) Exit");
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
