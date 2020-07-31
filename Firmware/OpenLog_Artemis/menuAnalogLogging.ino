@@ -29,13 +29,9 @@ void menuAnalogLogging()
     if (settings.logAnalogVoltages == true) Serial.println("Calculated Voltage");
     else Serial.println("Raw ADC reading");
 
-    Serial.print("6) Log VIN (battery) voltage: ");
+    Serial.print("6) Log VIN (battery) voltage (6V Max): ");
     if (settings.logVIN == true) Serial.println("Enabled");
     else Serial.println("Disabled");
-
-    Serial.print("7) Use pin 32 to Stop Logging: ");
-    if (settings.useGPIO32ForStopLogging == true) Serial.println("Yes");
-    else Serial.println("No");
 
     Serial.println("x) Exit");
 
@@ -73,26 +69,6 @@ void menuAnalogLogging()
     else if (incoming == '6')
     {
       settings.logVIN ^= 1;
-    }
-    else if (incoming == '7')
-    {
-      if (settings.useGPIO32ForStopLogging == true)
-      {
-        // Disable stop logging
-        settings.useGPIO32ForStopLogging = false;
-        detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
-        pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
-      }
-      else
-      {
-        // Enable stop logging
-        settings.useGPIO32ForStopLogging = true;
-        pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
-        delay(1); // Let the pin stabilize
-        attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
-        stopLoggingSeen = false; // Make sure the flag is clear
-        settings.logA32 = false; // Disable analog logging on pin 32
-      }
     }
     else if (incoming == 'x')
       return;

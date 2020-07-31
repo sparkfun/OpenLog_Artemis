@@ -11,7 +11,7 @@ void menuIMU()
 
     if (settings.enableIMU == true)
     {
-      Serial.print("2) Toggle Accel Logging: ");
+      Serial.print("2) Toggle Accelerometer Logging: ");
       if (settings.logIMUAccel) Serial.println("Enabled");
       else Serial.println("Disabled");
 
@@ -19,7 +19,7 @@ void menuIMU()
       if (settings.logIMUGyro) Serial.println("Enabled");
       else Serial.println("Disabled");
 
-      Serial.print("4) Toggle Magnometer Logging: ");
+      Serial.print("4) Toggle Magnotometer Logging: ");
       if (settings.logIMUMag) Serial.println("Enabled");
       else Serial.println("Disabled");
 
