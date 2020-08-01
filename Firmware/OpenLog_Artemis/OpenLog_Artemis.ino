@@ -109,6 +109,10 @@ const byte PIN_STAT_LED = 19;
 const byte PIN_IMU_INT = 37;
 const byte PIN_IMU_CHIP_SELECT = 44;
 const byte PIN_STOP_LOGGING = 32;
+const byte BREAKOUT_PIN_32 = 32;
+const byte BREAKOUT_PIN_TX = 12;
+const byte BREAKOUT_PIN_RX = 13;
+const byte BREAKOUT_PIN_11 = 11;
 
 enum returnStatus {
   STATUS_GETBYTE_TIMEOUT = 255,
@@ -223,6 +227,8 @@ void setup() {
 
   Serial.begin(115200); //Default for initial debug messages if necessary
   Serial.println();
+
+  productionTest(); //Check if we need to go into production test mode
 
   SPI.begin(); //Needed if SD is disabled
 
