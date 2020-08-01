@@ -113,6 +113,8 @@ const byte BREAKOUT_PIN_32 = 32;
 const byte BREAKOUT_PIN_TX = 12;
 const byte BREAKOUT_PIN_RX = 13;
 const byte BREAKOUT_PIN_11 = 11;
+const byte PIN_QWIIC_SCL = 8;
+const byte PIN_QWIIC_SDA = 9;
 
 enum returnStatus {
   STATUS_GETBYTE_TIMEOUT = 255,
