@@ -109,6 +109,12 @@ const byte PIN_STAT_LED = 19;
 const byte PIN_IMU_INT = 37;
 const byte PIN_IMU_CHIP_SELECT = 44;
 const byte PIN_STOP_LOGGING = 32;
+const byte BREAKOUT_PIN_32 = 32;
+const byte BREAKOUT_PIN_TX = 12;
+const byte BREAKOUT_PIN_RX = 13;
+const byte BREAKOUT_PIN_11 = 11;
+const byte PIN_QWIIC_SCL = 8;
+const byte PIN_QWIIC_SDA = 9;
 
 enum returnStatus {
   STATUS_GETBYTE_TIMEOUT = 255,
@@ -226,19 +232,11 @@ void setup() {
 
   SPI.begin(); //Needed if SD is disabled
 
+  productionTest(); //Check if we need to go into production test mode
+
   beginSD(); //285 - 293ms
 
-  //Add CIPO pull-up
-  ap3_err_t retval = AP3_OK;
-  am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
-  cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
-  cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
-  cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
-  cipoPinCfg.uIOMnum = AP3_SPI_IOM;
-  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
-  padMode(MISO, cipoPinCfg, &retval);
-  if (retval != AP3_OK)
-    printDebug("Setting CIPO padMode failed!");
+  enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
 
   loadSettings(); //50 - 250ms
 
@@ -541,6 +539,21 @@ void beginSD()
     microSDPowerOff();
     online.microSD = false;
   }
+}
+
+void enableCIPOpullUp()
+{
+  //Add CIPO pull-up
+  ap3_err_t retval = AP3_OK;
+  am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
+  cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
+  cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
+  cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
+  cipoPinCfg.uIOMnum = AP3_SPI_IOM;
+  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  padMode(MISO, cipoPinCfg, &retval);
+  if (retval != AP3_OK)
+    printDebug("Setting CIPO padMode failed!");
 }
 
 void beginIMU()
