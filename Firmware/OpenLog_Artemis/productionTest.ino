@@ -327,6 +327,7 @@ void productionTest()
         ap3_adc_setup();
         Serial.begin(115200);
         SerialLog.begin(115200);
+        SPI.begin();
         myRTC.getTime(); // Read the RTC
         unsigned long hundredthsAfterSleep = (myRTC.hour * 360000) +  (myRTC.minute * 6000) + (myRTC.seconds * 100) + myRTC.hundredths;
         unsigned long elapsedHundredths = hundredthsAfterSleep - hundredthsBeforeSleep;
@@ -433,7 +434,86 @@ void productionTest()
         Serial.printf("RTC time is %02d:%02d:%02d.%02d\r\n", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
 #endif
         break;
-      case 0x19:
+      case 0x19: // SD Card Test
+      {
+        beginSD(); //285 - 293ms
+        enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
+        if (online.microSD == true)
+        {
+          if (sd.exists("OLA_prod_test.txt"))
+            sd.remove("OLA_prod_test.txt");
+      
+          SdFile testFile; //FAT32
+          if (testFile.open("OLA_prod_test.txt", O_CREAT | O_APPEND | O_WRITE) == true)
+          {
+#ifdef verboseProdTest
+            Serial.println("Test file created");
+#endif                              
+            testFile.println("112358132134"); // Write the Fibonacci sequence - just for fun
+            testFile.close(); // Close the file
+            if (testFile.open("OLA_prod_test.txt", O_READ) == true)
+            {
+#ifdef verboseProdTest
+              Serial.println("Test file reopened");
+#endif                              
+              char line[60];
+              int n = testFile.fgets(line, sizeof(line));
+              if (n == 13)
+              {
+                if (strcmp(line, "112358132134\n") == 0) // Look for the correct sequence
+                {
+                  testFile.close(); // Close the file
+                  SerialLog.write(0x19); // Test passed
+#ifdef verboseProdTest
+                  Serial.println("SD card test passed - file contents are correct");
+#endif                              
+                }
+                else
+                {
+                  testFile.close(); // Close the file
+                  SerialLog.write(0x99); // Test failed - data did not compare
+#ifdef verboseProdTest
+                  Serial.println("Test file contents incorrect!");
+                  for (int l = 0; l < 13; l++)
+                    Serial.printf("0x%02X ", line[l]);
+                  Serial.println();
+#endif                              
+                }
+              }
+              else
+              {
+                testFile.close(); // Close the file
+                SerialLog.write(0x99); // Test failed - test file contents are not the correct length
+#ifdef verboseProdTest
+                Serial.printf("Test file contents incorrect length (%d)!\r\n", n);
+#endif                              
+              }
+            }
+            else
+            {
+              SerialLog.write(0x99); // Test failed - could not reopen the test file
+#ifdef verboseProdTest
+              Serial.println("Failed to reopen test file");
+#endif              
+            }
+          }
+          else
+          {
+            SerialLog.write(0x99); // Test failed - could not create the test file
+#ifdef verboseProdTest
+            Serial.println("Failed to create test file");
+#endif
+          }
+        }
+        else
+        {
+          SerialLog.write(0x99); // Test failed - SD is not online
+#ifdef verboseProdTest
+          Serial.println("SD card is not online!");
+#endif          
+        }
+        microSDPowerOff();
+      } // / 0x19: SD Card Test
         break;
       case 0x55: // Deep sleep
       {
@@ -477,7 +557,7 @@ void productionTest()
         {
           am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP); //Sleep
         }
-      } // / 0x18: Deep sleep
+      } // / 0x55: Deep sleep
         break;
       default:
 #ifdef verboseProdTest
