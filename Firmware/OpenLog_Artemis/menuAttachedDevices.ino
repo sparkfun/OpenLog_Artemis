@@ -30,6 +30,7 @@
 //Returns true if devices detected > 0
 bool detectQwiicDevices()
 {
+  printDebug("detectQwiicDevices started\r\n");
   bool somethingDetected = false;
 
   qwiic.setClock(100000); //During detection, go slow
@@ -53,6 +54,8 @@ bool detectQwiicDevices()
     if (qwiic.endTransmission() == 0)
     {
       somethingDetected = true;
+      printDebug("detectQwiicDevices: something detected at address " + (String)address);
+      printDebug("\r\n");
       break;
     }
   }
@@ -60,9 +63,9 @@ bool detectQwiicDevices()
 
   Serial.println("Identifying Qwiic Devices...");
 
-  //First scan for Muxes. Valid addresses are 0x70 to 0x77.
+  //First scan for Muxes. Valid addresses are 0x70 to 0x77 (112 to 119).
   //If any are found, they will be begin()'d causing their ports to turn off
-  //Serial.println("Scanning for multiplexers");
+  printDebug("detectQwiicDevices: scanning for multiplexers\r\n");
   uint8_t muxCount = 0;
   for (uint8_t address = 0x70 ; address < 0x78 ; address++)
   {
@@ -73,14 +76,21 @@ bool detectQwiicDevices()
       if (foundType == DEVICE_MULTIPLEXER)
       {
         addDevice(foundType, address, 0, 0); //Add this device to our map
+        printDebug("detectQwiicDevices: multiplexer found at address " + (String)address);
+        printDebug("\r\n");
         muxCount++;
       }
     }
   }
-  if (muxCount > 0) beginQwiicDevices(); //Because we are about to use a multiplexer, begin() the muxes.
+  if (muxCount > 0)
+  {
+    printDebug("detectQwiicDevices: found " + (String)muxCount);
+    printDebug(" multiplexer(s)\r\n");
+    beginQwiicDevices(); //Because we are about to use a multiplexer, begin() the muxes.
+  }
 
   //Before going into sub branches, complete the scan of the main branch for all devices
-  //Serial.println("Scanning main bus");
+  printDebug("detectQwiicDevices: scanning main bus\r\n");
   bool foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
@@ -99,7 +109,7 @@ bool detectQwiicDevices()
           if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
           {
             if (settings.printDebugMessages == true)
-              Serial.printf("-Added %s at address 0x%02X\n", getDeviceName(foundType), address);
+              Serial.printf("detectQwiicDevices: added %s at address 0x%02X\n", getDeviceName(foundType), address);
           }
         }
         if (foundType == DEVICE_PHT_MS8607)
@@ -122,41 +132,69 @@ bool detectQwiicDevices()
       node *muxNode = getNodePointer(muxNumber);
       QWIICMUX *myMux = (QWIICMUX *)muxNode->classPtr;
 
+      printDebug("detectQwiicDevices: scanning the ports of multiplexer " + (String)muxNumber);
+      printDebug("\r\n");
+
       for (int portNumber = 0 ; portNumber < 8 ; portNumber++) //Assumes we are using a mux with 8 ports max 
       {
         myMux->setPort(portNumber);
         foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
 
+        printDebug("detectQwiicDevices: scanning port number " + (String)portNumber);
+        printDebug(" on multiplexer " + (String)muxNumber);
+        printDebug("\r\n");
+
         //Scan this new bus for new addresses
         for (uint8_t address = 1 ; address < 127 ; address++)
         {
-          qwiic.beginTransmission(address);
-          if (qwiic.endTransmission() == 0)
+          //*** PaulZC: If we found a device on the main branch, we cannot/should not attempt to scan for it on mux branches or bad things will happen! ***
+          if (deviceExists(DEVICE_TOTAL_DEVICES, address, 0, 0)) // Check if we found any type of device with this address on the main branch
           {
-            somethingDetected = true;
-
-            deviceType_e foundType = testDevice(address, muxNode->address, portNumber);
-            if (foundType != DEVICE_UNKNOWN_DEVICE)
+            printDebug("detectQwiicDevices: skipping device address " + (String)address);
+            printDebug(" because we found one on the main branch\r\n");
+          }
+          else
+          {
+            qwiic.beginTransmission(address);
+            if (qwiic.endTransmission() == 0)
             {
-              if ((foundType == DEVICE_PRESSURE_MS5637) && (foundMS8607 == true))
+              somethingDetected = true;
+  
+              deviceType_e foundType = testDevice(address, muxNode->address, portNumber);
+              if (foundType != DEVICE_UNKNOWN_DEVICE)
               {
-                ; // Skip MS5637 as we have already found an MS8607
-              }
-              else
-              {
-                if (addDevice(foundType, address, muxNode->address, portNumber) == true) //Record this device, with mux port specifics.
+                if ((foundType == DEVICE_PRESSURE_MS5637) && (foundMS8607 == true))
                 {
-                  //Serial.printf("-Added %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+                  ; // Skip MS5637 as we have already found an MS8607
+                }
+                else
+                {
+                  if (foundType == DEVICE_MULTIPLEXER) // Let's ignore multiplexers hanging off multiplexer ports. (Multiple muxes on the main branch is OK.)
+                  {
+                    if (settings.printDebugMessages == true)
+                      Serial.printf("detectQwiicDevices: ignoring %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);                    
+                  }
+                  else
+                  {
+                    if (addDevice(foundType, address, muxNode->address, portNumber) == true) //Record this device, with mux port specifics.
+                    {
+                      if (settings.printDebugMessages == true)
+                        Serial.printf("detectQwiicDevices: added %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+                    }
+                  }
+                }
+                if (foundType == DEVICE_PHT_MS8607)
+                {
+                  foundMS8607 = true; // Flag that we have found an MS8607
                 }
               }
-              if (foundType == DEVICE_PHT_MS8607)
-              {
-                foundMS8607 = true; // Flag that we have found an MS8607
-              }
-            }
-          } //End I2c check
+            } //End I2c check
+          } //End not on main branch check
         } //End I2C scanning
       } //End mux port stepping
+      
+      myMux->setPortState(0); // Disable all ports now that we have finished scanning them.
+      
     } //End mux stepping
   } //End mux > 0
 
@@ -170,7 +208,7 @@ bool detectQwiicDevices()
   Serial.println("Autodetect complete");
 
   return (true);
-}
+} // /detectQwiicDevices
 
 void menuAttachedDevices()
 {

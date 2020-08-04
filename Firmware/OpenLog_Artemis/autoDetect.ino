@@ -257,13 +257,19 @@ bool beginQwiicDevices()
 
   if (temp == NULL)
   {
-    Serial.println("beginDevices: No devices detected");
+    Serial.println("beginQwiicDevices: No devices detected");
     return (true);
   }
 
   while (temp != NULL)
   {
     openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+    
+    printDebug("beginQwiicDevices: attempting to begin deviceType " + (String)getDeviceName(temp->deviceType));
+    printDebug(" at address " + (String)temp->address);
+    printDebug(" using mux address " + (String)temp->muxAddress);
+    printDebug(" and port number " + (String)temp->portNumber);
+    printDebug("\r\n");
 
     //Attempt to begin the device
     switch (temp->deviceType)
@@ -387,11 +393,19 @@ bool beginQwiicDevices()
         }
         break;
       default:
-        Serial.printf("addDevice Device type not found: %d\n", temp->deviceType);
+        Serial.printf("beginQwiicDevices: device type not found: %d\r\n", temp->deviceType);
         break;
     }
 
-    if (temp->online == false) everythingStarted = false;
+    if (temp->online == true)
+    {
+      printDebug("beginQwiicDevices: device is online.\r\n");
+    }
+    else
+    {
+      printDebug("beginQwiicDevices: device is **NOT** online.\r\n");
+      everythingStarted = false;
+    }
 
     temp = temp->next;
   }
@@ -722,7 +736,12 @@ bool deviceExists(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, 
     if (temp->address == address)
       if (temp->muxAddress == 0)
         if (temp->portNumber == 0)
+        {
           if (temp->deviceType == deviceType) return (true);
+          // Added by PaulZC: use DEVICE_TOTAL_DEVICES as a special case.
+          // Return true if the device address exists on the main branch so we can avoid looking for it on mux branches.
+          if (deviceType == DEVICE_TOTAL_DEVICES) return (true);
+        }
 
     temp = temp->next;
   }
