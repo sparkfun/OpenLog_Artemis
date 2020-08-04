@@ -54,8 +54,8 @@ bool detectQwiicDevices()
     if (qwiic.endTransmission() == 0)
     {
       somethingDetected = true;
-      printDebug("detectQwiicDevices: something detected at address " + (String)address);
-      printDebug("\r\n");
+      if (settings.printDebugMessages == true)
+        Serial.printf("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
       break;
     }
   }
@@ -76,16 +76,22 @@ bool detectQwiicDevices()
       if (foundType == DEVICE_MULTIPLEXER)
       {
         addDevice(foundType, address, 0, 0); //Add this device to our map
-        printDebug("detectQwiicDevices: multiplexer found at address " + (String)address);
-        printDebug("\r\n");
+        if (settings.printDebugMessages == true)
+          Serial.printf("detectQwiicDevices: multiplexer found at address 0x%02X\r\n", address);
         muxCount++;
       }
     }
   }
   if (muxCount > 0)
   {
-    printDebug("detectQwiicDevices: found " + (String)muxCount);
-    printDebug(" multiplexer(s)\r\n");
+    if (settings.printDebugMessages == true)
+    {
+      Serial.printf("detectQwiicDevices: found %d", muxCount);
+      if (muxCount == 1)
+        Serial.println(" multiplexer");
+      else
+        Serial.println(" multiplexers");
+    }
     beginQwiicDevices(); //Because we are about to use a multiplexer, begin() the muxes.
   }
 
@@ -150,8 +156,8 @@ bool detectQwiicDevices()
           //*** PaulZC: If we found a device on the main branch, we cannot/should not attempt to scan for it on mux branches or bad things will happen! ***
           if (deviceExists(DEVICE_TOTAL_DEVICES, address, 0, 0)) // Check if we found any type of device with this address on the main branch
           {
-            printDebug("detectQwiicDevices: skipping device address " + (String)address);
-            printDebug(" because we found one on the main branch\r\n");
+            if (settings.printDebugMessages == true)
+              Serial.printf("detectQwiicDevices: skipping device address 0x%02X because we found one on the main branch\r\n", address);
           }
           else
           {
@@ -193,7 +199,7 @@ bool detectQwiicDevices()
         } //End I2C scanning
       } //End mux port stepping
       
-      myMux->setPortState(0); // Disable all ports now that we have finished scanning them.
+      myMux->setPortState(0); // Disable all ports on this mux now that we have finished scanning them.
       
     } //End mux stepping
   } //End mux > 0

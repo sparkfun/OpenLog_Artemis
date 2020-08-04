@@ -265,12 +265,12 @@ bool beginQwiicDevices()
   {
     openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
     
-    printDebug("beginQwiicDevices: attempting to begin deviceType " + (String)getDeviceName(temp->deviceType));
-    printDebug(" at address " + (String)temp->address);
-    printDebug(" using mux address " + (String)temp->muxAddress);
-    printDebug(" and port number " + (String)temp->portNumber);
-    printDebug("\r\n");
-
+    if (settings.printDebugMessages == true)
+    {
+      Serial.printf("beginQwiicDevices: attempting to begin deviceType %s", getDeviceName(temp->deviceType));
+      Serial.printf(" at address 0x%02X using mux address 0x%02X and port number %d\r\n", temp->address, temp->muxAddress, temp->portNumber);
+    }
+    
     //Attempt to begin the device
     switch (temp->deviceType)
     {
@@ -399,11 +399,11 @@ bool beginQwiicDevices()
 
     if (temp->online == true)
     {
-      printDebug("beginQwiicDevices: device is online.\r\n");
+      printDebug("beginQwiicDevices: device is online\r\n");
     }
     else
     {
-      printDebug("beginQwiicDevices: device is **NOT** online.\r\n");
+      printDebug("beginQwiicDevices: device is **NOT** online\r\n");
       everythingStarted = false;
     }
 
