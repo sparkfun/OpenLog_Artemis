@@ -6,34 +6,34 @@ void menuMain()
   while (1)
   {
     Serial.println();
-    Serial.println("Menu: Main Menu");
+    Serial.println(F("Menu: Main Menu"));
 
-    Serial.println("1) Configure Terminal Output");
+    Serial.println(F("1) Configure Terminal Output"));
     //10 to 1 Hz? Global logging. Overrides the IMU, analog, etc.?
     //User may want to log Analog really fast and IMU or humidity less fast.
 
-    Serial.println("2) Configure Time Stamp");
+    Serial.println(F("2) Configure Time Stamp"));
 
-    Serial.println("3) Configure IMU Logging");
+    Serial.println(F("3) Configure IMU Logging"));
     //Set record freq
 
-    Serial.println("4) Configure Serial Logging");
+    Serial.println(F("4) Configure Serial Logging"));
 
-    Serial.println("5) Configure Analog Logging");
+    Serial.println(F("5) Configure Analog Logging"));
 
-    Serial.println("6) Detect / Configure Attached Devices");
+    Serial.println(F("6) Detect / Configure Attached Devices"));
 
-    Serial.println("7) Configure Power Options");
+    Serial.println(F("7) Configure Power Options"));
 
-    Serial.println("h) Print Sensor Helper Text (and return to logging)");
+    Serial.println(F("h) Print Sensor Helper Text (and return to logging)"));
 
-    Serial.println("r) Reset all settings to default");
+    Serial.println(F("r) Reset all settings to default"));
 
-    Serial.println("q) Quit: Close log files and power down");
+    Serial.println(F("q) Quit: Close log files and power down"));
 
-    //Serial.println("d) Debug Menu");
+    //Serial.println(F("d) Debug Menu"));
 
-    Serial.println("x) Return to logging");
+    Serial.println(F("x) Return to logging"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -60,7 +60,7 @@ void menuMain()
       menuDebug();
     else if (incoming == 'r')
     {
-      Serial.println("\n\rResetting to factory defaults. Press 'y' to confirm:");
+      Serial.println(F("\n\rResetting to factory defaults. Press 'y' to confirm:"));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
@@ -70,17 +70,17 @@ void menuMain()
         if (sd.exists("OLA_deviceSettings.txt"))
           sd.remove("OLA_deviceSettings.txt");
 
-        Serial.print("Settings erased. Please reset OpenLog Artemis and open a terminal at ");
+        Serial.print(F("Settings erased. Please reset OpenLog Artemis and open a terminal at "));
         Serial.print((String)settings.serialTerminalBaudRate);
-        Serial.println("bps...");
+        Serial.println(F("bps..."));
         while (1);
       }
       else
-        Serial.println("Reset aborted");
+        Serial.println(F("Reset aborted"));
     }
     else if (incoming == 'q')
     {
-      Serial.println("\n\rQuit? Press 'y' to confirm:");
+      Serial.println(F("\n\rQuit? Press 'y' to confirm:"));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
@@ -95,14 +95,14 @@ void menuMain()
           serialDataFile.sync();
           serialDataFile.close();
         }
-        Serial.print("Log files are closed. Please reset OpenLog Artemis and open a terminal at ");
+        Serial.print(F("Log files are closed. Please reset OpenLog Artemis and open a terminal at "));
         Serial.print((String)settings.serialTerminalBaudRate);
-        Serial.println("bps...");
+        Serial.println(F("bps..."));
         delay(sdPowerDownDelay); // Give the SD card time to shut down
         powerDown();
       }
       else
-        Serial.println("Quit aborted");
+        Serial.println(F("Quit aborted"));
     }
     else if (incoming == 'x')
       break;

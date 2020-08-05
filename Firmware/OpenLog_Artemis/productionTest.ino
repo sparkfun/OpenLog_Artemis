@@ -115,7 +115,7 @@ void productionTest()
     {
       if ((sendHellos == true) && (millis() > lastHelloSent)) // Is it time to send a Hello? (5 x 10 / 115200 = 0.434ms)
       {
-        Serial.print("Hello");
+        Serial.print(F("Hello"));
         lastHelloSent = millis();
       }
       if (echoUSB == true) // Should we echo everything received via USB?
@@ -177,7 +177,7 @@ void productionTest()
           {
             SerialLog.write(0x82); // Test failed - IMU data is not ready
 #ifdef verboseProdTest
-            Serial.println("IMU data not ready!");
+            Serial.println(F("IMU data not ready!"));
 #endif
           }
         }
@@ -185,7 +185,7 @@ void productionTest()
         {
           SerialLog.write(0x82); // Test failed - IMU is not online
 #ifdef verboseProdTest
-          Serial.println("IMU is not online!");
+          Serial.println(F("IMU is not online!"));
 #endif
         }
         imuPowerOff();
@@ -219,7 +219,7 @@ void productionTest()
           {
             SerialLog.write(0x83); // Test failed - IMU data is not ready
 #ifdef verboseProdTest
-            Serial.println("IMU data not ready!");
+            Serial.println(F("IMU data not ready!"));
 #endif
           }
         }
@@ -227,7 +227,7 @@ void productionTest()
         {
           SerialLog.write(0x83); // Test failed - IMU is not online
 #ifdef verboseProdTest
-          Serial.println("IMU is not online!");
+          Serial.println(F("IMU is not online!"));
 #endif
         }
         imuPowerOff();
@@ -264,7 +264,7 @@ void productionTest()
           {
             SerialLog.write(0x84); // Test failed - IMU data is not ready
 #ifdef verboseProdTest
-            Serial.println("IMU data not ready!");
+            Serial.println(F("IMU data not ready!"));
 #endif
           }
         }
@@ -272,7 +272,7 @@ void productionTest()
         {
           SerialLog.write(0x84); // Test failed - IMU is not online
 #ifdef verboseProdTest
-          Serial.println("IMU is not online!");
+          Serial.println(F("IMU is not online!"));
 #endif
         }
         imuPowerOff();
@@ -284,7 +284,7 @@ void productionTest()
         unsigned long hundredthsBeforeSleep = (myRTC.hour * 360000) +  (myRTC.minute * 6000) + (myRTC.seconds * 100) + myRTC.hundredths;
 #ifdef verboseProdTest
         Serial.printf("RTC time in hundredths is %d\r\n", hundredthsBeforeSleep);
-        Serial.println("Going into deep sleep for 5 seconds...");
+        Serial.println(F("Going into deep sleep for 5 seconds..."));
 #endif
         Serial.flush(); //Finish any prints
         qwiic.end(); //Power down I2C
@@ -332,7 +332,7 @@ void productionTest()
         unsigned long hundredthsAfterSleep = (myRTC.hour * 360000) +  (myRTC.minute * 6000) + (myRTC.seconds * 100) + myRTC.hundredths;
         unsigned long elapsedHundredths = hundredthsAfterSleep - hundredthsBeforeSleep;
 #ifdef verboseProdTest
-        Serial.println("Awake!");
+        Serial.println(F("Awake!"));
         Serial.printf("RTC time in hundredths is now %d\r\n", hundredthsAfterSleep);
         Serial.printf("Elapsed RTC time in hundredths is %d\r\n", elapsedHundredths);
 #endif
@@ -447,14 +447,14 @@ void productionTest()
           if (testFile.open("OLA_prod_test.txt", O_CREAT | O_APPEND | O_WRITE) == true)
           {
 #ifdef verboseProdTest
-            Serial.println("Test file created");
+            Serial.println(F("Test file created"));
 #endif                              
-            testFile.println("112358132134"); // Write the Fibonacci sequence - just for fun
+            testFile.println(F("112358132134")); // Write the Fibonacci sequence - just for fun
             testFile.close(); // Close the file
             if (testFile.open("OLA_prod_test.txt", O_READ) == true)
             {
 #ifdef verboseProdTest
-              Serial.println("Test file reopened");
+              Serial.println(F("Test file reopened"));
 #endif                              
               char line[60];
               int n = testFile.fgets(line, sizeof(line));
@@ -465,7 +465,7 @@ void productionTest()
                   testFile.close(); // Close the file
                   SerialLog.write(0x19); // Test passed
 #ifdef verboseProdTest
-                  Serial.println("SD card test passed - file contents are correct");
+                  Serial.println(F("SD card test passed - file contents are correct"));
 #endif                              
                 }
                 else
@@ -473,7 +473,7 @@ void productionTest()
                   testFile.close(); // Close the file
                   SerialLog.write(0x99); // Test failed - data did not compare
 #ifdef verboseProdTest
-                  Serial.println("Test file contents incorrect!");
+                  Serial.println(F("Test file contents incorrect!"));
                   for (int l = 0; l < 13; l++)
                     Serial.printf("0x%02X ", line[l]);
                   Serial.println();
@@ -493,7 +493,7 @@ void productionTest()
             {
               SerialLog.write(0x99); // Test failed - could not reopen the test file
 #ifdef verboseProdTest
-              Serial.println("Failed to reopen test file");
+              Serial.println(F("Failed to reopen test file"));
 #endif              
             }
           }
@@ -501,7 +501,7 @@ void productionTest()
           {
             SerialLog.write(0x99); // Test failed - could not create the test file
 #ifdef verboseProdTest
-            Serial.println("Failed to create test file");
+            Serial.println(F("Failed to create test file"));
 #endif
           }
         }
@@ -509,7 +509,7 @@ void productionTest()
         {
           SerialLog.write(0x99); // Test failed - SD is not online
 #ifdef verboseProdTest
-          Serial.println("SD card is not online!");
+          Serial.println(F("SD card is not online!"));
 #endif          
         }
         microSDPowerOff();

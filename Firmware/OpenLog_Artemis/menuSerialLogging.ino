@@ -5,20 +5,20 @@ void menuSerialLogging()
   while (1)
   {
     Serial.println();
-    Serial.println("Menu: Configure Serial Logging");
+    Serial.println(F("Menu: Configure Serial Logging"));
 
-    Serial.print("1) Log serial data: ");
-    if (settings.logSerial == true) Serial.println("Enabled, analog on pin 13 disabled");
-    else Serial.println("Disabled");
+    Serial.print(F("1) Log serial data: "));
+    if (settings.logSerial == true) Serial.println(F("Enabled, analog on pin 13 disabled"));
+    else Serial.println(F("Disabled"));
 
     if (settings.logSerial == true)
     {
-      Serial.print("2) Set serial baud rate: ");
+      Serial.print(F("2) Set serial baud rate: "));
       Serial.print(settings.serialLogBaudRate);
-      Serial.println(" bps");
+      Serial.println(F(" bps"));
     }
 
-    Serial.println("x) Exit");
+    Serial.println(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -47,11 +47,11 @@ void menuSerialLogging()
     {
       if (incoming == '2')
       {
-        Serial.print("Enter baud rate (1200 to 500000): ");
+        Serial.print(F("Enter baud rate (1200 to 500000): "));
         int newBaud = getNumber(menuTimeout); //Timeout after x seconds
         if (newBaud < 1200 || newBaud > 500000)
         {
-          Serial.println("Error: baud rate out of range");
+          Serial.println(F("Error: baud rate out of range"));
         }
         else
         {

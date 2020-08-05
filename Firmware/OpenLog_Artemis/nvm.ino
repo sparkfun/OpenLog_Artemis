@@ -8,7 +8,7 @@ void loadSettings()
   uint32_t testRead = 0;
   if (EEPROM.get(0, testRead) == 0xFFFFFFFF)
   {
-    Serial.println("EEPROM is blank. Default settings applied");
+    Serial.println(F("EEPROM is blank. Default settings applied"));
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 
@@ -18,7 +18,7 @@ void loadSettings()
   EEPROM.get(0, tempSize); //Load the sizeOfSettings
   if (tempSize != sizeof(settings))
   {
-    Serial.println("Settings wrong size. Default settings applied");
+    Serial.println(F("Settings wrong size. Default settings applied"));
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 
@@ -28,7 +28,7 @@ void loadSettings()
   EEPROM.get(sizeof(int), tempIdentifier); //Load the identifier from the EEPROM location after sizeOfSettings (int)
   if (tempIdentifier != OLA_IDENTIFIER)
   {
-    Serial.println("Settings are not valid for this variant of the OLA. Default settings applied");
+    Serial.println(F("Settings are not valid for this variant of the OLA. Default settings applied"));
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 
@@ -60,7 +60,7 @@ void recordSystemSettingsToFile()
     SdFile settingsFile; //FAT32
     if (settingsFile.open("OLA_settings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      Serial.println("Failed to create settings file");
+      Serial.println(F("Failed to create settings file"));
       return;
     }
 
@@ -157,7 +157,7 @@ bool loadSystemSettingsFromFile()
       SdFile settingsFile; //FAT32
       if (settingsFile.open("OLA_settings.txt", O_READ) == false)
       {
-        Serial.println("Failed to open settings file");
+        Serial.println(F("Failed to open settings file"));
         return (false);
       }
 
@@ -174,7 +174,7 @@ bool loadSystemSettingsFromFile()
           if (lineNumber == 0)
           {
             //If we can't read the first line of the settings file, give up
-            Serial.println("Giving up on settings file");
+            Serial.println(F("Giving up on settings file"));
             return (false);
           }
         }
@@ -183,7 +183,7 @@ bool loadSystemSettingsFromFile()
           if (lineNumber == 0)
           {
             //If we can't read the first line of the settings file, give up
-            Serial.println("Giving up on settings file");
+            Serial.println(F("Giving up on settings file"));
             return (false);
           }
         }
@@ -191,19 +191,19 @@ bool loadSystemSettingsFromFile()
         lineNumber++;
       }
 
-      //Serial.println("Config file read complete");
+      //Serial.println(F("Config file read complete"));
       settingsFile.close();
       return (true);
     }
     else
     {
-      Serial.println("No config file found. Using settings from EEPROM.");
+      Serial.println(F("No config file found. Using settings from EEPROM."));
       //The defaults of the struct will be recorded to a file later on.
       return (false);
     }
   }
 
-  Serial.println("Config file read failed: SD offline");
+  Serial.println(F("Config file read failed: SD offline"));
   return (false); //SD offline
 }
 
@@ -253,7 +253,7 @@ bool parseLine(char* str) {
     {
       EEPROM.erase();
       sd.remove("OLA_settings.txt");
-      Serial.println("OpenLog Artemis has been factory reset. Freezing. Please restart and open terminal at 115200bps.");
+      Serial.println(F("OpenLog Artemis has been factory reset. Freezing. Please restart and open terminal at 115200bps."));
       while (1);
     }
 
@@ -368,7 +368,7 @@ void recordDeviceSettingsToFile()
     SdFile settingsFile; //FAT32
     if (settingsFile.open("OLA_deviceSettings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      Serial.println("Failed to create device settings file");
+      Serial.println(F("Failed to create device settings file"));
       return;
     }
 
@@ -592,7 +592,7 @@ bool loadDeviceSettingsFromFile()
       SdFile settingsFile; //FAT32
       if (settingsFile.open("OLA_deviceSettings.txt", O_READ) == false)
       {
-        Serial.println("Failed to open device settings file");
+        Serial.println(F("Failed to open device settings file"));
         return (false);
       }
 
@@ -614,19 +614,19 @@ bool loadDeviceSettingsFromFile()
         lineNumber++;
       }
 
-      //Serial.println("Device config file read complete");
+      //Serial.println(F("Device config file read complete"));
       settingsFile.close();
       return (true);
     }
     else
     {
-      Serial.println("No device config file found. Creating one with device defaults.");
+      Serial.println(F("No device config file found. Creating one with device defaults."));
       recordDeviceSettingsToFile(); //Record the current settings to create the initial file
       return (false);
     }
   }
 
-  Serial.println("Device config file read failed: SD offline");
+  Serial.println(F("Device config file read failed: SD offline"));
   return (false); //SD offline
 }
 
@@ -709,7 +709,7 @@ bool parseDeviceLine(char* str) {
     {
       case DEVICE_MULTIPLEXER:
         {
-          Serial.println("There are no known settings for a multiplexer to load.");
+          Serial.println(F("There are no known settings for a multiplexer to load."));
         }
         break;
       case DEVICE_LOADCELL_NAU7802:

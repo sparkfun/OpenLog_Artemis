@@ -341,9 +341,9 @@ void stopLogging(void)
     serialDataFile.close();
   }
   
-  Serial.print("Logging is stopped. Please reset OpenLog Artemis and open a terminal at ");
+  Serial.print(F("Logging is stopped. Please reset OpenLog Artemis and open a terminal at "));
   Serial.print((String)settings.serialTerminalBaudRate);
-  Serial.println("bps...");
+  Serial.println(F("bps..."));
   delay(sdPowerDownDelay); // Give the SD card time to shut down
   powerDown();
 }

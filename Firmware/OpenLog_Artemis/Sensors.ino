@@ -37,7 +37,7 @@ void getData()
     } //end if use RTC for timestamp
     else //Use GPS for timestamp
     {
-      Serial.println("Print GPS Timestamp / not yet implemented");
+      Serial.println(F("Print GPS Timestamp / not yet implemented"));
     }
   }
 

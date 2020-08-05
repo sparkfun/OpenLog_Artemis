@@ -3,31 +3,31 @@ void menuIMU()
   while (1)
   {
     Serial.println();
-    Serial.println("Menu: Configure IMU");
+    Serial.println(F("Menu: Configure IMU"));
 
-    Serial.print("1) Sensor Logging: ");
-    if (settings.enableIMU == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("1) Sensor Logging: "));
+    if (settings.enableIMU == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
     if (settings.enableIMU == true)
     {
-      Serial.print("2) Toggle Accelerometer Logging: ");
-      if (settings.logIMUAccel) Serial.println("Enabled");
-      else Serial.println("Disabled");
+      Serial.print(F("2) Toggle Accelerometer Logging: "));
+      if (settings.logIMUAccel) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
 
-      Serial.print("3) Toggle Gyro Logging: ");
-      if (settings.logIMUGyro) Serial.println("Enabled");
-      else Serial.println("Disabled");
+      Serial.print(F("3) Toggle Gyro Logging: "));
+      if (settings.logIMUGyro) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
 
-      Serial.print("4) Toggle Magnotometer Logging: ");
-      if (settings.logIMUMag) Serial.println("Enabled");
-      else Serial.println("Disabled");
+      Serial.print(F("4) Toggle Magnotometer Logging: "));
+      if (settings.logIMUMag) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
 
-      Serial.print("5) Toggle Temperature Logging: ");
-      if (settings.logIMUTemp) Serial.println("Enabled");
-      else Serial.println("Disabled");
+      Serial.print(F("5) Toggle Temperature Logging: "));
+      if (settings.logIMUTemp) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
     }
-    Serial.println("x) Exit");
+    Serial.println(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
