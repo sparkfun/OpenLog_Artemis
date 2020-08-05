@@ -102,7 +102,7 @@ const byte PIN_VIN_MONITOR = 34; // VIN/3 (1M/2M - will require a correction fac
 #endif
 
 const byte PIN_POWER_LOSS = 3;
-const byte PIN_LOGIC_DEBUG = 11;
+//const byte PIN_LOGIC_DEBUG = 11;
 const byte PIN_MICROSD_POWER = 15;
 const byte PIN_QWIIC_POWER = 18;
 const byte PIN_STAT_LED = 19;
@@ -234,8 +234,8 @@ void setup() {
 
   productionTest(); //Check if we need to go into production test mode
 
-  pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
-  digitalWrite(PIN_LOGIC_DEBUG, HIGH);
+//  pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
+//  digitalWrite(PIN_LOGIC_DEBUG, HIGH);
 
   beginSD(); //285 - 293ms
 

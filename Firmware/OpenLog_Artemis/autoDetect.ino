@@ -1203,6 +1203,94 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
   return DEVICE_UNKNOWN_DEVICE;
 }
 
+//Given an address, returns the device type if it responds as we would expect
+//This version is dedicated to testing muxes and uses a custom .begin to avoid the slippery mux problem
+deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumber)
+{
+  switch (i2cAddress)
+  {
+    case 0x70:
+    case 0x71:
+    case 0x72:
+    case 0x73:
+    case 0x74:
+    case 0x75:
+    case 0x76:
+    case 0x77:
+      {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
+        
+        //Confidence: Medium - Write/Read/Clear to 0x00
+        if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_MULTIPLEXER);
+      }
+      break;
+    default:
+      {
+        if (muxAddress == 0)
+          Serial.printf("Unknown device at address (0x%02X)\n", i2cAddress);
+        else
+          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\n", i2cAddress, muxAddress, portNumber);
+        return DEVICE_UNKNOWN_DEVICE;
+      }
+      break;
+  }
+  Serial.printf("Known I2C address but device failed identification at address 0x%02X\n", i2cAddress);
+  return DEVICE_UNKNOWN_DEVICE;
+}
+
+//Returns true if mux is present
+//Tests for device ack to I2C address
+//Then tests if device behaves as we expect
+//Leaves with all ports disabled
+bool multiplexerBegin(uint8_t deviceAddress, TwoWire &wirePort)
+{
+  wirePort.beginTransmission(deviceAddress);
+  if (wirePort.endTransmission() != 0)
+    return (false); //Device did not ACK
+
+  //Write to device, expect a return
+  setMuxPortState(0xA4, deviceAddress, wirePort, 7); //Set port register to a known value - using extra bytes to avoid the mux problem
+  uint8_t response = getMuxPortState(deviceAddress, wirePort);
+  setMuxPortState(0x00, deviceAddress, wirePort, 0);   //Disable all ports
+  if (response == 0xA4) //Make sure we got back what we expected
+  {
+    response = getMuxPortState(deviceAddress, wirePort); //Make doubly sure we got what we expected
+    if (response == 0x00)
+    {
+      return (true);      //All good
+    }
+  }
+  return (false);
+}
+
+//Writes a 8-bit value to mux
+//Overwrites any other bits
+//This allows us to enable/disable multiple ports at same time
+bool setMuxPortState(uint8_t portBits, uint8_t deviceAddress, TwoWire &wirePort, int extraBytes)
+{
+  wirePort.beginTransmission(deviceAddress);
+  for (int i = 0; i < extraBytes; i++)
+  {
+    wirePort.write(0x00); // Writing these extra bytes seems key to avoiding the slippery mux problem
+  }
+  wirePort.write(portBits);
+  if (wirePort.endTransmission() != 0)
+    return (false); //Device did not ACK
+  return (true);
+}
+
+//Gets the current port state
+//Returns byte that may have multiple bits set
+uint8_t getMuxPortState(uint8_t deviceAddress, TwoWire &wirePort)
+{
+  //Read the current mux settings
+  wirePort.beginTransmission(deviceAddress);
+  wirePort.requestFrom(deviceAddress, 1);
+  return (wirePort.read());
+}
+
 //Given a device number return the string associated with that entry
 const char* getDeviceName(deviceType_e deviceNumber)
 {

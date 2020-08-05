@@ -1034,6 +1034,10 @@ void setMaxI2CSpeed()
     maxSpeed = settings.qwiicBusMaxSpeed;
 
   qwiic.setClock(maxSpeed);
+  for (int i = 0; i < 100; i++) //Allow time for the speed to change
+  {
+    delay(1);
+  }  
 }
 
 //Read the VIN voltage

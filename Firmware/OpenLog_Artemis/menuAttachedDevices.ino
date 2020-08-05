@@ -72,12 +72,12 @@ bool detectQwiicDevices()
     qwiic.beginTransmission(address);
     if (qwiic.endTransmission() == 0)
     {
-      if (address == 0x72) // Debugging the slippery mux bug - trigger the scope when we test mux 0x72
-      {
-        digitalWrite(PIN_LOGIC_DEBUG, LOW);
-        digitalWrite(PIN_LOGIC_DEBUG, HIGH);
-      }
-      deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
+//      if (address == 0x74) // Debugging the slippery mux bug - trigger the scope when we test mux 0x74
+//      {
+//        digitalWrite(PIN_LOGIC_DEBUG, LOW);
+//        digitalWrite(PIN_LOGIC_DEBUG, HIGH);
+//      }
+      deviceType_e foundType = testMuxDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType == DEVICE_MULTIPLEXER)
       {
         addDevice(foundType, address, 0, 0); //Add this device to our map
@@ -379,9 +379,9 @@ void menuConfigure_QwiicBus()
       settings.powerDownQwiicBusBetweenReads ^= 1;
     else if (incoming == '2')
     {
-      Serial.print(F("Enter max frequency to run Qwiic bus: (100000 to 400000): "));
-      int amt = getNumber(menuTimeout);
-      if (amt >= 100000 && amt <= 400000)
+      Serial.print(F("Enter max frequency to run Qwiic bus: (100000 or 400000): "));
+      uint32_t amt = getNumber(menuTimeout);
+      if ((amt == 100000) || (amt == 400000))
         settings.qwiicBusMaxSpeed = amt;
       else
         Serial.println(F("Error: Out of range"));
