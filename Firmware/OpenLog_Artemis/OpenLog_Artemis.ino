@@ -102,7 +102,7 @@ const byte PIN_VIN_MONITOR = 34; // VIN/3 (1M/2M - will require a correction fac
 #endif
 
 const byte PIN_POWER_LOSS = 3;
-//const byte PIN_LOGIC_DEBUG = 11;
+//const byte PIN_LOGIC_DEBUG = 11; // Useful for debugging issues like the slippery mux bug
 const byte PIN_MICROSD_POWER = 15;
 const byte PIN_QWIIC_POWER = 18;
 const byte PIN_STAT_LED = 19;
@@ -115,6 +115,10 @@ const byte BREAKOUT_PIN_RX = 13;
 const byte BREAKOUT_PIN_11 = 11;
 const byte PIN_QWIIC_SCL = 8;
 const byte PIN_QWIIC_SDA = 9;
+
+// Include this many extra bytes when starting a mux - to try and avoid the slippery mux bug
+// This should be 0 but 3 or 7 seem to work better depending on which way the wind is blowing.
+const byte EXTRA_MUX_STARTUP_BYTES = 3;
 
 enum returnStatus {
   STATUS_GETBYTE_TIMEOUT = 255,
@@ -234,8 +238,8 @@ void setup() {
 
   productionTest(); //Check if we need to go into production test mode
 
-//  pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
-//  digitalWrite(PIN_LOGIC_DEBUG, HIGH);
+  //pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
+  //digitalWrite(PIN_LOGIC_DEBUG, HIGH);
 
   beginSD(); //285 - 293ms
 

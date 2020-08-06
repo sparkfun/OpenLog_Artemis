@@ -738,7 +738,7 @@ bool deviceExists(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, 
         if (temp->portNumber == 0)
         {
           if (temp->deviceType == deviceType) return (true);
-          // Added by PaulZC: use DEVICE_TOTAL_DEVICES as a special case.
+          // Use DEVICE_TOTAL_DEVICES as a special case.
           // Return true if the device address exists on the main branch so we can avoid looking for it on mux branches.
           if (deviceType == DEVICE_TOTAL_DEVICES) return (true);
         }
@@ -1077,9 +1077,9 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //PaulZC: test for a multiplexer _before_ testing for SHTC3
+        //Test for a multiplexer _before_ testing for SHTC3
         
-        //Confidence: Medium - Write/Read/Clear to 0x00
+        //Confidence: Medium - Write/Read/Clear to 0x00/Read
         QWIICMUX multiplexer;
         if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1095,7 +1095,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //Confidence: Medium - Write/Read/Clear to 0x00
+        //Confidence: Medium - Write/Read/Clear to 0x00/Read
         QWIICMUX multiplexer;
         if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1106,7 +1106,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //Confidence: Medium - Write/Read/Clear to 0x00
+        //Confidence: Medium - Write/Read/Clear to 0x00/Read
         QWIICMUX multiplexer;
         if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1117,7 +1117,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //Confidence: Medium - Write/Read/Clear to 0x00
+        //Confidence: Medium - Write/Read/Clear to 0x00/Read
         QWIICMUX multiplexer;
         if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1128,7 +1128,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //Confidence: Medium - Write/Read/Clear to 0x00
+        //Confidence: Medium - Write/Read/Clear to 0x00/Read
         QWIICMUX multiplexer;
         if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1139,7 +1139,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //Confidence: Medium - Write/Read/Clear to 0x00
+        //Confidence: Medium - Write/Read/Clear to 0x00/Read
         QWIICMUX multiplexer;
         if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1150,9 +1150,9 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //PaulZC: test for a multiplexer _before_ testing for MS5637 / BME280
+        //Test for a multiplexer _before_ testing for MS5637 / BME280
         
-        //Confidence: Medium - Write/Read/Clear to 0x00
+        //Confidence: Medium - Write/Read/Clear to 0x00/Read
         QWIICMUX multiplexer;
         if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1179,6 +1179,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
         
+        //Confidence: Medium - Write/Read/Clear to 0x00/Read
         QWIICMUX multiplexer;
         if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1251,15 +1252,15 @@ bool multiplexerBegin(uint8_t deviceAddress, TwoWire &wirePort)
     return (false); //Device did not ACK
 
   //Write to device, expect a return
-  setMuxPortState(0xA4, deviceAddress, wirePort, 7); //Set port register to a known value - using extra bytes to avoid the mux problem
+  setMuxPortState(0xA4, deviceAddress, wirePort, EXTRA_MUX_STARTUP_BYTES); //Set port register to a known value - using extra bytes to avoid the mux problem
   uint8_t response = getMuxPortState(deviceAddress, wirePort);
-  setMuxPortState(0x00, deviceAddress, wirePort, 0);   //Disable all ports
+  setMuxPortState(0x00, deviceAddress, wirePort, 0); //Disable all ports - seems to work just fine without extra bytes (not sure why...)
   if (response == 0xA4) //Make sure we got back what we expected
   {
     response = getMuxPortState(deviceAddress, wirePort); //Make doubly sure we got what we expected
     if (response == 0x00)
     {
-      return (true);      //All good
+      return (true); //All good
     }
   }
   return (false);

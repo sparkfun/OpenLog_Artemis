@@ -72,11 +72,11 @@ bool detectQwiicDevices()
     qwiic.beginTransmission(address);
     if (qwiic.endTransmission() == 0)
     {
-//      if (address == 0x74) // Debugging the slippery mux bug - trigger the scope when we test mux 0x74
-//      {
-//        digitalWrite(PIN_LOGIC_DEBUG, LOW);
-//        digitalWrite(PIN_LOGIC_DEBUG, HIGH);
-//      }
+      //if (address == 0x74) // Debugging the slippery mux bug - trigger the scope when we test mux 0x74
+      //{
+      //  digitalWrite(PIN_LOGIC_DEBUG, LOW);
+      //  digitalWrite(PIN_LOGIC_DEBUG, HIGH);
+      //}
       deviceType_e foundType = testMuxDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType == DEVICE_MULTIPLEXER)
       {
@@ -158,7 +158,7 @@ bool detectQwiicDevices()
         //Scan this new bus for new addresses
         for (uint8_t address = 1 ; address < 127 ; address++)
         {
-          //*** PaulZC: If we found a device on the main branch, we cannot/should not attempt to scan for it on mux branches or bad things will happen! ***
+          // If we found a device on the main branch, we cannot/should not attempt to scan for it on mux branches or bad things may happen
           if (deviceExists(DEVICE_TOTAL_DEVICES, address, 0, 0)) // Check if we found any type of device with this address on the main branch
           {
             if (settings.printDebugMessages == true)
@@ -211,7 +211,7 @@ bool detectQwiicDevices()
 
   bubbleSortDevices(head); //This may destroy mux alignment to node 0.
 
-  //*** PaulZC commented this. Let's leave pull-ups set to 1k and only disable them when taking to a u-blox device ***
+  //*** Let's leave pull-ups set to 1k and only disable them when taking to a u-blox device ***
   //qwiic.setPullups(0); //We've detected something on the bus so disable pullups.
 
   setMaxI2CSpeed(); //Try for 400kHz but reduce to 100kHz or low if certain devices are attached
