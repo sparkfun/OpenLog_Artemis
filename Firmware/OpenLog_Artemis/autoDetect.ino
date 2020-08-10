@@ -852,21 +852,19 @@ void swap(struct node * a, struct node * b)
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_SGP30 0x58
-#define ADR_CCS811_2 0x5A
-#define ADR_CCS811_1 0x5B
-#define ADR_LPS25HB_2 0x5C
-#define ADR_LPS25HB_1 0x5D
-#define ADR_VCNL4040_OR_MCP9600 0x60
+#define ADR_CCS811 0x5B //Alternates: 0x5A
+#define ADR_LPS25HB 0x5D //Alternates: 0x5C
+#define ADR_VCNL4040 0x60
 #define ADR_SCD30 0x61
-#define ADR_MCP9600_1 0x67 //0x60 to 0x67
+#define ADR_MCP9600 0x60 //0x60 to 0x67
 #define ADR_MULTIPLEXER 0x70 //0x70 to 0x77
 #define ADR_SHTC3 0x70
-#define ADR_BME280_2 0x76
 #define ADR_MS5637 0x76
 //#define ADR_MS8607 0x76 //Pressure portion of the MS8607 sensor. We'll catch the 0x40 first
-#define ADR_BME280_1 0x77
+#define ADR_BME280 0x77 //Alternates: 0x76
 
 //Given an address, returns the device type if it responds as we would expect
+//Does not test for multiplexers. See testMuxDevice for dedicated mux testing.
 deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumber)
 {
   switch (i2cAddress)
@@ -1084,13 +1082,6 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //Test for a multiplexer _before_ testing for SHTC3
-        
-        //Confidence: Medium - Write/Read/Clear to 0x00/Read
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
-
         //Confidence: High - 16 bit ID check with CRC
         SHTC3 sensor;
         if (sensor.begin(qwiic) == 0) //Wire port. Device returns 0 upon success.
@@ -1101,68 +1092,36 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00/Read
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x72:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00/Read
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x73:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00/Read
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x74:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00/Read
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x75:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00/Read
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x76:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Test for a multiplexer _before_ testing for MS5637 / BME280
-        
-        //Confidence: Medium - Write/Read/Clear to 0x00/Read
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
 
         //Confidence: High - does CRC on internal EEPROM read
         MS5637 sensor;
@@ -1186,11 +1145,6 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
         
-        //Confidence: Medium - Write/Read/Clear to 0x00/Read
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
-
         BME280 sensor;
         sensor.setI2CAddress(i2cAddress);
         if (sensor.beginI2C(qwiic) == true) //Wire port
