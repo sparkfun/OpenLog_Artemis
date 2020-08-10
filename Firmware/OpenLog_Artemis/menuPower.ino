@@ -3,26 +3,26 @@ void menuPower()
   while (1)
   {
     Serial.println();
-    Serial.println("Menu: Configure Power Options");
+    Serial.println(F("Menu: Configure Power Options"));
 
-    Serial.print("1) Turn off Qwiic bus power between readings (>2s): ");
-    if (settings.powerDownQwiicBusBetweenReads == true) Serial.println("Yes");
-    else Serial.println("No");
+    Serial.print(F("1) Turn off Qwiic bus power between readings (>2s): "));
+    if (settings.powerDownQwiicBusBetweenReads == true) Serial.println(F("Yes"));
+    else Serial.println(F("No"));
 
-    Serial.print("2) Use pin 32 to Stop Logging: ");
-    if (settings.useGPIO32ForStopLogging == true) Serial.println("Yes");
-    else Serial.println("No");
+    Serial.print(F("2) Use pin 32 to Stop Logging: "));
+    if (settings.useGPIO32ForStopLogging == true) Serial.println(F("Yes"));
+    else Serial.println(F("No"));
 
 #if(HARDWARE_VERSION_MAJOR >= 1)
-    Serial.print("3) Power LED During Sleep: ");
-    if (settings.enablePwrLedDuringSleep == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("3) Power LED During Sleep: "));
+    if (settings.enablePwrLedDuringSleep == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("4) VIN measurement correction factor: ");
+    Serial.print(F("4) VIN measurement correction factor: "));
     Serial.printf("%.3f\n", settings.vinCorrectionFactor);
 #endif
 
-    Serial.println("x) Exit");
+    Serial.println(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -57,13 +57,13 @@ void menuPower()
     }
     else if (incoming == '4')
     {
-      Serial.println("Please measure the voltage on the MEAS pin and enter it here:");
+      Serial.println(F("Please measure the voltage on the MEAS pin and enter it here:"));
       float tempCF = (float)getDouble(menuTimeout); //Timeout after x seconds
       int div3 = analogRead(PIN_VIN_MONITOR); //Read VIN across a 1/3 resistor divider
       float vin = (float)div3 * 3.0 * 2.0 / 16384.0; //Convert 1/3 VIN to VIN (14-bit resolution)
       tempCF = tempCF / vin; //Calculate the new correction factor
       if ((tempCF < 1.0) || (tempCF > 2.0))
-        Serial.println("Error: Correction factor out of range");
+        Serial.println(F("Error: Correction factor out of range"));
       else
         settings.vinCorrectionFactor = tempCF;
     }

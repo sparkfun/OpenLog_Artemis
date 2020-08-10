@@ -4,36 +4,36 @@ void menuAnalogLogging()
   {
 #if(HARDWARE_VERSION_MAJOR == 0)
     Serial.println();
-    Serial.println("Note: VIN logging is only supported on V10+ hardware. X04 will show 0.0V.");
+    Serial.println(F("Note: VIN logging is only supported on V10+ hardware. X04 will show 0.0V."));
 #endif
     Serial.println();
-    Serial.println("Menu: Configure Analog Logging");
+    Serial.println(F("Menu: Configure Analog Logging"));
 
-    Serial.print("1) Log analog pin 11 (2V Max): ");
-    if (settings.logA11 == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("1) Log analog pin 11 (2V Max): "));
+    if (settings.logA11 == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("2) Log analog pin 12 (TX) (2V Max): ");
-    if (settings.logA12 == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("2) Log analog pin 12 (TX) (2V Max): "));
+    if (settings.logA12 == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("3) Log analog pin 13 (RX) (2V Max): ");
-    if (settings.logA13 == true) Serial.println("Enabled, Serial logging disabled");
-    else Serial.println("Disabled");
+    Serial.print(F("3) Log analog pin 13 (RX) (2V Max): "));
+    if (settings.logA13 == true) Serial.println(F("Enabled, Serial logging disabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("4) Log analog pin 32 (2V Max): ");
-    if (settings.logA32 == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("4) Log analog pin 32 (2V Max): "));
+    if (settings.logA32 == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("5) Log output type: ");
-    if (settings.logAnalogVoltages == true) Serial.println("Calculated Voltage");
-    else Serial.println("Raw ADC reading");
+    Serial.print(F("5) Log output type: "));
+    if (settings.logAnalogVoltages == true) Serial.println(F("Calculated Voltage"));
+    else Serial.println(F("Raw ADC reading"));
 
-    Serial.print("6) Log VIN (battery) voltage (6V Max): ");
-    if (settings.logVIN == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("6) Log VIN (battery) voltage (6V Max): "));
+    if (settings.logVIN == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.println("x) Exit");
+    Serial.println(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 

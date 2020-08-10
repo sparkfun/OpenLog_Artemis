@@ -37,7 +37,7 @@ void getData()
     } //end if use RTC for timestamp
     else //Use GPS for timestamp
     {
-      Serial.println("Print GPS Timestamp / not yet implemented");
+      Serial.println(F("Print GPS Timestamp / not yet implemented"));
     }
   }
 
@@ -1034,6 +1034,10 @@ void setMaxI2CSpeed()
     maxSpeed = settings.qwiicBusMaxSpeed;
 
   qwiic.setClock(maxSpeed);
+  for (int i = 0; i < 100; i++) //Allow time for the speed to change
+  {
+    delay(1);
+  }  
 }
 
 //Read the VIN voltage

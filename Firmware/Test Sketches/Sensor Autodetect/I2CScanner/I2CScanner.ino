@@ -8,7 +8,9 @@ void setup()
 
   const byte PIN_QWIIC_PWR = 18;
   pinMode(PIN_QWIIC_PWR, OUTPUT);
-  digitalWrite(PIN_QWIIC_PWR, LOW); //qwiicPowerOn();
+  digitalWrite(PIN_QWIIC_PWR, HIGH); //qwiicPowerOn();
+
+  delay(1000); // Allow extra time for a u-blox module to start. It seems to need 1sec total.
 
   qwiic.begin();
   qwiic.setClock(100000);

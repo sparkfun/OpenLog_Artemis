@@ -99,7 +99,7 @@ struct struct_uBlox {
   bool logHeadingOfMotion = true;
   bool logpDOP = true;
   bool logiTOW = false;
-  int i2cSpeed = 100000; //Default to 100kHz for least number of CRC issues
+  uint32_t i2cSpeed = 100000; //Default to 100kHz for least number of CRC issues
 };
 
 #define VL53L1X_DISTANCE_MODE_SHORT 0
@@ -250,7 +250,7 @@ struct struct_settings {
   int  localUTCOffset = 0; //Default to UTC because we should
   bool printDebugMessages = false;
   bool powerDownQwiicBusBetweenReads = true; // 29 chars!
-  int  qwiicBusMaxSpeed = 100000; // 400kHz with no pull-ups can cause issues. Default to 100kHz. User can change to 400 if required.
+  uint32_t qwiicBusMaxSpeed = 100000; // 400kHz with no pull-ups can cause issues. Default to 100kHz. User can change to 400 if required.
   int  qwiicBusPowerUpDelayMs = 250;
   bool printMeasurementCount = false;
   bool enablePwrLedDuringSleep = true;

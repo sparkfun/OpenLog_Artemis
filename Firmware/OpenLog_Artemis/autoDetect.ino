@@ -257,14 +257,20 @@ bool beginQwiicDevices()
 
   if (temp == NULL)
   {
-    Serial.println("beginDevices: No devices detected");
+    Serial.println(F("beginQwiicDevices: No devices detected"));
     return (true);
   }
 
   while (temp != NULL)
   {
     openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
-
+    
+    if (settings.printDebugMessages == true)
+    {
+      Serial.printf("beginQwiicDevices: attempting to begin deviceType %s", getDeviceName(temp->deviceType));
+      Serial.printf(" at address 0x%02X using mux address 0x%02X and port number %d\r\n", temp->address, temp->muxAddress, temp->portNumber);
+    }
+    
     //Attempt to begin the device
     switch (temp->deviceType)
     {
@@ -387,11 +393,19 @@ bool beginQwiicDevices()
         }
         break;
       default:
-        Serial.printf("addDevice Device type not found: %d\n", temp->deviceType);
+        Serial.printf("beginQwiicDevices: device type not found: %d\r\n", temp->deviceType);
         break;
     }
 
-    if (temp->online == false) everythingStarted = false;
+    if (temp->online == true)
+    {
+      printDebug("beginQwiicDevices: device is online\r\n");
+    }
+    else
+    {
+      printDebug("beginQwiicDevices: device is **NOT** online\r\n");
+      everythingStarted = false;
+    }
 
     temp = temp->next;
   }
@@ -402,12 +416,14 @@ bool beginQwiicDevices()
 //Pretty print all the online devices
 void printOnlineDevice()
 {
+  int deviceCount = 0;
+
   //Step through the list
   node *temp = head;
 
   if (temp == NULL)
   {
-    Serial.println("printOnlineDevice: No devices detected");
+    Serial.println(F("printOnlineDevice: No devices detected"));
     return;
   }
 
@@ -420,6 +436,8 @@ void printOnlineDevice()
         sprintf(sensorOnlineText, "%s online at address 0x%02X\n", getDeviceName(temp->deviceType), temp->address);
       else
         sprintf(sensorOnlineText, "%s online at address 0x%02X.0x%02X.%d\n", getDeviceName(temp->deviceType), temp->address, temp->muxAddress, temp->portNumber);
+
+      deviceCount++;
     }
     else
     {
@@ -429,6 +447,9 @@ void printOnlineDevice()
 
     temp = temp->next;
   }
+
+  if (settings.printDebugMessages == true)
+    Serial.printf("Device count: %d\n", deviceCount);
 }
 
 //Given the node number, apply the node's configuration settings to the device
@@ -696,7 +717,7 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       ptr = (FunctionPointer)menuConfigure_ADS122C04;
       break;
     default:
-      Serial.println("getConfigFunctionPtr: Unknown device type");
+      Serial.println(F("getConfigFunctionPtr: Unknown device type"));
       Serial.flush();
       break;
   }
@@ -722,7 +743,12 @@ bool deviceExists(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, 
     if (temp->address == address)
       if (temp->muxAddress == 0)
         if (temp->portNumber == 0)
+        {
           if (temp->deviceType == deviceType) return (true);
+          // Use DEVICE_TOTAL_DEVICES as a special case.
+          // Return true if the device address exists on the main branch so we can avoid looking for it on mux branches.
+          if (deviceType == DEVICE_TOTAL_DEVICES) return (true);
+        }
 
     temp = temp->next;
   }
@@ -735,7 +761,7 @@ bool openConnection(uint8_t muxAddress, uint8_t portNumber)
 {
   if (head == NULL)
   {
-    Serial.println("OpenConnection Error: No devices in list");
+    Serial.println(F("OpenConnection Error: No devices in list"));
     return false;
   }
 
@@ -826,21 +852,19 @@ void swap(struct node * a, struct node * b)
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_SGP30 0x58
-#define ADR_CCS811_2 0x5A
-#define ADR_CCS811_1 0x5B
-#define ADR_LPS25HB_2 0x5C
-#define ADR_LPS25HB_1 0x5D
-#define ADR_VCNL4040_OR_MCP9600 0x60
+#define ADR_CCS811 0x5B //Alternates: 0x5A
+#define ADR_LPS25HB 0x5D //Alternates: 0x5C
+#define ADR_VCNL4040 0x60
 #define ADR_SCD30 0x61
-#define ADR_MCP9600_1 0x67 //0x60 to 0x67
+#define ADR_MCP9600 0x60 //0x60 to 0x67
 #define ADR_MULTIPLEXER 0x70 //0x70 to 0x77
 #define ADR_SHTC3 0x70
-#define ADR_BME280_2 0x76
 #define ADR_MS5637 0x76
 //#define ADR_MS8607 0x76 //Pressure portion of the MS8607 sensor. We'll catch the 0x40 first
-#define ADR_BME280_1 0x77
+#define ADR_BME280 0x77 //Alternates: 0x76
 
 //Given an address, returns the device type if it responds as we would expect
+//Does not test for multiplexers. See testMuxDevice for dedicated mux testing.
 deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumber)
 {
   switch (i2cAddress)
@@ -1062,70 +1086,43 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         SHTC3 sensor;
         if (sensor.begin(qwiic) == 0) //Wire port. Device returns 0 upon success.
           return (DEVICE_HUMIDITY_SHTC3);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x71:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x72:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x73:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x74:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x75:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
       }
       break;
     case 0x76:
       {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
+
         //Confidence: High - does CRC on internal EEPROM read
         MS5637 sensor;
         if (sensor.begin(qwiic) == true) //Wire port
@@ -1137,14 +1134,6 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor1.beginI2C(qwiic) == true) //Wire port
           return (DEVICE_PHT_BME280);
 
-        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
-        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-
-        //Confidence: Medium - Write/Read/Clear to 0x00
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
-
         //Pressure portion of the MS8607 combo sensor. We'll catch the 0x40 first
         //By the time we hit this address, MS8607 should have already been started by its first address
         //Since we don't need to harvest this address, this will cause this extra I2C address to be ignored/not added to node list, and not printed.
@@ -1155,10 +1144,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-        QWIICMUX multiplexer;
-        if (multiplexer.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_MULTIPLEXER);
-
+        
         BME280 sensor;
         sensor.setI2CAddress(i2cAddress);
         if (sensor.beginI2C(qwiic) == true) //Wire port
@@ -1177,6 +1163,93 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
   }
   Serial.printf("Known I2C address but device failed identification at address 0x%02X\n", i2cAddress);
   return DEVICE_UNKNOWN_DEVICE;
+}
+
+//Given an address, returns the device type if it responds as we would expect
+//This version is dedicated to testing muxes and uses a custom .begin to avoid the slippery mux problem
+deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumber)
+{
+  switch (i2cAddress)
+  {
+    case 0x70:
+    case 0x71:
+    case 0x72:
+    case 0x73:
+    case 0x74:
+    case 0x75:
+    case 0x76:
+    case 0x77:
+      {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
+        
+        //Confidence: Medium - Write/Read/Clear to 0x00
+        if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_MULTIPLEXER);
+      }
+      break;
+    default:
+      {
+        if (muxAddress == 0)
+          Serial.printf("Unknown device at address (0x%02X)\n", i2cAddress);
+        else
+          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\n", i2cAddress, muxAddress, portNumber);
+        return DEVICE_UNKNOWN_DEVICE;
+      }
+      break;
+  }
+  return DEVICE_UNKNOWN_DEVICE;
+}
+
+//Returns true if mux is present
+//Tests for device ack to I2C address
+//Then tests if device behaves as we expect
+//Leaves with all ports disabled
+bool multiplexerBegin(uint8_t deviceAddress, TwoWire &wirePort)
+{
+  wirePort.beginTransmission(deviceAddress);
+  if (wirePort.endTransmission() != 0)
+    return (false); //Device did not ACK
+
+  //Write to device, expect a return
+  setMuxPortState(0xA4, deviceAddress, wirePort, EXTRA_MUX_STARTUP_BYTES); //Set port register to a known value - using extra bytes to avoid the mux problem
+  uint8_t response = getMuxPortState(deviceAddress, wirePort);
+  setMuxPortState(0x00, deviceAddress, wirePort, 0); //Disable all ports - seems to work just fine without extra bytes (not sure why...)
+  if (response == 0xA4) //Make sure we got back what we expected
+  {
+    response = getMuxPortState(deviceAddress, wirePort); //Make doubly sure we got what we expected
+    if (response == 0x00)
+    {
+      return (true); //All good
+    }
+  }
+  return (false);
+}
+
+//Writes a 8-bit value to mux
+//Overwrites any other bits
+//This allows us to enable/disable multiple ports at same time
+bool setMuxPortState(uint8_t portBits, uint8_t deviceAddress, TwoWire &wirePort, int extraBytes)
+{
+  wirePort.beginTransmission(deviceAddress);
+  for (int i = 0; i < extraBytes; i++)
+  {
+    wirePort.write(0x00); // Writing these extra bytes seems key to avoiding the slippery mux problem
+  }
+  wirePort.write(portBits);
+  if (wirePort.endTransmission() != 0)
+    return (false); //Device did not ACK
+  return (true);
+}
+
+//Gets the current port state
+//Returns byte that may have multiple bits set
+uint8_t getMuxPortState(uint8_t deviceAddress, TwoWire &wirePort)
+{
+  //Read the current mux settings
+  wirePort.beginTransmission(deviceAddress);
+  wirePort.requestFrom(deviceAddress, 1);
+  return (wirePort.read());
 }
 
 //Given a device number return the string associated with that entry

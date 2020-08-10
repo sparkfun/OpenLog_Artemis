@@ -62,7 +62,7 @@
 
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 4;
+const int FIRMWARE_VERSION_MINOR = 5;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -72,7 +72,7 @@ const int FIRMWARE_VERSION_MINOR = 4;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x114
+#define OLA_IDENTIFIER 0x115
 
 #include "settings.h"
 
@@ -102,7 +102,7 @@ const byte PIN_VIN_MONITOR = 34; // VIN/3 (1M/2M - will require a correction fac
 #endif
 
 const byte PIN_POWER_LOSS = 3;
-//const byte PIN_LOGIC_DEBUG = 11;
+//const byte PIN_LOGIC_DEBUG = 11; // Useful for debugging issues like the slippery mux bug
 const byte PIN_MICROSD_POWER = 15;
 const byte PIN_QWIIC_POWER = 18;
 const byte PIN_STAT_LED = 19;
@@ -115,6 +115,10 @@ const byte BREAKOUT_PIN_RX = 13;
 const byte BREAKOUT_PIN_11 = 11;
 const byte PIN_QWIIC_SCL = 8;
 const byte PIN_QWIIC_SDA = 9;
+
+// Include this many extra bytes when starting a mux - to try and avoid the slippery mux bug
+// This should be 0 but 3 or 7 seem to work better depending on which way the wind is blowing.
+const byte EXTRA_MUX_STARTUP_BYTES = 3;
 
 enum returnStatus {
   STATUS_GETBYTE_TIMEOUT = 255,
@@ -234,6 +238,9 @@ void setup() {
 
   productionTest(); //Check if we need to go into production test mode
 
+  //pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
+  //digitalWrite(PIN_LOGIC_DEBUG, HIGH);
+
   beginSD(); //285 - 293ms
 
   enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
@@ -246,7 +253,7 @@ void setup() {
 
   if (settings.useGPIO32ForStopLogging == true)
   {
-    Serial.println("Stop Logging is enabled. Pull GPIO pin 32 to GND to stop logging.");
+    Serial.println(F("Stop Logging is enabled. Pull GPIO pin 32 to GND to stop logging."));
     pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
     attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
@@ -265,31 +272,21 @@ void setup() {
 
   beginIMU(); //61ms
 
-  if (online.microSD == true) Serial.println("SD card online");
-  else Serial.println("SD card offline");
+  if (online.microSD == true) Serial.println(F("SD card online"));
+  else Serial.println(F("SD card offline"));
 
-  if (online.dataLogging == true) Serial.println("Data logging online");
-  else Serial.println("Datalogging offline");
+  if (online.dataLogging == true) Serial.println(F("Data logging online"));
+  else Serial.println(F("Datalogging offline"));
 
-  if (online.serialLogging == true) Serial.println("Serial logging online");
-  else Serial.println("Serial logging offline");
+  if (online.serialLogging == true) Serial.println(F("Serial logging online"));
+  else Serial.println(F("Serial logging offline"));
 
-  if (online.IMU == true) Serial.println("IMU online");
-  else Serial.println("IMU offline");
+  if (online.IMU == true) Serial.println(F("IMU online"));
+  else Serial.println(F("IMU offline"));
 
-  if (settings.logMaxRate == true) Serial.println("Logging analog pins at max data rate");
+  if (settings.logMaxRate == true) Serial.println(F("Logging analog pins at max data rate"));
 
-  if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println("Logging to microSD card with no terminal output");
-
-  if ((online.microSD == false) || (online.dataLogging == false))
-  {
-    // If we're not using the SD card, everything will have happened much qwicker than usual.
-    // Allow extra time for a u-blox module to start. It seems to need 1sec total.
-    if (settings.qwiicBusPowerUpDelayMs < 1000)
-    {
-      delay(1000 - settings.qwiicBusPowerUpDelayMs);
-    }
-  }
+  if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println(F("Logging to microSD card with no terminal output"));
 
   if (detectQwiicDevices() == true) //159 - 865ms but varies based on number of devices attached
   {
@@ -299,7 +296,7 @@ void setup() {
     printOnlineDevice();
   }
   else
-    Serial.println("No Qwiic devices detected");
+    Serial.println(F("No Qwiic devices detected"));
 
   if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
 
@@ -427,9 +424,11 @@ void loop() {
       if (settings.enableSD && online.microSD)
       {
         digitalWrite(PIN_STAT_LED, HIGH);
-        if (sensorDataFile.write(outputData, strlen(outputData)) != strlen(outputData)) //Record the buffer to the card
+        uint32_t recordLength = sensorDataFile.write(outputData, strlen(outputData));
+        if (recordLength != strlen(outputData)) //Record the buffer to the card
         {
-          printDebug("*** sensorDataFile.write data length mismatch! ***\n");
+          if (settings.printDebugMessages == true)
+            Serial.printf("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\n", recordLength, strlen(outputData));
         }
 
         //Force sync every 500ms
@@ -517,7 +516,7 @@ void beginSD()
       }
       if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
       {
-        Serial.println("SD init failed (second attempt). Is card present? Formatted?");
+        Serial.println(F("SD init failed (second attempt). Is card present? Formatted?"));
         digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
         online.microSD = false;
         return;
@@ -527,7 +526,7 @@ void beginSD()
     //Change to root directory. All new file creation will be in root.
     if (sd.chdir() == false)
     {
-      Serial.println("SD change directory failed");
+      Serial.println(F("SD change directory failed"));
       online.microSD = false;
       return;
     }
@@ -597,7 +596,7 @@ void beginIMU()
       if (myICM.status != ICM_20948_Stat_Ok)
       {
         digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
-        Serial.println("ICM-20948 failed to init.");
+        Serial.println(F("ICM-20948 failed to init."));
         imuPowerOff();
         online.IMU = false;
         return;
@@ -627,7 +626,7 @@ void beginDataLogging()
     // O_WRITE - open for write
     if (sensorDataFile.open(sensorDataFileName, O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      Serial.println("Failed to create sensor data file");
+      Serial.println(F("Failed to create sensor data file"));
       online.dataLogging = false;
       return;
     }
@@ -648,7 +647,7 @@ void beginSerialLogging()
 
     if (serialDataFile.open(serialDataFileName, O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      Serial.println("Failed to create serial log file");
+      Serial.println(F("Failed to create serial log file"));
       //systemError(ERROR_FILE_OPEN);
       online.serialLogging = false;
       return;

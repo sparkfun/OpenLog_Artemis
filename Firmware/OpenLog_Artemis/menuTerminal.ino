@@ -3,22 +3,22 @@ void menuLogRate()
   while (1)
   {
     Serial.println();
-    Serial.println("Menu: Configure Terminal Output");
+    Serial.println(F("Menu: Configure Terminal Output"));
 
-    Serial.print("1) Log to microSD: ");
-    if (settings.logData == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("1) Log to microSD: "));
+    if (settings.logData == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("2) Log to Terminal: ");
-    if (settings.enableTerminalOutput == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("2) Log to Terminal: "));
+    if (settings.enableTerminalOutput == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("3) Set Serial Baud Rate: ");
+    Serial.print(F("3) Set Serial Baud Rate: "));
     Serial.print(settings.serialTerminalBaudRate);
-    Serial.println(" bps");
+    Serial.println(F(" bps"));
 
-    Serial.print("4) Set Log Rate in Hz: ");
-    if (settings.logMaxRate == true) Serial.println("Max rate enabled");
+    Serial.print(F("4) Set Log Rate in Hz: "));
+    if (settings.logMaxRate == true) Serial.println(F("Max rate enabled"));
     else
     {
       if (settings.usBetweenReadings < 1000000ULL) //Take more than one measurement per second
@@ -35,8 +35,8 @@ void menuLogRate()
       }
     }
 
-    Serial.print("5) Set Log Rate in seconds between readings: ");
-    if (settings.logMaxRate == true) Serial.println("Max rate enabled");
+    Serial.print(F("5) Set Log Rate in seconds between readings: "));
+    if (settings.logMaxRate == true) Serial.println(F("Max rate enabled"));
     else
     {
       if (settings.usBetweenReadings > 1000000ULL) //Take more than one measurement per second
@@ -51,28 +51,28 @@ void menuLogRate()
       }
     }
 
-    Serial.print("6) Enable maximum logging: ");
-    if (settings.logMaxRate == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("6) Enable maximum logging: "));
+    if (settings.logMaxRate == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("7) Output Actual Hertz: ");
-    if (settings.logHertz == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("7) Output Actual Hertz: "));
+    if (settings.logHertz == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("8) Output Column Titles: ");
-    if (settings.showHelperText == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("8) Output Column Titles: "));
+    if (settings.showHelperText == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("9) Output Measurement Count: ");
-    if (settings.printMeasurementCount == true) Serial.println("Enabled");
-    else Serial.println("Disabled");
+    Serial.print(F("9) Output Measurement Count: "));
+    if (settings.printMeasurementCount == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
-    Serial.print("10) Open New Log Files After (s): ");
+    Serial.print(F("10) Open New Log Files After (s): "));
     Serial.printf("%d", settings.openNewLogFilesAfter);
-    if (settings.openNewLogFilesAfter == 0) Serial.println(" (Never)");
+    if (settings.openNewLogFilesAfter == 0) Serial.println(F(" (Never)"));
     else Serial.println();
 
-    Serial.println("x) Exit");
+    Serial.println(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
 
@@ -82,11 +82,11 @@ void menuLogRate()
       settings.enableTerminalOutput ^= 1;
     else if (incoming == 3)
     {
-      Serial.print("Enter baud rate (1200 to 500000): ");
+      Serial.print(F("Enter baud rate (1200 to 500000): "));
       int newBaud = getNumber(menuTimeout); //Timeout after x seconds
       if (newBaud < 1200 || newBaud > 500000)
       {
-        Serial.println("Error: baud rate out of range");
+        Serial.println(F("Error: baud rate out of range"));
       }
       else
       {
@@ -107,7 +107,7 @@ void menuLogRate()
       Serial.printf("How many readings per second would you like to log? (Current max is %d): ", maxOutputRate);
       int tempRPS = getNumber(menuTimeout); //Timeout after x seconds
       if (tempRPS < 1 || tempRPS > maxOutputRate)
-        Serial.println("Error: Readings Per Second out of range");
+        Serial.println(F("Error: Readings Per Second out of range"));
       else
         settings.usBetweenReadings = 1000000ULL / ((uint64_t)tempRPS);
     }
@@ -116,10 +116,10 @@ void menuLogRate()
       //The Deep Sleep duration is set with am_hal_stimer_compare_delta_set, the duration of which is uint32_t
       //So the maximum we can sleep for is 2^32 / 32768 = 131072 seconds = 36.4 hours
       //Let's limit this to 36 hours = 129600 seconds
-      Serial.println("How many seconds would you like to sleep between readings? (1 to 129,600):");
+      Serial.println(F("How many seconds would you like to sleep between readings? (1 to 129,600):"));
       int64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
       if (tempSeconds < 1 || tempSeconds > 129600)
-        Serial.println("Error: Readings Per Second out of range");
+        Serial.println(F("Error: Readings Per Second out of range"));
       else
         settings.usBetweenReadings = 1000000ULL * ((uint64_t)tempSeconds);
     }
@@ -127,7 +127,7 @@ void menuLogRate()
     {
       if (settings.logMaxRate == false)
       {
-        Serial.println("\n\rEnabling max log rate will disable the IMU, \nterminal output, and serial logging. \nOnly analog values will be logged. Continue?");
+        Serial.println(F("\n\rEnabling max log rate will disable the IMU, \nterminal output, and serial logging. \nOnly analog values will be logged. Continue?"));
         byte bContinue = getByteChoice(menuTimeout);
         if (bContinue == 'y')
         {
@@ -143,7 +143,7 @@ void menuLogRate()
           recordSystemSettings(); //Normally recorded upon all menu exits
           recordDeviceSettingsToFile(); //Normally recorded upon all menu exits
 
-          Serial.println("OpenLog Artemis configured for max data rate. Please reset. Freezing...");
+          Serial.println(F("OpenLog Artemis configured for max data rate. Please reset. Freezing..."));
           while (1);
         }
       }
@@ -162,9 +162,9 @@ void menuLogRate()
     else if (incoming == 10)
     {
 #if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Allow 1s for Version 0-5
-      Serial.println("Open new log files after this many seconds (0 or 10 to 129,600) (0 = Never):");
+      Serial.println(F("Open new log files after this many seconds (0 or 10 to 129,600) (0 = Never):"));
 #else
-      Serial.println("Open new log files after this many seconds (0 to 129,600) (0 = Never):");
+      Serial.println(F("Open new log files after this many seconds (0 to 129,600) (0 = Never):"));
 #endif
       int64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
 #if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Allow 1s for Version 0-5
@@ -172,7 +172,7 @@ void menuLogRate()
 #else
       if ((tempSeconds < 0) || (tempSeconds > 129600ULL))
 #endif
-        Serial.println("Error: Invalid interval");
+        Serial.println(F("Error: Invalid interval"));
       else
         settings.openNewLogFilesAfter = tempSeconds;
     }
