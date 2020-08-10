@@ -416,6 +416,8 @@ bool beginQwiicDevices()
 //Pretty print all the online devices
 void printOnlineDevice()
 {
+  int deviceCount = 0;
+
   //Step through the list
   node *temp = head;
 
@@ -434,6 +436,8 @@ void printOnlineDevice()
         sprintf(sensorOnlineText, "%s online at address 0x%02X\n", getDeviceName(temp->deviceType), temp->address);
       else
         sprintf(sensorOnlineText, "%s online at address 0x%02X.0x%02X.%d\n", getDeviceName(temp->deviceType), temp->address, temp->muxAddress, temp->portNumber);
+
+      deviceCount++;
     }
     else
     {
@@ -443,6 +447,9 @@ void printOnlineDevice()
 
     temp = temp->next;
   }
+
+  if (settings.printDebugMessages == true)
+    Serial.printf("Device count: %d\n", deviceCount);
 }
 
 //Given the node number, apply the node's configuration settings to the device
