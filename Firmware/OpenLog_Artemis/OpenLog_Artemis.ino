@@ -424,9 +424,11 @@ void loop() {
       if (settings.enableSD && online.microSD)
       {
         digitalWrite(PIN_STAT_LED, HIGH);
-        if (sensorDataFile.write(outputData, strlen(outputData)) != strlen(outputData)) //Record the buffer to the card
+        uint32_t recordLength = sensorDataFile.write(outputData, strlen(outputData));
+        if (recordLength != strlen(outputData)) //Record the buffer to the card
         {
-          printDebug("*** sensorDataFile.write data length mismatch! ***\n");
+          if (settings.printDebugMessages == true)
+            Serial.printf("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\n", recordLength, strlen(outputData));
         }
 
         //Force sync every 500ms
