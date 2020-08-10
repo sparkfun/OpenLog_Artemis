@@ -40,21 +40,13 @@ bool detectQwiicDevices()
   //24k causes a bunch of unknown devices to be falsely detected.
   //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
-  if ((online.microSD == false) || (online.dataLogging == false))
+  //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
+  //Give sensors, specifically those with a low I2C address, time to turn on
+  if (millis() < 1000)
   {
     // If we're not using the SD card, everything will have happened much qwicker than usual.
     // Allow extra time for a u-blox module to start. It seems to need 1sec total.
-    if (settings.qwiicBusPowerUpDelayMs < 1000)
-    {
-      delay(1000 - settings.qwiicBusPowerUpDelayMs);
-    }
-  }
-  
-  //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
-  //Give sensors, specifically those with a low I2C address, time to turn on
-  for (int i = 0; i < 100; i++) //SCD30 required >50ms to turn on.
-  {
-    delay(1);
+    delay(1000 - millis());
   }
 
   //Do a prelim scan to see if anything is out there
@@ -156,7 +148,7 @@ bool detectQwiicDevices()
       printDebug("detectQwiicDevices: scanning the ports of multiplexer " + (String)muxNumber);
       printDebug("\r\n");
 
-      for (int portNumber = 0 ; portNumber < 8 ; portNumber++) //Assumes we are using a mux with 8 ports max 
+      for (int portNumber = 0 ; portNumber < 8 ; portNumber++) //Assumes we are using a mux with 8 ports max
       {
         myMux->setPort(portNumber);
         foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
@@ -180,7 +172,7 @@ bool detectQwiicDevices()
             if (qwiic.endTransmission() == 0)
             {
               somethingDetected = true;
-  
+
               deviceType_e foundType = testDevice(address, muxNode->address, portNumber);
               if (foundType != DEVICE_UNKNOWN_DEVICE)
               {
@@ -193,7 +185,7 @@ bool detectQwiicDevices()
                   if (foundType == DEVICE_MULTIPLEXER) // Let's ignore multiplexers hanging off multiplexer ports. (Multiple muxes on the main branch is OK.)
                   {
                     if (settings.printDebugMessages == true)
-                      Serial.printf("detectQwiicDevices: ignoring %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);                    
+                      Serial.printf("detectQwiicDevices: ignoring %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
                   }
                   else
                   {
@@ -213,9 +205,9 @@ bool detectQwiicDevices()
           } //End not on main branch check
         } //End I2C scanning
       } //End mux port stepping
-      
+
       myMux->setPortState(0); // Disable all ports on this mux now that we have finished scanning them.
-      
+
     } //End mux stepping
   } //End mux > 0
 
