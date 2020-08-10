@@ -40,6 +40,16 @@ bool detectQwiicDevices()
   //24k causes a bunch of unknown devices to be falsely detected.
   //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
+  if ((online.microSD == false) || (online.dataLogging == false))
+  {
+    // If we're not using the SD card, everything will have happened much qwicker than usual.
+    // Allow extra time for a u-blox module to start. It seems to need 1sec total.
+    if (settings.qwiicBusPowerUpDelayMs < 1000)
+    {
+      delay(1000 - settings.qwiicBusPowerUpDelayMs);
+    }
+  }
+  
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
   for (int i = 0; i < 100; i++) //SCD30 required >50ms to turn on.

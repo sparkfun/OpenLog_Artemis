@@ -288,16 +288,6 @@ void setup() {
 
   if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println(F("Logging to microSD card with no terminal output"));
 
-  if ((online.microSD == false) || (online.dataLogging == false))
-  {
-    // If we're not using the SD card, everything will have happened much qwicker than usual.
-    // Allow extra time for a u-blox module to start. It seems to need 1sec total.
-    if (settings.qwiicBusPowerUpDelayMs < 1000)
-    {
-      delay(1000 - settings.qwiicBusPowerUpDelayMs);
-    }
-  }
-
   if (detectQwiicDevices() == true) //159 - 865ms but varies based on number of devices attached
   {
     beginQwiicDevices(); //Begin() each device in the node list
