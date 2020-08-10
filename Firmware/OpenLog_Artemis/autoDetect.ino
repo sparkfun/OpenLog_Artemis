@@ -1244,7 +1244,6 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
       }
       break;
   }
-  Serial.printf("Known I2C address but device failed identification at address 0x%02X\n", i2cAddress);
   return DEVICE_UNKNOWN_DEVICE;
 }
 
