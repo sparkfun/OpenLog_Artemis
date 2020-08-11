@@ -5960,7 +5960,7 @@ high temperature heat resistance.
 <attribute name="VALUE" x="19.177" y="12.954" size="0.6096" layer="27" font="vector" ratio="20" rot="R180" align="top-center"/>
 </element>
 <element name="U8" library="SparkFun-IC-Microcontroller" package="ARTEMIS_FP" value="ARTEMIS_MODULE" x="15.24" y="25.4" smashed="yes" rot="R90">
-<attribute name="PROD_ID" value="SUB-14479" x="15.24" y="25.4" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="PROD_ID" value="SUB-14402" x="15.24" y="25.4" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="C31" library="SparkFun-Capacitors" package="0402-TIGHT" value="0.1uF" x="19.05" y="17.399" smashed="yes">
 <attribute name="NAME" x="19.177" y="16.256" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>
