@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.6.0">
+<eagle version="9.5.2">
 <drawing>
 <settings>
 <setting alwaysvectorfont="yes"/>
@@ -10,8 +10,8 @@
 <grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="yes" altdistance="0.005" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
-<layer number="2" name="Vertical" color="1" fill="3" visible="yes" active="yes"/>
-<layer number="15" name="Horz" color="4" fill="6" visible="yes" active="yes"/>
+<layer number="2" name="Vertical" color="1" fill="3" visible="no" active="yes"/>
+<layer number="15" name="Horz" color="4" fill="6" visible="no" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
 <layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
@@ -21,8 +21,8 @@
 <layer number="22" name="bPlace" color="14" fill="1" visible="yes" active="yes"/>
 <layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
-<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="no" active="yes"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="no" active="yes"/>
 <layer number="27" name="tValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="28" name="bValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="yes"/>
@@ -41,13 +41,13 @@
 <layer number="42" name="bRestrict" color="1" fill="10" visible="no" active="yes"/>
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="yes"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
-<layer number="45" name="Holes" color="7" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
 <layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="50" name="dxf" color="7" fill="1" visible="no" active="yes"/>
-<layer number="51" name="tDocu" color="6" fill="1" visible="no" active="yes"/>
+<layer number="51" name="tDocu" color="6" fill="1" visible="yes" active="yes"/>
 <layer number="52" name="bDocu" color="7" fill="1" visible="no" active="yes"/>
 <layer number="91" name="Nets" color="2" fill="1" visible="no" active="no"/>
 <layer number="92" name="Busses" color="1" fill="1" visible="no" active="no"/>
@@ -6260,10 +6260,10 @@ high temperature heat resistance.
 <attribute name="PROD_ID" value="DIO-14072" x="23.876" y="20.32" size="1.778" layer="27" font="vector" ratio="15" display="off"/>
 <attribute name="VALUE" x="23.876" y="19.558" size="0.6096" layer="27" font="vector" ratio="20" align="top-center"/>
 </element>
-<element name="R1" library="SparkFun-Resistors" package="0402-TIGHT" value="1k" x="25.908" y="19.812" smashed="yes" rot="R270">
+<element name="R1" library="SparkFun-Resistors" package="0402-TIGHT" value="2.2k" x="25.908" y="19.812" smashed="yes" rot="R270">
 <attribute name="NAME" x="25.581" y="18.415" size="0.6096" layer="25" font="vector" ratio="20" rot="R270" align="bottom-center"/>
-<attribute name="PROD_ID" value="RES-14342" x="25.908" y="19.812" size="1.778" layer="27" font="vector" ratio="15" rot="R270" display="off"/>
-<attribute name="VALUE" x="25.346" y="19.812" size="0.6096" layer="27" font="vector" ratio="20" rot="R270" align="top-center"/>
+<attribute name="PROD_ID" value="RES-14341" x="25.908" y="19.812" size="1.778" layer="27" font="vector" ratio="15" rot="R270" display="off"/>
+<attribute name="VALUE" value="2.2k" x="25.346" y="19.812" size="0.6096" layer="27" font="vector" ratio="20" rot="R270" align="top-center"/>
 </element>
 <element name="U1" library="SparkFun-IC-Power" package="SOT23-3" value="3.0V Supervisor" x="22.987" y="28.321" smashed="yes" rot="R270">
 <attribute name="NAME" x="22.86" y="28.067" size="0.6096" layer="25" font="vector" ratio="20" align="bottom-center"/>

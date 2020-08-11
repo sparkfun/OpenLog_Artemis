@@ -26358,7 +26358,7 @@ Battery Characteristics:
 <part name="J5" library="SparkFun-Connectors" deviceset="USB_C" device="_4-LAYER_PADS"/>
 <part name="BT1" library="SparkFun-Batteries" deviceset="ML414H_IV01E_BATTERY" device="" value="ML414H"/>
 <part name="D3" library="SparkFun-DiscreteSemi" deviceset="DIODE-SCHOTTKY" device="-BAT60A" value="3A/10V/280mV"/>
-<part name="R1" library="SparkFun-Resistors" deviceset="1KOHM" device="-0402T-1/16W-1%" value="1k"/>
+<part name="R1" library="SparkFun-Resistors" deviceset="2.2KOHM" device="-0402T-1/16W-1%" value="2.2k"/>
 <part name="GND7" library="SparkFun-PowerSymbols" deviceset="GND" device=""/>
 <part name="SUPPLY3" library="SparkFun-PowerSymbols" deviceset="3.3V" device=""/>
 <part name="SUPPLY6" library="SparkFun-PowerSymbols" deviceset="VCC_1" device=""/>
@@ -26454,8 +26454,7 @@ Also software controlled</text>
 <text x="33.02" y="137.16" size="1.778" layer="97" font="vector" rot="R90">300uA Leakage</text>
 <text x="12.7" y="139.7" size="1.778" layer="97" font="vector" rot="R90">0.65uA Leakage
 0.3V drop at 10mA</text>
-<text x="25.4" y="119.38" size="1.778" layer="97" font="vector">~20 minute charge time</text>
-<text x="25.4" y="121.92" size="1.778" layer="97" font="vector">1mAhr Capacity</text>
+<text x="25.4" y="124.46" size="1.778" layer="97" font="vector">1mAhr Capacity</text>
 <wire x1="297.18" y1="210.82" x2="388.62" y2="210.82" width="0.2032" layer="97" style="longdash"/>
 <wire x1="388.62" y1="210.82" x2="388.62" y2="144.78" width="0.2032" layer="97" style="longdash"/>
 <wire x1="388.62" y1="144.78" x2="317.5" y2="144.78" width="0.2032" layer="97" style="longdash"/>
