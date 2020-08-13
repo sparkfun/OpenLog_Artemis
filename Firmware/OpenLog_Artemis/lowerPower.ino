@@ -3,7 +3,7 @@
 //This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
 //With leakage across the 3.3V protection diode, it's approx 3.00uA.
 void powerDown()
-{ 
+{
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
@@ -54,17 +54,17 @@ void powerDown()
   for (int x = 0; x < 50; x++)
   {
     if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-      //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
-      (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-      (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-      (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+        //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+        (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
     {
       am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
     }
   }
 
   //powerLEDOff();
-  
+
   //Make sure PIN_POWER_LOSS is configured as an input for the WDT
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
 
@@ -117,7 +117,7 @@ void goToSleep()
     sysTicksToSleep = msToSleep / 1000L; // Do the division first for long intervals (to avoid an overflow)
     sysTicksToSleep = sysTicksToSleep * 32768L; // Now do the multiply
   }
-  
+
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
@@ -127,7 +127,7 @@ void goToSleep()
     detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
     pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
   }
-  
+
   //Save files before going to sleep
   if (online.dataLogging == true)
   {
@@ -169,10 +169,10 @@ void goToSleep()
   for (int x = 0; x < 50; x++)
   {
     if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-      //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
-      (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-      (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-      (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+        //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+        (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
     {
       am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
     }
@@ -186,7 +186,7 @@ void goToSleep()
 #if((HARDWARE_VERSION_MAJOR == 0) && (HARDWARE_VERSION_MINOR == 5))
   // For high speed logging tests on x04:
   microSDPowerOff();
-#else  
+#else
   microSDPowerOff();
 #endif
 
@@ -225,21 +225,21 @@ void goToSleep()
 #endif
   {
     sysTicksToSleep -= sysTicksAwake;
-  
+
     //Setup interrupt to trigger when the number of ms have elapsed
     am_hal_stimer_compare_delta_set(6, sysTicksToSleep);
-  
+
     //We use counter/timer 6 to cause us to wake up from sleep but 0 to 7 are available
     //CT 7 is used for Software Serial. All CTs are used for Servo.
     am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);  //Clear CT6
     am_hal_stimer_int_enable(AM_HAL_STIMER_INT_COMPAREG); //Enable C/T G=6
-  
+
     //Enable the timer interrupt in the NVIC.
     NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
-  
+
     //Deep Sleep
     am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
-  
+
     //Turn off interrupt
     NVIC_DisableIRQ(STIMER_CMPR6_IRQn);
     am_hal_stimer_int_disable(AM_HAL_STIMER_INT_COMPAREG); //Disable C/T G=6
@@ -295,7 +295,7 @@ void wakeFromSleep()
   beginSD(); //285 - 293ms
 
   enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
-    
+
   beginQwiic(); //Power up Qwiic bus
   long powerStartTime = millis();
 
@@ -328,7 +328,7 @@ void wakeFromSleep()
 void stopLogging(void)
 {
   detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
-  
+
   //Save files before going to sleep
   if (online.dataLogging == true)
   {
@@ -340,7 +340,7 @@ void stopLogging(void)
     serialDataFile.sync();
     serialDataFile.close();
   }
-  
+
   Serial.print(F("Logging is stopped. Please reset OpenLog Artemis and open a terminal at "));
   Serial.print((String)settings.serialTerminalBaudRate);
   Serial.println(F("bps..."));
@@ -403,15 +403,15 @@ void powerLEDOn()
 {
 #if(HARDWARE_VERSION_MAJOR >= 1)
   pinMode(PIN_PWR_LED, OUTPUT);
-  digitalWrite(PIN_PWR_LED, HIGH); // Turn the Power LED on  
-#endif  
+  digitalWrite(PIN_PWR_LED, HIGH); // Turn the Power LED on
+#endif
 }
 void powerLEDOff()
 {
 #if(HARDWARE_VERSION_MAJOR >= 1)
   pinMode(PIN_PWR_LED, OUTPUT);
   digitalWrite(PIN_PWR_LED, LOW); // Turn the Power LED off
-#endif  
+#endif
 }
 
 //Returns the number of milliseconds according to the RTC
@@ -434,43 +434,43 @@ uint64_t rtcMillis()
 //Returns the day of year
 //https://gist.github.com/jrleeman/3b7c10712112e49d8607
 int calculateDayOfYear(int day, int month, int year)
-{  
-  // Given a day, month, and year (4 digit), returns 
+{
+  // Given a day, month, and year (4 digit), returns
   // the day of year. Errors return 999.
-  
-  int daysInMonth[] = {31,28,31,30,31,30,31,31,30,31,30,31};
-  
+
+  int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
   // Verify we got a 4-digit year
   if (year < 1000) {
     return 999;
   }
-  
+
   // Check if it is a leap year, this is confusing business
   // See: https://support.microsoft.com/en-us/kb/214019
-  if (year%4  == 0) {
-    if (year%100 != 0) {
+  if (year % 4  == 0) {
+    if (year % 100 != 0) {
       daysInMonth[1] = 29;
     }
     else {
-      if (year%400 == 0) {
+      if (year % 400 == 0) {
         daysInMonth[1] = 29;
       }
     }
-   }
+  }
 
   // Make sure we are on a valid day of the month
-  if (day < 1) 
+  if (day < 1)
   {
     return 999;
-  } else if (day > daysInMonth[month-1]) {
+  } else if (day > daysInMonth[month - 1]) {
     return 999;
   }
-  
+
   int doy = 0;
   for (int i = 0; i < month - 1; i++) {
     doy += daysInMonth[i];
   }
-  
+
   doy += day;
   return doy;
 }
