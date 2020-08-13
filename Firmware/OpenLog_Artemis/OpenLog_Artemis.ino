@@ -62,7 +62,7 @@
 
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 5;
+const int FIRMWARE_VERSION_MINOR = 6;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
