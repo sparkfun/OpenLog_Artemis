@@ -40,6 +40,8 @@ bool detectQwiicDevices()
   //24k causes a bunch of unknown devices to be falsely detected.
   //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
+  delay(settings.qwiicBusPowerUpDelayMs); // Give the qwiic bus time to power up
+
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
   if (millis() < 1000)

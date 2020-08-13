@@ -241,6 +241,8 @@ void setup() {
   //pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
   //digitalWrite(PIN_LOGIC_DEBUG, HIGH);
 
+  beginQwiic();
+
   beginSD(); //285 - 293ms
 
   enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
@@ -259,9 +261,6 @@ void setup() {
     attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
     stopLoggingSeen = false; // Make sure the flag is clear
   }
-
-  beginQwiic();
-  delay(settings.qwiicBusPowerUpDelayMs); // Give the qwiic bus time to power up
 
   analogReadResolution(14); //Increase from default of 10
 
