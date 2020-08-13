@@ -44,11 +44,11 @@ bool detectQwiicDevices()
 
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
-  if (millis() < 1000)
+  if (millis() - qwiicPowerOnTime < 1000)
   {
     // If we're not using the SD card, everything will have happened much qwicker than usual.
     // Allow extra time for a u-blox module to start. It seems to need 1sec total.
-    delay(1000 - millis());
+    delay(1000 + qwiicPowerOnTime - millis());
   }
 
   //Do a prelim scan to see if anything is out there
