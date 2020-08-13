@@ -257,7 +257,7 @@ bool beginQwiicDevices()
 
   if (temp == NULL)
   {
-    Serial.println(F("beginQwiicDevices: No devices detected"));
+    printDebug(F("beginQwiicDevices: No devices detected"));
     return (true);
   }
 
@@ -423,7 +423,7 @@ void printOnlineDevice()
 
   if (temp == NULL)
   {
-    Serial.println(F("printOnlineDevice: No devices detected"));
+    printDebug(F("printOnlineDevice: No devices detected"));
     return;
   }
 
