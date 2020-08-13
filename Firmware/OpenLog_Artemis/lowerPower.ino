@@ -360,6 +360,8 @@ void qwiicPowerOn()
 #elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
   digitalWrite(PIN_QWIIC_POWER, HIGH);
 #endif
+
+  qwiicPowerOnTime = millis(); //Record this time so we wait enough time before detecting certain sensors
 }
 void qwiicPowerOff()
 {
