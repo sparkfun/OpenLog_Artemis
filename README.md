@@ -72,7 +72,7 @@ Documentation
 
 * **[UPGRADE.md](UPGRADE.md)** - contains full instructions on how to upgrade the firmware on the OLA using the [Artemis Firmware Upload GUI](https://github.com/sparkfun/Artemis-Firmware-Upload-GUI)
 * **[Installing an Arduino Library Guide](https://learn.sparkfun.com/tutorials/installing-an-arduino-library)** - OLA includes a large number of libraries that will need to be installed before compiling will work.
-* **Hookup Guide** - Coming soon!
+* **[Hookup Guide](https://learn.sparkfun.com/tutorials/openlog-artemis-hookup-guide)** - Basic hookup guide for the OLA.
 
 License Information
 -------------------
