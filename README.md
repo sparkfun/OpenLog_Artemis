@@ -20,22 +20,27 @@ OpenLog Artemis is highly configurable over an easy to use serial interface. Sim
 
 The OpenLog Artemis automatically scans, detects, configures, and logs various Qwiic sensors plugged into the board (no soldering required!). Currently, auto-detection is supported on the following Qwiic products:
 
-* uBlox GPS Modules (Lat/Long, Altitude, Velocity, SIV, Time, Date) - [ZED-F9P](https://www.sparkfun.com/products/15136), [SAM-M8Q](https://www.sparkfun.com/products/15193), [ZOE-M8Q](https://www.sparkfun.com/products/15193), [NEO-M9N](https://www.sparkfun.com/products/15712), [NEO-M8P-2](https://www.sparkfun.com/products/15005)
+* uBlox GPS Modules (Lat/Long, Altitude, Velocity, SIV, Time, Date):
+  * [ZED-F9P](https://www.sparkfun.com/products/15136) 1cm High Precision GPS
+  * [NEO-M8P-2](https://www.sparkfun.com/products/15005) 2.5cm High Precision GPS
+  * [SAM-M8Q](https://www.sparkfun.com/products/15210) 1.5m 72 Channel GPS
+  * [ZOE-M8Q](https://www.sparkfun.com/products/15193) 1.5m Compact GPS
+  * [NEO-M9N](https://www.sparkfun.com/products/15712) 1.5m GPS
 * [MCP9600 Thermocouple Amplifier](https://www.sparkfun.com/products/16294)
 * [NAU7802 Load Cell Amplifier](https://www.sparkfun.com/products/15242)
 * [LPS25HB Barometric Pressure Sensor](https://www.sparkfun.com/products/14767)
 * [BME280 Humidity and Barometric Pressure Sensor](https://www.sparkfun.com/products/15440)
 * [MS5637 Barometric Pressure Sensor](https://www.sparkfun.com/products/14688)
+* [MS8607 Pressure Humidity Temperature Sensor](https://www.sparkfun.com/products/16298)
 * [TMP117 High Precision Temperature Sensor](https://www.sparkfun.com/products/15805)
+* [AHT20 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16618)
+* [SHTC3 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16467)
 * [CCS811 Air Quality Sensor](https://www.sparkfun.com/products/14348)
 * [SGP30 Air Quality Sensor](https://www.sparkfun.com/products/16531)
 * [SCD30 CO<sub>2</sub> and Air Quality Sensor](https://www.sparkfun.com/products/15112)
 * [VEML6075 UV Sensor](https://www.sparkfun.com/products/15089)
 * [VCNL4040 Proximity Sensor](https://www.sparkfun.com/products/15177)
 * [VL53L1X LIDAR Distance Sensor](https://www.sparkfun.com/products/14722)
-* [MS8607 Pressure Humidity Temperature Sensor](https://www.sparkfun.com/products/16298)
-* [AHT20 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16618)
-* [SHTC3 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16467)
 * [ADS122C04 ADC PT100 Sensor](https://www.sparkfun.com/products/16770)
 * [Qwiic Mux](https://www.sparkfun.com/products/16784) allowing for the chaining of up to 64 unique buses!
 * More boards are being added all the time!
