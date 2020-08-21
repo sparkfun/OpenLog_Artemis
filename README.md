@@ -1,9 +1,16 @@
 SparkFun OpenLog Artemis
 ===========================================================
 
-[![SparkFun OpenLog Artemis](https://cdn.sparkfun.com//assets/parts/1/4/4/8/0/15846-OpenLog_Artemis-01.jpg)](https://www.sparkfun.com/products/15846)
-
-[*SparkFun OpenLog Artemis (SPX-15846)*](https://www.sparkfun.com/products/15846)
+<table class="table table-hover table-striped table-bordered">
+  <tr align="center">
+   <td><a href="https://www.sparkfun.com/products/16832"><img src="https://cdn.sparkfun.com//assets/parts/1/5/7/5/3/16832-SparkFun_OpenLog_Artemis-02a.jpg"></a></td>
+   <td><a href="https://www.sparkfun.com/products/15846"><img src="https://cdn.sparkfun.com//assets/parts/1/4/4/8/0/15846-OpenLog_Artemis-04.jpg"></a></td>
+  </tr>
+  <tr align="center">
+    <td><a href="https://www.sparkfun.com/products/16832">SparkFun OpenLog Artemis (DEV-16832)</a></td>
+    <td><a href="https://www.sparkfun.com/products/15846">SparkX OpenLog Artemis (SPX-15846)</a></td>
+  </tr>
+</table>
 
 The OpenLog Artemis is an open source datalogger that comes preprogrammed to automatically log IMU, GPS, serial data, and various pressure, humidity, and distance sensors. All without writing a single line of code! OLA automatically detects, configures, and logs Qwiic sensors. OLA is designed for users who just need to capture a bunch of data to a CSV and get back to their larger project.
 
@@ -31,7 +38,7 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [SHTC3 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16467)
 * More boards are being added all the time!
 
-Very low power logging is supported. OpenLog Artemis can be configured to take readings at 500 times a second, or as slow as 1 reading every 24 hours. You choose! When there is more than 2 seconds between readings OLA will automatically power down itself and the sensors on the bus resulting in a sleep current of approximately 250uA. This means a normal [2Ah battery](https://www.sparkfun.com/products/13855) will enable logging for more than 300 days! OpenLog Artemis has built-in LiPo charging set at 450mA/hr.
+Very low power logging is supported. OpenLog Artemis can be configured to take readings at 500 times a second, or as slow as 1 reading every 24 hours. You choose! When there is more than 2 seconds between readings OLA will automatically power down itself and the sensors on the bus resulting in a sleep current of approximately 18uA. This means a normal [2Ah battery](https://www.sparkfun.com/products/13855) will enable logging for more than 4,000 days! OpenLog Artemis has built-in LiPo charging set at 450mA/hr.
 
 New features are constantly being added so we’ve released an easy to use firmware upgrade tool. No need to install Arduino or a bunch of libraries, simply open the [Artemis Firmware Upload GUI](https://github.com/sparkfun/Artemis-Firmware-Upload-GUI), load the latest OLA firmware, and add features to OpenLog Artemis as they come out! Full instructions are available in [UPGRADE.md](UPGRADE.md).
 
