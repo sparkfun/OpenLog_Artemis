@@ -28,7 +28,7 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [MS5637 Barometric Pressure Sensor](https://www.sparkfun.com/products/14688)
 * [TMP117 High Precision Temperature Sensor](https://www.sparkfun.com/products/15805)
 * [CCS811 Air Quality Sensor](https://www.sparkfun.com/products/14348)
-* [SGP30 Air Quality Sensor](https://www.sparkfun.com/products/14813)
+* [SGP30 Air Quality Sensor](https://www.sparkfun.com/products/16531)
 * [SCD30 CO<sub>2</sub> and Air Quality Sensor](https://www.sparkfun.com/products/15112)
 * [VEML6075 UV Sensor](https://www.sparkfun.com/products/15089)
 * [VCNL4040 Proximity Sensor](https://www.sparkfun.com/products/15177)
@@ -36,6 +36,8 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [MS8607 Pressure Humidity Temperature Sensor](https://www.sparkfun.com/products/16298)
 * [AHT20 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16618)
 * [SHTC3 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16467)
+* [ADS122C04 ADC PT100 Sensor](https://www.sparkfun.com/products/16770)
+* [Qwiic Mux](https://www.sparkfun.com/products/16784) allowing for the chaining of up to 64 unique buses!
 * More boards are being added all the time!
 
 Very low power logging is supported. OpenLog Artemis can be configured to take readings at 500 times a second, or as slow as 1 reading every 24 hours. You choose! When there is more than 2 seconds between readings OLA will automatically power down itself and the sensors on the bus resulting in a sleep current of approximately 18uA. This means a normal [2Ah battery](https://www.sparkfun.com/products/13855) will enable logging for more than 4,000 days! OpenLog Artemis has built-in LiPo charging set at 450mA/hr.
