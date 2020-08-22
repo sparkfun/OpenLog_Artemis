@@ -55,11 +55,6 @@ The OLA can be tailored to many different applications and we will be releasing 
 * [Geophone Logger firmware](https://github.com/sparkfun/OpenLog_Artemis_Geophone_Logger) for logging seismic activity
 * [GNSS Logger](https://github.com/sparkfun/OpenLog_Artemis_GNSS_Logger) for advanced data logging with the uBlox F9 and M9 GNSS modules including support for RAWX and RELPOSNED
 
-Artemis Firmware Uploader GUI
-Latest OLA firmware: v1.5
-Geophone Logger firmware for logging seismic activity
-GNSS Logger for advanced data logging with the uBlox F9 and M9 GNSS modules including support for RAWX and RELPOSNED
-
 Repository Contents
 -------------------
 
