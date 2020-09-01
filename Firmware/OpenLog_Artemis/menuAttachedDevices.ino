@@ -124,7 +124,7 @@ bool detectQwiicDevices()
           if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
           {
             if (settings.printDebugMessages == true)
-              Serial.printf("detectQwiicDevices: added %s at address 0x%02X\n", getDeviceName(foundType), address);
+              Serial.printf("detectQwiicDevices: added %s at address 0x%02X\r\n", getDeviceName(foundType), address);
           }
         }
         if (foundType == DEVICE_PHT_MS8607)
@@ -187,14 +187,14 @@ bool detectQwiicDevices()
                   if (foundType == DEVICE_MULTIPLEXER) // Let's ignore multiplexers hanging off multiplexer ports. (Multiple muxes on the main branch is OK.)
                   {
                     if (settings.printDebugMessages == true)
-                      Serial.printf("detectQwiicDevices: ignoring %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+                      Serial.printf("detectQwiicDevices: ignoring %s at address 0x%02X.0x%02X.%d\r\n", getDeviceName(foundType), address, muxNode->address, portNumber);
                   }
                   else
                   {
                     if (addDevice(foundType, address, muxNode->address, portNumber) == true) //Record this device, with mux port specifics.
                     {
                       if (settings.printDebugMessages == true)
-                        Serial.printf("detectQwiicDevices: added %s at address 0x%02X.0x%02X.%d\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+                        Serial.printf("detectQwiicDevices: added %s at address 0x%02X.0x%02X.%d\r\n", getDeviceName(foundType), address, muxNode->address, portNumber);
                     }
                   }
                 }
@@ -257,61 +257,61 @@ void menuAttachedDevices()
         switch (temp->deviceType)
         {
           case DEVICE_MULTIPLEXER:
-            //Serial.printf("%s Multiplexer %s\n", strDeviceMenu, strAddress);
+            //Serial.printf("%s Multiplexer %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_LOADCELL_NAU7802:
-            Serial.printf("%s NAU7802 Weight Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s NAU7802 Weight Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_DISTANCE_VL53L1X:
-            Serial.printf("%s VL53L1X Distance Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s VL53L1X Distance Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_GPS_UBLOX:
-            Serial.printf("%s u-blox GPS Receiver %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s u-blox GPS Receiver %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PROXIMITY_VCNL4040:
-            Serial.printf("%s VCNL4040 Proximity Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s VCNL4040 Proximity Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_TEMPERATURE_TMP117:
-            Serial.printf("%s TMP117 High Precision Temperature Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s TMP117 High Precision Temperature Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PRESSURE_MS5637:
-            Serial.printf("%s MS5637 Pressure Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s MS5637 Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PRESSURE_LPS25HB:
-            Serial.printf("%s LPS25HB Pressure Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s LPS25HB Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PHT_BME280:
-            Serial.printf("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_UV_VEML6075:
-            Serial.printf("%s VEML6075 UV Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s VEML6075 UV Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_VOC_CCS811:
-            Serial.printf("%s CCS811 tVOC and CO2 Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s CCS811 tVOC and CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_VOC_SGP30:
-            Serial.printf("%s SGP30 tVOC and CO2 Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s SGP30 tVOC and CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_CO2_SCD30:
-            Serial.printf("%s SCD30 CO2 Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s SCD30 CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PHT_MS8607:
-            Serial.printf("%s MS8607 Pressure/Humidity/Temp (PHT) Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s MS8607 Pressure/Humidity/Temp (PHT) Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_TEMPERATURE_MCP9600:
-            Serial.printf("%s MCP9600 Thermocouple Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s MCP9600 Thermocouple Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_HUMIDITY_AHT20:
-            Serial.printf("%s AHT20 Humidity Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s AHT20 Humidity Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_HUMIDITY_SHTC3:
-            Serial.printf("%s SHTC3 Humidity Sensor %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s SHTC3 Humidity Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_ADC_ADS122C04:
-            Serial.printf("%s ADS122C04 ADC (Qwiic PT100) %s\n", strDeviceMenu, strAddress);
+            Serial.printf("%s ADS122C04 ADC (Qwiic PT100) %s\r\n", strDeviceMenu, strAddress);
             break;
           default:
-            Serial.printf("Unknown device type %d in menuAttachedDevices\n", temp->deviceType);
+            Serial.printf("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
             break;
         }
       }
@@ -319,7 +319,7 @@ void menuAttachedDevices()
       temp = temp->next;
     }
 
-    Serial.printf("%d) Configure Qwiic Settings\n", availableDevices++ + 1);
+    Serial.printf("%d) Configure Qwiic Settings\r\n", availableDevices++ + 1);
 
     Serial.println(F("x) Exit"));
 
@@ -359,9 +359,9 @@ void menuConfigure_QwiicBus()
     if (settings.powerDownQwiicBusBetweenReads == true) Serial.println(F("Yes"));
     else Serial.println(F("No"));
 
-    Serial.printf("2) Set Max Qwiic Bus Speed: %d Hz\n", settings.qwiicBusMaxSpeed);
+    Serial.printf("2) Set Max Qwiic Bus Speed: %d Hz\r\n", settings.qwiicBusMaxSpeed);
 
-    Serial.printf("3) Set Qwiic bus power up delay: %d ms\n", settings.qwiicBusPowerUpDelayMs);
+    Serial.printf("3) Set Qwiic bus power up delay: %d ms\r\n", settings.qwiicBusPowerUpDelayMs);
 
     Serial.print(F("4) Qwiic bus pull-ups (internal to the Artemis): "));
     if (settings.qwiicBusPullUps == 1)
@@ -469,9 +469,9 @@ void menuConfigure_VL53L1X(void *configPtr)
         Serial.print(F("Long"));
       Serial.println();
 
-      Serial.printf("6) Set Intermeasurement Period: %d ms\n", sensorSetting->intermeasurementPeriod);
-      Serial.printf("7) Set Offset: %d mm\n", sensorSetting->offset);
-      Serial.printf("8) Set Cross Talk (counts per second): %d cps\n", sensorSetting->crosstalk);
+      Serial.printf("6) Set Intermeasurement Period: %d ms\r\n", sensorSetting->intermeasurementPeriod);
+      Serial.printf("7) Set Offset: %d mm\r\n", sensorSetting->offset);
+      Serial.printf("8) Set Cross Talk (counts per second): %d cps\r\n", sensorSetting->crosstalk);
     }
     Serial.println(F("x) Exit"));
 
@@ -751,12 +751,12 @@ void menuConfigure_NAU7802(void *configPtr)
     if (sensorConfig->log == true)
     {
       Serial.println(F("2) Calibrate Scale"));
-      Serial.printf("\tScale calibration factor: %f\n", sensorConfig->calibrationFactor);
-      Serial.printf("\tScale zero offset: %d\n", sensorConfig->zeroOffset);
-      Serial.printf("\tWeight currently on scale: %f\n", sensor->getWeight());
+      Serial.printf("\tScale calibration factor: %f\r\n", sensorConfig->calibrationFactor);
+      Serial.printf("\tScale zero offset: %d\r\n", sensorConfig->zeroOffset);
+      Serial.printf("\tWeight currently on scale: %f\r\n", sensor->getWeight());
 
-      Serial.printf("3) Number of decimal places: %d\n", sensorConfig->decimalPlaces);
-      Serial.printf("4) Average number of readings to take per weight read: %d\n", sensorConfig->averageAmount);
+      Serial.printf("3) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
+      Serial.printf("4) Average number of readings to take per weight read: %d\r\n", sensorConfig->averageAmount);
     }
 
     Serial.println(F("x) Exit"));
@@ -904,7 +904,7 @@ void menuConfigure_uBlox(void *configPtr)
       if (sensorSetting->logiTOW == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.printf("14) Set I2C Interface Speed (u-blox modules have pullups built in. Remove *all* I2C pullups to achieve 400kHz): %d\n", sensorSetting->i2cSpeed);
+      Serial.printf("14) Set I2C Interface Speed (u-blox modules have pullups built in. Remove *all* I2C pullups to achieve 400kHz): %d\r\n", sensorSetting->i2cSpeed);
     }
     Serial.println(F("x) Exit"));
 
@@ -1090,11 +1090,11 @@ void menuConfigure_VCNL4040(void *configPtr)
       if (sensorSetting->logAmbientLight == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.printf("4) Set LED Current: %d\n", sensorSetting->LEDCurrent);
-      Serial.printf("5) Set IR Duty Cycle: %d\n", sensorSetting->IRDutyCycle);
-      Serial.printf("6) Set Proximity Integration Time: %d\n", sensorSetting->proximityIntegrationTime);
-      Serial.printf("7) Set Ambient Integration Time: %d\n", sensorSetting->ambientIntegrationTime);
-      Serial.printf("8) Set Resolution (bits): %d\n", sensorSetting->resolution);
+      Serial.printf("4) Set LED Current: %d\r\n", sensorSetting->LEDCurrent);
+      Serial.printf("5) Set IR Duty Cycle: %d\r\n", sensorSetting->IRDutyCycle);
+      Serial.printf("6) Set Proximity Integration Time: %d\r\n", sensorSetting->proximityIntegrationTime);
+      Serial.printf("7) Set Ambient Integration Time: %d\r\n", sensorSetting->ambientIntegrationTime);
+      Serial.printf("8) Set Resolution (bits): %d\r\n", sensorSetting->resolution);
     }
     Serial.println(F("x) Exit"));
 
@@ -1418,10 +1418,10 @@ void menuConfigure_SCD30(void *configPtr)
       if (sensorSetting->logTemperature == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.printf("5) Set Measurement Interval: %d\n", sensorSetting->measurementInterval);
-      Serial.printf("6) Set Altitude Compensation: %d\n", sensorSetting->altitudeCompensation);
-      Serial.printf("7) Set Ambient Pressure: %d\n", sensorSetting->ambientPressure);
-      Serial.printf("8) Set Temperature Offset: %d\n", sensorSetting->temperatureOffset);
+      Serial.printf("5) Set Measurement Interval: %d\r\n", sensorSetting->measurementInterval);
+      Serial.printf("6) Set Altitude Compensation: %d\r\n", sensorSetting->altitudeCompensation);
+      Serial.printf("7) Set Ambient Pressure: %d\r\n", sensorSetting->ambientPressure);
+      Serial.printf("8) Set Temperature Offset: %d\r\n", sensorSetting->temperatureOffset);
     }
     Serial.println(F("x) Exit"));
 

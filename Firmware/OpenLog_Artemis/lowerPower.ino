@@ -205,7 +205,7 @@ void goToSleep()
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE);         //Turn off CACHE
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K);    //Turn off everything but lower 512k
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k
+  //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k (Leaving 64K powered up probably isn't enough - "Global variables use 70496 bytes of dynamic memory.")
   //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
 
   //Use the lower power 32kHz clock. Use it to run CT6 as well.
@@ -319,7 +319,7 @@ void wakeFromSleep()
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
 
-  //Serial.printf("Wake up time: %.02f ms\n", (micros() - startTime) / 1000.0);
+  //Serial.printf("Wake up time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
 
   //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
   takeReading = true;

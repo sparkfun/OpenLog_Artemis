@@ -58,8 +58,8 @@
   (done) Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an analog input
   (done) Allow the user to set the default qwiic bus pull-up resistance (u-blox will still use 'none')
   Add support for low battery monitoring using VIN
+  (done) Output sensor data via the serial TX pin
 */
-
 
 const int FIRMWARE_VERSION_MAJOR = 1;
 const int FIRMWARE_VERSION_MINOR = 6;
@@ -72,7 +72,7 @@ const int FIRMWARE_VERSION_MINOR = 6;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x115
+#define OLA_IDENTIFIER 0x116
 
 #include "settings.h"
 
@@ -216,7 +216,7 @@ unsigned long qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allo
 
 //unsigned long startTime = 0;
 
-#define DUMP(varname) {Serial.printf("%s: %llu\n", #varname, varname);}
+#define DUMP(varname) {Serial.printf("%s: %llu\r\n", #varname, varname);}
 
 void setup() {
   //If 3.3V rail drops below 3V, system will power down and maintain RTC
@@ -252,7 +252,7 @@ void setup() {
 
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
-  Serial.printf("Artemis OpenLog v%d.%d\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
+  Serial.printf("Artemis OpenLog v%d.%d\r\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
 
   if (settings.useGPIO32ForStopLogging == true)
   {
@@ -269,6 +269,7 @@ void setup() {
   lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
 
   beginSerialLogging(); //20 - 99ms
+  beginSerialOutput(); // Begin serial data output on the TX pin
 
   beginIMU(); //61ms
 
@@ -306,7 +307,7 @@ void setup() {
   else
     measurementStartTime = millis();
 
-  //Serial.printf("Setup time: %.02f ms\n", (micros() - startTime) / 1000.0);
+  //Serial.printf("Setup time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
 
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
 
@@ -358,7 +359,7 @@ void loop() {
 
         newSerialData = false;
         lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
-        printDebug("Total chars received: " + (String)charsReceived);
+        printDebug("Total chars received: " + (String)charsReceived + "\r\n");
       }
     }
   }
@@ -405,8 +406,8 @@ void loop() {
         }
       }
 
-      //printDebug("ms since last write: " + (String)tempTime + "\n");
-      printDebug("\n" + (String)tempTime + "\n");
+      //printDebug("ms since last write: " + (String)tempTime + "\r\n");
+      printDebug((String)tempTime + "\r\n");
 
       lastWriteTime = rtcMillis();
     }
@@ -418,6 +419,10 @@ void loop() {
     if (settings.enableTerminalOutput == true)
       Serial.print(outputData); //Print to terminal
 
+    //Output to TX pin
+    if ((settings.outputSerial == true) && (online.serialOutput == true))
+      SerialLog.print(outputData); //Print to TX pin
+
     //Record to SD
     if (settings.logData == true)
     {
@@ -428,7 +433,7 @@ void loop() {
         if (recordLength != strlen(outputData)) //Record the buffer to the card
         {
           if (settings.printDebugMessages == true)
-            Serial.printf("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\n", recordLength, strlen(outputData));
+            Serial.printf("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\r\n", recordLength, strlen(outputData));
         }
 
         //Force sync every 500ms
@@ -509,7 +514,7 @@ void beginSD()
 
     if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
     {
-      printDebug("SD init failed (first attempt). Trying again...\n");
+      printDebug("SD init failed (first attempt). Trying again...\r\n");
       for (int i = 0; i < 250; i++) //Give SD more time to power up, then try again
       {
         delay(1);
@@ -661,6 +666,17 @@ void beginSerialLogging()
   }
   else
     online.serialLogging = false;
+}
+
+void beginSerialOutput()
+{
+  if (settings.outputSerial == true)
+  {
+    SerialLog.begin(settings.serialLogBaudRate); // (Re)start the serial port
+    online.serialOutput = true;
+  }
+  else
+    online.serialOutput = false;
 }
 
 //Called once number of milliseconds has passed

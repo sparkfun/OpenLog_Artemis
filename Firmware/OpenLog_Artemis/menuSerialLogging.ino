@@ -8,12 +8,16 @@ void menuSerialLogging()
     Serial.println(F("Menu: Configure Serial Logging"));
 
     Serial.print(F("1) Log serial data: "));
-    if (settings.logSerial == true) Serial.println(F("Enabled, analog on pin 13 disabled"));
+    if (settings.logSerial == true) Serial.println(F("Enabled, analog logging on RX/A13 pin disabled"));
     else Serial.println(F("Disabled"));
 
-    if (settings.logSerial == true)
+    Serial.print(F("2) Output serial data: "));
+    if (settings.outputSerial == true) Serial.println(F("Enabled, analog logging on TX/A12 pin disabled"));
+    else Serial.println(F("Disabled"));
+
+    if ((settings.logSerial == true) || (settings.outputSerial == true))
     {
-      Serial.print(F("2) Set serial baud rate: "));
+      Serial.print(F("3) Set serial baud rate: "));
       Serial.print(settings.serialLogBaudRate);
       Serial.println(F(" bps"));
     }
@@ -29,7 +33,7 @@ void menuSerialLogging()
         settings.logSerial = true;
         settings.logA13 = false; //Disable analog readings on RX pin
 
-        beginSerialLogging(); //Start up port and log file
+        beginSerialLogging(); //Start up port and log file (this will set online.serialLogging to true if successful)
       }
       else
       {
@@ -43,9 +47,24 @@ void menuSerialLogging()
         settings.logSerial = false;
       }
     }
-    else if(settings.logSerial == true)
+    else if (incoming == '2')
     {
-      if (incoming == '2')
+      if (settings.outputSerial == false)
+      {
+        settings.outputSerial = true;
+        settings.logA12 = false; //Disable analog readings on TX pin
+
+        beginSerialOutput(); //Start up port (this will set online.serialOutput to true if successful)
+      }
+      else
+      {
+        online.serialOutput = false;
+        settings.outputSerial = false;
+      }
+    }
+    else if((settings.logSerial == true) || (settings.outputSerial == true))
+    {
+      if (incoming == '3')
       {
         Serial.print(F("Enter baud rate (1200 to 500000): "));
         int newBaud = getNumber(menuTimeout); //Timeout after x seconds

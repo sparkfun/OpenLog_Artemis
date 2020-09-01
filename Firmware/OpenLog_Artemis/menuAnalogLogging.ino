@@ -14,7 +14,7 @@ void menuAnalogLogging()
     else Serial.println(F("Disabled"));
 
     Serial.print(F("2) Log analog pin 12 (TX) (2V Max): "));
-    if (settings.logA12 == true) Serial.println(F("Enabled"));
+    if (settings.logA12 == true) Serial.println(F("Enabled, Serial output disabled"));
     else Serial.println(F("Disabled"));
 
     Serial.print(F("3) Log analog pin 13 (RX) (2V Max): "));
@@ -40,12 +40,22 @@ void menuAnalogLogging()
     if (incoming == '1')
       settings.logA11 ^= 1;
     else if (incoming == '2')
-      settings.logA12 ^= 1;
+    {
+      if(settings.logA12 == false)
+      {
+        online.serialOutput = false; // Disable serial output
+        settings.outputSerial = false;
+        settings.logA12 = true;
+      }
+      else
+        settings.logA12 = false;
+    }
     else if (incoming == '3')
     {
       if(settings.logA13 == false)
       {
-        settings.logSerial = false; //Disable serial logging
+        online.serialLogging = false; //Disable serial logging
+        settings.logSerial = false;
         settings.logA13 = true;
       }
       else

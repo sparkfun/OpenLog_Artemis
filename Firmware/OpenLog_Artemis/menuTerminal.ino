@@ -25,13 +25,13 @@ void menuLogRate()
       {
         //Display Integer Hertz
         int logRate = (int)(1000000ULL / settings.usBetweenReadings);
-        Serial.printf("%d\n", logRate);
+        Serial.printf("%d\r\n", logRate);
       }
       else
       {
         //Display fractional Hertz
         uint32_t logRateSeconds = (uint32_t)(settings.usBetweenReadings / 1000000ULL);
-        Serial.printf("%.06lf\n", 1.0 / logRateSeconds);
+        Serial.printf("%.06lf\r\n", 1.0 / logRateSeconds);
       }
     }
 
@@ -42,12 +42,12 @@ void menuLogRate()
       if (settings.usBetweenReadings > 1000000ULL) //Take more than one measurement per second
       {
         uint32_t interval = (uint32_t)(settings.usBetweenReadings / 1000000ULL);
-        Serial.printf("%d\n", interval);
+        Serial.printf("%d\r\n", interval);
       }
       else
       {
         float rate = (float)(settings.usBetweenReadings / 1000000.0);
-        Serial.printf("%.06f\n", rate);
+        Serial.printf("%.06f\r\n", rate);
       }
     }
 
@@ -93,7 +93,7 @@ void menuLogRate()
         settings.serialTerminalBaudRate = newBaud;
         recordSystemSettings(); //Normally recorded upon all menu exits
         recordDeviceSettingsToFile(); //Normally recorded upon all menu exits
-        Serial.printf("Terminal now set at %dbps. Please reset device and open terminal at new baud rate. Freezing...\n", settings.serialTerminalBaudRate);
+        Serial.printf("Terminal now set at %dbps. Please reset device and open terminal at new baud rate. Freezing...\r\n", settings.serialTerminalBaudRate);
         while (1);
       }
     }
@@ -127,7 +127,7 @@ void menuLogRate()
     {
       if (settings.logMaxRate == false)
       {
-        Serial.println(F("\n\rEnabling max log rate will disable the IMU, \nterminal output, and serial logging. \nOnly analog values will be logged. Continue?"));
+        Serial.println(F("\r\nEnabling max log rate will disable the IMU, \r\nterminal output, and serial logging. \r\nOnly analog values will be logged. Continue?"));
         byte bContinue = getByteChoice(menuTimeout);
         if (bContinue == 'y')
         {

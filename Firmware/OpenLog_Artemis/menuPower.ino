@@ -19,7 +19,7 @@ void menuPower()
     else Serial.println(F("Disabled"));
 
     Serial.print(F("4) VIN measurement correction factor: "));
-    Serial.printf("%.3f\n", settings.vinCorrectionFactor);
+    Serial.printf("%.3f\r\n", settings.vinCorrectionFactor);
 #endif
 
     Serial.println(F("x) Exit"));

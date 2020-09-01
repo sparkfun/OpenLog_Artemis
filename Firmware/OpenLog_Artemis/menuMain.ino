@@ -60,7 +60,7 @@ void menuMain()
       menuDebug();
     else if (incoming == 'r')
     {
-      Serial.println(F("\n\rResetting to factory defaults. Press 'y' to confirm:"));
+      Serial.println(F("\r\nResetting to factory defaults. Press 'y' to confirm:"));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
@@ -80,7 +80,7 @@ void menuMain()
     }
     else if (incoming == 'q')
     {
-      Serial.println(F("\n\rQuit? Press 'y' to confirm:"));
+      Serial.println(F("\r\nQuit? Press 'y' to confirm:"));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {

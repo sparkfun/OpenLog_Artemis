@@ -168,7 +168,7 @@ void getData()
     strcat(outputData, tempData);
   }
 
-  strcat(outputData, "\n");
+  strcat(outputData, "\r\n");
 
   totalCharactersPrinted += strlen(outputData);
 }
@@ -670,7 +670,7 @@ void gatherDeviceValues()
           }
           break;
         default:
-          Serial.printf("printDeviceValue unknown device type: %s\n", getDeviceName(temp->deviceType));
+          Serial.printf("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
       }
 
@@ -981,7 +981,7 @@ void printHelperText(bool terminalOnly)
           }
           break;
         default:
-          Serial.printf("\nprinterHelperText device not found: %d\n", temp->deviceType);
+          Serial.printf("\nprinterHelperText device not found: %d\r\n", temp->deviceType);
           break;
       }
     }
@@ -994,7 +994,7 @@ void printHelperText(bool terminalOnly)
   if (settings.printMeasurementCount)
     strcat(helperText, "count,");
 
-  strcat(helperText, "\n");
+  strcat(helperText, "\r\n");
 
   Serial.print(helperText);
   if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))

@@ -226,7 +226,7 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
       }
       break;
     default:
-      Serial.printf("addDevice Device type not found: %d\n", deviceType);
+      Serial.printf("addDevice Device type not found: %d\r\n", deviceType);
       break;
   }
 
@@ -433,15 +433,15 @@ void printOnlineDevice()
     if (temp->online)
     {
       if (temp->muxAddress == 0)
-        sprintf(sensorOnlineText, "%s online at address 0x%02X\n", getDeviceName(temp->deviceType), temp->address);
+        sprintf(sensorOnlineText, "%s online at address 0x%02X\r\n", getDeviceName(temp->deviceType), temp->address);
       else
-        sprintf(sensorOnlineText, "%s online at address 0x%02X.0x%02X.%d\n", getDeviceName(temp->deviceType), temp->address, temp->muxAddress, temp->portNumber);
+        sprintf(sensorOnlineText, "%s online at address 0x%02X.0x%02X.%d\r\n", getDeviceName(temp->deviceType), temp->address, temp->muxAddress, temp->portNumber);
 
       deviceCount++;
     }
     else
     {
-      sprintf(sensorOnlineText, "%s failed to respond\n", getDeviceName(temp->deviceType));
+      sprintf(sensorOnlineText, "%s failed to respond\r\n", getDeviceName(temp->deviceType));
     }
     Serial.print(sensorOnlineText);
 
@@ -449,7 +449,7 @@ void printOnlineDevice()
   }
 
   if (settings.printDebugMessages == true)
-    Serial.printf("Device count: %d\n", deviceCount);
+    Serial.printf("Device count: %d\r\n", deviceCount);
 }
 
 //Given the node number, apply the node's configuration settings to the device
@@ -633,7 +633,7 @@ void configureDevice(node * temp)
       }
       break;
     default:
-      Serial.printf("configureDevice: Unknown device type %d: %s\n", deviceType, getDeviceName((deviceType_e)deviceType));
+      Serial.printf("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
   }
 }
@@ -1154,14 +1154,14 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     default:
       {
         if (muxAddress == 0)
-          Serial.printf("Unknown device at address (0x%02X)\n", i2cAddress);
+          Serial.printf("Unknown device at address (0x%02X)\r\n", i2cAddress);
         else
-          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\n", i2cAddress, muxAddress, portNumber);
+          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
         return DEVICE_UNKNOWN_DEVICE;
       }
       break;
   }
-  Serial.printf("Known I2C address but device failed identification at address 0x%02X\n", i2cAddress);
+  Serial.printf("Known I2C address but device failed identification at address 0x%02X\r\n", i2cAddress);
   return DEVICE_UNKNOWN_DEVICE;
 }
 
@@ -1191,9 +1191,9 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
     default:
       {
         if (muxAddress == 0)
-          Serial.printf("Unknown device at address (0x%02X)\n", i2cAddress);
+          Serial.printf("Unknown device at address (0x%02X)\r\n", i2cAddress);
         else
-          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\n", i2cAddress, muxAddress, portNumber);
+          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
         return DEVICE_UNKNOWN_DEVICE;
       }
       break;
