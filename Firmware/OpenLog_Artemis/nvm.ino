@@ -143,6 +143,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("qwiicBusPullUps=" + (String)settings.qwiicBusPullUps);
     settingsFile.println("outputSerial=" + (String)settings.outputSerial);
     settingsFile.println("zmodemStartDelay=" + (String)settings.zmodemStartDelay);
+    updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
 }
@@ -584,6 +585,7 @@ void recordDeviceSettingsToFile()
       }
       temp = temp->next;
     }
+    updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
 }
@@ -624,6 +626,7 @@ bool loadDeviceSettingsFromFile()
       }
 
       //Serial.println(F("Device config file read complete"));
+      updateDataFileAccess(&settingsFile); // Update the file access time & date
       settingsFile.close();
       return (true);
     }

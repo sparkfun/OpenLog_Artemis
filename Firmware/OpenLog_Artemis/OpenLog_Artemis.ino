@@ -59,7 +59,8 @@
   (done) Allow the user to set the default qwiic bus pull-up resistance (u-blox will still use 'none')
   Add support for low battery monitoring using VIN
   (done) Output sensor data via the serial TX pin
-  Add support for SD card file transfer (ZMODEM) and delete
+  (done) Add support for SD card file transfer (ZMODEM) and delete. With thanks to: ecm-bitflipper (https://github.com/ecm-bitflipper/Arduino_ZModem)
+  (done) Add file creation and access timestamps
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -453,6 +454,7 @@ void loop() {
           if (online.dataLogging == true)
           {
             sensorDataFile.sync();
+            updateDataFileAccess(&sensorDataFile); // Update the file access time & date
             sensorDataFile.close();
             strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
             beginDataLogging(); //180ms
@@ -461,6 +463,7 @@ void loop() {
           if (online.serialLogging == true)
           {
             serialDataFile.sync();
+            updateDataFileAccess(&serialDataFile); // Update the file access time & date
             serialDataFile.close();
             strcpy(serialDataFileName, findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"));
             beginSerialLogging();
@@ -637,6 +640,8 @@ void beginDataLogging()
       return;
     }
 
+    updateDataFileCreate(&sensorDataFile); // Update the file create time & date
+
     online.dataLogging = true;
   }
   else
@@ -659,7 +664,7 @@ void beginSerialLogging()
       return;
     }
 
-    //pinMode(13, INPUT);
+    updateDataFileCreate(&serialDataFile); // Update the file create time & date
 
     SerialLog.begin(settings.serialLogBaudRate);
 
@@ -678,6 +683,22 @@ void beginSerialOutput()
   }
   else
     online.serialOutput = false;
+}
+
+void updateDataFileCreate(SdFile *dataFile)
+{
+  myRTC.getTime(); //Get the RTC time so we can use it to update the create time
+  //Update the file create time
+  dataFile->timestamp(T_CREATE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+}
+
+void updateDataFileAccess(SdFile *dataFile)
+{
+  myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
+  //Update the file access time
+  dataFile->timestamp(T_ACCESS, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+  //Update the file write time
+  dataFile->timestamp(T_WRITE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
 }
 
 //Called once number of milliseconds has passed

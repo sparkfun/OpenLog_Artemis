@@ -44,6 +44,7 @@ void menuSerialLogging()
         if (online.serialLogging)
         {
           //Shut it all down
+          updateDataFileAccess(&serialDataFile); // Update the file access time & date
           serialDataFile.close();
 
           online.serialLogging = false;

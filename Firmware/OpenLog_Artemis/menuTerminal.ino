@@ -137,7 +137,9 @@ void menuLogRate()
           settings.enableIMU = false;
 
           //Close files on SD to be sure they are recorded fully
+          updateDataFileAccess(&serialDataFile); // Update the file access time & date
           serialDataFile.close();
+          updateDataFileAccess(&sensorDataFile); // Update the file access time & date          
           sensorDataFile.close();
 
           recordSystemSettings(); //Normally recorded upon all menu exits

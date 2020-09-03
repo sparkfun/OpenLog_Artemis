@@ -132,11 +132,13 @@ void goToSleep()
   if (online.dataLogging == true)
   {
     sensorDataFile.sync();
+    updateDataFileAccess(&sensorDataFile); // Update the file access time & date
     sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
   }
   if (online.serialLogging == true)
   {
     serialDataFile.sync();
+    updateDataFileAccess(&serialDataFile); // Update the file access time & date
     serialDataFile.close();
   }
 
@@ -333,11 +335,13 @@ void stopLogging(void)
   if (online.dataLogging == true)
   {
     sensorDataFile.sync();
+    updateDataFileAccess(&sensorDataFile); // Update the file access time & date
     sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
   }
   if (online.serialLogging == true)
   {
     serialDataFile.sync();
+    updateDataFileAccess(&serialDataFile); // Update the file access time & date
     serialDataFile.close();
   }
 
