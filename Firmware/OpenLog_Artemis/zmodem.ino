@@ -5,6 +5,7 @@
 // 2020-09-02
 //  - Updated for the OLA by Paul Clark
 //  - CD, MD, RD, PWD and RZ disabled
+//  - added CAT/TYPE
 
 #define ultoa utoa
 
@@ -161,8 +162,9 @@ void sdCardHelp(void)
   DSERIALprintln(F("HELP     - Print this list of commands")); DSERIAL.flush();
   DSERIALprintln(F("DIR      - List files in current working directory - alternate LS")); DSERIAL.flush();
   DSERIALprintln(F("DEL file - Delete file - alternate RM")); DSERIAL.flush();
-  DSERIALprintln(F("SZ  file - Send file from OLA to terminal using ZModem (\"sz *\" will send all files)")); DSERIAL.flush();
+  DSERIALprintln(F("SZ  file - Send file from OLA to terminal using ZModem (\"SZ *\" will send all files)")); DSERIAL.flush();
   DSERIALprintln(F("SS  file - Send file from OLA using serial TX pin")); DSERIAL.flush();
+  DSERIALprintln(F("CAT file - Type file to this terminal - alternate TYPE")); DSERIAL.flush();
   DSERIALprintln(F("X        - Exit to OpenLog Artemis Main Menu")); DSERIAL.flush();
   DSERIALprint(F("\r\n"));
 }
@@ -294,7 +296,7 @@ void sdCardMenu(void)
         if (Filesleft > 0)
         {
           DSERIALprint(F("Starting zmodem transfer in ")); Serial.print(settings.zmodemStartDelay); DSERIALprintln(F(" seconds..."));
-          DSERIALprintln(F("(You need to start your File\\Transfer\\ZMODEM\\Receive now!)"));
+          DSERIALprintln(F("(If you are using Tera Term, you need to start your File\\Transfer\\ZMODEM\\Receive now!)"));
           delay(((int)settings.zmodemStartDelay) * 1000);
           
           sendzrqinit();
@@ -337,7 +339,7 @@ void sdCardMenu(void)
         else
         {
           DSERIALprint(F("\r\nStarting zmodem transfer in ")); Serial.print(settings.zmodemStartDelay); DSERIALprintln(F(" seconds..."));
-          DSERIALprintln(F("(You need to start your File\\Transfer\\ZMODEM\\Receive now!)"));
+          DSERIALprintln(F("(If you are using Tera Term, you need to start your File\\Transfer\\ZMODEM\\Receive now!)"));
           delay(((int)settings.zmodemStartDelay) * 1000);
             
           // Start the ZMODEM transfer
@@ -376,6 +378,28 @@ void sdCardMenu(void)
         
         fout.close();
         DSERIALprintln(F("\r\nFile sent!\r\n"));
+      }
+    }
+
+    else if (!strcmp_P(cmd, PSTR("CAT")) || !strcmp_P(cmd, PSTR("TYPE"))) // concatenate / type file to the terminal
+    {
+      if (!fout.open(param, O_READ))
+      {
+        DSERIALprintln(F("\r\nfile.open failed!\r\n"));
+      }
+      else
+      {
+        DSERIALprint(F("\r\n"));
+
+        while (fout.available())
+        {
+          char ch;
+          if (fout.read(&ch, 1) == 1) // Read a single char
+            Serial.write(ch); // Send it via SerialLog (TX pin)
+        }
+        
+        fout.close();
+        DSERIALprintln(F("\r\n"));
       }
     }
 

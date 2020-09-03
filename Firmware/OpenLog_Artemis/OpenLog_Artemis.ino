@@ -354,6 +354,7 @@ void loop() {
           digitalWrite(PIN_STAT_LED, HIGH);
           serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
           serialDataFile.sync();
+          //updateDataFileAccess(&serialDataFile); // Update the file access time & date
           digitalWrite(PIN_STAT_LED, LOW);
 
           incomingBufferSpot = 0;
@@ -443,6 +444,7 @@ void loop() {
         {
           lastDataLogSyncTime = millis();
           sensorDataFile.sync();
+          //updateDataFileAccess(&sensorDataFile); // Update the file access time & date
         }
 
         //Check if it is time to open a new log file
@@ -507,6 +509,11 @@ void beginSD()
 
   if (settings.enableSD == true)
   {
+    // For reasons I don't understand, we seem to have to wait for at least 1ms after SPI.begin before we call microSDPowerOn.
+    // If you comment the next line, the Artemis resets at microSDPowerOn when beginSD is called from wakeFromSleep...
+    // But only on one of my V10 red boards. The second one I have doesn't seem to need the delay!?
+    delay(1);
+
     microSDPowerOn();
 
     //Max power up time is 250ms: https://www.kingston.com/datasheets/SDCIT-specsheet-64gb_en.pdf
@@ -587,6 +594,7 @@ void beginIMU()
     myICM.begin(PIN_IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
     if (myICM.status != ICM_20948_Stat_Ok)
     {
+      printDebug("beginIMU: first attempt at myICM.begin failed. myICM.status = " + (String)myICM.status + "\r\n");
       //Try one more time with longer wait
 
       //Reset ICM by power cycling it
@@ -604,6 +612,7 @@ void beginIMU()
       myICM.begin(PIN_IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
       if (myICM.status != ICM_20948_Stat_Ok)
       {
+        printDebug("beginIMU: second attempt at myICM.begin failed. myICM.status = " + (String)myICM.status + "\r\n");
         digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
         Serial.println(F("ICM-20948 failed to init."));
         imuPowerOff();
@@ -612,6 +621,10 @@ void beginIMU()
       }
     }
 
+    //Give the IMU extra time to get its act together. This seems to fix the IMU-not-starting-up-cleanly-after-sleep problem...
+    //Seems to need a full 25ms. 10ms is not enough.
+    delay(25);
+    
     online.IMU = true;
   }
   else

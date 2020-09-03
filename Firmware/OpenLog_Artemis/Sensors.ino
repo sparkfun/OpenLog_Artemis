@@ -110,8 +110,12 @@ void getData()
 
   if (online.IMU)
   {
+    //printDebug("getData: online.IMU = " + (String)online.IMU + "\r\n");
+
     if (myICM.dataReady())
     {
+      //printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+      
       myICM.getAGMT(); //Update values
 
       if (settings.logIMUAccel)
@@ -135,6 +139,10 @@ void getData()
         strcat(outputData, tempData);
       }
     }
+    //else
+    //{
+    //  printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+    //}
   }
 
   //Append all external sensor data on linked list to outputData
@@ -1000,6 +1008,7 @@ void printHelperText(bool terminalOnly)
   if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
     sensorDataFile.print(helperText);
 }
+
 //If certain devices are attached, we need to reduce the I2C max speed
 void setMaxI2CSpeed()
 {

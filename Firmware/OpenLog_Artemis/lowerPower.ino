@@ -118,6 +118,10 @@ void goToSleep()
     sysTicksToSleep = sysTicksToSleep * 32768L; // Now do the multiply
   }
 
+  //printDebug("goToSleep: sysTicksToSleep = " + (String)sysTicksToSleep + "\r\n");
+
+  //printDebug("goToSleep: online.IMU = " + (String)online.IMU + "\r\n");
+
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
@@ -292,6 +296,8 @@ void wakeFromSleep()
 
   Serial.begin(settings.serialTerminalBaudRate);
 
+  printDebug("wakeFromSleep: I'm awake!\r\n");
+
   SPI.begin(); //Needed if SD is disabled
 
   beginSD(); //285 - 293ms
@@ -306,6 +312,7 @@ void wakeFromSleep()
   beginSerialLogging(); //20 - 99ms
 
   beginIMU(); //61ms
+  //printDebug("wakeFromSleep: online.IMU = " + (String)online.IMU + "\r\n");
 
   //If we powered down the Qwiic bus, then re-begin and re-configure everything
   if (settings.powerDownQwiicBusBetweenReads == true)

@@ -257,7 +257,7 @@ bool beginQwiicDevices()
 
   if (temp == NULL)
   {
-    printDebug(F("beginQwiicDevices: No devices detected"));
+    printDebug(F("beginQwiicDevices: No devices detected\r\n"));
     return (true);
   }
 
