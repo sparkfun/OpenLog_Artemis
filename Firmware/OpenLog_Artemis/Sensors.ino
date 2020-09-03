@@ -2,6 +2,7 @@
 void getData()
 {
   measurementCount++;
+  measurementTotal++;
 
   char tempData[50];
   outputData[0] = '\0'; //Clear string contents
@@ -172,7 +173,7 @@ void getData()
 
   if (settings.printMeasurementCount)
   {
-    sprintf(tempData, "%d,", measurementCount);
+    sprintf(tempData, "%d,", measurementTotal);
     strcat(outputData, tempData);
   }
 
