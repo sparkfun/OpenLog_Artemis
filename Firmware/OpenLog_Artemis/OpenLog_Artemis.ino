@@ -59,6 +59,7 @@
   (done) Allow the user to set the default qwiic bus pull-up resistance (u-blox will still use 'none')
   Add support for low battery monitoring using VIN
   (done) Output sensor data via the serial TX pin
+  Add support for SD card file transfer (ZMODEM) and delete
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;

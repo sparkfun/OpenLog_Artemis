@@ -260,6 +260,7 @@ struct struct_settings {
   bool useGPIO32ForStopLogging = false; //If true, use GPIO as a stop logging button
   uint32_t qwiicBusPullUps = 1; //Default to 1.5k I2C pull-ups - internal to the Artemis
   bool outputSerial = false; // Output the sensor data on the TX pin
+  uint8_t zmodemStartDelay = 20; // Wait for this many seconds before starting the zmodem file transfer
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

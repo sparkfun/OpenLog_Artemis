@@ -140,6 +140,9 @@ void recordSystemSettingsToFile()
     settingsFile.println("openNewLogFilesAfter=" + (String)settings.openNewLogFilesAfter);
     settingsFile.println("vinCorrectionFactor=" + (String)settings.vinCorrectionFactor);
     settingsFile.println("useGPIO32ForStopLogging=" + (String)settings.useGPIO32ForStopLogging);
+    settingsFile.println("qwiicBusPullUps=" + (String)settings.qwiicBusPullUps);
+    settingsFile.println("outputSerial=" + (String)settings.outputSerial);
+    settingsFile.println("zmodemStartDelay=" + (String)settings.zmodemStartDelay);
     settingsFile.close();
   }
 }
@@ -351,6 +354,12 @@ bool parseLine(char* str) {
     settings.vinCorrectionFactor = d;
   else if (strcmp(settingName, "useGPIO32ForStopLogging") == 0)
     settings.useGPIO32ForStopLogging = d;
+  else if (strcmp(settingName, "qwiicBusPullUps") == 0)
+    settings.qwiicBusPullUps = d;
+  else if (strcmp(settingName, "outputSerial") == 0)
+    settings.outputSerial = d;
+  else if (strcmp(settingName, "zmodemStartDelay") == 0)
+    settings.zmodemStartDelay = d;
   else
     Serial.printf("Unknown setting %s on line: %s\r\n", settingName, str);
 
