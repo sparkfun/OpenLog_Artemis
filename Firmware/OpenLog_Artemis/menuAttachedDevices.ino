@@ -40,7 +40,11 @@ bool detectQwiicDevices()
   //24k causes a bunch of unknown devices to be falsely detected.
   //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
-  delay(settings.qwiicBusPowerUpDelayMs); // Give the qwiic bus time to power up
+  for (int i = 0; i < settings.qwiicBusPowerUpDelayMs; i++) // Give the qwiic bus time to power up
+  {
+    checkBattery();
+    delay(1);
+  }
 
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
@@ -48,7 +52,12 @@ bool detectQwiicDevices()
   {
     // If we're not using the SD card, everything will have happened much qwicker than usual.
     // Allow extra time for a u-blox module to start. It seems to need 1sec total.
-    delay(1000 + qwiicPowerOnTime - millis());
+    unsigned long delayFor = 1000 + qwiicPowerOnTime - millis();
+    for (unsigned long i = 0; i < delayFor; i++)
+    {
+      checkBattery();
+      delay(1);
+    }
   }
 
   //Do a prelim scan to see if anything is out there
@@ -427,6 +436,7 @@ void menuConfigure_Multiplexer(void *configPtr)
   Serial.println(F("There are currently no configurable options for this device."));
   for (int i = 0; i < 500; i++)
   {
+    checkBattery();
     delay(1);
   }
 }
@@ -731,6 +741,7 @@ void menuConfigure_NAU7802(void *configPtr)
     Serial.println(F("NAU7802 node not found. Returning."));
     for (int i = 0; i < 1000; i++)
     {
+      checkBattery();
       delay(1);
     }
     return;
@@ -1387,6 +1398,7 @@ void menuConfigure_SCD30(void *configPtr)
     Serial.println(F("SCD30 node not found. Returning."));
     for (int i = 0; i < 1000; i++)
     {
+      checkBattery();
       delay(1);
     }
     return;

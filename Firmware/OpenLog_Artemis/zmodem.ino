@@ -234,7 +234,8 @@ void sdCardMenu(void)
         // in certain circumstances the Arduino never sees a new character.  Various forum posts
         // seem to confirm that a short delay is required when using this style of reading
         // from Serial
-        delay(20);
+        checkBattery();
+        delay(1);
       }
     }
      
@@ -305,10 +306,18 @@ void sdCardMenu(void)
             DSERIALprintln(F(" Use File\\Change directory... to change where the received files are stored.)"));
             oneTime = true;
           }
-          delay(((int)settings.zmodemStartDelay) * 1000);
+          for (int i = 0; i < (((int)settings.zmodemStartDelay) * 1000); i++)
+          {
+            checkBattery();
+            delay(1);
+          }  
           
           sendzrqinit();
-          delay(200);
+          for (int i = 0; i < 200; i++)
+          {
+            checkBattery();
+            delay(1);
+          }  
           
           //while (sd.vwd()->readDir(dir) == sizeof(*dir)) {
           while (fout.openNext(&root, O_RDONLY))
@@ -319,12 +328,24 @@ void sdCardMenu(void)
               size_t fsize = 30;
               fout.getName(fname, fsize);
               //Serial.print("fname: "); Serial.println(fname);
-              if (wcs(fname) == ERROR) {
-                delay(500);
+              if (wcs(fname) == ERROR)
+              {
+                for (int i = 0; i < 500; i++)
+                {
+                  checkBattery();
+                  delay(1);
+                }  
                 fout.close();
                 break;
               }
-              else delay(500);
+              else
+              {
+                for (int i = 0; i < 500; i++)
+                {
+                  checkBattery();
+                  delay(1);
+                }  
+              }
             }
             fout.close();
           }
@@ -354,14 +375,22 @@ void sdCardMenu(void)
             DSERIALprintln(F(" Use File\\Change directory... to change where the received files are stored.)"));
             oneTime = true;
           }
-          delay(((int)settings.zmodemStartDelay) * 1000);
+          for (int i = 0; i < (((int)settings.zmodemStartDelay) * 1000); i++)
+          {
+            checkBattery();
+            delay(1);
+          }  
             
           // Start the ZMODEM transfer
           Filesleft = 1;
           Totalleft = fout.fileSize();
           //ZSERIAL.print(F("rz\r"));
           sendzrqinit();
-          delay(200);
+          for (int i = 0; i < 200; i++)
+          {
+            checkBattery();
+            delay(1);
+          }  
           wcs(param);
           saybibi();
           fout.close();

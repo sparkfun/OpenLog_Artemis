@@ -261,6 +261,8 @@ struct struct_settings {
   uint32_t qwiicBusPullUps = 1; //Default to 1.5k I2C pull-ups - internal to the Artemis
   bool outputSerial = false; // Output the sensor data on the TX pin
   uint8_t zmodemStartDelay = 20; // Wait for this many seconds before starting the zmodem file transfer
+  bool enableLowBatteryDetection = false; // Low battery detection
+  float lowBatteryThreshold = 3.4; // Low battery voltage threshold
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

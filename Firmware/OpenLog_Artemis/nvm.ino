@@ -143,6 +143,8 @@ void recordSystemSettingsToFile()
     settingsFile.println("qwiicBusPullUps=" + (String)settings.qwiicBusPullUps);
     settingsFile.println("outputSerial=" + (String)settings.outputSerial);
     settingsFile.println("zmodemStartDelay=" + (String)settings.zmodemStartDelay);
+    settingsFile.println("enableLowBatteryDetection=" + (String)settings.enableLowBatteryDetection);
+    settingsFile.println("lowBatteryThreshold=" + (String)settings.lowBatteryThreshold);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -361,6 +363,10 @@ bool parseLine(char* str) {
     settings.outputSerial = d;
   else if (strcmp(settingName, "zmodemStartDelay") == 0)
     settings.zmodemStartDelay = d;
+  else if (strcmp(settingName, "enableLowBatteryDetection") == 0)
+    settings.enableLowBatteryDetection = d;
+  else if (strcmp(settingName, "lowBatteryThreshold") == 0)
+    settings.lowBatteryThreshold = d;
   else
     Serial.printf("Unknown setting %s on line: %s\r\n", settingName, str);
 

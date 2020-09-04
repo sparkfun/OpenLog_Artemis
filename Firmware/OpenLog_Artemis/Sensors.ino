@@ -1046,6 +1046,7 @@ void setMaxI2CSpeed()
   qwiic.setClock(maxSpeed);
   for (int i = 0; i < 100; i++) //Allow time for the speed to change
   {
+    checkBattery();
     delay(1);
   }  
 }

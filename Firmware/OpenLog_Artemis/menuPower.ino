@@ -18,7 +18,14 @@ void menuPower()
     if (settings.enablePwrLedDuringSleep == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 
-    Serial.print(F("4) VIN measurement correction factor: "));
+    Serial.print(F("4) Low Battery Voltage Detection: "));
+    if (settings.enableLowBatteryDetection == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
+
+    Serial.print(F("5) Low Battery Threshold (V): "));
+    Serial.printf("%.2f\r\n", settings.lowBatteryThreshold);
+
+    Serial.print(F("6) VIN measurement correction factor: "));
     Serial.printf("%.3f\r\n", settings.vinCorrectionFactor);
 #endif
 
@@ -56,6 +63,19 @@ void menuPower()
       settings.enablePwrLedDuringSleep ^= 1;
     }
     else if (incoming == '4')
+    {
+      settings.enableLowBatteryDetection ^= 1;
+    }
+    else if (incoming == '5')
+    {
+      Serial.println(F("Please enter the new low battery threshold:"));
+      float tempBT = (float)getDouble(menuTimeout); //Timeout after x seconds
+      if ((tempBT < 3.0) || (tempBT > 6.0))
+        Serial.println(F("Error: Threshold out of range"));
+      else
+        settings.lowBatteryThreshold = tempBT;
+    }
+    else if (incoming == '6')
     {
       Serial.println(F("Please measure the voltage on the MEAS pin and enter it here:"));
       float tempCF = (float)getDouble(menuTimeout); //Timeout after x seconds

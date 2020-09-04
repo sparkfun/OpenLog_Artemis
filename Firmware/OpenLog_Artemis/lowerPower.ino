@@ -1,3 +1,51 @@
+// Read the battery voltage
+// If it is low, increment lowBatteryReadings
+// If lowBatteryReadings exceeds lowBatteryReadingsLimit then powerDown
+void checkBattery(void)
+{
+#if(HARDWARE_VERSION_MAJOR >= 1)
+  if (settings.enableLowBatteryDetection == true)
+  {
+    float voltage = readVIN(); // Read the battery voltage
+    if (voltage < settings.lowBatteryThreshold) // Is the voltage low?
+    {
+      lowBatteryReadings++; // Increment the low battery count
+      if (lowBatteryReadings > lowBatteryReadingsLimit) // Have we exceeded the low battery count limit?
+      {
+        // Gracefully powerDown
+
+        //Save files before powerDown
+        if (online.dataLogging == true)
+        {
+          sensorDataFile.sync();
+          updateDataFileAccess(&sensorDataFile); // Update the file access time & date
+          sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
+        }
+        if (online.serialLogging == true)
+        {
+          serialDataFile.sync();
+          updateDataFileAccess(&serialDataFile); // Update the file access time & date
+          serialDataFile.close();
+        }
+      
+        delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
+
+        Serial.println(F("***      LOW BATTERY VOLTAGE DETECTED! GOING INTO POWERDOWN      ***"));
+        Serial.println(F("*** PLEASE CHANGE THE POWER SOURCE AND RESET THE OLA TO CONTINUE ***"));
+      
+        Serial.flush(); //Finish any prints
+
+        powerDown(); // power down and wait for reset
+      }
+    }
+    else
+    {
+      lowBatteryReadings = 0; // Reset the low battery count (to reject noise)
+    }    
+  }
+#endif
+}
+
 //Power down the entire system but maintain running of RTC
 //This function takes 100us to run including GPIO setting
 //This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
@@ -320,6 +368,7 @@ void wakeFromSleep()
     //Before we talk to Qwiic devices we need to allow the power rail to settle
     while (millis() - powerStartTime < settings.qwiicBusPowerUpDelayMs) //Testing, 100 too short, 200 is ok
     {
+      checkBattery();
       delay(1); //Wait
     }
 

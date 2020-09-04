@@ -54,10 +54,10 @@
   Investigate why usBetweenReadings appears to be ~0.8s longer than expected
   (done) Correct u-blox pull-ups
   (done) Add an olaIdentifier to prevent problems when using two code variants that have the same sizeOfSettings
-  Add a fix for the IMU wake-up issue identified in https://github.com/sparkfun/OpenLog_Artemis/issues/18
+  (done) Add a fix for the IMU wake-up issue identified in https://github.com/sparkfun/OpenLog_Artemis/issues/18
   (done) Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an analog input
   (done) Allow the user to set the default qwiic bus pull-up resistance (u-blox will still use 'none')
-  Add support for low battery monitoring using VIN
+  (done) Add support for low battery monitoring using VIN
   (done) Output sensor data via the serial TX pin
   (done) Add support for SD card file transfer (ZMODEM) and delete. With thanks to: ecm-bitflipper (https://github.com/ecm-bitflipper/Arduino_ZModem)
   (done) Add file creation and access timestamps
@@ -215,6 +215,8 @@ const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings be
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
 volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
 unsigned long qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allow sensors to power on, then answer autodetect
+int lowBatteryReadings = 0; // Count how many times the battery voltage has read low
+const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //unsigned long startTime = 0;
@@ -321,6 +323,9 @@ void setup() {
 }
 
 void loop() {
+  
+  checkBattery(); // Check for low battery
+
   if (Serial.available()) menuMain(); //Present user menu
 
   if (settings.logSerial == true && online.serialLogging == true)
@@ -338,6 +343,7 @@ void loop() {
           incomingBufferSpot = 0;
         }
         charsReceived++;
+        checkBattery();
       }
 
       lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
@@ -521,6 +527,7 @@ void beginSD()
     //Max current is 200mA average across 1s, peak 300mA
     for (int i = 0; i < 10; i++) //Wait
     {
+      checkBattery();
       delay(1);
     }
 
@@ -529,6 +536,7 @@ void beginSD()
       printDebug("SD init failed (first attempt). Trying again...\r\n");
       for (int i = 0; i < 250; i++) //Give SD more time to power up, then try again
       {
+        checkBattery();
         delay(1);
       }
       if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
@@ -584,11 +592,13 @@ void beginIMU()
     imuPowerOff();
     for (int i = 0; i < 10; i++) //10 is fine
     {
+      checkBattery();
       delay(1);
     }
     imuPowerOn();
     for (int i = 0; i < 25; i++) //Allow ICM to come online. Typical is 11ms. Max is 100ms. https://cdn.sparkfun.com/assets/7/f/e/c/d/DS-000189-ICM-20948-v1.3.pdf
     {
+      checkBattery();
       delay(1);
     }
 
@@ -602,11 +612,13 @@ void beginIMU()
       imuPowerOff();
       for (int i = 0; i < 10; i++) //10 is fine
       {
+        checkBattery();
         delay(1);
       }
       imuPowerOn();
       for (int i = 0; i < 100; i++) //Allow ICM to come online. Typical is 11ms. Max is 100ms.
       {
+        checkBattery();
         delay(1);
       }
 
@@ -624,7 +636,11 @@ void beginIMU()
 
     //Give the IMU extra time to get its act together. This seems to fix the IMU-not-starting-up-cleanly-after-sleep problem...
     //Seems to need a full 25ms. 10ms is not enough.
-    delay(25);
+    for (int i = 0; i < 25; i++) //Allow ICM to come online.
+    {
+      checkBattery();
+      delay(1);
+    }
     
     online.IMU = true;
   }
