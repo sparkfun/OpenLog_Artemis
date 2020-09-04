@@ -131,6 +131,8 @@ extern long Totalleft;
 
 extern SdFile fout;
 
+static bool oneTime = false; // Display the Tera Term Change Directory note only once (so it does not get on people's nerves!)
+
 // Dylan (monte_carlo_ecm, bitflipper, etc.) - This function was added because I found
 // that SERIAL_TX_BUFFER_SIZE was getting overrun at higher baud rates.  This modified
 // Serial.print() function ensures we are not overrunning the buffer by flushing if
@@ -297,6 +299,12 @@ void sdCardMenu(void)
         {
           DSERIALprint(F("Starting zmodem transfer in ")); Serial.print(settings.zmodemStartDelay); DSERIALprintln(F(" seconds..."));
           DSERIALprintln(F("(If you are using Tera Term, you need to start your File\\Transfer\\ZMODEM\\Receive now!)"));
+          if (oneTime == false)
+          {
+            DSERIALprintln(F("(Also, if you are using Tera Term, you need to change the directory to something sensible."));
+            DSERIALprintln(F(" Use File\\Change directory... to change where the received files are stored.)"));
+            oneTime = true;
+          }
           delay(((int)settings.zmodemStartDelay) * 1000);
           
           sendzrqinit();
@@ -340,6 +348,12 @@ void sdCardMenu(void)
         {
           DSERIALprint(F("\r\nStarting zmodem transfer in ")); Serial.print(settings.zmodemStartDelay); DSERIALprintln(F(" seconds..."));
           DSERIALprintln(F("(If you are using Tera Term, you need to start your File\\Transfer\\ZMODEM\\Receive now!)"));
+          if (oneTime == false)
+          {
+            DSERIALprintln(F("(Also, if you are using Tera Term, you need to change the directory to something sensible."));
+            DSERIALprintln(F(" Use File\\Change directory... to change where the received files are stored.)"));
+            oneTime = true;
+          }
           delay(((int)settings.zmodemStartDelay) * 1000);
             
           // Start the ZMODEM transfer
