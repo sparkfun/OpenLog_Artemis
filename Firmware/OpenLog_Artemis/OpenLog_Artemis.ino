@@ -215,6 +215,7 @@ const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings be
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
 volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
 unsigned long qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allow sensors to power on, then answer autodetect
+unsigned long qwiicPowerOnDelayMillis; //Wait for this many milliseconds after turning on the Qwiic power before attempting to communicate with Qwiic devices
 int lowBatteryReadings = 0; // Count how many times the battery voltage has read low
 const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -247,7 +248,8 @@ void setup() {
   //pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
   //digitalWrite(PIN_LOGIC_DEBUG, HIGH);
 
-  beginQwiic();
+  qwiicPowerOnDelayMillis = worstCaseQwiicPowerOnDelay; // Use the worst case power on delay for the Qwiic bus (worstCaseQwiicPowerOnDelay is defined in settings.h)
+  beginQwiic(); // Turn the qwiic power on as early as possible
 
   beginSD(); //285 - 293ms
 

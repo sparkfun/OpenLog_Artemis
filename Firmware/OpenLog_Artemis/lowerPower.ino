@@ -346,14 +346,13 @@ void wakeFromSleep()
 
   printDebug("wakeFromSleep: I'm awake!\r\n");
 
+  beginQwiic(); //Power up Qwiic bus as early as possible
+
   SPI.begin(); //Needed if SD is disabled
 
   beginSD(); //285 - 293ms
 
   enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
-
-  beginQwiic(); //Power up Qwiic bus
-  long powerStartTime = millis();
 
   beginDataLogging(); //180ms
 
@@ -365,14 +364,7 @@ void wakeFromSleep()
   //If we powered down the Qwiic bus, then re-begin and re-configure everything
   if (settings.powerDownQwiicBusBetweenReads == true)
   {
-    //Before we talk to Qwiic devices we need to allow the power rail to settle
-    while (millis() - powerStartTime < settings.qwiicBusPowerUpDelayMs) //Testing, 100 too short, 200 is ok
-    {
-      checkBattery();
-      delay(1); //Wait
-    }
-
-    beginQwiicDevices();
+    beginQwiicDevices(); // beginQwiicDevices will wait for the qwiic devices to power up
     //loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
@@ -406,6 +398,23 @@ void stopLogging(void)
   Serial.println(F("bps..."));
   delay(sdPowerDownDelay); // Give the SD card time to shut down
   powerDown();
+}
+
+void waitForQwiicBusPowerDelay() // Wait while the qwiic devices power up
+{
+  //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
+  //Give sensors, specifically those with a low I2C address, time to turn on
+  // If we're not using the SD card, everything will have happened much quicker than usual.
+  unsigned long qwiicPowerHasBeenOnFor = millis() - qwiicPowerOnTime;
+  if (qwiicPowerHasBeenOnFor < qwiicPowerOnDelayMillis)
+  {
+    unsigned long delayFor = qwiicPowerOnDelayMillis - qwiicPowerHasBeenOnFor;
+    for (unsigned long i = 0; i < delayFor; i++)
+    {
+      checkBattery();
+      delay(1);
+    }
+  }
 }
 
 void qwiicPowerOn()

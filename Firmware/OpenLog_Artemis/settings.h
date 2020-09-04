@@ -48,9 +48,12 @@ typedef void (*FunctionPointer)(void*); //Used for pointing to device config men
 //Begin specific sensor config structs
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+const unsigned long worstCaseQwiicPowerOnDelay = 1000; // Remember to update this if required when adding a new sensor (currently defined by the uBlox)
+const unsigned long minimumQwiicPowerOnDelay = 100; //The minimum number of milliseconds between turning on the Qwiic power and attempting to communicate with Qwiic devices
+
 struct struct_multiplexer {
-  //There is nothing about a multiplexer that we want to configure
   //Ignore certain ports at detection step?
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 //Add the new sensor settings below
@@ -58,6 +61,7 @@ struct struct_LPS25HB {
   bool log = true;
   bool logPressure = true;
   bool logTemperature = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_NAU7802 {
@@ -66,12 +70,14 @@ struct struct_NAU7802 {
   long zeroOffset = 1000; //Zero value that is found when scale is tared. Default to 1000 so we don't get inf.
   int decimalPlaces = 2;
   int averageAmount = 4; //Number of readings to take per getWeight call
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_MCP9600 {
   bool log = true;
   bool logTemperature= true;
   bool logAmbientTemperature = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_VCNL4040 {
@@ -83,6 +89,7 @@ struct struct_VCNL4040 {
   int proximityIntegrationTime = 8;
   int ambientIntegrationTime = 80;
   int resolution = 16; //Set to 16 bit output
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_uBlox {
@@ -100,6 +107,7 @@ struct struct_uBlox {
   bool logpDOP = true;
   bool logiTOW = false;
   uint32_t i2cSpeed = 100000; //Default to 100kHz for least number of CRC issues
+  unsigned long powerOnDelayMillis = 1000; // Wait for at least this many millis before communicating with this device
 };
 
 #define VL53L1X_DISTANCE_MODE_SHORT 0
@@ -113,6 +121,7 @@ struct struct_VL53L1X {
   int intermeasurementPeriod = 140; //ms
   int offset = 0; //In mm
   int crosstalk = 0;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 #define TMP117_MODE_CONTINUOUS 0
@@ -124,12 +133,14 @@ struct struct_TMP117 {
   int conversionMode = TMP117_MODE_CONTINUOUS;
   int conversionAverageMode = 0; //Setup for 15.5ms reads
   int conversionCycle = 0;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_CCS811 {
   bool log = true;
   bool logTVOC = true;
   bool logCO2 = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_BME280 {
@@ -138,6 +149,7 @@ struct struct_BME280 {
   bool logPressure = true;
   bool logAltitude = true;
   bool logTemperature = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_SGP30 {
@@ -146,6 +158,7 @@ struct struct_SGP30 {
   bool logCO2 = true;
   bool logH2 = true;
   bool logEthanol = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_VEML6075 {
@@ -153,12 +166,14 @@ struct struct_VEML6075 {
   bool logUVA = true;
   bool logUVB = true;
   bool logUVIndex = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_MS5637 {
   bool log = true;
   bool logPressure = true;
   bool logTemperature= true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_SCD30 {
@@ -170,6 +185,7 @@ struct struct_SCD30 {
   int altitudeCompensation = 0; //0 m above sea level
   int ambientPressure = 835; //mBar STP
   int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_MS8607 {
@@ -180,18 +196,21 @@ struct struct_MS8607 {
   bool enableHeater = false; // The TE examples say that get_compensated_humidity and get_dew_point will only work if the heater is OFF
   MS8607_pressure_resolution pressureResolution = MS8607_pressure_resolution_osr_8192; //17ms per reading, 0.016mbar resolution
   MS8607_humidity_resolution humidityResolution = MS8607_humidity_resolution_12b; //12-bit
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_AHT20 {
   bool log = true;
   bool logHumidity = true;
   bool logTemperature = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_SHTC3 {
   bool log = true;
   bool logHumidity = true;
   bool logTemperature = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_ADS122C04 {
@@ -206,6 +225,7 @@ struct struct_ADS122C04 {
   bool useFourWireHighTemperatureMode = false;
   bool useThreeWireHighTemperatureMode = false;
   bool useTwoWireHighTemperatureMode = false;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
@@ -251,7 +271,7 @@ struct struct_settings {
   bool printDebugMessages = false;
   bool powerDownQwiicBusBetweenReads = true; // 29 chars!
   uint32_t qwiicBusMaxSpeed = 100000; // 400kHz with no pull-ups can cause issues. Default to 100kHz. User can change to 400 if required.
-  int  qwiicBusPowerUpDelayMs = 250;
+  int  qwiicBusPowerUpDelayMs = 250; // This is the minimum delay between the qwiic bus power being turned on and communication with the qwiic devices being attempted
   bool printMeasurementCount = false;
   bool enablePwrLedDuringSleep = true;
   bool logVIN = false;
@@ -262,7 +282,7 @@ struct struct_settings {
   bool outputSerial = false; // Output the sensor data on the TX pin
   uint8_t zmodemStartDelay = 20; // Wait for this many seconds before starting the zmodem file transfer
   bool enableLowBatteryDetection = false; // Low battery detection
-  float lowBatteryThreshold = 3.4; // Low battery voltage threshold
+  float lowBatteryThreshold = 3.4; // Low battery voltage threshold (Volts)
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

@@ -252,6 +252,10 @@ bool beginQwiicDevices()
 {
   bool everythingStarted = true;
 
+  waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up - if required
+  
+  qwiicPowerOnDelayMillis = settings.qwiicBusPowerUpDelayMs; // Set qwiicPowerOnDelayMillis to the _minimum_ defined by settings.qwiicBusPowerUpDelayMs. It will be increased if required.
+
   //Step through the list
   node *temp = head;
 
@@ -277,6 +281,8 @@ bool beginQwiicDevices()
       case DEVICE_MULTIPLEXER:
         {
           QWIICMUX *tempDevice = (QWIICMUX *)temp->classPtr;
+          struct_multiplexer *nodeSetting = (struct_multiplexer *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(temp->address, qwiic); //Address, Wire port
         }
         break;
@@ -284,6 +290,7 @@ bool beginQwiicDevices()
         {
           NAU7802 *tempDevice = (NAU7802 *)temp->classPtr;
           struct_NAU7802 *nodeSetting = (struct_NAU7802 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
@@ -291,6 +298,7 @@ bool beginQwiicDevices()
         {
           SFEVL53L1X *tempDevice = (SFEVL53L1X *)temp->classPtr;
           struct_VL53L1X *nodeSetting = (struct_VL53L1X *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
             temp->online = true;
         }
@@ -300,6 +308,7 @@ bool beginQwiicDevices()
           qwiic.setPullups(0); //Disable pullups for u-blox comms.
           SFE_UBLOX_GPS *tempDevice = (SFE_UBLOX_GPS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
           qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups.
         }
@@ -308,30 +317,39 @@ bool beginQwiicDevices()
         {
           VCNL4040 *tempDevice = (VCNL4040 *)temp->classPtr;
           struct_VCNL4040 *nodeSetting = (struct_VCNL4040 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_TEMPERATURE_TMP117:
         {
           TMP117 *tempDevice = (TMP117 *)temp->classPtr;
+          struct_TMP117 *nodeSetting = (struct_TMP117 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(temp->address, qwiic); //Address, Wire port
         }
         break;
       case DEVICE_PRESSURE_LPS25HB:
         {
           LPS25HB *tempDevice = (LPS25HB *)temp->classPtr;
+          struct_LPS25HB *nodeSetting = (struct_LPS25HB *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
         }
         break;
       case DEVICE_PRESSURE_MS5637:
         {
           MS5637 *tempDevice = (MS5637 *)temp->classPtr;
+          struct_MS5637 *nodeSetting = (struct_MS5637 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_PHT_BME280:
         {
           BME280 *tempDevice = (BME280 *)temp->classPtr;
+          struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           tempDevice->setI2CAddress(temp->address);
           temp->online = tempDevice->beginI2C(qwiic); //Wire port
         }
@@ -339,48 +357,64 @@ bool beginQwiicDevices()
       case DEVICE_UV_VEML6075:
         {
           VEML6075 *tempDevice = (VEML6075 *)temp->classPtr;
+          struct_VEML6075 *nodeSetting = (struct_VEML6075 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_VOC_CCS811:
         {
           CCS811 *tempDevice = (CCS811 *)temp->classPtr;
+          struct_CCS811 *nodeSetting = (struct_CCS811 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_VOC_SGP30:
         {
           SGP30 *tempDevice = (SGP30 *)temp->classPtr;
+          struct_SGP30 *nodeSetting = (struct_SGP30 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_CO2_SCD30:
         {
           SCD30 *tempDevice = (SCD30 *)temp->classPtr;
+          struct_SCD30 *nodeSetting = (struct_SCD30 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_PHT_MS8607:
         {
           MS8607 *tempDevice = (MS8607 *)temp->classPtr;
+          struct_MS8607 *nodeSetting = (struct_MS8607 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_TEMPERATURE_MCP9600:
         {
           MCP9600 *tempDevice = (MCP9600 *)temp->classPtr;
+          struct_MCP9600 *nodeSetting = (struct_MCP9600 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(temp->address, qwiic); //Address, Wire port
         }
         break;
       case DEVICE_HUMIDITY_AHT20:
         {
           AHT20 *tempDevice = (AHT20 *)temp->classPtr;
+          struct_AHT20 *nodeSetting = (struct_AHT20 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_HUMIDITY_SHTC3:
         {
           SHTC3 *tempDevice = (SHTC3 *)temp->classPtr;
+          struct_SHTC3 *nodeSetting = (struct_SHTC3 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin(qwiic) == 0) //Wire port. Returns 0 on success.
             temp->online = true;
         }
@@ -388,6 +422,8 @@ bool beginQwiicDevices()
       case DEVICE_ADC_ADS122C04:
         {
           SFE_ADS122C04 *tempDevice = (SFE_ADS122C04 *)temp->classPtr;
+          struct_ADS122C04 *nodeSetting = (struct_ADS122C04 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
             temp->online = true;
         }

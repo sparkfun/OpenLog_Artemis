@@ -40,26 +40,8 @@ bool detectQwiicDevices()
   //24k causes a bunch of unknown devices to be falsely detected.
   //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
-  for (int i = 0; i < settings.qwiicBusPowerUpDelayMs; i++) // Give the qwiic bus time to power up
-  {
-    checkBattery();
-    delay(1);
-  }
-
-  //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
-  //Give sensors, specifically those with a low I2C address, time to turn on
-  if (millis() - qwiicPowerOnTime < 1000)
-  {
-    // If we're not using the SD card, everything will have happened much qwicker than usual.
-    // Allow extra time for a u-blox module to start. It seems to need 1sec total.
-    unsigned long delayFor = 1000 + qwiicPowerOnTime - millis();
-    for (unsigned long i = 0; i < delayFor; i++)
-    {
-      checkBattery();
-      delay(1);
-    }
-  }
-
+  waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up
+  
   //Do a prelim scan to see if anything is out there
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
@@ -370,7 +352,7 @@ void menuConfigure_QwiicBus()
 
     Serial.printf("2) Set Max Qwiic Bus Speed: %d Hz\r\n", settings.qwiicBusMaxSpeed);
 
-    Serial.printf("3) Set Qwiic bus power up delay: %d ms\r\n", settings.qwiicBusPowerUpDelayMs);
+    Serial.printf("3) Set minimum Qwiic bus power up delay: %d ms\r\n", settings.qwiicBusPowerUpDelayMs);
 
     Serial.print(F("4) Qwiic bus pull-ups (internal to the Artemis): "));
     if (settings.qwiicBusPullUps == 1)
@@ -401,9 +383,9 @@ void menuConfigure_QwiicBus()
     }
     else if (incoming == '3')
     {
-      Serial.print(F("Enter number of milliseconds to wait for Qwiic VCC to stabilize before communication: (1 to 1000): "));
+      Serial.printf("Enter the minimum number of milliseconds to wait for Qwiic VCC to stabilize before communication: (%d to 2000): ", minimumQwiicPowerOnDelay);
       int amt = getNumber(menuTimeout);
-      if (amt >= 1 && amt <= 1000)
+      if (amt >= 100 && amt <= 2000)
         settings.qwiicBusPowerUpDelayMs = amt;
       else
         Serial.println(F("Error: Out of range"));
