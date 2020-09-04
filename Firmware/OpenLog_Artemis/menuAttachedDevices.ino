@@ -383,9 +383,11 @@ void menuConfigure_QwiicBus()
     }
     else if (incoming == '3')
     {
-      Serial.printf("Enter the minimum number of milliseconds to wait for Qwiic VCC to stabilize before communication: (%d to 2000): ", minimumQwiicPowerOnDelay);
-      int amt = getNumber(menuTimeout);
-      if (amt >= 100 && amt <= 2000)
+      // 60 seconds is more than long enough for a ZED-F9P to do a warm start after being powered cycled, so that seems a sensible maximum
+      // minimumQwiicPowerOnDelay is defined in settings.h
+      Serial.printf("Enter the minimum number of milliseconds to wait for Qwiic VCC to stabilize before communication: (%d to 60000): ", minimumQwiicPowerOnDelay);
+      unsigned long amt = getNumber(menuTimeout);
+      if ((amt >= minimumQwiicPowerOnDelay) && (amt <= 60000))
         settings.qwiicBusPowerUpDelayMs = amt;
       else
         Serial.println(F("Error: Out of range"));

@@ -248,7 +248,10 @@ void setup() {
   //pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
   //digitalWrite(PIN_LOGIC_DEBUG, HIGH);
 
-  qwiicPowerOnDelayMillis = worstCaseQwiicPowerOnDelay; // Use the worst case power on delay for the Qwiic bus (worstCaseQwiicPowerOnDelay is defined in settings.h)
+  // Use the worst case power on delay for the Qwiic bus for now as we don't yet know what sensors are connected
+  // (worstCaseQwiicPowerOnDelay is defined in settings.h)
+  qwiicPowerOnDelayMillis = worstCaseQwiicPowerOnDelay;
+  
   beginQwiic(); // Turn the qwiic power on as early as possible
 
   beginSD(); //285 - 293ms
