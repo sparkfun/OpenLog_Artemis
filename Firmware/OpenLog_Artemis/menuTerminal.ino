@@ -187,17 +187,9 @@ void menuLogRate()
       settings.printMeasurementCount ^= 1;
     else if (incoming == 10)
     {
-#if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Allow 1s for Version 0-5
       Serial.println(F("Open new log files after this many seconds (0 or 10 to 129,600) (0 = Never):"));
-#else
-      Serial.println(F("Open new log files after this many seconds (0 to 129,600) (0 = Never):"));
-#endif
       int64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
-#if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Allow 1s for Version 0-5
       if ((tempSeconds < 0) || ((tempSeconds > 0) && (tempSeconds < 10)) || (tempSeconds > 129600ULL))
-#else
-      if ((tempSeconds < 0) || (tempSeconds > 129600ULL))
-#endif
         Serial.println(F("Error: Invalid interval"));
       else
         settings.openNewLogFilesAfter = tempSeconds;

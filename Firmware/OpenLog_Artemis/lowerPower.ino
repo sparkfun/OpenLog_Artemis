@@ -252,12 +252,7 @@ void goToSleep()
 
   //We can't leave these power control pins floating
   imuPowerOff();
-#if((HARDWARE_VERSION_MAJOR == 0) && (HARDWARE_VERSION_MINOR == 5))
-  // For high speed logging tests on x04:
   microSDPowerOff();
-#else
-  microSDPowerOff();
-#endif
 
   //Keep Qwiic bus powered on if user desires it
   if (settings.powerDownQwiicBusBetweenReads == true)
@@ -285,13 +280,8 @@ void goToSleep()
   uint32_t msBeenAwake = millis();
   uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
 
-#if((HARDWARE_VERSION_MAJOR == 0) && (HARDWARE_VERSION_MINOR == 5))
-  // For high speed logging tests on x04, always sleep for the full sysTicksToSleep
-  sysTicksToSleep += sysTicksAwake;
-#else
   //Check that sysTicksToSleep is >> sysTicksAwake
   if (sysTicksToSleep > (sysTicksAwake + 3277)) // Abort if we are trying to sleep for < 100ms
-#endif
   {
     sysTicksToSleep -= sysTicksAwake;
 
@@ -446,13 +436,9 @@ void waitForQwiicBusPowerDelay() // Wait while the qwiic devices power up
 void qwiicPowerOn()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
+#if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, LOW);
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
-  digitalWrite(PIN_QWIIC_POWER, LOW);
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 6)
-  digitalWrite(PIN_QWIIC_POWER, HIGH);
-#elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
+#else
   digitalWrite(PIN_QWIIC_POWER, HIGH);
 #endif
 
@@ -461,13 +447,9 @@ void qwiicPowerOn()
 void qwiicPowerOff()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
+#if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, HIGH);
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
-  digitalWrite(PIN_QWIIC_POWER, HIGH);
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 6)
-  digitalWrite(PIN_QWIIC_POWER, LOW);
-#elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
+#else
   digitalWrite(PIN_QWIIC_POWER, LOW);
 #endif
 }

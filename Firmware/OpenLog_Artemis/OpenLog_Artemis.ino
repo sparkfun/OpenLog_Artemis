@@ -82,17 +82,10 @@ const int FIRMWARE_VERSION_MINOR = 6;
 //Depends on hardware version. This can be found as a marking on the PCB.
 //x04 was the SparkX 'black' version.
 //v10 was the first red version.
-//(Hardware versions 0-5 and 0-6 do not actually exist. It is just an easy way to test out new features on X04.)
 #define HARDWARE_VERSION_MAJOR 1
 #define HARDWARE_VERSION_MINOR 0
 
 #if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
-const byte PIN_MICROSD_CHIP_SELECT = 10;
-const byte PIN_IMU_POWER = 22;
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
-const byte PIN_MICROSD_CHIP_SELECT = 10;
-const byte PIN_IMU_POWER = 22;
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 6)
 const byte PIN_MICROSD_CHIP_SELECT = 10;
 const byte PIN_IMU_POWER = 22;
 #elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)

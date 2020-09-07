@@ -287,7 +287,11 @@ struct struct_settings {
   bool logAnalogVoltages = true;
   int  localUTCOffset = 0; //Default to UTC because we should
   bool printDebugMessages = false;
-  bool powerDownQwiicBusBetweenReads = true; // 29 chars!
+#if(HARDWARE_VERSION_MAJOR == 0)
+  bool powerDownQwiicBusBetweenReads = false; // For the SparkX (black) board: default to leaving the Qwiic power enabled during sleep and powerDown to prevent a brown-out.
+#else
+  bool powerDownQwiicBusBetweenReads = true; // For the SparkFun (red) board: default to disabling Qwiic power during sleep. (Qwiic power is always disabled during powerDown on v10 hardware.)
+#endif
   uint32_t qwiicBusMaxSpeed = 100000; // 400kHz with no pull-ups can cause issues. Default to 100kHz. User can change to 400 if required.
   int  qwiicBusPowerUpDelayMs = 250; // This is the minimum delay between the qwiic bus power being turned on and communication with the qwiic devices being attempted
   bool printMeasurementCount = false;
