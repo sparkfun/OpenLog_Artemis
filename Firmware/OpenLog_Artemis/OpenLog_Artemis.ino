@@ -58,9 +58,13 @@
   (done) Add a "stop logging" feature on GPIO 32: allow the pin to be used to read a stop logging button instead of being an analog input
   (done) Allow the user to set the default qwiic bus pull-up resistance (u-blox will still use 'none')
   (done) Add support for low battery monitoring using VIN
-  (done) Output sensor data via the serial TX pin
-  (done) Add support for SD card file transfer (ZMODEM) and delete. With thanks to: ecm-bitflipper (https://github.com/ecm-bitflipper/Arduino_ZModem)
+  (done) Output sensor data via the serial TX pin (Issue #32)
+  (done) Add support for SD card file transfer (ZMODEM) and delete. (Issue #33) With thanks to: ecm-bitflipper (https://github.com/ecm-bitflipper/Arduino_ZModem)
   (done) Add file creation and access timestamps
+  (done) Add the ability to trigger data collection via Pin 11 (Issue #36)
+  (done) Correct the measurement count misbehaviour (Issue #31)
+  (done) Use the corrected IMU temperature calculation (Issue #28)
+  (done) Add individual power-on delays for each sensor type. Add an extended delay for the SCD30. (Issue #5)
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
