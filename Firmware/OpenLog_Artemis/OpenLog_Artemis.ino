@@ -366,7 +366,8 @@ void loop() {
           digitalWrite(PIN_STAT_LED, HIGH);
           serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
           serialDataFile.sync();
-          //updateDataFileAccess(&serialDataFile); // Update the file access time & date
+          if (settings.frequentFileAccessTimestamps == true)
+            updateDataFileAccess(&serialDataFile); // Update the file access time & date
           digitalWrite(PIN_STAT_LED, LOW);
 
           incomingBufferSpot = 0;
@@ -456,7 +457,8 @@ void loop() {
         {
           lastDataLogSyncTime = millis();
           sensorDataFile.sync();
-          //updateDataFileAccess(&sensorDataFile); // Update the file access time & date
+          if (settings.frequentFileAccessTimestamps == true)
+            updateDataFileAccess(&sensorDataFile); // Update the file access time & date
         }
 
         //Check if it is time to open a new log file

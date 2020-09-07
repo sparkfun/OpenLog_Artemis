@@ -145,6 +145,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("zmodemStartDelay=" + (String)settings.zmodemStartDelay);
     settingsFile.println("enableLowBatteryDetection=" + (String)settings.enableLowBatteryDetection);
     settingsFile.println("lowBatteryThreshold=" + (String)settings.lowBatteryThreshold);
+    settingsFile.println("frequentFileAccessTimestamps=" + (String)settings.frequentFileAccessTimestamps);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -367,6 +368,8 @@ bool parseLine(char* str) {
     settings.enableLowBatteryDetection = d;
   else if (strcmp(settingName, "lowBatteryThreshold") == 0)
     settings.lowBatteryThreshold = d;
+  else if (strcmp(settingName, "frequentFileAccessTimestamps") == 0)
+    settings.frequentFileAccessTimestamps = d;
   else
     Serial.printf("Unknown setting %s on line: %s\r\n", settingName, str);
 

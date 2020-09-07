@@ -72,6 +72,10 @@ void menuLogRate()
     if (settings.openNewLogFilesAfter == 0) Serial.println(F(" (Never)"));
     else Serial.println();
 
+    Serial.print(F("11) Frequent log file access timestamps: "));
+    if (settings.frequentFileAccessTimestamps == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
+
     Serial.println(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
@@ -178,6 +182,8 @@ void menuLogRate()
       else
         settings.openNewLogFilesAfter = tempSeconds;
     }
+    else if (incoming == 11)
+      settings.frequentFileAccessTimestamps ^= 1;
     else if (incoming == STATUS_PRESSED_X)
       return;
     else if (incoming == STATUS_GETNUMBER_TIMEOUT)

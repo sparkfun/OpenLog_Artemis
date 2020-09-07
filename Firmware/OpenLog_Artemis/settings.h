@@ -283,6 +283,7 @@ struct struct_settings {
   uint8_t zmodemStartDelay = 20; // Wait for this many seconds before starting the zmodem file transfer
   bool enableLowBatteryDetection = false; // Low battery detection
   float lowBatteryThreshold = 3.4; // Low battery voltage threshold (Volts)
+  bool frequentFileAccessTimestamps = false; // If enabled, the log file access timestamps are updated every 500ms
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
