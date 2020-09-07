@@ -48,8 +48,26 @@ typedef void (*FunctionPointer)(void*); //Used for pointing to device config men
 //Begin specific sensor config structs
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-const unsigned long worstCaseQwiicPowerOnDelay = 1000; // Remember to update this if required when adding a new sensor (currently defined by the uBlox)
-const unsigned long minimumQwiicPowerOnDelay = 100; //The minimum number of milliseconds between turning on the Qwiic power and attempting to communicate with Qwiic devices
+const unsigned long worstCaseQwiicPowerOnDelay = 1000; // Remember to update this if required when adding a new sensor (currently defined by the uBlox). (This is OK for the SCD30. beginQwiicDevices will extend the delay.)
+const unsigned long minimumQwiicPowerOnDelay = 10; //The minimum number of milliseconds between turning on the Qwiic power and attempting to communicate with Qwiic devices
+
+// Power On Delay Testing:
+// The minimum power-on delays for following sensors have been checked:
+// Each sensor has been checked twice:
+//   Fast case: as the only sensor linked to the OLA; IMU logging disabled
+//   Slow case: when linked to the OLA along with a ZED-F9P (representing a heavy load on the Qwiic power regulator); IMU logging enabled.
+// (Note: the delay is the value set via the "minimum Qwiic bus power up delay" menu option. It may not represent the actual sensor power-up delay, but it is the number the OLA needs to know.)
+// (Note: the slow case is more about how fast the Qwiic power ramps up with a heavy load attached.)
+//              Fast    Slow
+// Multiplexer: 10ms    10ms
+// LPS25HB:     10ms    10ms
+// NAU7802:     10ms    10ms
+// SHTC3:       10ms    10ms
+// MS8607:      10ms    10ms
+// SGP30:       10ms    10ms
+// ADS122C04:   10ms    10ms
+// SCD30:       5000ms  (Shorter delays seem to result in invalid CO2 readings?)
+// u-blox:      1000ms
 
 struct struct_multiplexer {
   //Ignore certain ports at detection step?
@@ -185,7 +203,7 @@ struct struct_SCD30 {
   int altitudeCompensation = 0; //0 m above sea level
   int ambientPressure = 835; //mBar STP
   int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
-  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+  unsigned long powerOnDelayMillis = 5000; // Wait for at least this many millis before communicating with this device
 };
 
 struct struct_MS8607 {
