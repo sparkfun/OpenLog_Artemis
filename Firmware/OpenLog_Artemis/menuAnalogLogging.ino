@@ -10,19 +10,19 @@ void menuAnalogLogging()
     Serial.println(F("Menu: Configure Analog Logging"));
 
     Serial.print(F("1) Log analog pin 11 (2V Max): "));
-    if (settings.logA11 == true) Serial.println(F("Enabled"));
+    if (settings.logA11 == true) Serial.println(F("Enabled. (Triggering is disabled)"));
     else Serial.println(F("Disabled"));
 
     Serial.print(F("2) Log analog pin 12 (TX) (2V Max): "));
-    if (settings.logA12 == true) Serial.println(F("Enabled, Serial output disabled"));
+    if (settings.logA12 == true) Serial.println(F("Enabled. (Serial output is disabled)"));
     else Serial.println(F("Disabled"));
 
     Serial.print(F("3) Log analog pin 13 (RX) (2V Max): "));
-    if (settings.logA13 == true) Serial.println(F("Enabled, Serial logging disabled"));
+    if (settings.logA13 == true) Serial.println(F("Enabled. (Serial logging is disabled)"));
     else Serial.println(F("Disabled"));
 
     Serial.print(F("4) Log analog pin 32 (2V Max): "));
-    if (settings.logA32 == true) Serial.println(F("Enabled"));
+    if (settings.logA32 == true) Serial.println(F("Enabled. (Stop logging is disabled)"));
     else Serial.println(F("Disabled"));
 
     Serial.print(F("5) Log output type: "));
