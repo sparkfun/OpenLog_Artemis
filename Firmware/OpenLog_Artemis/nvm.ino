@@ -146,6 +146,8 @@ void recordSystemSettingsToFile()
     settingsFile.println("enableLowBatteryDetection=" + (String)settings.enableLowBatteryDetection);
     settingsFile.println("lowBatteryThreshold=" + (String)settings.lowBatteryThreshold);
     settingsFile.println("frequentFileAccessTimestamps=" + (String)settings.frequentFileAccessTimestamps);
+    settingsFile.println("useGPIO11ForTrigger=" + (String)settings.useGPIO11ForTrigger);
+    settingsFile.println("fallingEdgeTrigger=" + (String)settings.fallingEdgeTrigger);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -370,6 +372,10 @@ bool parseLine(char* str) {
     settings.lowBatteryThreshold = d;
   else if (strcmp(settingName, "frequentFileAccessTimestamps") == 0)
     settings.frequentFileAccessTimestamps = d;
+  else if (strcmp(settingName, "useGPIO11ForTrigger") == 0)
+    settings.useGPIO11ForTrigger = d;
+  else if (strcmp(settingName, "fallingEdgeTrigger") == 0)
+    settings.fallingEdgeTrigger = d;
   else
     Serial.printf("Unknown setting %s on line: %s\r\n", settingName, str);
 

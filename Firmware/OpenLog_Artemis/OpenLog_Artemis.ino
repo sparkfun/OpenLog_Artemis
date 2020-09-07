@@ -115,6 +115,7 @@ const byte BREAKOUT_PIN_32 = 32;
 const byte BREAKOUT_PIN_TX = 12;
 const byte BREAKOUT_PIN_RX = 13;
 const byte BREAKOUT_PIN_11 = 11;
+const byte PIN_TRIGGER = 11;
 const byte PIN_QWIIC_SCL = 8;
 const byte PIN_QWIIC_SDA = 9;
 
@@ -218,6 +219,7 @@ unsigned long qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allo
 unsigned long qwiicPowerOnDelayMillis; //Wait for this many milliseconds after turning on the Qwiic power before attempting to communicate with Qwiic devices
 int lowBatteryReadings = 0; // Count how many times the battery voltage has read low
 const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
+volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger interrupt has been seen
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //unsigned long startTime = 0;
@@ -271,6 +273,23 @@ void setup() {
     delay(1); // Let the pin stabilize
     attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
     stopLoggingSeen = false; // Make sure the flag is clear
+  }
+
+  if (settings.useGPIO11ForTrigger == true)
+  {
+    pinMode(PIN_TRIGGER, INPUT_PULLUP);
+    delay(1); // Let the pin stabilize
+    if (settings.fallingEdgeTrigger == true)
+    {
+      Serial.println(F("Falling-edge triggering is enabled. Sensor data will be logged on a falling edge on GPIO pin 11."));
+      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+    }
+    else
+    {
+      Serial.println(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
+      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+    }
+    triggerEdgeSeen = false; // Make sure the flag is clear
   }
 
   analogReadResolution(14); //Increase from default of 10
@@ -342,7 +361,7 @@ void loop() {
         incomingBuffer[incomingBufferSpot++] = SerialLog.read();
         if (incomingBufferSpot == sizeof(incomingBuffer))
         {
-          digitalWrite(PIN_STAT_LED, HIGH);
+          digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
           serialDataFile.write(incomingBuffer, sizeof(incomingBuffer)); //Record the buffer to the card
           digitalWrite(PIN_STAT_LED, LOW);
           incomingBufferSpot = 0;
@@ -353,8 +372,6 @@ void loop() {
 
       lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
       newSerialData = true;
-
-      //Toggle stat LED indicating log recording
     }
     else if (newSerialData == true)
     {
@@ -363,7 +380,7 @@ void loop() {
         if (incomingBufferSpot > 0)
         {
           //Write the remainder of the buffer
-          digitalWrite(PIN_STAT_LED, HIGH);
+          digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
           serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
           serialDataFile.sync();
           if (settings.frequentFileAccessTimestamps == true)
@@ -387,8 +404,21 @@ void loop() {
       takeReading = true;
   }
 
+  //Check for a trigger event
+  if (settings.useGPIO11ForTrigger == true)
+  {
+    if (triggerEdgeSeen == true)
+    {
+      takeReading = true; // If triggering is enabled and a trigger event has been seen, then take a reading.
+    }
+    else
+    {
+      takeReading = false; // If triggering is enabled and a trigger even has not been seen, then make sure we don't take a reading based on settings.usBetweenReadings.
+    }
+  }
+
   //Is it time to get new data?
-  if (settings.logMaxRate == true || takeReading == true)
+  if ((settings.logMaxRate == true) || (takeReading == true))
   {
     takeReading = false;
     lastReadTime = micros();
@@ -497,10 +527,10 @@ void loop() {
       stopLogging();
     }
 
-#if((HARDWARE_VERSION_MAJOR != 0) || (HARDWARE_VERSION_MINOR != 5)) // Version 0-5 always sleeps!
-    //Go to sleep only if time between readings is greater than maxUsBeforeSleep (2 seconds)
-    if (settings.usBetweenReadings >= maxUsBeforeSleep)
-#endif
+    triggerEdgeSeen = false; // Clear the trigger seen flag here - just in case another trigger was received while we were logging data to SD card
+
+    //Go to sleep if the time between readings is greater than maxUsBeforeSleep (2 seconds) and triggering is not enabled
+    if ((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
     {
       goToSleep();
     }
@@ -752,4 +782,10 @@ extern "C" void am_stimer_cmpr6_isr(void)
 void stopLoggingISR(void)
 {
   stopLoggingSeen = true;
+}
+
+//Trigger Pin ISR
+void triggerPinISR(void)
+{
+  triggerEdgeSeen = true;
 }

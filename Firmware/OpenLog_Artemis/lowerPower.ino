@@ -62,6 +62,13 @@ void powerDown()
     pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
   }
 
+  //Prevent trigger from waking us from sleep
+  if (settings.useGPIO11ForTrigger == true)
+  {
+    detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+    pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+  }
+
   //WE NEED TO POWER DOWN ASAP - we don't have time to close the SD files
   //Save files before going to sleep
   //  if (online.dataLogging == true)
@@ -178,6 +185,14 @@ void goToSleep()
   {
     detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
     pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+  }
+
+  //Prevent trigger from waking us from sleep
+  //(This should be redundant. We should not be going to sleep if triggering is enabled?)
+  if (settings.useGPIO11ForTrigger == true)
+  {
+    detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+    pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
   }
 
   //Save files before going to sleep
@@ -335,6 +350,17 @@ void wakeFromSleep()
     delay(1); // Let the pin stabilize
     attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
     stopLoggingSeen = false; // Make sure the flag is clear
+  }
+
+  if (settings.useGPIO11ForTrigger == true) //(This should be redundant. We should not be going to sleep if triggering is enabled?)
+  {
+    pinMode(PIN_TRIGGER, INPUT_PULLUP);
+    delay(1); // Let the pin stabilize
+    if (settings.fallingEdgeTrigger == true)
+      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+    else
+      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+    triggerEdgeSeen = false; // Make sure the flag is clear
   }
 
   pinMode(PIN_STAT_LED, OUTPUT);

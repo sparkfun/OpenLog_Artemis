@@ -38,7 +38,19 @@ void menuAnalogLogging()
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
     if (incoming == '1')
-      settings.logA11 ^= 1;
+    {
+      if(settings.logA11 == false)
+      {
+        settings.logA11 = true;
+        // Disable triggering
+        settings.useGPIO11ForTrigger = false;
+        detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+        pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+        triggerEdgeSeen = false; // Make sure the flag is clear
+      }
+      else
+        settings.logA11 = false;
+    }
     else if (incoming == '2')
     {
       if(settings.logA12 == false)

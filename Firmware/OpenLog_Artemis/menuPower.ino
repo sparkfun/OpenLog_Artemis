@@ -45,6 +45,7 @@ void menuPower()
         settings.useGPIO32ForStopLogging = false;
         detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
         pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+        stopLoggingSeen = false; // Make sure the flag is clear
       }
       else
       {
