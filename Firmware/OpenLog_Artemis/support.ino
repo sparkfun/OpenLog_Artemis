@@ -26,12 +26,13 @@ void waitForInput()
 {
   for (int i = 0; i < 10; i++) //Wait for any incoming chars to hit buffer
   {
+    checkBattery();
     delay(1);
   }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
   while (Serial.available() == 0)
   {
-    ;
+    checkBattery();
   }
 }
 
@@ -44,6 +45,7 @@ uint8_t getByteChoice(int numberOfSeconds)
   Serial.flush();
   for (int i = 0; i < 50; i++) //Wait for any incoming chars to hit buffer
   {
+    checkBattery();
     delay(1);
   }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
@@ -68,6 +70,7 @@ uint8_t getByteChoice(int numberOfSeconds)
       return (STATUS_GETBYTE_TIMEOUT); //Timeout. No user input.
     }
 
+    checkBattery();
     delay(1);
   }
 
@@ -81,6 +84,7 @@ int64_t getNumber(int numberOfSeconds)
 {
   for (int i = 0; i < 10; i++) //Wait for any incoming chars to hit buffer
   {
+    checkBattery();
     delay(1);
   }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
@@ -94,6 +98,8 @@ int64_t getNumber(int numberOfSeconds)
   {
     while (Serial.available() == 0) //Wait for user input
     {
+      checkBattery();
+      
       if ( (millis() - startTime) / 1000 >= numberOfSeconds)
       {
         if (spot == 0)
@@ -161,6 +167,7 @@ double getDouble(int numberOfSeconds)
 {
   for (int i = 0; i < 10; i++) //Wait for any incoming chars to hit buffer
   {
+    checkBattery();
     delay(1);
   }
   while (Serial.available() > 0) Serial.read(); //Clear buffer
@@ -175,6 +182,8 @@ double getDouble(int numberOfSeconds)
   {
     while (Serial.available() == 0) //Wait for user input
     {
+      checkBattery();
+      
       if ( (millis() - startTime) / 1000 >= numberOfSeconds)
       {
         if (spot == 0)

@@ -1,4 +1,3 @@
-
 //Display the options
 //If user doesn't respond within a few seconds, return to main loop
 void menuMain()
@@ -9,13 +8,10 @@ void menuMain()
     Serial.println(F("Menu: Main Menu"));
 
     Serial.println(F("1) Configure Terminal Output"));
-    //10 to 1 Hz? Global logging. Overrides the IMU, analog, etc.?
-    //User may want to log Analog really fast and IMU or humidity less fast.
 
     Serial.println(F("2) Configure Time Stamp"));
 
     Serial.println(F("3) Configure IMU Logging"));
-    //Set record freq
 
     Serial.println(F("4) Configure Serial Logging"));
 
@@ -26,6 +22,9 @@ void menuMain()
     Serial.println(F("7) Configure Power Options"));
 
     Serial.println(F("h) Print Sensor Helper Text (and return to logging)"));
+
+    if (settings.enableSD && online.microSD)
+      Serial.println(F("s) SD Card File Transfer"));
 
     Serial.println(F("r) Reset all settings to default"));
 
@@ -58,9 +57,46 @@ void menuMain()
     }
     else if (incoming == 'd')
       menuDebug();
+    else if (incoming == 's')
+    {
+      if (settings.enableSD && online.microSD)
+      {
+        //Close log files before showing sdCardMenu
+        if (online.dataLogging == true)
+        {
+          sensorDataFile.sync();
+          updateDataFileAccess(&sensorDataFile); // Update the file access time & date
+          sensorDataFile.close();
+        }
+        if (online.serialLogging == true)
+        {
+          serialDataFile.sync();
+          updateDataFileAccess(&serialDataFile); // Update the file access time & date
+          serialDataFile.close();
+        }
+  
+        Serial.println();
+        Serial.println();
+        sdCardMenu(); // Located in zmodem.ino
+        Serial.println();
+        Serial.println();
+        
+        if (online.dataLogging == true)
+        {
+          strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
+          beginDataLogging(); //180ms
+          if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+        }
+        if (online.serialLogging == true)
+        {
+          strcpy(serialDataFileName, findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"));
+          beginSerialLogging();
+        }
+      }
+    }
     else if (incoming == 'r')
     {
-      Serial.println(F("\n\rResetting to factory defaults. Press 'y' to confirm:"));
+      Serial.println(F("\r\nResetting to factory defaults. Press 'y' to confirm:"));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
@@ -80,7 +116,7 @@ void menuMain()
     }
     else if (incoming == 'q')
     {
-      Serial.println(F("\n\rQuit? Press 'y' to confirm:"));
+      Serial.println(F("\r\nQuit? Press 'y' to confirm:"));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
@@ -88,11 +124,13 @@ void menuMain()
         if (online.dataLogging == true)
         {
           sensorDataFile.sync();
+          updateDataFileAccess(&sensorDataFile); // Update the file access time & date
           sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
         }
         if (online.serialLogging == true)
         {
           serialDataFile.sync();
+          updateDataFileAccess(&serialDataFile); // Update the file access time & date
           serialDataFile.close();
         }
         Serial.print(F("Log files are closed. Please reset OpenLog Artemis and open a terminal at "));

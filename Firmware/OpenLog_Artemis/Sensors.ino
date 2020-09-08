@@ -2,6 +2,7 @@
 void getData()
 {
   measurementCount++;
+  measurementTotal++;
 
   char tempData[50];
   outputData[0] = '\0'; //Clear string contents
@@ -110,8 +111,12 @@ void getData()
 
   if (online.IMU)
   {
+    //printDebug("getData: online.IMU = " + (String)online.IMU + "\r\n");
+
     if (myICM.dataReady())
     {
+      //printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+      
       myICM.getAGMT(); //Update values
 
       if (settings.logIMUAccel)
@@ -135,6 +140,10 @@ void getData()
         strcat(outputData, tempData);
       }
     }
+    //else
+    //{
+    //  printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+    //}
   }
 
   //Append all external sensor data on linked list to outputData
@@ -164,11 +173,11 @@ void getData()
 
   if (settings.printMeasurementCount)
   {
-    sprintf(tempData, "%d,", measurementCount);
+    sprintf(tempData, "%d,", measurementTotal);
     strcat(outputData, tempData);
   }
 
-  strcat(outputData, "\n");
+  strcat(outputData, "\r\n");
 
   totalCharactersPrinted += strlen(outputData);
 }
@@ -670,7 +679,7 @@ void gatherDeviceValues()
           }
           break;
         default:
-          Serial.printf("printDeviceValue unknown device type: %s\n", getDeviceName(temp->deviceType));
+          Serial.printf("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
       }
 
@@ -981,7 +990,7 @@ void printHelperText(bool terminalOnly)
           }
           break;
         default:
-          Serial.printf("\nprinterHelperText device not found: %d\n", temp->deviceType);
+          Serial.printf("\nprinterHelperText device not found: %d\r\n", temp->deviceType);
           break;
       }
     }
@@ -994,12 +1003,13 @@ void printHelperText(bool terminalOnly)
   if (settings.printMeasurementCount)
     strcat(helperText, "count,");
 
-  strcat(helperText, "\n");
+  strcat(helperText, "\r\n");
 
   Serial.print(helperText);
   if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
     sensorDataFile.print(helperText);
 }
+
 //If certain devices are attached, we need to reduce the I2C max speed
 void setMaxI2CSpeed()
 {
@@ -1036,6 +1046,7 @@ void setMaxI2CSpeed()
   qwiic.setClock(maxSpeed);
   for (int i = 0; i < 100; i++) //Allow time for the speed to change
   {
+    checkBattery();
     delay(1);
   }  
 }

@@ -32,8 +32,14 @@ void setup()
   
   const byte PIN_QWIIC_PWR = 18;
   pinMode(PIN_QWIIC_PWR, OUTPUT);
-  digitalWrite(PIN_QWIIC_PWR, LOW); //qwiicPowerOn();
-  delay(10);
+  
+  //Turn off bus
+  digitalWrite(PIN_QWIIC_PWR, LOW); //qwiicPowerOff();
+  delay(1000);
+
+  //Turn on bus
+  digitalWrite(PIN_QWIIC_PWR, HIGH); //qwiicPowerOn();
+  delay(100);
   qwiic.begin();
   
   if (airSensor.begin(qwiic) == false)

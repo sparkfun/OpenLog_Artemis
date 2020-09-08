@@ -99,7 +99,7 @@ void menuTimeStamp()
         Serial.println(F("RTC set to GPS (UTC) time"));
         if ((dateValid == false) || (timeValid == false))
         {
-          Serial.println(F("\nWarning: the GPS time or date was not valid. Please try again.\n"));
+          Serial.println(F("\r\nWarning: the GPS time or date was not valid. Please try again.\r\n"));
         }
       }
       else if (incoming == 9)

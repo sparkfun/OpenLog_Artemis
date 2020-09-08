@@ -7,7 +7,10 @@ If you'd like to contribute, start by searching through the [issues](https://git
 If you decide to add a feature or support for a new sensor to OpenLog Artemis, please create a PR and follow these best practices:
 
 * Change as little as possible. Do not sumbit a PR that changes 100 lines of whitespace. Break up into multiple PRs if necessary.
-* If you add a new feature document how it works in the PR.
+* If you add a new feature, please document how it works in the PR.
+* Please submit your PR using the [release-candidate branch](https://github.com/sparkfun/OpenLog_Artemis/tree/release_candidate). That way, we can merge and test your PR quickly without changing the _master_ branch
+
+![Contributing.JPG](./img/Contributing.JPG)
 
 ## Style guide
 
