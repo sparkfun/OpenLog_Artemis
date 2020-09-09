@@ -2,7 +2,8 @@
 
 Thank you so *much* for offering to help out. We truly appreciate it.
 
-If you'd like to contribute, start by searching through the [issues](https://github.com/sparkfun/OpenLog_Artemis/issues) and [pull requests](https://github.com/sparkfun/OpenLog_Artemis/pulls) to see whether someone else has raised a similar idea or question.
+If you'd like to contribute, start by searching through the [issues](https://github.com/sparkfun/OpenLog_Artemis/issues) and [pull requests](https://github.com/sparkfun/OpenLog_Artemis/pulls) to see whether someone else has raised a similar idea or question. Please check the [closed issues](https://github.com/sparkfun/OpenLog_Artemis/issues?q=is%3Aissue+is%3Aclosed)
+and [closed pull requests](https://github.com/sparkfun/OpenLog_Artemis/pulls?q=is%3Apr+is%3Aclosed) too - you may find that your issue or feature has already been discussed.
 
 If you decide to add a feature or support for a new sensor to OpenLog Artemis, please create a PR and follow these best practices:
 
