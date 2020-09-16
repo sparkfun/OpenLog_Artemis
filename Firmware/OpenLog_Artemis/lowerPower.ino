@@ -321,7 +321,14 @@ void wakeFromSleep()
   am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
 
   //Turn on ADC
-  ap3_adc_setup();
+  uint32_t adcError = (uint32_t)ap3_adc_setup();
+  if (settings.logA11 == true) adcError += (uint32_t)ap3_set_pin_to_analog(11); // Set _pad_ 11 to analog if enabled for logging
+  if (settings.logA12 == true) adcError += (uint32_t)ap3_set_pin_to_analog(12); // Set _pad_ 12 to analog if enabled for logging
+  if (settings.logA13 == true) adcError += (uint32_t)ap3_set_pin_to_analog(13); // Set _pad_ 13 to analog if enabled for logging
+  if (settings.logA32 == true) adcError += (uint32_t)ap3_set_pin_to_analog(32); // Set _pad_ 32 to analog if enabled for logging
+#if(HARDWARE_VERSION_MAJOR >= 1)
+  adcError += (uint32_t)ap3_set_pin_to_analog(PIN_VIN_MONITOR); // Set _pad_ PIN_VIN_MONITOR to analog
+#endif
 
   //Run setup again
 
@@ -361,6 +368,10 @@ void wakeFromSleep()
   Serial.begin(settings.serialTerminalBaudRate);
 
   printDebug("wakeFromSleep: I'm awake!\r\n");
+  printDebug("wakeFromSleep: adcError is " + (String)adcError + ".");
+  if (adcError > 0)
+    printDebug(" This indicates an error was returned by ap3_adc_setup or one of the calls to ap3_set_pin_to_analog.");
+  printDebug("\r\n");
 
   beginQwiic(); //Power up Qwiic bus as early as possible
 

@@ -65,10 +65,12 @@
   (done) Correct the measurement count misbehaviour (Issue #31)
   (done) Use the corrected IMU temperature calculation (Issue #28)
   (done) Add individual power-on delays for each sensor type. Add an extended delay for the SCD30. (Issue #5)
+
+  (done) v1.7: Fix readVin after sleep bug: https://github.com/sparkfun/OpenLog_Artemis/issues/39
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 6;
+const int FIRMWARE_VERSION_MINOR = 7;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -78,7 +80,7 @@ const int FIRMWARE_VERSION_MINOR = 6;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x116
+#define OLA_IDENTIFIER 0x117
 
 #include "settings.h"
 

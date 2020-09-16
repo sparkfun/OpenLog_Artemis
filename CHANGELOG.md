@@ -1,6 +1,11 @@
 Change Log
 ======================
 
+v1.7
+---------
+
+* Corrected the readVin after sleep bug [39](https://github.com/sparkfun/OpenLog_Artemis/issues/39)
+
 v1.6
 ---------
 
