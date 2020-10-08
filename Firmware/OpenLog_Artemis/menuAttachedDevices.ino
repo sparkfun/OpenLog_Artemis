@@ -42,25 +42,15 @@ bool detectQwiicDevices()
 
   waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up
   
-  //Do a prelim scan to see if anything is out there
-  for (uint8_t address = 1 ; address < 127 ; address++)
-  {
-    qwiic.beginTransmission(address);
-    if (qwiic.endTransmission() == 0)
-    {
-      somethingDetected = true;
-      if (settings.printDebugMessages == true)
-        Serial.printf("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
-      break;
-    }
-  }
-  if (somethingDetected == false) return (false);
+  // Note: The MCP9600 (Qwiic Thermocouple) is a fussy device. If we use beginTransmission + endTransmission more than once
+  // the second and subsequent times will fail. The MCP9600 only ACKs the first time. The MCP9600 also appears to be able to
+  // lock up the I2C bus if you don't discover it and then begin it in one go...
+  // The following code has been restructured to try and keep the MCP9600 happy.
 
-  Serial.println(F("Identifying Qwiic Devices..."));
+  Serial.println(F("Identifying Qwiic Muxes..."));
 
   //First scan for Muxes. Valid addresses are 0x70 to 0x77 (112 to 119).
   //If any are found, they will be begin()'d causing their ports to turn off
-  printDebug("detectQwiicDevices: scanning for multiplexers\r\n");
   uint8_t muxCount = 0;
   for (uint8_t address = 0x70 ; address < 0x78 ; address++)
   {
@@ -72,6 +62,9 @@ bool detectQwiicDevices()
       //  digitalWrite(PIN_LOGIC_DEBUG, LOW);
       //  digitalWrite(PIN_LOGIC_DEBUG, HIGH);
       //}
+      somethingDetected = true;
+      if (settings.printDebugMessages == true)
+        Serial.printf("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
       deviceType_e foundType = testMuxDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType == DEVICE_MULTIPLEXER)
       {
@@ -82,6 +75,7 @@ bool detectQwiicDevices()
       }
     }
   }
+
   if (muxCount > 0)
   {
     if (settings.printDebugMessages == true)
@@ -92,17 +86,20 @@ bool detectQwiicDevices()
       else
         Serial.println(F(" multiplexers"));
     }
-    beginQwiicDevices(); //Because we are about to use a multiplexer, begin() the muxes.
+    beginQwiicDevices(); //begin() the muxes to disable their ports
   }
 
-  //Before going into sub branches, complete the scan of the main branch for all devices
-  printDebug("detectQwiicDevices: scanning main bus\r\n");
+  //Before going into mux sub branches, scan the main branch for all remaining devices
+  Serial.println(F("Identifying Qwiic Devices..."));
   bool foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
     qwiic.beginTransmission(address);
     if (qwiic.endTransmission() == 0)
     {
+      somethingDetected = true;
+      if (settings.printDebugMessages == true)
+        Serial.printf("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
       deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType != DEVICE_UNKNOWN_DEVICE)
       {
@@ -112,7 +109,7 @@ bool detectQwiicDevices()
         }
         else
         {
-          if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
+          if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if mux/device was already recorded.
           {
             if (settings.printDebugMessages == true)
               Serial.printf("detectQwiicDevices: added %s at address 0x%02X\r\n", getDeviceName(foundType), address);
@@ -125,6 +122,8 @@ bool detectQwiicDevices()
       }
     }
   }
+
+  if (somethingDetected == false) return (false);
 
   //If we have muxes, begin scanning their sub nets
   if (muxCount > 0)
@@ -164,6 +163,9 @@ bool detectQwiicDevices()
             qwiic.beginTransmission(address);
             if (qwiic.endTransmission() == 0)
             {
+              // We don't need to do anything special for the MCP9600 here, because we can guarantee that beginTransmission + endTransmission
+              // have only been used once for each MCP9600 address
+              
               somethingDetected = true;
 
               deviceType_e foundType = testDevice(address, muxNode->address, portNumber);

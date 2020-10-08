@@ -1040,6 +1040,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x60:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1053,6 +1054,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x61:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1067,6 +1069,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x62:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1075,6 +1078,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x63:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1083,6 +1087,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x64:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1091,6 +1096,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x65:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1099,6 +1105,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x66:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1107,6 +1114,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x67:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
