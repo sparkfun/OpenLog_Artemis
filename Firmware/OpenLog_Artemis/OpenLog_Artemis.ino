@@ -67,6 +67,8 @@
   (done) Add individual power-on delays for each sensor type. Add an extended delay for the SCD30. (Issue #5)
 
   (done) v1.7: Fix readVin after sleep bug: https://github.com/sparkfun/OpenLog_Artemis/issues/39
+
+  (done) Change detectQwiicDevices so that the MCP9600 (Qwiic Thermocouple) is detected correctly
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
