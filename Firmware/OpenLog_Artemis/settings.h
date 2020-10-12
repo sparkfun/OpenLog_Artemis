@@ -21,6 +21,8 @@ typedef enum
   DEVICE_HUMIDITY_AHT20,
   DEVICE_HUMIDITY_SHTC3,
   DEVICE_ADC_ADS122C04,
+  DEVICE_PRESSURE_MPR0025PA1, // 0-25 PSI, I2C Address 0x18
+  DEVICE_PARTICLE_SNGCJA5,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -245,6 +247,39 @@ struct struct_ADS122C04 {
   bool useTwoWireHighTemperatureMode = false;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
+
+struct struct_MPR0025PA1 {
+  bool log = true;
+  int minimumPSI = 0;
+  int maximumPSI = 25;
+  bool usePSI = true;
+  bool usePA = false;
+  bool useKPA = false;
+  bool useTORR = false;
+  bool useINHG = false;
+  bool useATM = false;
+  bool useBAR = false;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_SNGCJA5 {
+  bool log = true;
+  bool logPM1 = true;
+  bool logPM25 = true;
+  bool logPM10 = true;
+  bool logPC05 = true;
+  bool logPC1 = true;
+  bool logPC25 = true;
+  bool logPC50 = true;
+  bool logPC75 = true;
+  bool logPC10 = true;
+  bool logSensorStatus = false;
+  bool logPDStatus = true;
+  bool logLDStatus = true;
+  bool logFanStatus = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
 
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {

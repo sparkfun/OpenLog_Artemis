@@ -593,6 +593,40 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "useTwoWireHighTemperatureMode=" + nodeSetting->useTwoWireHighTemperatureMode);
           }
           break;
+        case DEVICE_PRESSURE_MPR0025PA1:
+          {
+            struct_MPR0025PA1 *nodeSetting = (struct_MPR0025PA1 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "minimumPSI=" + nodeSetting->minimumPSI);
+            settingsFile.println((String)base + "maximumPSI=" + nodeSetting->maximumPSI);
+            settingsFile.println((String)base + "usePSI=" + nodeSetting->usePSI);
+            settingsFile.println((String)base + "usePA=" + nodeSetting->usePA);
+            settingsFile.println((String)base + "useKPA=" + nodeSetting->useKPA);
+            settingsFile.println((String)base + "useTORR=" + nodeSetting->useTORR);
+            settingsFile.println((String)base + "useINHG=" + nodeSetting->useINHG);
+            settingsFile.println((String)base + "useATM=" + nodeSetting->useATM);
+            settingsFile.println((String)base + "useBAR=" + nodeSetting->useBAR);
+          }
+          break;
+        case DEVICE_PARTICLE_SNGCJA5:
+          {
+            struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logPM1=" + nodeSetting->logPM1);
+            settingsFile.println((String)base + "logPM25=" + nodeSetting->logPM25);
+            settingsFile.println((String)base + "logPM10=" + nodeSetting->logPM10);
+            settingsFile.println((String)base + "logPC05=" + nodeSetting->logPC05);
+            settingsFile.println((String)base + "logPC1=" + nodeSetting->logPC1);
+            settingsFile.println((String)base + "logPC25=" + nodeSetting->logPC25);
+            settingsFile.println((String)base + "logPC50=" + nodeSetting->logPC50);
+            settingsFile.println((String)base + "logPC75=" + nodeSetting->logPC75);
+            settingsFile.println((String)base + "logPC10=" + nodeSetting->logPC10);
+            settingsFile.println((String)base + "logSensorStatus=" + nodeSetting->logSensorStatus);
+            settingsFile.println((String)base + "logPDStatus=" + nodeSetting->logPDStatus);
+            settingsFile.println((String)base + "logLDStatus=" + nodeSetting->logLDStatus);
+            settingsFile.println((String)base + "logFanStatus=" + nodeSetting->logFanStatus);
+          }
+          break;
         default:
           Serial.printf("recordSettingsToFile Unknown device: %s\r\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
@@ -1048,6 +1082,68 @@ bool parseDeviceLine(char* str) {
             nodeSetting->useThreeWireHighTemperatureMode = d;
           else if (strcmp(deviceSettingName, "useTwoWireHighTemperatureMode") == 0)
             nodeSetting->useTwoWireHighTemperatureMode = d;
+          else
+            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PRESSURE_MPR0025PA1:
+        {
+          struct_MPR0025PA1 *nodeSetting = (struct_MPR0025PA1 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "minimumPSI") == 0)
+            nodeSetting->minimumPSI = d;
+          else if (strcmp(deviceSettingName, "maximumPSI") == 0)
+            nodeSetting->maximumPSI = d;
+          else if (strcmp(deviceSettingName, "usePSI") == 0)
+            nodeSetting->usePSI = d;
+          else if (strcmp(deviceSettingName, "usePA") == 0)
+            nodeSetting->usePA = d;
+          else if (strcmp(deviceSettingName, "useKPA") == 0)
+            nodeSetting->useKPA = d;
+          else if (strcmp(deviceSettingName, "useTORR") == 0)
+            nodeSetting->useTORR = d;
+          else if (strcmp(deviceSettingName, "useINHG") == 0)
+            nodeSetting->useINHG = d;
+          else if (strcmp(deviceSettingName, "useATM") == 0)
+            nodeSetting->useATM = d;
+          else if (strcmp(deviceSettingName, "useBAR") == 0)
+            nodeSetting->useBAR = d;
+          else
+            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PARTICLE_SNGCJA5:
+        {
+          struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logPM1") == 0)
+            nodeSetting->logPM1 = d;
+          else if (strcmp(deviceSettingName, "logPM25") == 0)
+            nodeSetting->logPM25 = d;
+          else if (strcmp(deviceSettingName, "logPM10") == 0)
+            nodeSetting->logPM10 = d;
+          else if (strcmp(deviceSettingName, "logPC05") == 0)
+            nodeSetting->logPC05 = d;
+          else if (strcmp(deviceSettingName, "logPC1") == 0)
+            nodeSetting->logPC1 = d;
+          else if (strcmp(deviceSettingName, "logPC25") == 0)
+            nodeSetting->logPC25 = d;
+          else if (strcmp(deviceSettingName, "logPC50") == 0)
+            nodeSetting->logPC50 = d;
+          else if (strcmp(deviceSettingName, "logPC75") == 0)
+            nodeSetting->logPC75 = d;
+          else if (strcmp(deviceSettingName, "logPC10") == 0)
+            nodeSetting->logPC10 = d;
+          else if (strcmp(deviceSettingName, "logSensorStatus") == 0)
+            nodeSetting->logSensorStatus = d;
+          else if (strcmp(deviceSettingName, "logPDStatus") == 0)
+            nodeSetting->logPDStatus = d;
+          else if (strcmp(deviceSettingName, "logLDStatus") == 0)
+            nodeSetting->logLDStatus = d;
+          else if (strcmp(deviceSettingName, "logFanStatus") == 0)
+            nodeSetting->logFanStatus = d;
           else
             Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
         }

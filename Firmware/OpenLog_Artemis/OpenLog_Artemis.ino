@@ -65,10 +65,10 @@
   (done) Correct the measurement count misbehaviour (Issue #31)
   (done) Use the corrected IMU temperature calculation (Issue #28)
   (done) Add individual power-on delays for each sensor type. Add an extended delay for the SCD30. (Issue #5)
-
   (done) v1.7: Fix readVin after sleep bug: https://github.com/sparkfun/OpenLog_Artemis/issues/39
-
   (done) Change detectQwiicDevices so that the MCP9600 (Qwiic Thermocouple) is detected correctly
+  (done) Add support for the MPRLS0025PA micro pressure sensor
+  (done) Add support for the SN-GCJA5 particle sensor
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -199,6 +199,8 @@ ICM_20948_SPI myICM;
 #include "SparkFun_Qwiic_Humidity_AHT20.h" //Click here to get the library: http://librarymanager/All#Qwiic_Humidity_AHT20 by SparkFun
 #include "SparkFun_SHTC3.h" // Click here to get the library: http://librarymanager/All#SparkFun_SHTC3
 #include "SparkFun_ADS122C04_ADC_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_ADS122C04
+#include "SparkFun_MicroPressure.h" // Click here to get the library: http://librarymanager/All#SparkFun_MicroPressure
+#include "SparkFun_Particle_Sensor_SN-GCJA5_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Particle_Sensor_SN-GCJA5
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 

@@ -225,6 +225,18 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_ADS122C04;
       }
       break;
+    case DEVICE_PRESSURE_MPR0025PA1:
+      {
+        temp->classPtr = new SparkFun_MicroPressure;
+        temp->configPtr = new struct_MPR0025PA1;
+      }
+      break;
+    case DEVICE_PARTICLE_SNGCJA5:
+      {
+        temp->classPtr = new SFE_PARTICLE_SENSOR;
+        temp->configPtr = new struct_SNGCJA5;
+      }
+      break;
     default:
       Serial.printf("addDevice Device type not found: %d\r\n", deviceType);
       break;
@@ -428,6 +440,25 @@ bool beginQwiicDevices()
             temp->online = true;
         }
         break;
+      case DEVICE_PRESSURE_MPR0025PA1:
+        {
+          // TO DO: Figure out how to pass minimumPSI and maximumPSI when instantiating the sensor. Maybe add an update-_minPsi-and-_maxPsi function to the library?
+          SparkFun_MicroPressure *tempDevice = (SparkFun_MicroPressure *)temp->classPtr;
+          struct_MPR0025PA1 *nodeSetting = (struct_MPR0025PA1 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_PARTICLE_SNGCJA5:
+        {
+          SFE_PARTICLE_SENSOR *tempDevice = (SFE_PARTICLE_SENSOR *)temp->classPtr;
+          struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic) == true) //Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
       default:
         Serial.printf("beginQwiicDevices: device type not found: %d\r\n", temp->deviceType);
         break;
@@ -459,7 +490,7 @@ void printOnlineDevice()
 
   if (temp == NULL)
   {
-    printDebug(F("printOnlineDevice: No devices detected"));
+    printDebug(F("printOnlineDevice: No devices detected\r\n"));
     return;
   }
 
@@ -668,6 +699,12 @@ void configureDevice(node * temp)
           sensor->configureADCmode(ADS122C04_2WIRE_HI_TEMP);
       }
       break;
+    case DEVICE_PRESSURE_MPR0025PA1:
+      //Nothing to configure
+      break;
+    case DEVICE_PARTICLE_SNGCJA5:
+      //Nothing to configure
+      break;
     default:
       Serial.printf("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
@@ -751,6 +788,12 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_ADC_ADS122C04:
       ptr = (FunctionPointer)menuConfigure_ADS122C04;
+      break;
+    case DEVICE_PRESSURE_MPR0025PA1:
+      ptr = (FunctionPointer)menuConfigure_MPR0025PA1;
+      break;
+    case DEVICE_PARTICLE_SNGCJA5:
+      ptr = (FunctionPointer)menuConfigure_SNGCJA5;
       break;
     default:
       Serial.println(F("getConfigFunctionPtr: Unknown device type"));
@@ -880,8 +923,10 @@ void swap(struct node * a, struct node * b)
 // Available Qwiic devices
 //We no longer use defines in the search table. These are just here for reference.
 #define ADR_VEML6075 0x10
+#define ADR_MPR0025PA1 0x18
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
+#define ADR_SNGCJA5 0x33
 #define ADR_AHT20 0x38
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
 #define ADR_UBLOX 0x42 //But can be set to any address
@@ -913,6 +958,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
           return (DEVICE_UV_VEML6075);
       }
       break;
+    case 0x18:
+      {
+        //Confidence: Medium - Checks the status byte power indication bit and three "always 0" bits
+        SparkFun_MicroPressure sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          if ((sensor.readStatus() & 0x5A) == 0x40) // Mask the power indication bit and three "always 0" bits
+            return (DEVICE_PRESSURE_MPR0025PA1);
+      }
+      break;
     case 0x2A:
       {
         //Confidence: High - Checks 8 bit revision code (0x0F)
@@ -928,6 +982,14 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         SFEVL53L1X sensor(qwiic); //Start with given wire port
         if (sensor.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
           return (DEVICE_DISTANCE_VL53L1X);
+      }
+      break;
+    case 0x33:
+      {
+        //Confidence: low - basic isConnected test only...
+        SFE_PARTICLE_SENSOR sensor;
+        if (sensor.begin(qwiic) == true) //Wire port
+          return (DEVICE_PARTICLE_SNGCJA5);
       }
       break;
     case 0x38:
@@ -1354,6 +1416,12 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_ADC_ADS122C04:
       return "ADC-ADS122C04";
+      break;
+    case DEVICE_PRESSURE_MPR0025PA1:
+      return "Pressure-MPR";
+      break;
+    case DEVICE_PARTICLE_SNGCJA5:
+      return "Particle-SNGCJA5";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:
