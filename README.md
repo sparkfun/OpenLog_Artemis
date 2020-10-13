@@ -69,6 +69,7 @@ Documentation
 * **[UPGRADE.md](./UPGRADE.md)** - contains full instructions on how to upgrade the firmware on the OLA using the [Artemis Firmware Upload GUI](https://github.com/sparkfun/Artemis-Firmware-Upload-GUI).
 * **[CONTRIBUTING.md](./CONTRIBUTING.md)** - guidance on how to contribute to this library.
 * **[Installing an Arduino Library Guide](https://learn.sparkfun.com/tutorials/installing-an-arduino-library)** - OLA includes a large number of libraries that will need to be installed before compiling will work.
+* **[ADDING_SENSORS.md](./ADDING_SENSORS.md)** - contains _abbreviated_ instructions on how to add a new sensor to the OLA firmware. It's more of an aide-memoire really...
 
 License Information
 -------------------
