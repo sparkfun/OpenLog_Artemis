@@ -4,7 +4,7 @@ These are  _abbreviated_ instructions on how to add a new sensor to the OLA firm
 
 Caveat: this is _currently_ how a new sensor is added, for version v1.n of the OLA firmware using v1.2.n of the Apollo3 boards (the OLA code is compiled using the SparkFun RedBoard Artemis ATP (All The Pins) board). This will change, dramatically, when we upgrade to v2 of Apollo3 and integrate BLE support.
 
-## Release Candidate Branch
+## Use The Release Candidate Branch
 
 First up, please target any commits at the _**release_candidate**_ branch, so they can be tested before being merged into the _master_ branch.
 
@@ -34,7 +34,7 @@ First up, please target any commits at the _**release_candidate**_ branch, so th
 
 ### beginQwiicDevices
 
-- This is the code that is called to start (begin) the device. [Add a case for the new sensor](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-68cc245ab0d3c1bed2bfc22b403edc3ed73d347a35a21179b3a6ec27a458803bR453-R461)
+- This is the code that is called to start (begin) the device. [Add a case for the new sensor](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-68cc245ab0d3c1bed2bfc22b403edc3ed73d347a35a21179b3a6ec27a458803bR453-R461). Update _qwiicPowerOnDelayMillis_ if this device needs extra time to get its act together on power-up.
 
 ### configureDevice
 
@@ -54,7 +54,7 @@ First up, please target any commits at the _**release_candidate**_ branch, so th
 
 ### getDeviceName
 
-- This is where the sensor name is defined as text. [Add a case for the new sensor](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-68cc245ab0d3c1bed2bfc22b403edc3ed73d347a35a21179b3a6ec27a458803bR1423-R1425)
+- This is where the sensor name is defined as text. [Add a case for the new sensor](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-68cc245ab0d3c1bed2bfc22b403edc3ed73d347a35a21179b3a6ec27a458803bR1423-R1425). Keep it brief and follow the same format as the other sensors: usually _TYPE_ (PRESSURE, TEMPERATURE etc.) followed by the abbreviated manufacturer's part number
 
 ## menuAttachedDevices.ino
 
@@ -64,7 +64,7 @@ First up, please target any commits at the _**release_candidate**_ branch, so th
 
 ### menuConfigure_
 
-- [Add a new menuConfigure_ for the new sensor](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-6174875faf8039f2627c16aaf48e4db57f5a2c8c883061ac97202d74e9a46ef8R2026-R2133)
+- [Add a new menuConfigure_ for the new sensor](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-6174875faf8039f2627c16aaf48e4db57f5a2c8c883061ac97202d74e9a46ef8R2026-R2141)
 - Boolean settings are simple to toggle. [Make them exclusive if you need to](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-6174875faf8039f2627c16aaf48e4db57f5a2c8c883061ac97202d74e9a46ef8R1942-R1948)
 - _int64_t_ values are requested using _getNumber_ (defined in support.ino)
 - _double_ values are requested using _getDouble_ (defined in support.ino)
@@ -88,3 +88,12 @@ First up, please target any commits at the _**release_candidate**_ branch, so th
 ### settings struct
 
 - [Add a settings struct for the new sensor](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-c853eddd04f78093fed5ec20b822c3c224bfa5f268738ce4c479b45667f86fe9R265-R281). Include both _log_ and _powerOnDelayMillis_
+
+## README.md
+
+- Add the new sensor to the list in [README.md](./README.md). Include a link to the product page
+- Update the OLA product page on Sparkle - add the new sensor to the list
+
+## CHANGELOG.md
+
+- Update [CHANGELOG.md](./CHANGELOG.md). Start a new version if you need to. Add the new sensor to the change notes
