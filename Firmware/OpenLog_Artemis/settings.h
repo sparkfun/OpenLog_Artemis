@@ -343,6 +343,12 @@ struct struct_settings {
   bool frequentFileAccessTimestamps = false; // If true, the log file access timestamps are updated every 500ms
   bool useGPIO11ForTrigger = false; // If true, use GPIO to trigger sensor logging
   bool fallingEdgeTrigger = true; // Default to falling-edge triggering (If false, triggering will be rising-edge)
+  bool imuAccDLPF = false; // IMU accelerometer Digital Low Pass Filter - default to disabled
+  bool imuGyroDLPF = false; // IMU gyro Digital Low Pass Filter - default to disabled
+  int imuAccFSS = 0; // IMU accelerometer full scale - default to gpm2 (ICM_20948_ACCEL_CONFIG_FS_SEL_e)
+  int imuAccDLPFBW = 7; // IMU accelerometer DLPF bandwidth - default to acc_d473bw_n499bw (ICM_20948_ACCEL_CONFIG_DLPCFG_e)
+  int imuGyroFSS = 0; // IMU gyro full scale - default to 250 degrees per second (ICM_20948_GYRO_CONFIG_1_FS_SEL_e)
+  int imuGyroDLPFBW = 7; // IMU gyro DLPF bandwidth - default to gyr_d361bw4_n376bw5 (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)  
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

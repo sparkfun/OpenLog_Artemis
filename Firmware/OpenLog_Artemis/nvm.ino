@@ -148,6 +148,12 @@ void recordSystemSettingsToFile()
     settingsFile.println("frequentFileAccessTimestamps=" + (String)settings.frequentFileAccessTimestamps);
     settingsFile.println("useGPIO11ForTrigger=" + (String)settings.useGPIO11ForTrigger);
     settingsFile.println("fallingEdgeTrigger=" + (String)settings.fallingEdgeTrigger);
+    settingsFile.println("imuAccDLPF=" + (String)settings.imuAccDLPF);
+    settingsFile.println("imuGyroDLPF=" + (String)settings.imuGyroDLPF);
+    settingsFile.println("imuAccFSS=" + (String)settings.imuAccFSS);
+    settingsFile.println("imuAccDLPFBW=" + (String)settings.imuAccDLPFBW);
+    settingsFile.println("imuGyroFSS=" + (String)settings.imuGyroFSS);
+    settingsFile.println("imuGyroDLPFBW=" + (String)settings.imuGyroDLPFBW);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -376,6 +382,18 @@ bool parseLine(char* str) {
     settings.useGPIO11ForTrigger = d;
   else if (strcmp(settingName, "fallingEdgeTrigger") == 0)
     settings.fallingEdgeTrigger = d;
+  else if (strcmp(settingName, "imuAccDLPF") == 0)
+    settings.imuAccDLPF = d;
+  else if (strcmp(settingName, "imuGyroDLPF") == 0)
+    settings.imuGyroDLPF = d;
+  else if (strcmp(settingName, "imuAccFSS") == 0)
+    settings.imuAccFSS = d;
+  else if (strcmp(settingName, "imuAccDLPFBW") == 0)
+    settings.imuAccDLPFBW = d;
+  else if (strcmp(settingName, "imuGyroFSS") == 0)
+    settings.imuGyroFSS = d;
+  else if (strcmp(settingName, "imuGyroDLPFBW") == 0)
+    settings.imuGyroDLPFBW = d;
   else
     Serial.printf("Unknown setting %s on line: %s\r\n", settingName, str);
 

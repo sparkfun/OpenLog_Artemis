@@ -32,9 +32,9 @@
   Find way to store device configs into EEPROM
   Log four pressure sensors and graph them on plotter
   (checked) Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
-  Test NAU7802s
-  Test SCD30s
-  Add a 'does not like to be powered cycled' setting for each device type.
+  (done) Test NAU7802s
+  (done) Test SCD30s (Add an extended delay for the SCD30. (Issue #5))
+  (won't do?) Add a 'does not like to be powered cycled' setting for each device type. I think this has been superceded by "Add individual power-on delays for each sensor type?.
   (done) Add support for logging VIN
   (done) Investigate error in time between logs (https://github.com/sparkfun/OpenLog_Artemis/issues/13)
   (done) Invesigate RTC reset issue (https://github.com/sparkfun/OpenLog_Artemis/issues/13 + https://forum.sparkfun.com/viewtopic.php?f=123&t=53157)
@@ -44,8 +44,7 @@
   (done) Add a fix so that the MS8607 does not also appear as an MS5637
   (done) Add "set RTC from GPS" functionality
   (done) Add UTCoffset functionality (including support for negative numbers)
-  Figure out how to give the u-blox time to establish a fix if it has been powered down between log intervals.
-    Maybe add a waitForValidFix feature? Or maybe we can work around using a big value for "Set Qwiic bus power up delay"?
+  (done) Figure out how to give the u-blox time to establish a fix if it has been powered down between log intervals. The user can specify up to 60s for the Qwiic power-on delay.
   Add support for VREG_ENABLE
   (done) Add support for PWR_LED
   (done) Use the WDT to reset the Artemis when power is reconnected (previously the Artemis would have stayed in deep sleep)
@@ -69,6 +68,7 @@
   (done) Change detectQwiicDevices so that the MCP9600 (Qwiic Thermocouple) is detected correctly
   (done) Add support for the MPRLS0025PA micro pressure sensor
   (done) Add support for the SN-GCJA5 particle sensor
+  (done) Add IMU accelerometer and gyro full scale and digital low pass filter settings to menuIMU
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -82,7 +82,7 @@ const int FIRMWARE_VERSION_MINOR = 7;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x117
+#define OLA_IDENTIFIER 0x117 // Stored as 279 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -681,7 +681,35 @@ void beginIMU()
       checkBattery();
       delay(1);
     }
-    
+
+    //Update the full scale and DLPF settings
+    ICM_20948_Status_e retval = myICM.enableDLPF(ICM_20948_Internal_Acc, settings.imuAccDLPF);
+    if (retval != ICM_20948_Stat_Ok)
+    {
+      Serial.println(F("Error: Could not configure the IMU Accelerometer DLPF!"));
+    }
+    retval = myICM.enableDLPF(ICM_20948_Internal_Gyr, settings.imuGyroDLPF);
+    if (retval != ICM_20948_Stat_Ok)
+    {
+      Serial.println(F("Error: Could not configure the IMU Gyro DLPF!"));
+    }
+    ICM_20948_dlpcfg_t dlpcfg;
+    dlpcfg.a = settings.imuAccDLPFBW;
+    dlpcfg.g = settings.imuGyroDLPFBW;
+    retval = myICM.setDLPFcfg((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), dlpcfg);
+    if (retval != ICM_20948_Stat_Ok)
+    {
+        Serial.println(F("Error: Could not configure the IMU DLPF BW!"));
+    }
+    ICM_20948_fss_t FSS;
+    FSS.a = settings.imuAccFSS;
+    FSS.g = settings.imuGyroFSS;
+    retval = myICM.setFullScale((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), FSS);
+    if (retval != ICM_20948_Stat_Ok)
+    {
+      Serial.println(F("Error: Could not configure the IMU Full Scale!"));
+    }
+
     online.IMU = true;
   }
   else
