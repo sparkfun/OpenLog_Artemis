@@ -42,25 +42,15 @@ bool detectQwiicDevices()
 
   waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up
   
-  //Do a prelim scan to see if anything is out there
-  for (uint8_t address = 1 ; address < 127 ; address++)
-  {
-    qwiic.beginTransmission(address);
-    if (qwiic.endTransmission() == 0)
-    {
-      somethingDetected = true;
-      if (settings.printDebugMessages == true)
-        Serial.printf("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
-      break;
-    }
-  }
-  if (somethingDetected == false) return (false);
+  // Note: The MCP9600 (Qwiic Thermocouple) is a fussy device. If we use beginTransmission + endTransmission more than once
+  // the second and subsequent times will fail. The MCP9600 only ACKs the first time. The MCP9600 also appears to be able to
+  // lock up the I2C bus if you don't discover it and then begin it in one go...
+  // The following code has been restructured to try and keep the MCP9600 happy.
 
-  Serial.println(F("Identifying Qwiic Devices..."));
+  Serial.println(F("Identifying Qwiic Muxes..."));
 
   //First scan for Muxes. Valid addresses are 0x70 to 0x77 (112 to 119).
   //If any are found, they will be begin()'d causing their ports to turn off
-  printDebug("detectQwiicDevices: scanning for multiplexers\r\n");
   uint8_t muxCount = 0;
   for (uint8_t address = 0x70 ; address < 0x78 ; address++)
   {
@@ -72,6 +62,9 @@ bool detectQwiicDevices()
       //  digitalWrite(PIN_LOGIC_DEBUG, LOW);
       //  digitalWrite(PIN_LOGIC_DEBUG, HIGH);
       //}
+      somethingDetected = true;
+      if (settings.printDebugMessages == true)
+        Serial.printf("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
       deviceType_e foundType = testMuxDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType == DEVICE_MULTIPLEXER)
       {
@@ -82,6 +75,7 @@ bool detectQwiicDevices()
       }
     }
   }
+
   if (muxCount > 0)
   {
     if (settings.printDebugMessages == true)
@@ -92,17 +86,20 @@ bool detectQwiicDevices()
       else
         Serial.println(F(" multiplexers"));
     }
-    beginQwiicDevices(); //Because we are about to use a multiplexer, begin() the muxes.
+    beginQwiicDevices(); //begin() the muxes to disable their ports
   }
 
-  //Before going into sub branches, complete the scan of the main branch for all devices
-  printDebug("detectQwiicDevices: scanning main bus\r\n");
+  //Before going into mux sub branches, scan the main branch for all remaining devices
+  Serial.println(F("Identifying Qwiic Devices..."));
   bool foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
     qwiic.beginTransmission(address);
     if (qwiic.endTransmission() == 0)
     {
+      somethingDetected = true;
+      if (settings.printDebugMessages == true)
+        Serial.printf("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
       deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType != DEVICE_UNKNOWN_DEVICE)
       {
@@ -112,7 +109,7 @@ bool detectQwiicDevices()
         }
         else
         {
-          if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if device was already recorded.
+          if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if mux/device was already recorded.
           {
             if (settings.printDebugMessages == true)
               Serial.printf("detectQwiicDevices: added %s at address 0x%02X\r\n", getDeviceName(foundType), address);
@@ -125,6 +122,8 @@ bool detectQwiicDevices()
       }
     }
   }
+
+  if (somethingDetected == false) return (false);
 
   //If we have muxes, begin scanning their sub nets
   if (muxCount > 0)
@@ -164,6 +163,9 @@ bool detectQwiicDevices()
             qwiic.beginTransmission(address);
             if (qwiic.endTransmission() == 0)
             {
+              // We don't need to do anything special for the MCP9600 here, because we can guarantee that beginTransmission + endTransmission
+              // have only been used once for each MCP9600 address
+              
               somethingDetected = true;
 
               deviceType_e foundType = testDevice(address, muxNode->address, portNumber);
@@ -300,6 +302,12 @@ void menuAttachedDevices()
             break;
           case DEVICE_ADC_ADS122C04:
             Serial.printf("%s ADS122C04 ADC (Qwiic PT100) %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_PRESSURE_MPR0025PA1:
+            Serial.printf("%s MPR MicroPressure Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_PARTICLE_SNGCJA5:
+            Serial.printf("%s SN-GCJA5 Particle Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           default:
             Serial.printf("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
@@ -1839,6 +1847,283 @@ void menuConfigure_ADS122C04(void *configPtr)
         sensorSetting->useThreeWireHighTemperatureMode = false;
         sensorSetting->useTwoWireHighTemperatureMode = true;
       }
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_MPR0025PA1(void *configPtr)
+{
+  struct_MPR0025PA1 *sensorSetting = (struct_MPR0025PA1*)configPtr;
+
+  while (1)
+  {
+    Serial.println();
+    Serial.println(F("Menu: Configure MPR MicroPressure Sensor"));
+
+    Serial.print(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      Serial.printf("2) Minimum PSI: %d\r\n", sensorSetting->minimumPSI);
+
+      Serial.printf("3) Maximum PSI: %d\r\n", sensorSetting->maximumPSI);
+
+      Serial.print(F("4) Use PSI: "));
+      if (sensorSetting->usePSI == true) Serial.println(F("Yes"));
+      else Serial.println(F("No"));
+
+      Serial.print(F("5) Use Pa: "));
+      if (sensorSetting->usePA == true) Serial.println(F("Yes"));
+      else Serial.println(F("No"));
+
+      Serial.print(F("6) Use kPa: "));
+      if (sensorSetting->useKPA == true) Serial.println(F("Yes"));
+      else Serial.println(F("No"));
+
+      Serial.print(F("7) Use torr: "));
+      if (sensorSetting->useTORR == true) Serial.println(F("Yes"));
+      else Serial.println(F("No"));
+
+      Serial.print(F("8) Use inHg: "));
+      if (sensorSetting->useINHG == true) Serial.println(F("Yes"));
+      else Serial.println(F("No"));
+
+      Serial.print(F("9) Use atm: "));
+      if (sensorSetting->useATM == true) Serial.println(F("Yes"));
+      else Serial.println(F("No"));
+
+      Serial.print(F("10) Use bar: "));
+      if (sensorSetting->useBAR == true) Serial.println(F("Yes"));
+      else Serial.println(F("No"));
+
+    }
+    Serial.println(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+      {
+        Serial.print(F("Enter the sensor minimum pressure in PSI (this should be 0 for the MPR0025PA): "));
+        int minPSI = getNumber(menuTimeout); //x second timeout
+        if (minPSI < 0 || minPSI > 30)
+          Serial.println(F("Error: Out of range"));
+        else
+          sensorSetting->minimumPSI = minPSI;
+      }
+      else if (incoming == 3)
+      {
+        Serial.print(F("Enter the sensor maximum pressure in PSI (this should be 25 for the MPR0025PA): "));
+        int maxPSI = getNumber(menuTimeout); //x second timeout
+        if (maxPSI < 0 || maxPSI > 30)
+          Serial.println(F("Error: Out of range"));
+        else
+          sensorSetting->maximumPSI = maxPSI;
+      }
+      else if (incoming == 4)
+      {
+        sensorSetting->usePSI = true;
+        sensorSetting->usePA = false;
+        sensorSetting->useKPA = false;
+        sensorSetting->useTORR = false;
+        sensorSetting->useINHG = false;
+        sensorSetting->useATM = false;
+        sensorSetting->useBAR = false;
+      }
+      else if (incoming == 5)
+      {
+        sensorSetting->usePSI = false;
+        sensorSetting->usePA = true;
+        sensorSetting->useKPA = false;
+        sensorSetting->useTORR = false;
+        sensorSetting->useINHG = false;
+        sensorSetting->useATM = false;
+        sensorSetting->useBAR = false;
+      }
+      else if (incoming == 6)
+      {
+        sensorSetting->usePSI = false;
+        sensorSetting->usePA = false;
+        sensorSetting->useKPA = true;
+        sensorSetting->useTORR = false;
+        sensorSetting->useINHG = false;
+        sensorSetting->useATM = false;
+        sensorSetting->useBAR = false;
+      }
+      else if (incoming == 7)
+      {
+        sensorSetting->usePSI = false;
+        sensorSetting->usePA = false;
+        sensorSetting->useKPA = false;
+        sensorSetting->useTORR = true;
+        sensorSetting->useINHG = false;
+        sensorSetting->useATM = false;
+        sensorSetting->useBAR = false;
+      }
+      else if (incoming == 8)
+      {
+        sensorSetting->usePSI = false;
+        sensorSetting->usePA = false;
+        sensorSetting->useKPA = false;
+        sensorSetting->useTORR = false;
+        sensorSetting->useINHG = true;
+        sensorSetting->useATM = false;
+        sensorSetting->useBAR = false;
+      }
+      else if (incoming == 9)
+      {
+        sensorSetting->usePSI = false;
+        sensorSetting->usePA = false;
+        sensorSetting->useKPA = false;
+        sensorSetting->useTORR = false;
+        sensorSetting->useINHG = false;
+        sensorSetting->useATM = true;
+        sensorSetting->useBAR = false;
+      }
+      else if (incoming == 10)
+      {
+        sensorSetting->usePSI = false;
+        sensorSetting->usePA = false;
+        sensorSetting->useKPA = false;
+        sensorSetting->useTORR = false;
+        sensorSetting->useINHG = false;
+        sensorSetting->useATM = false;
+        sensorSetting->useBAR = true;
+      }
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_SNGCJA5(void *configPtr)
+{
+  struct_SNGCJA5 *sensorSetting = (struct_SNGCJA5*)configPtr;
+
+  while (1)
+  {
+    Serial.println();
+    Serial.println(F("Menu: Configure SNGCJA5 Particle Sensor"));
+
+    Serial.print(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      Serial.print(F("2) Log Particle Mass Density 1.0um (ug/m^3): "));
+      if (sensorSetting->logPM1 == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("3) Log Particle Mass Density 2.5um (ug/m^3): "));
+      if (sensorSetting->logPM25 == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("4) Log Particle Mass Density 10.0um (ug/m^3): "));
+      if (sensorSetting->logPM10 == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("5) Log Particle Count 0.5um: "));
+      if (sensorSetting->logPC05 == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("6) Log Particle Count 1.0um: "));
+      if (sensorSetting->logPC1 == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("7) Log Particle Count 2.5um: "));
+      if (sensorSetting->logPC25 == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("8) Log Particle Count 5.0um: "));
+      if (sensorSetting->logPC50 == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("9) Log Particle Count 7.5um: "));
+      if (sensorSetting->logPC75 == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("10) Log Particle Count 10.0um: "));
+      if (sensorSetting->logPC10 == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("11) Log Combined Sensor Status: "));
+      if (sensorSetting->logSensorStatus == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("12) Log PhotoDiode Status: "));
+      if (sensorSetting->logPDStatus == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("13) Log LaserDiode Status: "));
+      if (sensorSetting->logLDStatus == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("14) Log Fan Status: "));
+      if (sensorSetting->logFanStatus == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+    }
+    Serial.println(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logPM1 ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logPM25 ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logPM10 ^= 1;
+      else if (incoming == 5)
+        sensorSetting->logPC05 ^= 1;
+      else if (incoming == 6)
+        sensorSetting->logPC1 ^= 1;
+      else if (incoming == 7)
+        sensorSetting->logPC25 ^= 1;
+      else if (incoming == 8)
+        sensorSetting->logPC50 ^= 1;
+      else if (incoming == 9)
+        sensorSetting->logPC75 ^= 1;
+      else if (incoming == 10)
+        sensorSetting->logPC10 ^= 1;
+      else if (incoming == 11)
+        sensorSetting->logSensorStatus ^= 1;
+      else if (incoming == 12)
+        sensorSetting->logPDStatus ^= 1;
+      else if (incoming == 13)
+        sensorSetting->logLDStatus ^= 1;
+      else if (incoming == 14)
+        sensorSetting->logFanStatus ^= 1;
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

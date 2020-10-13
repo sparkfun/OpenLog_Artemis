@@ -21,6 +21,8 @@ typedef enum
   DEVICE_HUMIDITY_AHT20,
   DEVICE_HUMIDITY_SHTC3,
   DEVICE_ADC_ADS122C04,
+  DEVICE_PRESSURE_MPR0025PA1, // 0-25 PSI, I2C Address 0x18
+  DEVICE_PARTICLE_SNGCJA5,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -246,6 +248,39 @@ struct struct_ADS122C04 {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
+struct struct_MPR0025PA1 {
+  bool log = true;
+  int minimumPSI = 0;
+  int maximumPSI = 25;
+  bool usePSI = true;
+  bool usePA = false;
+  bool useKPA = false;
+  bool useTORR = false;
+  bool useINHG = false;
+  bool useATM = false;
+  bool useBAR = false;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_SNGCJA5 {
+  bool log = true;
+  bool logPM1 = true;
+  bool logPM25 = true;
+  bool logPM10 = true;
+  bool logPC05 = true;
+  bool logPC1 = true;
+  bool logPC25 = true;
+  bool logPC50 = true;
+  bool logPC75 = true;
+  bool logPC10 = true;
+  bool logSensorStatus = false;
+  bool logPDStatus = true;
+  bool logLDStatus = true;
+  bool logFanStatus = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
   int sizeOfSettings = 0; //sizeOfSettings **must** be the first entry and must be int
@@ -308,6 +343,12 @@ struct struct_settings {
   bool frequentFileAccessTimestamps = false; // If true, the log file access timestamps are updated every 500ms
   bool useGPIO11ForTrigger = false; // If true, use GPIO to trigger sensor logging
   bool fallingEdgeTrigger = true; // Default to falling-edge triggering (If false, triggering will be rising-edge)
+  bool imuAccDLPF = false; // IMU accelerometer Digital Low Pass Filter - default to disabled
+  bool imuGyroDLPF = false; // IMU gyro Digital Low Pass Filter - default to disabled
+  int imuAccFSS = 0; // IMU accelerometer full scale - default to gpm2 (ICM_20948_ACCEL_CONFIG_FS_SEL_e)
+  int imuAccDLPFBW = 7; // IMU accelerometer DLPF bandwidth - default to acc_d473bw_n499bw (ICM_20948_ACCEL_CONFIG_DLPCFG_e)
+  int imuGyroFSS = 0; // IMU gyro full scale - default to 250 degrees per second (ICM_20948_GYRO_CONFIG_1_FS_SEL_e)
+  int imuGyroDLPFBW = 7; // IMU gyro DLPF bandwidth - default to gyr_d361bw4_n376bw5 (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)  
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

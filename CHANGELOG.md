@@ -1,6 +1,15 @@
 Change Log
 ======================
 
+v1.7
+---------
+
+* Corrected the readVin after sleep bug [39](https://github.com/sparkfun/OpenLog_Artemis/issues/39)
+* Corrected detection of the MCP9600 (Qwiic Thermocouple) [41](https://github.com/sparkfun/OpenLog_Artemis/issues/41)
+* Added support for the MPR MicroPressure Sensor [35](https://github.com/sparkfun/OpenLog_Artemis/issues/35)
+* Added support for the SN-GCJA5 Particle Sensor
+* IMU full scale and Digital Low Pass Filter settings can now be configured via Menu 3 [42](https://github.com/sparkfun/OpenLog_Artemis/issues/42)
+
 v1.6
 ---------
 

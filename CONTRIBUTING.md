@@ -1,4 +1,4 @@
-### How to Contribute
+# OpenLog Artemis : How to Contribute
 
 Thank you so *much* for offering to help out. We truly appreciate it.
 
