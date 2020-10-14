@@ -7,48 +7,48 @@ This document summarizes the units used for each sensor measurement.
 
 ### Built-in Inertial Measurement Unit:
 
-- [ICM-20948 IMU](ICM-20948-IMU)
+- [ICM-20948 IMU](#ICM-20948-IMU)
 
 ### Global Navigation Satellite System (GNSS) navigation data:
 
-- [u-blox GNSS boards](u-blox-GNSS-boards)
+- [u-blox GNSS boards](#u-blox-GNSS-boards)
 
 ### Pressure, Altitude, Humidity and Temperature Data:
 
-- [BME280 atmospheric sensor](BME280-atmospheric-sensor)
-- [LPS25HB absolute pressure sensor](LPS25HB-absolute-pressure-sensor)
-- [MS8607 PHT sensor](MS8607-PHT-sensor)
-- [MPR0025PA MicroPressure sensor](MPR0025PA-MicroPressure-sensor)
-- [MS5637 barometric pressure sensor](MS5637-barometric-pressure-sensor)
-- [AHT20 humidity and temperature sensor](AHT20-humidity-and-temperature-sensor)
-- [SHTC3 humidity and temperature sensor](SHTC3-humidity-and-temperature-sensor)
+- [BME280 atmospheric sensor](#BME280-atmospheric-sensor)
+- [LPS25HB absolute pressure sensor](#LPS25HB-absolute-pressure-sensor)
+- [MS8607 PHT sensor](#MS8607-PHT-sensor)
+- [MPR0025PA MicroPressure sensor](#MPR0025PA-MicroPressure-sensor)
+- [MS5637 barometric pressure sensor](#MS5637-barometric-pressure-sensor)
+- [AHT20 humidity and temperature sensor](#AHT20-humidity-and-temperature-sensor)
+- [SHTC3 humidity and temperature sensor](#SHTC3-humidity-and-temperature-sensor)
 
 ### Air Quality and Environmental Sensors:
 
-- [CCS811 air quality sensor](CCS811-air-quality-sensor)
-- [VEML6075 UV light sensor](VEML6075-UV-light-sensor)
-- [SGP30 air quality and Volatile Organic Compound (VOC) sensor](SGP30-air-quality-and-VOC-sensor)
-- [SCD30 CO2 humidity and temperature sensor](SCD30-CO2-humidity-and-temperature-sensor)
-- [SN-GCJA5 Particle Sensor](SN-GCJA5-Particle-Sensor)
+- [CCS811 air quality sensor](#CCS811-air-quality-sensor)
+- [VEML6075 UV light sensor](#VEML6075-UV-light-sensor)
+- [SGP30 air quality and Volatile Organic Compound (VOC) sensor](#SGP30-air-quality-and-VOC-sensor)
+- [SCD30 CO2 humidity and temperature sensor](#SCD30-CO2-humidity-and-temperature-sensor)
+- [SN-GCJA5 Particle Sensor](#SN-GCJA5-Particle-Sensor)
 
 ### Distance:
 
-- [VL53L1X laser Time of Flight (ToF) sensor](VL53L1X-laser-ToF-sensor)
-- [VCNL4040 proximity sensor](VCNL4040-proximity-sensor)
+- [VL53L1X laser Time of Flight (ToF) sensor](#VL53L1X-laser-ToF-sensor)
+- [VCNL4040 proximity sensor](#VCNL4040-proximity-sensor)
 
 ### Precision Temperature Sensors:
 
-- [MCP9600 thermocouple amplifier](MCP9600-thermocouple-amplifier)
-- [Qwiic PT100 ADS122C04 platinum resistance sensor](Qwiic-PT100-ADS122C04-platinum-resistance-sensor)
-- [TMP117 precision temperature sensor](TMP117-precision-temperature-sensor)
+- [MCP9600 thermocouple amplifier](#MCP9600-thermocouple-amplifier)
+- [Qwiic PT100 ADS122C04 platinum resistance sensor](#Qwiic-PT100-ADS122C04-platinum-resistance-sensor)
+- [TMP117 precision temperature sensor](#TMP117-precision-temperature-sensor)
 
 ### Weight:
 
-- [NAU7802 load cell sensor](NAU7802-load-cell-sensor)
+- [NAU7802 load cell sensor](#NAU7802-load-cell-sensor)
 
 ### ADC:
 
-- [Qwiic PT100 ADS122C04 platinum resistance sensor](Qwiic-PT100-ADS122C04-platinum-resistance-sensor)
+- [Qwiic PT100 ADS122C04 platinum resistance sensor](#Qwiic-PT100-ADS122C04-platinum-resistance-sensor)
 
 ---
 ## Sensor Units
