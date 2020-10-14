@@ -81,21 +81,21 @@ This document summarizes the units used for each sensor measurement.
 | PDOP | gps_pDOP | m<sup>-2</sup> |
 | Time Of Week | gps_iTOW | Seconds |
 
-Lat = Latitude
-Lon = Longitude
-MSL = Metres above Sea Level
-SIV = Satellites In View
-PDOP = Positional Dilution Of Precision
+Lat = Latitude  
+Lon = Longitude  
+MSL = Metres above Sea Level  
+SIV = Satellites In View  
+PDOP = Positional Dilution Of Precision  
 
-Fix Type:
-0: No
-3: 3D
-4: GNSS + Dead Reckoning
+Fix Type:  
+0: No  
+3: 3D  
+4: GNSS + Dead Reckoning  
 
-Carrier Solution:
-0: No
-1: Float Solution
-2: Fixed Solution
+Carrier Solution:  
+0: No  
+1: Float Solution  
+2: Fixed Solution  
 
 ---
 ## BME280 atmospheric sensor
@@ -227,23 +227,23 @@ Sensor status:
 | 2 | Any 2 |
 | 3 | Any 3 nor 2 |
 
-PD status:
-0: Normal status
-1: Normal status (within -80% against initial value), with S/W correction
-2: Abnormal (below -90% against initial value), loss of function
-3: Abnormal (below -80% against initial value), with S/W correction
+PD status:  
+0: Normal status  
+1: Normal status (within -80% against initial value), with S/W correction  
+2: Abnormal (below -90% against initial value), loss of function  
+3: Abnormal (below -80% against initial value), with S/W correction  
 
-LD operational status:
-0: Normal status
-1: Normal status (within -70% against initial LOP), with S/W correction
-2: Abnormal (below -90% against initial LOP) or no LOP, loss of function
-3: Abnormal (below -70% against initial LOP), with S/W correction
+LD operational status:  
+0: Normal status  
+1: Normal status (within -70% against initial LOP), with S/W correction  
+2: Abnormal (below -90% against initial LOP) or no LOP, loss of function  
+3: Abnormal (below -70% against initial LOP), with S/W correction  
 
-Fan operational status:
-0: Normal status
-1: Normal status (1,000rpm or more), with S/W correction
-2: In initial calibration
-3: Abnormal (below 1,000rpm), out of control
+Fan operational status:  
+0: Normal status  
+1: Normal status (1,000rpm or more), with S/W correction  
+2: In initial calibration  
+3: Abnormal (below 1,000rpm), out of control  
 
 ---
 ## VL53L1X laser ToF sensor
