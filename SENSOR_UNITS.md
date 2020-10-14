@@ -74,12 +74,12 @@ This document summarizes the units used for each sensor measurement.
 | Altitude | gps_Alt | mm |
 | Altitude MSL | gps_AltMSL | mm |
 | SIV | gps_SIV | Count |
-| Fix Type | gps_FixType | 0-4 |
+| Fix Type | gps_FixType | 0-5 |
 | Carrier Soln. | gps_CarrierSolution | 0-2 |
 | Ground Speed | gps_GroundSpeed | mm/s |
-| Heading | gps_Heading | Degrees<sup>-7</sup> |
+| Heading | gps_Heading | Degrees<sup>-5</sup> |
 | PDOP | gps_pDOP | m<sup>-2</sup> |
-| Time Of Week | gps_iTOW | Seconds |
+| Time Of Week | gps_iTOW | ms |
 
 Lat = Latitude  
 Lon = Longitude  
@@ -89,8 +89,11 @@ PDOP = Positional Dilution Of Precision
 
 Fix Type:  
 0: No  
+1: Dead Reckoning Only  
+2: 2D  
 3: 3D  
 4: GNSS + Dead Reckoning  
+5: Time Only
 
 Carrier Solution:  
 0: No  
