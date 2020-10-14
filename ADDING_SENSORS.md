@@ -97,3 +97,7 @@ First up, please target any commits at the _**release_candidate**_ branch, so th
 ## CHANGELOG.md
 
 - Update [CHANGELOG.md](./CHANGELOG.md). Start a new version if you need to. Add the new sensor to the change notes
+
+## SENSOR_UNITS.md
+
+- Update [SENSOR_UNITS.md](./SENSOR_UNITS.md). Add the new sensor to the appropriate section at the start of the document. Add a unit table for the sensor at the end of the document.
