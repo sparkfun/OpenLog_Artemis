@@ -78,7 +78,7 @@ This document summarizes the units used for each sensor measurement.
 | Carrier Soln. | gps_CarrierSolution | 0-2 |
 | Ground Speed | gps_GroundSpeed | mm/s |
 | Heading | gps_Heading | Degrees<sup>-5</sup> |
-| PDOP | gps_pDOP | m<sup>-2</sup> |
+| PDOP | gps_pDOP | 10<sup>-2</sup> (dimensionless) |
 | Time Of Week | gps_iTOW | ms |
 
 Lat = Latitude  
