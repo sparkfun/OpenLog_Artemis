@@ -73,6 +73,7 @@
   (done) Add IMU accelerometer and gyro full scale and digital low pass filter settings to menuIMU
   (done) Add a fix to make sure the MS8607 is detected correctly: https://github.com/sparkfun/OpenLog_Artemis/issues/54
   (done) Add logMicroseconds: https://github.com/sparkfun/OpenLog_Artemis/issues/49
+  (done) Add an option to use autoPVT when logging GNSS data: https://github.com/sparkfun/OpenLog_Artemis/issues/50
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;

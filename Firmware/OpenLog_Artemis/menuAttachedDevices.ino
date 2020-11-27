@@ -907,13 +907,17 @@ void menuConfigure_uBlox(void *configPtr)
       if (sensorSetting->logpDOP == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.flush();
-
       Serial.print(F("13) Log Interval Time Of Week (iTOW): "));
       if (sensorSetting->logiTOW == true) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
       Serial.printf("14) Set I2C Interface Speed (u-blox modules have pullups built in. Remove *all* I2C pullups to achieve 400kHz): %d\r\n", sensorSetting->i2cSpeed);
+
+      Serial.print(F("15) Use autoPVT: "));
+      if (sensorSetting->useAutoPVT == true) Serial.println(F("Yes"));
+      else Serial.println(F("No"));
+
+      Serial.flush();
     }
     Serial.println(F("x) Exit"));
 
@@ -956,6 +960,8 @@ void menuConfigure_uBlox(void *configPtr)
         else
           sensorSetting->i2cSpeed = 100000;
       }
+      else if (incoming == 15)
+        sensorSetting->useAutoPVT ^= 1;
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
