@@ -154,6 +154,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("imuAccDLPFBW=" + (String)settings.imuAccDLPFBW);
     settingsFile.println("imuGyroFSS=" + (String)settings.imuGyroFSS);
     settingsFile.println("imuGyroDLPFBW=" + (String)settings.imuGyroDLPFBW);
+    settingsFile.println("logMicroseconds=" + (String)settings.logMicroseconds);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -394,6 +395,8 @@ bool parseLine(char* str) {
     settings.imuGyroFSS = d;
   else if (strcmp(settingName, "imuGyroDLPFBW") == 0)
     settings.imuGyroDLPFBW = d;
+  else if (strcmp(settingName, "logMicroseconds") == 0)
+    settings.logMicroseconds = d;
   else
     Serial.printf("Unknown setting %s on line: %s\r\n", settingName, str);
 

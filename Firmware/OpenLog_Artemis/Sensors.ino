@@ -35,6 +35,13 @@ void getData()
         sprintf(rtcTime, "%02d:%02d:%02d.%02d,", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
         strcat(outputData, rtcTime);
       }
+      
+      if (settings.logMicroseconds)
+      {
+        char microseconds[11]; //
+        sprintf(microseconds, "%d,", micros());
+        strcat(outputData, microseconds);
+      }
     } //end if use RTC for timestamp
     else //Use GPS for timestamp
     {
@@ -821,6 +828,8 @@ void printHelperText(bool terminalOnly)
         strcat(helperText, "rtcDate,");
       if (settings.logTime)
         strcat(helperText, "rtcTime,");
+      if (settings.logMicroseconds)
+        strcat(helperText, "micros,");
     }
   } //end if use RTC for timestamp
   else //Use GPS for timestamp
