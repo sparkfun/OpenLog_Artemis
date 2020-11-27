@@ -51,6 +51,7 @@ bool detectQwiicDevices()
 
   //First scan for Muxes. Valid addresses are 0x70 to 0x77 (112 to 119).
   //If any are found, they will be begin()'d causing their ports to turn off
+  //testMuxDevice will check if an MS8607 is attached (address 0x76) as it can cause the I2C bus to lock up if we try to detect it as a mux
   uint8_t muxCount = 0;
   for (uint8_t address = 0x70 ; address < 0x78 ; address++)
   {
@@ -72,6 +73,11 @@ bool detectQwiicDevices()
         if (settings.printDebugMessages == true)
           Serial.printf("detectQwiicDevices: multiplexer found at address 0x%02X\r\n", address);
         muxCount++;
+      }
+      else if (foundType == DEVICE_PRESSURE_MS5637)
+      {
+        if (settings.printDebugMessages == true)
+          Serial.printf("detectQwiicDevices: MS8607/MS5637 found at address 0x%02X. Ignoring it for now...\r\n", address);        
       }
     }
   }
