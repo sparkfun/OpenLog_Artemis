@@ -315,6 +315,9 @@ void menuAttachedDevices()
           case DEVICE_PARTICLE_SNGCJA5:
             Serial.printf("%s SN-GCJA5 Particle Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_IMU_BNO080:
+            Serial.printf("%s BNO080 IMU %s\r\n", strDeviceMenu, strAddress);
+            break;
           default:
             Serial.printf("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
             break;
@@ -2146,6 +2149,86 @@ void menuConfigure_SNGCJA5(void *configPtr)
     else if (incoming == STATUS_PRESSED_X)
       break;
     else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_BNO080(void *configPtr)
+{
+  struct_BNO080 *sensorSetting = (struct_BNO080*)configPtr;
+  while (1)
+  {
+    Serial.println();
+    Serial.println(F("Menu: Configure BNO080 IMU"));
+
+    Serial.print(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      Serial.print(F("2) Log Rotation Vector (Quaternions): "));
+      if (sensorSetting->logQuat == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("3) Log Accelerometer: "));
+      if (sensorSetting->logAccel == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("4) Log Linear Acceleration (Minus Gravity): "));
+      if (sensorSetting->logLinAccel == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("5) Log Gyro: "));
+      if (sensorSetting->logGyro == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("6) Log FastGyro: "));
+      if (sensorSetting->logFastGyro == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("7) Log Magnetometer: "));
+      if (sensorSetting->logMag == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+
+      Serial.print(F("8) Log Euler Angles (Roll/Pitch/Yaw): "));
+      if (sensorSetting->logEuler == true) Serial.println(F("Enabled"));
+      else Serial.println(F("Disabled"));
+    }
+    Serial.println(F("x) Exit"));
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == '2')
+        sensorSetting->logQuat ^= 1;
+      else if (incoming == '3')
+        sensorSetting->logAccel ^= 1;
+      else if (incoming == '4')
+        sensorSetting->logLinAccel ^= 1;
+      else if (incoming == '5')
+        sensorSetting->logGyro ^= 1;
+      else if (incoming == '6')
+        sensorSetting->logFastGyro ^= 1;
+      else if (incoming == '7')
+        sensorSetting->logMag ^= 1;
+      else if (incoming == '8')
+        sensorSetting->logEuler ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
       break;
     else
       printUnknown(incoming);

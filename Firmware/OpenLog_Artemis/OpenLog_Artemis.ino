@@ -74,6 +74,7 @@
   (done) Add a fix to make sure the MS8607 is detected correctly: https://github.com/sparkfun/OpenLog_Artemis/issues/54
   (done) Add logMicroseconds: https://github.com/sparkfun/OpenLog_Artemis/issues/49
   (done) Add an option to use autoPVT when logging GNSS data: https://github.com/sparkfun/OpenLog_Artemis/issues/50
+  (work in progress) Add support for the BNO080 so users have access to Quaternions and Euler angles: https://github.com/sparkfun/OpenLog_Artemis/issues/47
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -206,6 +207,7 @@ ICM_20948_SPI myICM;
 #include "SparkFun_ADS122C04_ADC_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_ADS122C04
 #include "SparkFun_MicroPressure.h" // Click here to get the library: http://librarymanager/All#SparkFun_MicroPressure
 #include "SparkFun_Particle_Sensor_SN-GCJA5_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Particle_Sensor_SN-GCJA5
+#include "SparkFun_BNO080_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_BNO080
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
