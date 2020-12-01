@@ -576,8 +576,8 @@ void configureDevice(node * temp)
 
         sensor->saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the current ioPortsettings to flash and BBR
 
-        //sensor->setAutoPVT(true); //Tell the GPS to "send" each solution
-        sensor->setAutoPVT(false); //We will poll the device for PVT solutions
+        sensor->setAutoPVT(nodeSetting->useAutoPVT); // Use autoPVT as required
+        
         if (1000000ULL / settings.usBetweenReadings <= 1) //If we are slower than 1Hz logging rate
           // setNavigationFrequency expects a uint8_t to define the number of updates per second
           // So the slowest rate we can set with setNavigationFrequency is 1Hz
@@ -1273,6 +1273,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
 
 //Given an address, returns the device type if it responds as we would expect
 //This version is dedicated to testing muxes and uses a custom .begin to avoid the slippery mux problem
+//However, we also need to check if an MS8607 is attached (address 0x76) as it can cause the I2C bus to lock up if not detected correctly
 deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumber)
 {
   switch (i2cAddress)
@@ -1283,7 +1284,53 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
     case 0x73:
     case 0x74:
     case 0x75:
+      {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
+        
+        //Confidence: Medium - Write/Read/Clear to 0x00
+        if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_MULTIPLEXER);
+      }
+      break;
     case 0x76:
+      {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
+
+        // If an MS8607 is connected, multiplexerBegin causes the MS8607 to 'crash' and lock up the I2C bus... So we need to check if an MS8607 is connected first. 
+        // We will use the MS5637 as this will test for itself and the pressure sensor of the MS8607
+        // Just to make life even more complicated, a mux with address 0x76 will also appear as an MS5637 due to the way the MS5637 eeprom crc check is calculated.
+        // So, we can't use .begin as the test for a MS5637 / MS8607. We need to be more creative!
+        // If we write 0xA0 to i2cAddress and then read two bytes:
+        //  A mux will return 0xA0A0
+        //  An MS5637 / MS8607 will return the value stored in its eeprom which _hopefully_ is not 0xA0A0!
+
+        // Let's hope this doesn't cause problems for the BME280...! We should be OK as the default address for the BME280 is 0x77.
+        
+        qwiic.beginTransmission((uint8_t)i2cAddress);
+        qwiic.write((uint8_t)0xA0);
+        uint8_t i2c_status = qwiic.endTransmission();
+
+        if (i2c_status == 0) // If the I2C write was successful
+        {
+          qwiic.requestFrom((uint8_t)i2cAddress, 2U); // Read two bytes
+          uint8_t buffer[2];
+          for (uint8_t i = 0; i < 2; i++)
+          {
+            buffer[i] = qwiic.read();
+          }
+          if ((buffer[0] != 0xA0) || (buffer[1] != 0xA0)) // If we read back something other than 0xA0A0 then we are probably talking to an MS5637 / MS8607, not a mux
+          {
+            return (DEVICE_PRESSURE_MS5637);
+          }
+        }
+
+        //Confidence: Medium - Write/Read/Clear to 0x00
+        if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_MULTIPLEXER);
+      }
+      break;
     case 0x77:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.

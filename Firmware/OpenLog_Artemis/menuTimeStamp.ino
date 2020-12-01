@@ -64,8 +64,12 @@ void menuTimeStamp()
       }
       Serial.print(F("9) Local offset from UTC: "));
       Serial.println(settings.localUTCOffset);
-  
+
     }
+
+    Serial.print(F("10) Log Microseconds: "));
+    if (settings.logMicroseconds == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
 
     Serial.println(F("x) Exit"));
 
@@ -75,12 +79,14 @@ void menuTimeStamp()
       settings.logDate ^= 1;
     else if (incoming == 2)
       settings.logTime ^= 1;
+    else if (incoming == 10)
+      settings.logMicroseconds ^= 1;
     else if (incoming == STATUS_PRESSED_X)
       return;
     else if (incoming == STATUS_GETNUMBER_TIMEOUT)
       return;
 
-    if (settings.logDate == true || settings.logTime == true)
+    if ((settings.logDate == true) || (settings.logTime == true))
     {
       //Options 3, 8, 9
       if (incoming == 3)

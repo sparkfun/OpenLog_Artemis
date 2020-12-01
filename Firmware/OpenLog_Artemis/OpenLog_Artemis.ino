@@ -11,6 +11,8 @@
   This firmware runs the OpenLog Artemis. A large variety of system settings can be
   adjusted by connecting at 115200bps.
 
+  The Board should be set to SparkFun Apollo3 \ SparkFun RedBoard Artemis ATP.
+
   v1.0 Power Consumption:
    Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
    10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
@@ -69,10 +71,13 @@
   (done) Add support for the MPRLS0025PA micro pressure sensor
   (done) Add support for the SN-GCJA5 particle sensor
   (done) Add IMU accelerometer and gyro full scale and digital low pass filter settings to menuIMU
+  (done) Add a fix to make sure the MS8607 is detected correctly: https://github.com/sparkfun/OpenLog_Artemis/issues/54
+  (done) Add logMicroseconds: https://github.com/sparkfun/OpenLog_Artemis/issues/49
+  (done) Add an option to use autoPVT when logging GNSS data: https://github.com/sparkfun/OpenLog_Artemis/issues/50
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 7;
+const int FIRMWARE_VERSION_MINOR = 8;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -82,7 +87,7 @@ const int FIRMWARE_VERSION_MINOR = 7;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x117 // Stored as 279 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x118 // Stored as 280 decimal in OLA_settings.txt
 
 #include "settings.h"
 

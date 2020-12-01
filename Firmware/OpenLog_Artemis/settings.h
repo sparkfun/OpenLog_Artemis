@@ -128,6 +128,7 @@ struct struct_uBlox {
   bool logiTOW = false;
   uint32_t i2cSpeed = 100000; //Default to 100kHz for least number of CRC issues
   unsigned long powerOnDelayMillis = 1000; // Wait for at least this many millis before communicating with this device
+  bool useAutoPVT = false; // Use autoPVT - to allow data collection at rates faster than GPS
 };
 
 #define VL53L1X_DISTANCE_MODE_SHORT 0
@@ -349,6 +350,7 @@ struct struct_settings {
   int imuAccDLPFBW = 7; // IMU accelerometer DLPF bandwidth - default to acc_d473bw_n499bw (ICM_20948_ACCEL_CONFIG_DLPCFG_e)
   int imuGyroFSS = 0; // IMU gyro full scale - default to 250 degrees per second (ICM_20948_GYRO_CONFIG_1_FS_SEL_e)
   int imuGyroDLPFBW = 7; // IMU gyro DLPF bandwidth - default to gyr_d361bw4_n376bw5 (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)  
+  bool logMicroseconds = false; // Log micros()
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

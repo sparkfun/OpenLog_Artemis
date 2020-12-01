@@ -154,6 +154,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("imuAccDLPFBW=" + (String)settings.imuAccDLPFBW);
     settingsFile.println("imuGyroFSS=" + (String)settings.imuGyroFSS);
     settingsFile.println("imuGyroDLPFBW=" + (String)settings.imuGyroDLPFBW);
+    settingsFile.println("logMicroseconds=" + (String)settings.logMicroseconds);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -394,6 +395,8 @@ bool parseLine(char* str) {
     settings.imuGyroFSS = d;
   else if (strcmp(settingName, "imuGyroDLPFBW") == 0)
     settings.imuGyroDLPFBW = d;
+  else if (strcmp(settingName, "logMicroseconds") == 0)
+    settings.logMicroseconds = d;
   else
     Serial.printf("Unknown setting %s on line: %s\r\n", settingName, str);
 
@@ -471,6 +474,7 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logpDOP=" + nodeSetting->logpDOP);
             settingsFile.println((String)base + "logiTOW=" + nodeSetting->logiTOW);
             settingsFile.println((String)base + "i2cSpeed=" + nodeSetting->i2cSpeed);
+            settingsFile.println((String)base + "useAutoPVT=" + nodeSetting->useAutoPVT);
           }
           break;
         case DEVICE_PROXIMITY_VCNL4040:
@@ -866,6 +870,8 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logiTOW = d;
           else if (strcmp(deviceSettingName, "i2cSpeed") == 0)
             nodeSetting->i2cSpeed = d;
+          else if (strcmp(deviceSettingName, "useAutoPVT") == 0)
+            nodeSetting->useAutoPVT = d;
           else
             Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
         }
