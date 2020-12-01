@@ -237,12 +237,6 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_SNGCJA5;
       }
       break;
-    case DEVICE_IMU_BNO080:
-      {
-        temp->classPtr = new BNO080;
-        temp->configPtr = new struct_BNO080;
-      }
-      break;
     default:
       Serial.printf("addDevice Device type not found: %d\r\n", deviceType);
       break;
@@ -463,18 +457,6 @@ bool beginQwiicDevices()
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin(qwiic) == true) //Wire port. Returns true on success.
             temp->online = true;
-        }
-        break;
-      case DEVICE_IMU_BNO080:
-        {
-          BNO080 *tempDevice = (BNO080 *)temp->classPtr;
-          struct_BNO080 *nodeSetting = (struct_BNO080 *)temp->configPtr; //Create a local pointer that points to same spot as node does
-          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
-          //if(settings.printDebugMessages == true) tempDevice->enableDebugging();
-          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
-            temp->online = true;
-          else
-            printDebug(F("beginQwiicDevices: BNO080.begin failed.\r\n"));
         }
         break;
       default:
@@ -701,7 +683,7 @@ void configureDevice(node * temp)
         SFE_ADS122C04 *sensor = (SFE_ADS122C04 *)temp->classPtr;
         struct_ADS122C04 *sensorSetting = (struct_ADS122C04 *)temp->configPtr;
 
-        //Configure the wire mode for readPT100Centigrade and readPT100Fahrenheit
+        //Configure the wite mode for readPT100Centigrade and readPT100Fahrenheit
         //(readInternalTemperature and readRawVoltage change and restore the mode automatically)
         if (sensorSetting->useFourWireMode)
           sensor->configureADCmode(ADS122C04_4WIRE_MODE);
@@ -722,23 +704,6 @@ void configureDevice(node * temp)
       break;
     case DEVICE_PARTICLE_SNGCJA5:
       //Nothing to configure
-      break;
-    case DEVICE_IMU_BNO080:
-      {
-        BNO080 *sensor = (BNO080 *)temp->classPtr;
-        struct_BNO080 *sensorSetting = (struct_BNO080 *)temp->configPtr;
-
-        if ((sensorSetting->logQuat) || (sensorSetting->logEuler))
-          sensor->enableRotationVector((uint16_t)(settings.usBetweenReadings / 1000));
-        if (sensorSetting->logAccel)
-          sensor->enableAccelerometer((uint16_t)(settings.usBetweenReadings / 1000));
-        if (sensorSetting->logLinAccel)
-          sensor->enableLinearAccelerometer((uint16_t)(settings.usBetweenReadings / 1000));
-        if ((sensorSetting->logGyro) || (sensorSetting->logFastGyro))
-          sensor->enableGyro((uint16_t)(settings.usBetweenReadings / 1000));
-        if (sensorSetting->logMag)
-          sensor->enableMagnetometer((uint16_t)(settings.usBetweenReadings / 1000));
-      }
       break;
     default:
       Serial.printf("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
@@ -829,9 +794,6 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_PARTICLE_SNGCJA5:
       ptr = (FunctionPointer)menuConfigure_SNGCJA5;
-      break;
-    case DEVICE_IMU_BNO080:
-      ptr = (FunctionPointer)menuConfigure_BNO080;
       break;
     default:
       Serial.println(F("getConfigFunctionPtr: Unknown device type"));
@@ -970,7 +932,6 @@ void swap(struct node * a, struct node * b)
 #define ADR_UBLOX 0x42 //But can be set to any address
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
-#define ADR_BNO080 0x4B //Alternate: 0x4A
 #define ADR_SGP30 0x58
 #define ADR_CCS811 0x5B //Alternates: 0x5A
 #define ADR_LPS25HB 0x5D //Alternates: 0x5C
@@ -1102,14 +1063,6 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x4A:
       {
-        //Confidence: High - Checks product ID report
-        BNO080 sensor1;
-        if(settings.printDebugMessages == true) sensor1.enableDebugging();
-        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_IMU_BNO080);
-        else
-          printDebug(F("testDevice: BNO080.begin failed.\r\n"));
-
         //Confidence: High - Checks 16 bit ID
         TMP117 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1118,14 +1071,6 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x4B:
       {
-        //Confidence: High - Checks product ID report
-        BNO080 sensor1;
-        if(settings.printDebugMessages == true) sensor1.enableDebugging();
-        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_IMU_BNO080);
-        else
-          printDebug(F("testDevice: BNO080.begin failed.\r\n"));
-
         //Confidence: High - Checks 16 bit ID
         TMP117 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1524,9 +1469,6 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_PARTICLE_SNGCJA5:
       return "Particle-SNGCJA5";
-      break;
-    case DEVICE_IMU_BNO080:
-      return "IMU-BNO080";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:

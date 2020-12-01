@@ -5,10 +5,9 @@ This document summarizes the units used for each sensor measurement.
 ---
 ## Index
 
-### Inertial Measurement Unit:
+### Built-in Inertial Measurement Unit:
 
-- [ICM-20948 IMU - Built-in](#ICM-20948-IMU)
-- [BNO080 IMU](#BNO080-IMU)
+- [ICM-20948 IMU](#ICM-20948-IMU)
 
 ### Global Navigation Satellite System (GNSS) navigation data:
 
@@ -63,25 +62,6 @@ This document summarizes the units used for each sensor measurement.
 | Gyro | gX,gY,gZ | Degrees per Second |
 | Magnetometer | mX,mY,mZ | micro Tesla |
 | Temperature | imu_degC | Degrees Centigrade |
-
----
-## BNO080 IMU
-
-| []() | | |
-|---|---|---|
-| Rotation Vector | QuatI,QuatJ,QuatK,QuatR,QuatAcc | unit quaternion |
-| Accelerometer | AccelX,AccelY,AccelZ,AccelAcc | m/s<sup>2</sup> |
-| Linear Acceleration | LinAccelX,LinAccelY,LinAccelZ,LinAccelAcc | m/s<sup>2</sup> |
-| Gyro | GyroX,GyroY,GyroZ,GyroAcc | rad/s |
-| Fast Gyro | FastGyroX,FastGyroY,FastGyroZ | rad/s |
-| Magnetometer | MagX,MagY,MagZ,MagAcc | micro Tesla |
-| Euler | Roll,Pitch,Yaw | Degrees |
-
-Acc = Accuracy:
-0: Unreliable
-1: Low
-2: Medium
-3: High
 
 ---
 ## u-blox GNSS boards

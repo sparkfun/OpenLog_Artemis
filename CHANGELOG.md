@@ -1,15 +1,6 @@
 Change Log
 ======================
 
-v1.8
----------
-
-* Added a fix to make sure the MS8607 is detected correctly [54](https://github.com/sparkfun/OpenLog_Artemis/issues/54)
-* Added logMicroseconds [49](https://github.com/sparkfun/OpenLog_Artemis/issues/49)
-* Added an option to use autoPVT when logging GNSS data [50](https://github.com/sparkfun/OpenLog_Artemis/issues/50)
-* Started to add support for the BNO080 so users can have access to Quaternions and Euler angles [47](https://github.com/sparkfun/OpenLog_Artemis/issues/47)
-  * This is work in progress. The BNO080 does not currently .begin reliably - especially on the second attempt - and I don't understand why...
-
 v1.7
 ---------
 

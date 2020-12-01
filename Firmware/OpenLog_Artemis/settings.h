@@ -23,7 +23,6 @@ typedef enum
   DEVICE_ADC_ADS122C04,
   DEVICE_PRESSURE_MPR0025PA1, // 0-25 PSI, I2C Address 0x18
   DEVICE_PARTICLE_SNGCJA5,
-  DEVICE_IMU_BNO080,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -279,18 +278,6 @@ struct struct_SNGCJA5 {
   bool logPDStatus = true;
   bool logLDStatus = true;
   bool logFanStatus = true;
-  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
-};
-
-struct struct_BNO080 {
-  bool log = true;
-  bool logQuat = true;
-  bool logAccel = true;
-  bool logLinAccel = true;
-  bool logGyro = true;
-  bool logFastGyro = true;
-  bool logMag = true;  
-  bool logEuler = true;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

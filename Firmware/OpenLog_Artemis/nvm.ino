@@ -649,19 +649,6 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logFanStatus=" + nodeSetting->logFanStatus);
           }
           break;
-        case DEVICE_IMU_BNO080:
-          {
-            struct_BNO080 *nodeSetting = (struct_BNO080 *)temp->configPtr;
-            settingsFile.println((String)base + "log=" + nodeSetting->log);
-            settingsFile.println((String)base + "logQuat=" + nodeSetting->logQuat);
-            settingsFile.println((String)base + "logAccel=" + nodeSetting->logAccel);
-            settingsFile.println((String)base + "logLinAccel=" + nodeSetting->logLinAccel);
-            settingsFile.println((String)base + "logGyro=" + nodeSetting->logGyro);
-            settingsFile.println((String)base + "logFastGyro=" + nodeSetting->logFastGyro);
-            settingsFile.println((String)base + "logMag=" + nodeSetting->logMag);
-            settingsFile.println((String)base + "logEuler=" + nodeSetting->logEuler);
-          }
-          break;
         default:
           Serial.printf("recordSettingsToFile Unknown device: %s\r\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
@@ -1181,29 +1168,6 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logLDStatus = d;
           else if (strcmp(deviceSettingName, "logFanStatus") == 0)
             nodeSetting->logFanStatus = d;
-          else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
-        }
-        break;
-      case DEVICE_IMU_BNO080:
-        {
-          struct_BNO080 *nodeSetting = (struct_BNO080 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
-          if (strcmp(deviceSettingName, "log") == 0)
-            nodeSetting->log = d;
-          else if (strcmp(deviceSettingName, "logQuat") == 0)
-            nodeSetting->logQuat = d;
-          else if (strcmp(deviceSettingName, "logAccel") == 0)
-            nodeSetting->logAccel = d;
-          else if (strcmp(deviceSettingName, "logLinAccel") == 0)
-            nodeSetting->logLinAccel = d;
-          else if (strcmp(deviceSettingName, "logGyro") == 0)
-            nodeSetting->logGyro = d;
-          else if (strcmp(deviceSettingName, "logFastGyro") == 0)
-            nodeSetting->logFastGyro = d;
-          else if (strcmp(deviceSettingName, "logMag") == 0)
-            nodeSetting->logMag = d;
-          else if (strcmp(deviceSettingName, "logEuler") == 0)
-            nodeSetting->logEuler = d;
           else
             Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
         }
