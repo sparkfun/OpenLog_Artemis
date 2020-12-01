@@ -1,6 +1,13 @@
 Change Log
 ======================
 
+v1.8
+---------
+
+* Added a fix to make sure the MS8607 is detected correctly [54](https://github.com/sparkfun/OpenLog_Artemis/issues/54)
+* Added logMicroseconds [49](https://github.com/sparkfun/OpenLog_Artemis/issues/49)
+* Added an option to use autoPVT when logging GNSS data [50](https://github.com/sparkfun/OpenLog_Artemis/issues/50)
+
 v1.7
 ---------
 
