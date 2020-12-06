@@ -19,7 +19,7 @@ void menuIMU()
       if (settings.logIMUGyro) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
-      Serial.print(F("4) Magnotometer Logging: "));
+      Serial.print(F("4) Magnetometer Logging: "));
       if (settings.logIMUMag) Serial.println(F("Enabled"));
       else Serial.println(F("Disabled"));
 
