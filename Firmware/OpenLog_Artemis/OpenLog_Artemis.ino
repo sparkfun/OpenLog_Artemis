@@ -77,7 +77,7 @@
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 8;
+const int FIRMWARE_VERSION_MINOR = 9;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -87,7 +87,7 @@ const int FIRMWARE_VERSION_MINOR = 8;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x118 // Stored as 280 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x119 // Stored as 280 decimal in OLA_settings.txt
 
 #include "settings.h"
 
