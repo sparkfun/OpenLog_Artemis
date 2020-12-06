@@ -39,7 +39,7 @@ void getData()
       if (settings.logMicroseconds)
       {
         char microseconds[11]; //
-        sprintf(microseconds, "%d,", micros());
+        sprintf(microseconds, "%lu,", micros());
         strcat(outputData, microseconds);
       }
     } //end if use RTC for timestamp
