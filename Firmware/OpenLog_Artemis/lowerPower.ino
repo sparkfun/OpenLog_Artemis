@@ -1,9 +1,57 @@
+// Read the battery voltage
+// If it is low, increment lowBatteryReadings
+// If lowBatteryReadings exceeds lowBatteryReadingsLimit then powerDown
+void checkBattery(void)
+{
+#if(HARDWARE_VERSION_MAJOR >= 1)
+  if (settings.enableLowBatteryDetection == true)
+  {
+    float voltage = readVIN(); // Read the battery voltage
+    if (voltage < settings.lowBatteryThreshold) // Is the voltage low?
+    {
+      lowBatteryReadings++; // Increment the low battery count
+      if (lowBatteryReadings > lowBatteryReadingsLimit) // Have we exceeded the low battery count limit?
+      {
+        // Gracefully powerDown
+
+        //Save files before powerDown
+        if (online.dataLogging == true)
+        {
+          sensorDataFile.sync();
+          updateDataFileAccess(&sensorDataFile); // Update the file access time & date
+          sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
+        }
+        if (online.serialLogging == true)
+        {
+          serialDataFile.sync();
+          updateDataFileAccess(&serialDataFile); // Update the file access time & date
+          serialDataFile.close();
+        }
+      
+        delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
+
+        Serial.println(F("***      LOW BATTERY VOLTAGE DETECTED! GOING INTO POWERDOWN      ***"));
+        Serial.println(F("*** PLEASE CHANGE THE POWER SOURCE AND RESET THE OLA TO CONTINUE ***"));
+      
+        Serial.flush(); //Finish any prints
+
+        powerDown(); // power down and wait for reset
+      }
+    }
+    else
+    {
+      lowBatteryReadings = 0; // Reset the low battery count (to reject noise)
+    }    
+  }
+#endif
+}
+
 //Power down the entire system but maintain running of RTC
 //This function takes 100us to run including GPIO setting
 //This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
 //With leakage across the 3.3V protection diode, it's approx 3.00uA.
 void powerDown()
-{ 
+{
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
@@ -12,6 +60,13 @@ void powerDown()
   {
     detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
     pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+  }
+
+  //Prevent trigger from waking us from sleep
+  if (settings.useGPIO11ForTrigger == true)
+  {
+    detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+    pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
   }
 
   //WE NEED TO POWER DOWN ASAP - we don't have time to close the SD files
@@ -54,17 +109,17 @@ void powerDown()
   for (int x = 0; x < 50; x++)
   {
     if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-      //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
-      (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-      (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-      (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+        //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+        (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
     {
       am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
     }
   }
 
   //powerLEDOff();
-  
+
   //Make sure PIN_POWER_LOSS is configured as an input for the WDT
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
 
@@ -117,7 +172,11 @@ void goToSleep()
     sysTicksToSleep = msToSleep / 1000L; // Do the division first for long intervals (to avoid an overflow)
     sysTicksToSleep = sysTicksToSleep * 32768L; // Now do the multiply
   }
-  
+
+  //printDebug("goToSleep: sysTicksToSleep = " + (String)sysTicksToSleep + "\r\n");
+
+  //printDebug("goToSleep: online.IMU = " + (String)online.IMU + "\r\n");
+
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
 
@@ -127,16 +186,26 @@ void goToSleep()
     detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
     pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
   }
-  
+
+  //Prevent trigger from waking us from sleep
+  //(This should be redundant. We should not be going to sleep if triggering is enabled?)
+  if (settings.useGPIO11ForTrigger == true)
+  {
+    detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+    pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+  }
+
   //Save files before going to sleep
   if (online.dataLogging == true)
   {
     sensorDataFile.sync();
+    updateDataFileAccess(&sensorDataFile); // Update the file access time & date
     sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
   }
   if (online.serialLogging == true)
   {
     serialDataFile.sync();
+    updateDataFileAccess(&serialDataFile); // Update the file access time & date
     serialDataFile.close();
   }
 
@@ -169,10 +238,10 @@ void goToSleep()
   for (int x = 0; x < 50; x++)
   {
     if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-      //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
-      (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-      (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-      (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+        //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+        (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
     {
       am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
     }
@@ -183,12 +252,7 @@ void goToSleep()
 
   //We can't leave these power control pins floating
   imuPowerOff();
-#if((HARDWARE_VERSION_MAJOR == 0) && (HARDWARE_VERSION_MINOR == 5))
-  // For high speed logging tests on x04:
   microSDPowerOff();
-#else  
-  microSDPowerOff();
-#endif
 
   //Keep Qwiic bus powered on if user desires it
   if (settings.powerDownQwiicBusBetweenReads == true)
@@ -205,7 +269,7 @@ void goToSleep()
   //Power down Flash, SRAM, cache
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE);         //Turn off CACHE
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K);    //Turn off everything but lower 512k
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k
+  //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k (Leaving 64K powered up probably isn't enough - "Global variables use 70496 bytes of dynamic memory.")
   //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
 
   //Use the lower power 32kHz clock. Use it to run CT6 as well.
@@ -216,30 +280,25 @@ void goToSleep()
   uint32_t msBeenAwake = millis();
   uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
 
-#if((HARDWARE_VERSION_MAJOR == 0) && (HARDWARE_VERSION_MINOR == 5))
-  // For high speed logging tests on x04, always sleep for the full sysTicksToSleep
-  sysTicksToSleep += sysTicksAwake;
-#else
   //Check that sysTicksToSleep is >> sysTicksAwake
   if (sysTicksToSleep > (sysTicksAwake + 3277)) // Abort if we are trying to sleep for < 100ms
-#endif
   {
     sysTicksToSleep -= sysTicksAwake;
-  
+
     //Setup interrupt to trigger when the number of ms have elapsed
     am_hal_stimer_compare_delta_set(6, sysTicksToSleep);
-  
+
     //We use counter/timer 6 to cause us to wake up from sleep but 0 to 7 are available
     //CT 7 is used for Software Serial. All CTs are used for Servo.
     am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);  //Clear CT6
     am_hal_stimer_int_enable(AM_HAL_STIMER_INT_COMPAREG); //Enable C/T G=6
-  
+
     //Enable the timer interrupt in the NVIC.
     NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
-  
+
     //Deep Sleep
     am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
-  
+
     //Turn off interrupt
     NVIC_DisableIRQ(STIMER_CMPR6_IRQn);
     am_hal_stimer_int_disable(AM_HAL_STIMER_INT_COMPAREG); //Disable C/T G=6
@@ -262,7 +321,14 @@ void wakeFromSleep()
   am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
 
   //Turn on ADC
-  ap3_adc_setup();
+  uint32_t adcError = (uint32_t)ap3_adc_setup();
+  if (settings.logA11 == true) adcError += (uint32_t)ap3_set_pin_to_analog(11); // Set _pad_ 11 to analog if enabled for logging
+  if (settings.logA12 == true) adcError += (uint32_t)ap3_set_pin_to_analog(12); // Set _pad_ 12 to analog if enabled for logging
+  if (settings.logA13 == true) adcError += (uint32_t)ap3_set_pin_to_analog(13); // Set _pad_ 13 to analog if enabled for logging
+  if (settings.logA32 == true) adcError += (uint32_t)ap3_set_pin_to_analog(32); // Set _pad_ 32 to analog if enabled for logging
+#if(HARDWARE_VERSION_MAJOR >= 1)
+  adcError += (uint32_t)ap3_set_pin_to_analog(PIN_VIN_MONITOR); // Set _pad_ PIN_VIN_MONITOR to analog
+#endif
 
   //Run setup again
 
@@ -283,6 +349,17 @@ void wakeFromSleep()
     stopLoggingSeen = false; // Make sure the flag is clear
   }
 
+  if (settings.useGPIO11ForTrigger == true) //(This should be redundant. We should not be going to sleep if triggering is enabled?)
+  {
+    pinMode(PIN_TRIGGER, INPUT_PULLUP);
+    delay(1); // Let the pin stabilize
+    if (settings.fallingEdgeTrigger == true)
+      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+    else
+      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+    triggerEdgeSeen = false; // Make sure the flag is clear
+  }
+
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, LOW);
 
@@ -290,36 +367,36 @@ void wakeFromSleep()
 
   Serial.begin(settings.serialTerminalBaudRate);
 
+  printDebug("wakeFromSleep: I'm awake!\r\n");
+  printDebug("wakeFromSleep: adcError is " + (String)adcError + ".");
+  if (adcError > 0)
+    printDebug(" This indicates an error was returned by ap3_adc_setup or one of the calls to ap3_set_pin_to_analog.");
+  printDebug("\r\n");
+
+  beginQwiic(); //Power up Qwiic bus as early as possible
+
   SPI.begin(); //Needed if SD is disabled
 
   beginSD(); //285 - 293ms
 
   enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
-    
-  beginQwiic(); //Power up Qwiic bus
-  long powerStartTime = millis();
 
   beginDataLogging(); //180ms
 
   beginSerialLogging(); //20 - 99ms
 
   beginIMU(); //61ms
+  //printDebug("wakeFromSleep: online.IMU = " + (String)online.IMU + "\r\n");
 
   //If we powered down the Qwiic bus, then re-begin and re-configure everything
   if (settings.powerDownQwiicBusBetweenReads == true)
   {
-    //Before we talk to Qwiic devices we need to allow the power rail to settle
-    while (millis() - powerStartTime < settings.qwiicBusPowerUpDelayMs) //Testing, 100 too short, 200 is ok
-    {
-      delay(1); //Wait
-    }
-
-    beginQwiicDevices();
+    beginQwiicDevices(); // beginQwiicDevices will wait for the qwiic devices to power up
     //loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
 
-  //Serial.printf("Wake up time: %.02f ms\n", (micros() - startTime) / 1000.0);
+  //Serial.printf("Wake up time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
 
   //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
   takeReading = true;
@@ -328,19 +405,21 @@ void wakeFromSleep()
 void stopLogging(void)
 {
   detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
-  
+
   //Save files before going to sleep
   if (online.dataLogging == true)
   {
     sensorDataFile.sync();
+    updateDataFileAccess(&sensorDataFile); // Update the file access time & date
     sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
   }
   if (online.serialLogging == true)
   {
     serialDataFile.sync();
+    updateDataFileAccess(&serialDataFile); // Update the file access time & date
     serialDataFile.close();
   }
-  
+
   Serial.print(F("Logging is stopped. Please reset OpenLog Artemis and open a terminal at "));
   Serial.print((String)settings.serialTerminalBaudRate);
   Serial.println(F("bps..."));
@@ -348,29 +427,40 @@ void stopLogging(void)
   powerDown();
 }
 
+void waitForQwiicBusPowerDelay() // Wait while the qwiic devices power up
+{
+  //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
+  //Give sensors, specifically those with a low I2C address, time to turn on
+  // If we're not using the SD card, everything will have happened much quicker than usual.
+  unsigned long qwiicPowerHasBeenOnFor = millis() - qwiicPowerOnTime;
+  if (qwiicPowerHasBeenOnFor < qwiicPowerOnDelayMillis)
+  {
+    unsigned long delayFor = qwiicPowerOnDelayMillis - qwiicPowerHasBeenOnFor;
+    for (unsigned long i = 0; i < delayFor; i++)
+    {
+      checkBattery();
+      delay(1);
+    }
+  }
+}
+
 void qwiicPowerOn()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
+#if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, LOW);
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
-  digitalWrite(PIN_QWIIC_POWER, LOW);
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 6)
-  digitalWrite(PIN_QWIIC_POWER, HIGH);
-#elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
+#else
   digitalWrite(PIN_QWIIC_POWER, HIGH);
 #endif
+
+  qwiicPowerOnTime = millis(); //Record this time so we wait enough time before detecting certain sensors
 }
 void qwiicPowerOff()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
+#if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, HIGH);
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 5)
-  digitalWrite(PIN_QWIIC_POWER, HIGH);
-#elif(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 6)
-  digitalWrite(PIN_QWIIC_POWER, LOW);
-#elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
+#else
   digitalWrite(PIN_QWIIC_POWER, LOW);
 #endif
 }
@@ -401,15 +491,15 @@ void powerLEDOn()
 {
 #if(HARDWARE_VERSION_MAJOR >= 1)
   pinMode(PIN_PWR_LED, OUTPUT);
-  digitalWrite(PIN_PWR_LED, HIGH); // Turn the Power LED on  
-#endif  
+  digitalWrite(PIN_PWR_LED, HIGH); // Turn the Power LED on
+#endif
 }
 void powerLEDOff()
 {
 #if(HARDWARE_VERSION_MAJOR >= 1)
   pinMode(PIN_PWR_LED, OUTPUT);
   digitalWrite(PIN_PWR_LED, LOW); // Turn the Power LED off
-#endif  
+#endif
 }
 
 //Returns the number of milliseconds according to the RTC
@@ -432,43 +522,43 @@ uint64_t rtcMillis()
 //Returns the day of year
 //https://gist.github.com/jrleeman/3b7c10712112e49d8607
 int calculateDayOfYear(int day, int month, int year)
-{  
-  // Given a day, month, and year (4 digit), returns 
+{
+  // Given a day, month, and year (4 digit), returns
   // the day of year. Errors return 999.
-  
-  int daysInMonth[] = {31,28,31,30,31,30,31,31,30,31,30,31};
-  
+
+  int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
   // Verify we got a 4-digit year
   if (year < 1000) {
     return 999;
   }
-  
+
   // Check if it is a leap year, this is confusing business
   // See: https://support.microsoft.com/en-us/kb/214019
-  if (year%4  == 0) {
-    if (year%100 != 0) {
+  if (year % 4  == 0) {
+    if (year % 100 != 0) {
       daysInMonth[1] = 29;
     }
     else {
-      if (year%400 == 0) {
+      if (year % 400 == 0) {
         daysInMonth[1] = 29;
       }
     }
-   }
+  }
 
   // Make sure we are on a valid day of the month
-  if (day < 1) 
+  if (day < 1)
   {
     return 999;
-  } else if (day > daysInMonth[month-1]) {
+  } else if (day > daysInMonth[month - 1]) {
     return 999;
   }
-  
+
   int doy = 0;
   for (int i = 0; i < month - 1; i++) {
     doy += daysInMonth[i];
   }
-  
+
   doy += day;
   return doy;
 }

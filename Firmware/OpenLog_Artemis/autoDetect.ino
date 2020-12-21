@@ -225,8 +225,20 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_ADS122C04;
       }
       break;
+    case DEVICE_PRESSURE_MPR0025PA1:
+      {
+        temp->classPtr = new SparkFun_MicroPressure;
+        temp->configPtr = new struct_MPR0025PA1;
+      }
+      break;
+    case DEVICE_PARTICLE_SNGCJA5:
+      {
+        temp->classPtr = new SFE_PARTICLE_SENSOR;
+        temp->configPtr = new struct_SNGCJA5;
+      }
+      break;
     default:
-      Serial.printf("addDevice Device type not found: %d\n", deviceType);
+      Serial.printf("addDevice Device type not found: %d\r\n", deviceType);
       break;
   }
 
@@ -252,12 +264,16 @@ bool beginQwiicDevices()
 {
   bool everythingStarted = true;
 
+  waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up - if required
+  
+  qwiicPowerOnDelayMillis = settings.qwiicBusPowerUpDelayMs; // Set qwiicPowerOnDelayMillis to the _minimum_ defined by settings.qwiicBusPowerUpDelayMs. It will be increased if required.
+
   //Step through the list
   node *temp = head;
 
   if (temp == NULL)
   {
-    Serial.println(F("beginQwiicDevices: No devices detected"));
+    printDebug(F("beginQwiicDevices: No devices detected\r\n"));
     return (true);
   }
 
@@ -277,6 +293,8 @@ bool beginQwiicDevices()
       case DEVICE_MULTIPLEXER:
         {
           QWIICMUX *tempDevice = (QWIICMUX *)temp->classPtr;
+          struct_multiplexer *nodeSetting = (struct_multiplexer *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(temp->address, qwiic); //Address, Wire port
         }
         break;
@@ -284,6 +302,7 @@ bool beginQwiicDevices()
         {
           NAU7802 *tempDevice = (NAU7802 *)temp->classPtr;
           struct_NAU7802 *nodeSetting = (struct_NAU7802 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
@@ -291,6 +310,7 @@ bool beginQwiicDevices()
         {
           SFEVL53L1X *tempDevice = (SFEVL53L1X *)temp->classPtr;
           struct_VL53L1X *nodeSetting = (struct_VL53L1X *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
             temp->online = true;
         }
@@ -300,6 +320,7 @@ bool beginQwiicDevices()
           qwiic.setPullups(0); //Disable pullups for u-blox comms.
           SFE_UBLOX_GPS *tempDevice = (SFE_UBLOX_GPS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
           qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups.
         }
@@ -308,30 +329,39 @@ bool beginQwiicDevices()
         {
           VCNL4040 *tempDevice = (VCNL4040 *)temp->classPtr;
           struct_VCNL4040 *nodeSetting = (struct_VCNL4040 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_TEMPERATURE_TMP117:
         {
           TMP117 *tempDevice = (TMP117 *)temp->classPtr;
+          struct_TMP117 *nodeSetting = (struct_TMP117 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(temp->address, qwiic); //Address, Wire port
         }
         break;
       case DEVICE_PRESSURE_LPS25HB:
         {
           LPS25HB *tempDevice = (LPS25HB *)temp->classPtr;
+          struct_LPS25HB *nodeSetting = (struct_LPS25HB *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
         }
         break;
       case DEVICE_PRESSURE_MS5637:
         {
           MS5637 *tempDevice = (MS5637 *)temp->classPtr;
+          struct_MS5637 *nodeSetting = (struct_MS5637 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_PHT_BME280:
         {
           BME280 *tempDevice = (BME280 *)temp->classPtr;
+          struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           tempDevice->setI2CAddress(temp->address);
           temp->online = tempDevice->beginI2C(qwiic); //Wire port
         }
@@ -339,48 +369,64 @@ bool beginQwiicDevices()
       case DEVICE_UV_VEML6075:
         {
           VEML6075 *tempDevice = (VEML6075 *)temp->classPtr;
+          struct_VEML6075 *nodeSetting = (struct_VEML6075 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_VOC_CCS811:
         {
           CCS811 *tempDevice = (CCS811 *)temp->classPtr;
+          struct_CCS811 *nodeSetting = (struct_CCS811 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_VOC_SGP30:
         {
           SGP30 *tempDevice = (SGP30 *)temp->classPtr;
+          struct_SGP30 *nodeSetting = (struct_SGP30 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_CO2_SCD30:
         {
           SCD30 *tempDevice = (SCD30 *)temp->classPtr;
+          struct_SCD30 *nodeSetting = (struct_SCD30 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_PHT_MS8607:
         {
           MS8607 *tempDevice = (MS8607 *)temp->classPtr;
+          struct_MS8607 *nodeSetting = (struct_MS8607 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_TEMPERATURE_MCP9600:
         {
           MCP9600 *tempDevice = (MCP9600 *)temp->classPtr;
+          struct_MCP9600 *nodeSetting = (struct_MCP9600 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(temp->address, qwiic); //Address, Wire port
         }
         break;
       case DEVICE_HUMIDITY_AHT20:
         {
           AHT20 *tempDevice = (AHT20 *)temp->classPtr;
+          struct_AHT20 *nodeSetting = (struct_AHT20 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
       case DEVICE_HUMIDITY_SHTC3:
         {
           SHTC3 *tempDevice = (SHTC3 *)temp->classPtr;
+          struct_SHTC3 *nodeSetting = (struct_SHTC3 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin(qwiic) == 0) //Wire port. Returns 0 on success.
             temp->online = true;
         }
@@ -388,7 +434,28 @@ bool beginQwiicDevices()
       case DEVICE_ADC_ADS122C04:
         {
           SFE_ADS122C04 *tempDevice = (SFE_ADS122C04 *)temp->classPtr;
+          struct_ADS122C04 *nodeSetting = (struct_ADS122C04 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_PRESSURE_MPR0025PA1:
+        {
+          // TO DO: Figure out how to pass minimumPSI and maximumPSI when instantiating the sensor. Maybe add an update-_minPsi-and-_maxPsi function to the library?
+          SparkFun_MicroPressure *tempDevice = (SparkFun_MicroPressure *)temp->classPtr;
+          struct_MPR0025PA1 *nodeSetting = (struct_MPR0025PA1 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_PARTICLE_SNGCJA5:
+        {
+          SFE_PARTICLE_SENSOR *tempDevice = (SFE_PARTICLE_SENSOR *)temp->classPtr;
+          struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic) == true) //Wire port. Returns true on success.
             temp->online = true;
         }
         break;
@@ -423,7 +490,7 @@ void printOnlineDevice()
 
   if (temp == NULL)
   {
-    Serial.println(F("printOnlineDevice: No devices detected"));
+    printDebug(F("printOnlineDevice: No devices detected\r\n"));
     return;
   }
 
@@ -433,15 +500,15 @@ void printOnlineDevice()
     if (temp->online)
     {
       if (temp->muxAddress == 0)
-        sprintf(sensorOnlineText, "%s online at address 0x%02X\n", getDeviceName(temp->deviceType), temp->address);
+        sprintf(sensorOnlineText, "%s online at address 0x%02X\r\n", getDeviceName(temp->deviceType), temp->address);
       else
-        sprintf(sensorOnlineText, "%s online at address 0x%02X.0x%02X.%d\n", getDeviceName(temp->deviceType), temp->address, temp->muxAddress, temp->portNumber);
+        sprintf(sensorOnlineText, "%s online at address 0x%02X.0x%02X.%d\r\n", getDeviceName(temp->deviceType), temp->address, temp->muxAddress, temp->portNumber);
 
       deviceCount++;
     }
     else
     {
-      sprintf(sensorOnlineText, "%s failed to respond\n", getDeviceName(temp->deviceType));
+      sprintf(sensorOnlineText, "%s failed to respond\r\n", getDeviceName(temp->deviceType));
     }
     Serial.print(sensorOnlineText);
 
@@ -449,7 +516,7 @@ void printOnlineDevice()
   }
 
   if (settings.printDebugMessages == true)
-    Serial.printf("Device count: %d\n", deviceCount);
+    Serial.printf("Device count: %d\r\n", deviceCount);
 }
 
 //Given the node number, apply the node's configuration settings to the device
@@ -509,8 +576,8 @@ void configureDevice(node * temp)
 
         sensor->saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the current ioPortsettings to flash and BBR
 
-        //sensor->setAutoPVT(true); //Tell the GPS to "send" each solution
-        sensor->setAutoPVT(false); //We will poll the device for PVT solutions
+        sensor->setAutoPVT(nodeSetting->useAutoPVT); // Use autoPVT as required
+        
         if (1000000ULL / settings.usBetweenReadings <= 1) //If we are slower than 1Hz logging rate
           // setNavigationFrequency expects a uint8_t to define the number of updates per second
           // So the slowest rate we can set with setNavigationFrequency is 1Hz
@@ -632,8 +699,14 @@ void configureDevice(node * temp)
           sensor->configureADCmode(ADS122C04_2WIRE_HI_TEMP);
       }
       break;
+    case DEVICE_PRESSURE_MPR0025PA1:
+      //Nothing to configure
+      break;
+    case DEVICE_PARTICLE_SNGCJA5:
+      //Nothing to configure
+      break;
     default:
-      Serial.printf("configureDevice: Unknown device type %d: %s\n", deviceType, getDeviceName((deviceType_e)deviceType));
+      Serial.printf("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
   }
 }
@@ -715,6 +788,12 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_ADC_ADS122C04:
       ptr = (FunctionPointer)menuConfigure_ADS122C04;
+      break;
+    case DEVICE_PRESSURE_MPR0025PA1:
+      ptr = (FunctionPointer)menuConfigure_MPR0025PA1;
+      break;
+    case DEVICE_PARTICLE_SNGCJA5:
+      ptr = (FunctionPointer)menuConfigure_SNGCJA5;
       break;
     default:
       Serial.println(F("getConfigFunctionPtr: Unknown device type"));
@@ -844,8 +923,10 @@ void swap(struct node * a, struct node * b)
 // Available Qwiic devices
 //We no longer use defines in the search table. These are just here for reference.
 #define ADR_VEML6075 0x10
+#define ADR_MPR0025PA1 0x18
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
+#define ADR_SNGCJA5 0x33
 #define ADR_AHT20 0x38
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
 #define ADR_UBLOX 0x42 //But can be set to any address
@@ -877,6 +958,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
           return (DEVICE_UV_VEML6075);
       }
       break;
+    case 0x18:
+      {
+        //Confidence: Medium - Checks the status byte power indication bit and three "always 0" bits
+        SparkFun_MicroPressure sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          if ((sensor.readStatus() & 0x5A) == 0x40) // Mask the power indication bit and three "always 0" bits
+            return (DEVICE_PRESSURE_MPR0025PA1);
+      }
+      break;
     case 0x2A:
       {
         //Confidence: High - Checks 8 bit revision code (0x0F)
@@ -892,6 +982,14 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         SFEVL53L1X sensor(qwiic); //Start with given wire port
         if (sensor.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
           return (DEVICE_DISTANCE_VL53L1X);
+      }
+      break;
+    case 0x33:
+      {
+        //Confidence: low - basic isConnected test only...
+        SFE_PARTICLE_SENSOR sensor;
+        if (sensor.begin(qwiic) == true) //Wire port
+          return (DEVICE_PARTICLE_SNGCJA5);
       }
       break;
     case 0x38:
@@ -1004,6 +1102,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x60:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1017,6 +1116,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x61:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1031,6 +1131,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x62:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1039,6 +1140,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x63:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1047,6 +1149,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x64:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1055,6 +1158,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x65:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1063,6 +1167,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x66:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1071,6 +1176,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x67:
       {
+        //Always do the MCP9600 first. It's fussy...
         //Confidence: High - Checks 8bit ID
         MCP9600 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1154,19 +1260,20 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     default:
       {
         if (muxAddress == 0)
-          Serial.printf("Unknown device at address (0x%02X)\n", i2cAddress);
+          Serial.printf("Unknown device at address (0x%02X)\r\n", i2cAddress);
         else
-          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\n", i2cAddress, muxAddress, portNumber);
+          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
         return DEVICE_UNKNOWN_DEVICE;
       }
       break;
   }
-  Serial.printf("Known I2C address but device failed identification at address 0x%02X\n", i2cAddress);
+  Serial.printf("Known I2C address but device failed identification at address 0x%02X\r\n", i2cAddress);
   return DEVICE_UNKNOWN_DEVICE;
 }
 
 //Given an address, returns the device type if it responds as we would expect
 //This version is dedicated to testing muxes and uses a custom .begin to avoid the slippery mux problem
+//However, we also need to check if an MS8607 is attached (address 0x76) as it can cause the I2C bus to lock up if not detected correctly
 deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumber)
 {
   switch (i2cAddress)
@@ -1177,7 +1284,53 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
     case 0x73:
     case 0x74:
     case 0x75:
+      {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
+        
+        //Confidence: Medium - Write/Read/Clear to 0x00
+        if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_MULTIPLEXER);
+      }
+      break;
     case 0x76:
+      {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
+
+        // If an MS8607 is connected, multiplexerBegin causes the MS8607 to 'crash' and lock up the I2C bus... So we need to check if an MS8607 is connected first. 
+        // We will use the MS5637 as this will test for itself and the pressure sensor of the MS8607
+        // Just to make life even more complicated, a mux with address 0x76 will also appear as an MS5637 due to the way the MS5637 eeprom crc check is calculated.
+        // So, we can't use .begin as the test for a MS5637 / MS8607. We need to be more creative!
+        // If we write 0xA0 to i2cAddress and then read two bytes:
+        //  A mux will return 0xA0A0
+        //  An MS5637 / MS8607 will return the value stored in its eeprom which _hopefully_ is not 0xA0A0!
+
+        // Let's hope this doesn't cause problems for the BME280...! We should be OK as the default address for the BME280 is 0x77.
+        
+        qwiic.beginTransmission((uint8_t)i2cAddress);
+        qwiic.write((uint8_t)0xA0);
+        uint8_t i2c_status = qwiic.endTransmission();
+
+        if (i2c_status == 0) // If the I2C write was successful
+        {
+          qwiic.requestFrom((uint8_t)i2cAddress, 2U); // Read two bytes
+          uint8_t buffer[2];
+          for (uint8_t i = 0; i < 2; i++)
+          {
+            buffer[i] = qwiic.read();
+          }
+          if ((buffer[0] != 0xA0) || (buffer[1] != 0xA0)) // If we read back something other than 0xA0A0 then we are probably talking to an MS5637 / MS8607, not a mux
+          {
+            return (DEVICE_PRESSURE_MS5637);
+          }
+        }
+
+        //Confidence: Medium - Write/Read/Clear to 0x00
+        if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_MULTIPLEXER);
+      }
+      break;
     case 0x77:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
@@ -1191,9 +1344,9 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
     default:
       {
         if (muxAddress == 0)
-          Serial.printf("Unknown device at address (0x%02X)\n", i2cAddress);
+          Serial.printf("Unknown device at address (0x%02X)\r\n", i2cAddress);
         else
-          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\n", i2cAddress, muxAddress, portNumber);
+          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
         return DEVICE_UNKNOWN_DEVICE;
       }
       break;
@@ -1310,6 +1463,12 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_ADC_ADS122C04:
       return "ADC-ADS122C04";
+      break;
+    case DEVICE_PRESSURE_MPR0025PA1:
+      return "Pressure-MPR";
+      break;
+    case DEVICE_PARTICLE_SNGCJA5:
+      return "Particle-SNGCJA5";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:

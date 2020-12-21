@@ -32,12 +32,14 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [BME280 Humidity and Barometric Pressure Sensor](https://www.sparkfun.com/products/15440)
 * [MS5637 Barometric Pressure Sensor](https://www.sparkfun.com/products/14688)
 * [MS8607 Pressure Humidity Temperature Sensor](https://www.sparkfun.com/products/16298)
+* [MPR0025PA MicroPressure Sensor](https://www.sparkfun.com/products/16476)
 * [TMP117 High Precision Temperature Sensor](https://www.sparkfun.com/products/15805)
 * [AHT20 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16618)
 * [SHTC3 Humidity and Temperature Sensor](https://www.sparkfun.com/products/16467)
 * [CCS811 Air Quality Sensor](https://www.sparkfun.com/products/14348)
 * [SGP30 Air Quality Sensor](https://www.sparkfun.com/products/16531)
 * [SCD30 CO<sub>2</sub> and Air Quality Sensor](https://www.sparkfun.com/products/15112)
+* [SN-GCJA5 Particle Sensor](https://www.sparkfun.com/products/17123)
 * [VEML6075 UV Sensor](https://www.sparkfun.com/products/15089)
 * [VCNL4040 Proximity Sensor](https://www.sparkfun.com/products/15177)
 * [VL53L1X LIDAR Distance Sensor](https://www.sparkfun.com/products/14722)
@@ -58,16 +60,19 @@ The OLA can be tailored to many different applications and we will be releasing 
 Repository Contents
 -------------------
 
-* **/Binaries** - The binary files for the different versions of the OLA firmware
+* **/Binaries** - The binary files for the different versions of the OLA firmware.
 * **/Firmware** - The main sketch that runs OpenLog Artemis as well as a variety of sketches to test various sensor interfaces and power saving states.
-* **/Hardware** - Eagle files
+* **/Hardware** - Eagle files.
 
 Documentation
 --------------
 
-* **[UPGRADE.md](UPGRADE.md)** - contains full instructions on how to upgrade the firmware on the OLA using the [Artemis Firmware Upload GUI](https://github.com/sparkfun/Artemis-Firmware-Upload-GUI)
+* **[Hookup Guide](https://learn.sparkfun.com/tutorials/openlog-artemis-hookup-guide)** - hookup guide for the OLA.
+* **[UPGRADE.md](./UPGRADE.md)** - contains full instructions on how to upgrade the firmware on the OLA using the [Artemis Firmware Upload GUI](https://github.com/sparkfun/Artemis-Firmware-Upload-GUI).
+* **[CONTRIBUTING.md](./CONTRIBUTING.md)** - guidance on how to contribute to this library.
 * **[Installing an Arduino Library Guide](https://learn.sparkfun.com/tutorials/installing-an-arduino-library)** - OLA includes a large number of libraries that will need to be installed before compiling will work.
-* **[Hookup Guide](https://learn.sparkfun.com/tutorials/openlog-artemis-hookup-guide)** - Basic hookup guide for the OLA.
+* **[ADDING_SENSORS.md](./ADDING_SENSORS.md)** - contains _abbreviated_ instructions on how to add a new sensor to the OLA firmware. It's more of an aide-memoire really... Sorry about that.
+* **[SENSOR_UNITS.md](./SENSOR_UNITS.md)** - contains a summary of the units used for each sensor measurement.
 
 License Information
 -------------------

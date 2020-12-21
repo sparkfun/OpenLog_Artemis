@@ -2,6 +2,7 @@
 void getData()
 {
   measurementCount++;
+  measurementTotal++;
 
   char tempData[50];
   outputData[0] = '\0'; //Clear string contents
@@ -33,6 +34,13 @@ void getData()
         }
         sprintf(rtcTime, "%02d:%02d:%02d.%02d,", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
         strcat(outputData, rtcTime);
+      }
+      
+      if (settings.logMicroseconds)
+      {
+        char microseconds[11]; //
+        sprintf(microseconds, "%d,", micros());
+        strcat(outputData, microseconds);
       }
     } //end if use RTC for timestamp
     else //Use GPS for timestamp
@@ -110,8 +118,12 @@ void getData()
 
   if (online.IMU)
   {
+    //printDebug("getData: online.IMU = " + (String)online.IMU + "\r\n");
+
     if (myICM.dataReady())
     {
+      //printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+      
       myICM.getAGMT(); //Update values
 
       if (settings.logIMUAccel)
@@ -135,6 +147,10 @@ void getData()
         strcat(outputData, tempData);
       }
     }
+    //else
+    //{
+    //  printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+    //}
   }
 
   //Append all external sensor data on linked list to outputData
@@ -164,11 +180,11 @@ void getData()
 
   if (settings.printMeasurementCount)
   {
-    sprintf(tempData, "%d,", measurementCount);
+    sprintf(tempData, "%d,", measurementTotal);
     strcat(outputData, tempData);
   }
 
-  strcat(outputData, "\n");
+  strcat(outputData, "\r\n");
 
   totalCharactersPrinted += strlen(outputData);
 }
@@ -669,8 +685,126 @@ void gatherDeviceValues()
             }
           }
           break;
+        case DEVICE_PRESSURE_MPR0025PA1:
+          {
+            SparkFun_MicroPressure *nodeDevice = (SparkFun_MicroPressure *)temp->classPtr;
+            struct_MPR0025PA1 *nodeSetting = (struct_MPR0025PA1 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              if (nodeSetting->usePSI)
+              {
+                sprintf(tempData, "%.04f,", nodeDevice->readPressure());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->usePA)
+              {
+                sprintf(tempData, "%.01f,", nodeDevice->readPressure(PA));
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->useKPA)
+              {
+                sprintf(tempData, "%.04f,", nodeDevice->readPressure(KPA));
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->useTORR)
+              {
+                sprintf(tempData, "%.03f,", nodeDevice->readPressure(TORR));
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->useINHG)
+              {
+                sprintf(tempData, "%.04f,", nodeDevice->readPressure(INHG));
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->useATM)
+              {
+                sprintf(tempData, "%.06f,", nodeDevice->readPressure(ATM));
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->useBAR)
+              {
+                sprintf(tempData, "%.06f,", nodeDevice->readPressure(BAR));
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
+        case DEVICE_PARTICLE_SNGCJA5:
+          {
+            SFE_PARTICLE_SENSOR *nodeDevice = (SFE_PARTICLE_SENSOR *)temp->classPtr;
+            struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              if (nodeSetting->logPM1)
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->getPM1_0());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logPM25)
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->getPM2_5());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logPM10)
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->getPM10());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logPC05)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getPC0_5());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logPC1)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getPC1_0());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logPC25)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getPC2_5());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logPC50)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getPC5_0());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logPC75)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getPC7_5());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logPC10)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getPC10());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logSensorStatus)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getStatusSensors());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logPDStatus)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getStatusPD());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logLDStatus)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getStatusLD());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logFanStatus)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getStatusFan());
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
         default:
-          Serial.printf("printDeviceValue unknown device type: %s\n", getDeviceName(temp->deviceType));
+          Serial.printf("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
       }
 
@@ -694,6 +828,8 @@ void printHelperText(bool terminalOnly)
         strcat(helperText, "rtcDate,");
       if (settings.logTime)
         strcat(helperText, "rtcTime,");
+      if (settings.logMicroseconds)
+        strcat(helperText, "micros,");
     }
   } //end if use RTC for timestamp
   else //Use GPS for timestamp
@@ -980,8 +1116,64 @@ void printHelperText(bool terminalOnly)
             }
           }
           break;
+        case DEVICE_PRESSURE_MPR0025PA1:
+          {
+            struct_MPR0025PA1 *nodeSetting = (struct_MPR0025PA1 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->usePSI)
+                strcat(helperText, "PSI,");
+              if (nodeSetting->usePA)
+                strcat(helperText, "Pa,");
+              if (nodeSetting->useKPA)
+                strcat(helperText, "kPa,");
+              if (nodeSetting->useTORR)
+                strcat(helperText, "torr,");
+              if (nodeSetting->useINHG)
+                strcat(helperText, "inHg,");
+              if (nodeSetting->useATM)
+                strcat(helperText, "atm,");
+              if (nodeSetting->useBAR)
+                strcat(helperText, "bar,");
+            }
+          }
+          break;
+        case DEVICE_PARTICLE_SNGCJA5:
+          {
+            struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPM1)
+                strcat(helperText, "PM1_0,");
+              if (nodeSetting->logPM25)
+                strcat(helperText, "PM2_5,");
+              if (nodeSetting->logPM10)
+                strcat(helperText, "PM10,");
+              if (nodeSetting->logPC05)
+                strcat(helperText, "PC0_5,");
+              if (nodeSetting->logPC1)
+                strcat(helperText, "PC1_0,");
+              if (nodeSetting->logPC25)
+                strcat(helperText, "PC2_5,");
+              if (nodeSetting->logPC50)
+                strcat(helperText, "PC5_0,");
+              if (nodeSetting->logPC75)
+                strcat(helperText, "PC7_5,");
+              if (nodeSetting->logPC10)
+                strcat(helperText, "PC10,");
+              if (nodeSetting->logSensorStatus)
+                strcat(helperText, "Sensors,");
+              if (nodeSetting->logPDStatus)
+                strcat(helperText, "PD,");
+              if (nodeSetting->logLDStatus)
+                strcat(helperText, "LD,");
+              if (nodeSetting->logFanStatus)
+                strcat(helperText, "Fan,");
+            }
+          }
+          break;
         default:
-          Serial.printf("\nprinterHelperText device not found: %d\n", temp->deviceType);
+          Serial.printf("\nprinterHelperText device not found: %d\r\n", temp->deviceType);
           break;
       }
     }
@@ -994,12 +1186,13 @@ void printHelperText(bool terminalOnly)
   if (settings.printMeasurementCount)
     strcat(helperText, "count,");
 
-  strcat(helperText, "\n");
+  strcat(helperText, "\r\n");
 
   Serial.print(helperText);
   if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
     sensorDataFile.print(helperText);
 }
+
 //If certain devices are attached, we need to reduce the I2C max speed
 void setMaxI2CSpeed()
 {
@@ -1036,6 +1229,7 @@ void setMaxI2CSpeed()
   qwiic.setClock(maxSpeed);
   for (int i = 0; i < 100; i++) //Allow time for the speed to change
   {
+    checkBattery();
     delay(1);
   }  
 }

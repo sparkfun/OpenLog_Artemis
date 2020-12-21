@@ -1,11 +1,96 @@
 Change Log
 ======================
 
+v1.8
+---------
+
+* Added a fix to make sure the MS8607 is detected correctly [54](https://github.com/sparkfun/OpenLog_Artemis/issues/54)
+* Added logMicroseconds [49](https://github.com/sparkfun/OpenLog_Artemis/issues/49)
+* Added an option to use autoPVT when logging GNSS data [50](https://github.com/sparkfun/OpenLog_Artemis/issues/50)
+
+v1.7
+---------
+
+* Corrected the readVin after sleep bug [39](https://github.com/sparkfun/OpenLog_Artemis/issues/39)
+* Corrected detection of the MCP9600 (Qwiic Thermocouple) [41](https://github.com/sparkfun/OpenLog_Artemis/issues/41)
+* Added support for the MPR MicroPressure Sensor [35](https://github.com/sparkfun/OpenLog_Artemis/issues/35)
+* Added support for the SN-GCJA5 Particle Sensor
+* IMU full scale and Digital Low Pass Filter settings can now be configured via Menu 3 [42](https://github.com/sparkfun/OpenLog_Artemis/issues/42)
+
+v1.6
+---------
+
+* The sensor readings can now be streamed to the serial TX pin (in addition to being displayed in the terminal and logged to SD card)
+  * You can enable this feature using Menu 4 (Configure Serial Logging) Option 2
+  * The baud rate is set using Menu 4 Option 4 (the serial pin and the terminal have separate baud rates)
+  * When serial output is enabled, analog logging on pin 12 is disabled
+  * This resolves issue [#32](https://github.com/sparkfun/OpenLog_Artemis/issues/32)
+* A new SD Card File Transfer menu has been added
+  * You can access this by selecting Menu s from the Main Menu
+  * You can now:
+    * List the files on the SD card using ls or dir
+    * Delete a single file using del filename or rm filename
+    * Type the contents of a single file to the terminal using type filename or cat filename
+    * Copy or transfer a single file to the serial TX pin using ss filename
+    * Transfer a single file or all files to the terminal using the ZMODEM protocol
+      * Tera Term supports ZMODEM. Select File\Transfer\ZMODEM\Receive from the pull-down menus
+      * To transfer a single file: sz filename
+      * To transfer all files: sz *
+  * The ZMODEM start delay can be changed using Menu 4 Option 3
+  * The code is based on ecm-bitflipper's Arduino_ZModem
+  * This resolves issue [#33](https://github.com/sparkfun/OpenLog_Artemis/issues/33)
+* The serial and data log files are now timestamped with create and access timestamps
+  * By default, the access timestamp is only set when the file is closed
+  * You can enable frequent file access timestamps using Menu 1 Option 11
+    * Frequent timestamping requires additional SD card writes and may cause problems when logging data at high rates
+* An additional delay allows the IMU to start cleanly after being powered down during sleep
+  * This resolves issue [#18](https://github.com/sparkfun/OpenLog_Artemis/issues/18)
+* The measurement count no longer resets when the menus are opened
+  * This resolves issue [#31](https://github.com/sparkfun/OpenLog_Artemis/issues/31)
+* Low battery detection is now supported on the v10 (red) version of the OLA
+  * Automatic powerDown on low battery can be enabled using Menu 7 Option 4
+  * The low battery threshold voltage can be set using Menu 7 Option 5
+* The code now defines a power-on delay for each sensor type
+  * When waking from sleep, the code will now wait until attempting to begin 'slow' sensors like the SCD30 or a u-blox module
+  * You can extend/override the power-on delay by selecting Menu 6, then Configure Qwiic Settings , then Option 3
+  * You can extend the delay to a maximum of 60 seconds, which is more than enough time to allow a u-blox module to establish a fix before the data is read
+  * This resolves issue [#5](https://github.com/sparkfun/OpenLog_Artemis/issues/5)
+* Instead of logging data at regular time intervals, data logging can now also be triggered via Pin 11
+  * This new feature is enabled via Menu 1 Option 12
+  * Data logging can be triggered on falling or rising edges (Menu 1 Option 13)
+  * When triggering is enabled, the normal log rate settings are ignored
+  * Pin 11 generates an interrupt rather than being polled, allowing fast events to trigger logging
+  * This resolves issue [#36](https://github.com/sparkfun/OpenLog_Artemis/issues/36)
+* The IMU temperature reading has been corrected
+  * This resolves issue [#28](https://github.com/sparkfun/OpenLog_Artemis/issues/28)
+
+v1.5
+---------
+
+* Added the CIPO pull-up
+* Improved mux scanning
+* Added productionTest
+* Reduced the maximum serial logging baud rate to 500000
+* Reduced RAM footprint - most Serial.prints now use flash helper text
+* Qwiic power-up delay improvements
+* Released for V10 production
+
+v1.4
+---------
+
+* Added support for the ADS122C04
+* Investigated the RTC-reset issue [#13](https://github.com/sparkfun/OpenLog_Artemis/issues/13)
+* Added the _stop logging_ feature on Pin 32
+* Allow the user to select the Qwiic pull-up resistance
+* Qwiic pull-ups are disabled when communicating with a u-blox module
+* Regressed to SdFat (FAT32) - we found that SdFat-Beta caused very occasional logging problems
+* Added the VIN correction factor
+
 v1.3
 ---------
 
 * Add 100ms startup time to Qwiic auto-detection. Lack of SD card was causing some sensors to be pinged before they had enough time to power on and ack.
-* Add 2000ms startup time to SCD30. This sensor requires significant time to boot. See issue #4.
+* Add 2000ms startup time to SCD30. This sensor requires significant time to boot. See issue [#4](https://github.com/sparkfun/OpenLog_Artemis/issues/4).
 
 v1.2
 ---------

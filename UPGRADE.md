@@ -7,8 +7,22 @@ Which is handy if you want to quickly update the firmware in the field, or are n
 
 The firmware is customized for the different versions of the OLA hardware. You will find versions for the **X04 SparkX (Black) OLA** and **V10 SparkFun (Red) OLA** plus any subsequent revisions. The filename tells you which hardware the firmware is for and what version it is:
 
-* OpenLog_Artemis-X04-v13.bin - is the _stable_ version for the **X04 SparkX (Black) OLA**
-* OpenLog_Artemis-X04-v14_BETA.bin - is a _beta_ version for the **X04 SparkX (Black) OLA** containing new features and improvements
+* **OpenLog_Artemis-V10-v16.bin** - is the _stable_ version for the **V10 SparkFun (Red) OLA**
+* **OpenLog_Artemis-X04-v16.bin** - is the _stable_ version for the **X04 SparkX (Black) OLA**
+
+<table class="table table-hover table-striped table-bordered">
+  <tr align="center">
+   <td><a href="https://www.sparkfun.com/products/16832"><img src="https://cdn.sparkfun.com//assets/parts/1/5/7/5/3/16832-SparkFun_OpenLog_Artemis-02a.jpg"></a></td>
+   <td><a href="https://www.sparkfun.com/products/15846"><img src="https://cdn.sparkfun.com//assets/parts/1/4/4/8/0/15846-OpenLog_Artemis-04.jpg"></a></td>
+  </tr>
+  <tr align="center">
+    <td><a href="https://www.sparkfun.com/products/16832">SparkFun OpenLog Artemis V10 (DEV-16832)</a></td>
+    <td><a href="https://www.sparkfun.com/products/15846">SparkX OpenLog Artemis X04 (SPX-15846)</a></td>
+  </tr>
+</table>
+
+* From time to time, you may also see versions with names like **OpenLog_Artemis-V10-v17_BETA.bin**
+  * These are _beta_ versions containing new features and improvements which are still being tested and documented
 
 ## To use:
 
