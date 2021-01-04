@@ -60,11 +60,6 @@ void powerDown()
   {
     detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
     pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
-    if ( settings.deepSleepAlarmSecs != 0 )
-    {
-      // Need to set an RTC alarm here.
-      // Calculate "ticks"
-    }
   }
 
   //Prevent trigger from waking us from sleep
@@ -158,14 +153,28 @@ void powerDown()
   }
 }
 
+// go to sleep and wake when it's time to take next sample
+void sleepUntilNextSample()
+{
+  uint32_t msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
+  goToSleep(msToSleep);
+}
+
+// Go to sleep and wake when when deepSleepAlarmSecs timer is up
+void sleepUntilWoken()
+{
+  printDebug("Sleeping on external signal for " + (String)settings.deepSleepAlarmSecs + "sec.\r\n");
+  uint32_t msToSleep = (uint32_t)(settings.deepSleepAlarmSecs * 1000ULL);
+  goToSleep(msToSleep);
+}
+
 //Power everything down and wait for interrupt wakeup
-void goToSleep()
+void goToSleep(uint32_t msToSleep)
 {
   //Counter/Timer 6 will use the 32kHz clock
   //Calculate how many 32768Hz system ticks we need to sleep for:
   //sysTicksToSleep = msToSleep * 32768L / 1000
   //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
-  uint32_t msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
   uint32_t sysTicksToSleep;
   if (msToSleep < 131000)
   {
@@ -311,22 +320,6 @@ void goToSleep()
 
   //We're BACK!
   wakeFromSleep();
-}
-
-// TESTING
-// there are 32768 ticks/second
-void setRTCwakeupAlarm(uint32_t ticksToSleep)
-{
-      //Setup interrupt to trigger when the number of ms have elapsed
-    am_hal_stimer_compare_delta_set(6, ticksToSleep);
-
-    //We use counter/timer 6 to cause us to wake up from sleep but 0 to 7 are available
-    //CT 7 is used for Software Serial. All CTs are used for Servo.
-    am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);  //Clear CT6
-    am_hal_stimer_int_enable(AM_HAL_STIMER_INT_COMPAREG); //Enable C/T G=6
-
-    //Enable the timer interrupt in the NVIC.
-    NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
 }
 
 //Power everything up gracefully

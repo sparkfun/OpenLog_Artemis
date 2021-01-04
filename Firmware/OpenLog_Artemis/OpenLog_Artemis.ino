@@ -532,7 +532,8 @@ void loop() {
 
     if ((settings.useGPIO32ForStopLogging == true) && (stopLoggingSeen == true)) // Has the user pressed the stop logging button?
     {
-      stopLogging();
+      if ( settings.deepSleepAlarmSecs != 0 ) sleepUntilWoken();
+      else stopLogging();
     }
 
     triggerEdgeSeen = false; // Clear the trigger seen flag here - just in case another trigger was received while we were logging data to SD card
@@ -540,7 +541,7 @@ void loop() {
     //Go to sleep if the time between readings is greater than maxUsBeforeSleep (2 seconds) and triggering is not enabled
     if ((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
     {
-      goToSleep();
+      sleepUntilNextSample();
     }
   }
 }
