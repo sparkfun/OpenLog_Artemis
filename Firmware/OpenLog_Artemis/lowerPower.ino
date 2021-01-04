@@ -157,13 +157,14 @@ void powerDown()
 void sleepUntilNextSample()
 {
   uint32_t msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
+  //printDebug("Sleeping " + (String)msToSleep + "ms until next sample.\r\n");
   goToSleep(msToSleep);
 }
 
 // Go to sleep and wake when when deepSleepAlarmSecs timer is up
 void sleepUntilWoken()
 {
-  printDebug("Sleeping on external signal for " + (String)settings.deepSleepAlarmSecs + "sec.\r\n");
+  //printDebug("Sleeping on external signal for " + (String)settings.deepSleepAlarmSecs + "sec.\r\n");
   uint32_t msToSleep = (uint32_t)(settings.deepSleepAlarmSecs * 1000ULL);
   goToSleep(msToSleep);
 }

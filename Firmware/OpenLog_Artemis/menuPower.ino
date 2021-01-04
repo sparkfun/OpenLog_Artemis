@@ -18,7 +18,7 @@ void menuPower()
     else
     {
       Serial.print(F("3) Deep Sleep wakeup timer (s): "));
-      Serial.printf("%\r\n", settings.deepSleepAlarmSecs);
+      Serial.printf("%u\r\n", settings.deepSleepAlarmSecs);
     }
 #if(HARDWARE_VERSION_MAJOR >= 1)
     Serial.print(F("4) Power LED During Sleep: "));

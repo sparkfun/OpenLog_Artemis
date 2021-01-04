@@ -532,6 +532,7 @@ void loop() {
 
     if ((settings.useGPIO32ForStopLogging == true) && (stopLoggingSeen == true)) // Has the user pressed the stop logging button?
     {
+      printDebug("GPIO32 'STOP LOGGING' triggered.\r\n");
       if ( settings.deepSleepAlarmSecs != 0 ) sleepUntilWoken();
       else stopLogging();
     }
