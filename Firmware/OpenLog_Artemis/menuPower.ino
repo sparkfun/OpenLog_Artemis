@@ -13,19 +13,26 @@ void menuPower()
     if (settings.useGPIO32ForStopLogging == true) Serial.println(F("Yes"));
     else Serial.println(F("No"));
 
+    if (settings.deepSleepAlarmSecs == 0)
+      Serial.println(F("3) Set Deep Sleep wakeup alarm."));
+    else
+    {
+      Serial.print(F("3) Deep Sleep wakeup timer (s): "));
+      Serial.printf("%\r\n", settings.deepSleepAlarmSecs);
+    }
 #if(HARDWARE_VERSION_MAJOR >= 1)
-    Serial.print(F("3) Power LED During Sleep: "));
+    Serial.print(F("4) Power LED During Sleep: "));
     if (settings.enablePwrLedDuringSleep == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 
-    Serial.print(F("4) Low Battery Voltage Detection: "));
+    Serial.print(F("5) Low Battery Voltage Detection: "));
     if (settings.enableLowBatteryDetection == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 
-    Serial.print(F("5) Low Battery Threshold (V): "));
+    Serial.print(F("6) Low Battery Threshold (V): "));
     Serial.printf("%.2f\r\n", settings.lowBatteryThreshold);
 
-    Serial.print(F("6) VIN measurement correction factor: "));
+    Serial.print(F("7) VIN measurement correction factor: "));
     Serial.printf("%.3f\r\n", settings.vinCorrectionFactor);
 #endif
 
@@ -58,16 +65,26 @@ void menuPower()
         settings.logA32 = false; // Disable analog logging on pin 32
       }
     }
-#if(HARDWARE_VERSION_MAJOR >= 1)
     else if (incoming == '3')
+    {
+      Serial.println(F("Please enter RTC wakeup time (sec) when put in deep sleep. 0=disable:"));
+      uint32_t tempRTCwakeUp = (uint32_t)getDouble(menuTimeout);
+      if ( tempRTCwakeUp == 0 or tempRTCwakeUp >= 60 ) // This value should be defined elsewhere.
+        settings.deepSleepAlarmSecs = tempRTCwakeUp;
+      else
+        Serial.println(F("Error: Must be 0 or >= 60"));
+    }
+    // Option 3 will be for RTC wake up alarm time
+#if(HARDWARE_VERSION_MAJOR >= 1)
+    else if (incoming == '4')
     {
       settings.enablePwrLedDuringSleep ^= 1;
     }
-    else if (incoming == '4')
+    else if (incoming == '5')
     {
       settings.enableLowBatteryDetection ^= 1;
     }
-    else if (incoming == '5')
+    else if (incoming == '6')
     {
       Serial.println(F("Please enter the new low battery threshold:"));
       float tempBT = (float)getDouble(menuTimeout); //Timeout after x seconds
@@ -76,7 +93,7 @@ void menuPower()
       else
         settings.lowBatteryThreshold = tempBT;
     }
-    else if (incoming == '6')
+    else if (incoming == '7')
     {
       Serial.println(F("Please measure the voltage on the MEAS pin and enter it here:"));
       float tempCF = (float)getDouble(menuTimeout); //Timeout after x seconds

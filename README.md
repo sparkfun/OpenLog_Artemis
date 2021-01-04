@@ -1,5 +1,13 @@
 SparkFun OpenLog Artemis
 ===========================================================
+Changes in my version:
+
+DONE
+* Added uint32_t setting called deepSleepAlarmSecs. When set to 0, nothing changes, but when > 0, it will set an alarm that many seconds into the future whewn entering Deep Sleep.
+* Added provision to menuPower for setting deepSleepAlarmSecs
+* When waking up, if deepSleepAlarmSecs != 0 and useGPIO32ForStopLogging = true, will set stopLoggingSeen based on PIN_STOP_LOGGING rather than assume false.
+TO DO:
+* implement RTC alarm when entering Deep Sleep.
 
 <table class="table table-hover table-striped table-bordered">
   <tr align="center">

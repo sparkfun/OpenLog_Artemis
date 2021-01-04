@@ -336,6 +336,7 @@ struct struct_settings {
   unsigned long openNewLogFilesAfter = 0; //Default to 0 (Never) seconds
   float vinCorrectionFactor = 1.47; //Correction factor for the VIN measurement; to compensate for the divider impedance
   bool useGPIO32ForStopLogging = false; //If true, use GPIO as a stop logging button
+  uint32_t deepSleepAlarmSecs = 0; // Number of seconds after going into deep sleep that RTC alarm should wake OLA, 0=disabled
   uint32_t qwiicBusPullUps = 1; //Default to 1.5k I2C pull-ups - internal to the Artemis
   bool outputSerial = false; // Output the sensor data on the TX pin
   uint8_t zmodemStartDelay = 20; // Wait for this many seconds before starting the zmodem file transfer

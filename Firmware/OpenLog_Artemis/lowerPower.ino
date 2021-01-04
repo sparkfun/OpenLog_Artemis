@@ -60,6 +60,11 @@ void powerDown()
   {
     detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
     pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+    if ( settings.deepSleepAlarmSecs != 0 )
+    {
+      // Need to set an RTC alarm here.
+      // Calculate "ticks"
+    }
   }
 
   //Prevent trigger from waking us from sleep
@@ -308,6 +313,22 @@ void goToSleep()
   wakeFromSleep();
 }
 
+// TESTING
+// there are 32768 ticks/second
+void setRTCwakeupAlarm(uint32_t ticksToSleep)
+{
+      //Setup interrupt to trigger when the number of ms have elapsed
+    am_hal_stimer_compare_delta_set(6, ticksToSleep);
+
+    //We use counter/timer 6 to cause us to wake up from sleep but 0 to 7 are available
+    //CT 7 is used for Software Serial. All CTs are used for Servo.
+    am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);  //Clear CT6
+    am_hal_stimer_int_enable(AM_HAL_STIMER_INT_COMPAREG); //Enable C/T G=6
+
+    //Enable the timer interrupt in the NVIC.
+    NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
+}
+
 //Power everything up gracefully
 void wakeFromSleep()
 {
@@ -345,8 +366,10 @@ void wakeFromSleep()
   {
     pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
-    attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
-    stopLoggingSeen = false; // Make sure the flag is clear
+    attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupts
+    // If we're using deepSleepAlarmSecs and PIN_STOP_LOGGING is still pulled low, we will proabably want to go back to sleep.
+    if (settings.deepSleepAlarmSecs == 0 || digitalRead(PIN_STOP_LOGGING) == HIGH) stopLoggingSeen = false; // Make sure the flag is clear
+    else stopLoggingSeen = true; 
   }
 
   if (settings.useGPIO11ForTrigger == true) //(This should be redundant. We should not be going to sleep if triggering is enabled?)
