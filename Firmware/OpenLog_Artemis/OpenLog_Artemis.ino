@@ -207,6 +207,9 @@ ICM_20948_SPI myICM;
 #include "SparkFun_MicroPressure.h" // Click here to get the library: http://librarymanager/All#SparkFun_MicroPressure
 #include "SparkFun_Particle_Sensor_SN-GCJA5_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Particle_Sensor_SN-GCJA5
 
+
+
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Global variables
@@ -228,6 +231,11 @@ unsigned long qwiicPowerOnDelayMillis; //Wait for this many milliseconds after t
 int lowBatteryReadings = 0; // Count how many times the battery voltage has read low
 const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
 volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger interrupt has been seen
+
+
+char rtcTimeMine[13]; //09:14:37.41,
+int time_idx = 0;
+bool timestamping = false;
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //unsigned long startTime = 0;
@@ -346,12 +354,19 @@ void setup() {
 
   //Serial.printf("Setup time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
 
+
+  //TESTING BLUETOOTH COMPATIBILITY
+  
+  
+
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
 
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something
   if (settings.usBetweenReadings >= maxUsBeforeSleep)
     menuMain();
+
+  
 }
 
 void loop() {
@@ -359,14 +374,38 @@ void loop() {
   checkBattery(); // Check for low battery
 
   if (Serial.available()) menuMain(); //Present user menu
-
+  
+  
   if (settings.logSerial == true && online.serialLogging == true)
   {
     if (SerialLog.available())
     {
       while (SerialLog.available())
       {
-        incomingBuffer[incomingBufferSpot++] = SerialLog.read();
+        if (timestamping)
+        {
+          incomingBuffer[incomingBufferSpot++] = rtcTimeMine[time_idx++];
+          if (time_idx == 13)
+          {
+            timestamping = false;
+            time_idx = 0;
+          }
+        }
+        else
+        {
+          incomingBuffer[incomingBufferSpot++] = SerialLog.read();
+        }
+        
+        //add timestamp to buffer if we just read a newline
+        if (incomingBuffer[incomingBufferSpot-1] == '\n')
+        {
+          myRTC.getTime();
+          sprintf(rtcTimeMine, "%02d:%02d:%02d.%02d, ", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+          time_idx = 0;
+          timestamping = true;
+        }
+
+        
         if (incomingBufferSpot == sizeof(incomingBuffer))
         {
           digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
