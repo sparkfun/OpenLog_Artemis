@@ -69,10 +69,10 @@ void menuPower()
     {
       Serial.println(F("Please enter RTC wakeup time (sec) when put in deep sleep. 0=disable:"));
       uint32_t tempRTCwakeUp = (uint32_t)getDouble(menuTimeout);
-      if ( tempRTCwakeUp == 0 or tempRTCwakeUp >= 60 ) // This value should be defined elsewhere.
+      if ( tempRTCwakeUp == 0 or tempRTCwakeUp >= minSecDeepSleep )
         settings.deepSleepAlarmSecs = tempRTCwakeUp;
       else
-        Serial.println(F("Error: Must be 0 or >= 60"));
+        Serial.printf("Error: Value must be 0 or >= %u\r\n",minSecDeepSleep);
     }
     // Option 3 will be for RTC wake up alarm time
 #if(HARDWARE_VERSION_MAJOR >= 1)

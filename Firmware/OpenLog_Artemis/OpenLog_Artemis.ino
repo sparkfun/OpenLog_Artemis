@@ -221,6 +221,7 @@ unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
+const uint32_t minSecDeepSleep = 10; // minimum number of seconds to go into Deep Sleep when not sampling.
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
 volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
 unsigned long qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allow sensors to power on, then answer autodetect
