@@ -207,9 +207,6 @@ ICM_20948_SPI myICM;
 #include "SparkFun_MicroPressure.h" // Click here to get the library: http://librarymanager/All#SparkFun_MicroPressure
 #include "SparkFun_Particle_Sensor_SN-GCJA5_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Particle_Sensor_SN-GCJA5
 
-
-
-
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Global variables
@@ -352,19 +349,12 @@ void setup() {
 
   //Serial.printf("Setup time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
 
-
-  //TESTING BLUETOOTH COMPATIBILITY
-  
-  
-
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
 
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something
   if (settings.usBetweenReadings >= maxUsBeforeSleep)
     menuMain();
-
-  
 }
 
 void loop() {
@@ -372,7 +362,6 @@ void loop() {
   checkBattery(); // Check for low battery
 
   if (Serial.available()) menuMain(); //Present user menu
-  
   
   if (settings.logSerial == true && online.serialLogging == true)
   {

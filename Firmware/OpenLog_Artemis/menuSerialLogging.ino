@@ -26,7 +26,7 @@ void menuSerialLogging()
       Serial.println(F(" bps"));
     }
 
-    Serial.print(F("5) Timestamp serial data on newline: "));
+    Serial.print(F("5) Timestamp serial data on newline (works best with slow data e.g. <2 Hz): "));
     if (settings.timestampSerial == true) Serial.println(F("Enabled"));
     else Serial.println(F("Disabled"));
 
