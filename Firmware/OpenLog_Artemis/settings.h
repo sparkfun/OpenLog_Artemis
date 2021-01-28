@@ -315,6 +315,7 @@ struct struct_settings {
   bool hour24Style = true;
   int  serialTerminalBaudRate = 115200;
   int  serialLogBaudRate = 9600;
+  bool timestampSerial = false;
   bool showHelperText = true;
   bool logA11 = false;
   bool logA12 = false;

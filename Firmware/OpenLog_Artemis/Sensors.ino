@@ -1,3 +1,50 @@
+//Query the RTC and put the appropriately formatted (according to settings) 
+//string into the passed buffer. timeStringBuffer should be at least 37 chars long
+void getTimeString(char timeStringBuffer[])
+{
+  //reset the buffer
+  timeStringBuffer[0] = '\0';
+  //Decide if we are using the internal RTC or GPS for timestamps
+  if (settings.getRTCfromGPS == false)
+  {
+    myRTC.getTime();
+
+    if (settings.logDate)
+    {
+      char rtcDate[12]; //10/12/2019,
+      if (settings.americanDateStyle == true)
+        sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.month, myRTC.dayOfMonth, myRTC.year);
+      else
+        sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.dayOfMonth, myRTC.month, myRTC.year);
+      strcat(timeStringBuffer, rtcDate);
+    }
+
+    if (settings.logTime)
+    {
+      char rtcTime[13]; //09:14:37.41,
+      int adjustedHour = myRTC.hour;
+      if (settings.hour24Style == false)
+      {
+        if (adjustedHour > 12) adjustedHour -= 12;
+      }
+      sprintf(rtcTime, "%02d:%02d:%02d.%02d,", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+      strcat(timeStringBuffer, rtcTime);
+    }
+    
+    if (settings.logMicroseconds)
+    {
+      char microseconds[11]; //
+      sprintf(microseconds, "%d,", micros());
+      strcat(timeStringBuffer, microseconds);
+    }
+  } //end if use RTC for timestamp
+  else //Use GPS for timestamp
+  {
+    Serial.println(F("Print GPS Timestamp / not yet implemented"));
+  }
+    
+}
+
 //Query each enabled sensor for its most recent data
 void getData()
 {
@@ -9,44 +56,9 @@ void getData()
 
   if (settings.logRTC)
   {
-    //Decide if we are using the internal RTC or GPS for timestamps
-    if (settings.getRTCfromGPS == false)
-    {
-      myRTC.getTime();
-
-      if (settings.logDate)
-      {
-        char rtcDate[12]; //10/12/2019,
-        if (settings.americanDateStyle == true)
-          sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.month, myRTC.dayOfMonth, myRTC.year);
-        else
-          sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.dayOfMonth, myRTC.month, myRTC.year);
-        strcat(outputData, rtcDate);
-      }
-
-      if (settings.logTime)
-      {
-        char rtcTime[13]; //09:14:37.41,
-        int adjustedHour = myRTC.hour;
-        if (settings.hour24Style == false)
-        {
-          if (adjustedHour > 12) adjustedHour -= 12;
-        }
-        sprintf(rtcTime, "%02d:%02d:%02d.%02d,", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-        strcat(outputData, rtcTime);
-      }
-      
-      if (settings.logMicroseconds)
-      {
-        char microseconds[11]; //
-        sprintf(microseconds, "%d,", micros());
-        strcat(outputData, microseconds);
-      }
-    } //end if use RTC for timestamp
-    else //Use GPS for timestamp
-    {
-      Serial.println(F("Print GPS Timestamp / not yet implemented"));
-    }
+    char timeString[37];
+    getTimeString(timeString);
+    strcat(outputData, timeString);
   }
 
   if (settings.logA11)

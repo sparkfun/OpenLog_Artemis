@@ -26,6 +26,10 @@ void menuSerialLogging()
       Serial.println(F(" bps"));
     }
 
+    Serial.print(F("5) Timestamp serial data on newline: "));
+    if (settings.timestampSerial == true) Serial.println(F("Enabled"));
+    else Serial.println(F("Disabled"));
+
     Serial.println(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -95,6 +99,18 @@ void menuSerialLogging()
           settings.serialLogBaudRate = newBaud;
           SerialLog.begin(settings.serialLogBaudRate);
         }
+      }
+      else if (incoming == '5')
+      {
+        if (settings.timestampSerial == false)
+        {
+          settings.timestampSerial = true;
+        }
+        else
+        {
+          settings.timestampSerial = false;
+        }
+        
       }
       else if (incoming == 'x')
         return;

@@ -231,11 +231,9 @@ unsigned long qwiicPowerOnDelayMillis; //Wait for this many milliseconds after t
 int lowBatteryReadings = 0; // Count how many times the battery voltage has read low
 const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
 volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger interrupt has been seen
-
-
-char rtcTimeMine[13]; //09:14:37.41,
-int time_idx = 0;
-bool timestamping = false;
+char serialTimestamp[37]; //buffer to store serial timestamp, if desired
+int serialTimestampIdx = 0; //index of serial timestamp buffer to transfer to big SD card write buffer
+bool serialTimestamping = false; //whether writing timestamp or recieved serial data to SD card write buffer
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //unsigned long startTime = 0;
@@ -382,13 +380,13 @@ void loop() {
     {
       while (SerialLog.available())
       {
-        if (timestamping)
+        if (serialTimestamping)
         {
-          incomingBuffer[incomingBufferSpot++] = rtcTimeMine[time_idx++];
-          if (time_idx == 13)
+          incomingBuffer[incomingBufferSpot++] = serialTimestamp[serialTimestampIdx++];
+          if (serialTimestampIdx == strlen(serialTimestamp)) 
           {
-            timestamping = false;
-            time_idx = 0;
+            serialTimestamping = false;
+            serialTimestampIdx = 0;
           }
         }
         else
@@ -397,12 +395,11 @@ void loop() {
         }
         
         //add timestamp to buffer if we just read a newline
-        if (incomingBuffer[incomingBufferSpot-1] == '\n')
+        if (settings.timestampSerial && incomingBuffer[incomingBufferSpot-1] == '\n')
         {
-          myRTC.getTime();
-          sprintf(rtcTimeMine, "%02d:%02d:%02d.%02d, ", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-          time_idx = 0;
-          timestamping = true;
+          getTimeString(serialTimestamp);
+          serialTimestamping = true;
+          serialTimestampIdx = 0;
         }
 
         
