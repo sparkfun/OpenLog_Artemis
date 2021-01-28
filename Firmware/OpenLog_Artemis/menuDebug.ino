@@ -2,14 +2,14 @@ void menuDebug()
 {
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure Debug Settings"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Debug Settings"));
 
-    Serial.print(F("1) Debug Messages: "));
-    if (settings.printDebugMessages == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Debug Messages: "));
+    if (settings.printDebugMessages == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 

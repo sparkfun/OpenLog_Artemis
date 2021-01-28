@@ -226,7 +226,7 @@ int wctxpn(const char *name)
 
   char *p, *q;
 
-//DSERIAL.println("\nwctxpn");
+//DSERIAL->println("\nwctxpn");
 
   strcpy(txbuf,name);
   p = q = txbuf + strlen(txbuf)+1;
@@ -247,10 +247,10 @@ int wctxpn(const char *name)
     ultoa(Totalleft, q, 10);
 
   Totalleft -= fout.fileSize();
-//DSERIAL.print(F("wctxpn sf = "));
-//DSERIAL.print(sf);
-//DSERIAL.print(F("  length = "));
-//DSERIAL.println(Totalleft);
+//DSERIAL->print(F("wctxpn sf = "));
+//DSERIAL->print(sf);
+//DSERIAL->print(F("  length = "));
+//DSERIAL->println(Totalleft);
   if (--Filesleft <= 0)
     Totalleft = 0;
   if (Totalleft < 0)
@@ -276,7 +276,7 @@ int wctx(long flen)
   int sectnum, attempts, firstch;
   long charssent;
   
-//DSERIAL.println("\nwctx");
+//DSERIAL->println("\nwctx");
 
   charssent = 0;  
   firstsec=TRUE;  
@@ -412,16 +412,16 @@ int filbuf(char *buf,int count)
 {
   int c, m;
 
-//DSERIAL.println("\nfilbuf");
+//DSERIAL->println("\nfilbuf");
 
   if ( !Ascii) {
 //    m = read(fileno(in), buf, count);
     m = fout.read(buf, count);
-//DSERIAL.println(F("filbuf: '"));
+//DSERIAL->println(F("filbuf: '"));
 //for(int i=0;i<m;i++) {
-//  DSERIAL.print(buf[i]);
+//  DSERIAL->print(buf[i]);
 //}
-//DSERIAL.println(F("'"));
+//DSERIAL->println(F("'"));
     if (m <= 0)
       return 0;
     while (m < count)
@@ -477,7 +477,7 @@ int zsendfile(char *buf, int blen)
   int c;
   UNSL long crc;
 
-//DSERIAL.println(F("\nzsendfile"));
+//DSERIAL->println(F("\nzsendfile"));
 
   for (;;) {
     Txhdr[ZF0] = Lzconv;    /* file conversion request */
@@ -503,7 +503,7 @@ again:
     case TIMEOUT:
     case ZABORT:
     case ZFIN:
-//DSERIAL.println(F("\nzsendfile - ZFIN"));
+//DSERIAL->println(F("\nzsendfile - ZFIN"));
 
       return ERROR;
     case ZCRC:
@@ -524,7 +524,7 @@ again:
     case ZSKIP:
       fout.close();
       //fclose(in); 
-//DSERIAL.println(F("\nzsendfile - ZSKIP"));
+//DSERIAL->println(F("\nzsendfile - ZSKIP"));
       return c;
     case ZRPOS:
       /*
@@ -537,8 +537,8 @@ again:
         return ERROR;
       Lastsync = (bytcnt = Txpos = Rxpos) -1;
       int ret = zsendfdata();
-//DSERIAL.print(F("\nzsendfile - exit - "));
-//DSERIAL.println(ret);
+//DSERIAL->print(F("\nzsendfile - exit - "));
+//DSERIAL->println(ret);
       return(ret);
     }
   }
@@ -554,11 +554,11 @@ int zsendfdata(void)
   int newcnt;
   uint8_t junkcount;          /* Counts garbage chars received by TX */
 
-//DSERIAL.print(F("\nzsendfdata: "));
-//DSERIAL.print(F("number = "));
-//DSERIAL.print(Filesleft+1);
-//DSERIAL.print(F("   length = "));
-//DSERIAL.println(Totalleft); 
+//DSERIAL->print(F("\nzsendfdata: "));
+//DSERIAL->print(F("number = "));
+//DSERIAL->print(Filesleft+1);
+//DSERIAL->print(F("   length = "));
+//DSERIAL->println(Totalleft); 
   Lrxpos = 0;
   junkcount = 0;
   Beenhereb4 = FALSE;
@@ -574,7 +574,7 @@ gotack:
     case ZCAN:
       fout.close();
       //fclose(in);
-//DSERIAL.println(F("zsendfdata - error - 1"));
+//DSERIAL->println(F("zsendfdata - error - 1"));
       return ERROR;
     case ZSKIP:
       fout.close();
@@ -593,7 +593,7 @@ gotack:
      *  sent by the receiver, in place of setjmp/longjmp
      *  rdchk(fdes) returns non 0 if a character is available
      */
-    while (ZSERIAL.available()) {
+    while (ZSERIAL->available()) {
 #ifdef SV
       switch (checked)
 #else
@@ -612,7 +612,7 @@ gotack:
 #endif
   }
 
-//DSERIAL.println("zsendfdata - 1");
+//DSERIAL->println("zsendfdata - 1");
 
 //  if ( !Fromcu)
 //    signal(SIGINT, onintr);
@@ -621,12 +621,12 @@ gotack:
   stohdr(Txpos);
   zsbhdr(ZDATA, Txhdr);
 
-//DSERIAL.println("zsendfdata - 2");
+//DSERIAL->println("zsendfdata - 2");
 
   do {
     n = zfilbuf();
 // AHA - it reads the 18 chars here
-//DSERIAL.println(n);
+//DSERIAL->println(n);
     if (Eofseen)
       e = ZCRCE;
     else if (junkcount > 3)
@@ -655,7 +655,7 @@ gotack:
      *  rdchk(fdes) returns non 0 if a character is available
      */
 //    fflush(stdout);
-    while (ZSERIAL.available()) {
+    while (ZSERIAL->available()) {
 #ifdef SV
       switch (checked)
 #else
@@ -684,7 +684,7 @@ gotack:
 
   } while (!Eofseen);
   
-//DSERIAL.println("zsendfdata - 4"); 
+//DSERIAL->println("zsendfdata - 4"); 
 
 //  if ( !Fromcu)
 //    signal(SIGINT, SIG_IGN);
@@ -694,23 +694,23 @@ gotack:
     zsbhdr(ZEOF, Txhdr);
     switch (getinsync(0)) {
     case ZACK:
-//DSERIAL.println(F("zsendfdata - ZAK"));
+//DSERIAL->println(F("zsendfdata - ZAK"));
       continue;
     case ZRPOS:
-//DSERIAL.println(F("zsendfdata - ZRPOS"));
+//DSERIAL->println(F("zsendfdata - ZRPOS"));
       goto somemore;
     case ZRINIT:
-//DSERIAL.println(F("zsendfdata - OK"));
+//DSERIAL->println(F("zsendfdata - OK"));
       return OK;
     case ZSKIP:
       fout.close();
       //fclose(in);
-//DSERIAL.println(F("zsendfdata - ZSKIP"));
+//DSERIAL->println(F("zsendfdata - ZSKIP"));
       return c;
     default:
       fout.close();
       //fclose(in);
-//DSERIAL.println(F("zsendfdata - error - 2"));
+//DSERIAL->println(F("zsendfdata - error - 2"));
       return ERROR;
     }
   }
@@ -728,7 +728,7 @@ int getinsync(int flag)
 
   for (;;) {
     if (Test) {
-//DSERIAL.println(F("***** Signal Caught *****"));
+//DSERIAL->println(F("***** Signal Caught *****"));
       Rxpos = 0; 
       c = ZRPOS;
     } 
@@ -739,7 +739,7 @@ int getinsync(int flag)
     case ZABORT:
     case ZFIN:
     case TIMEOUT:
-//DSERIAL.println(F("getinsync - timeout"));
+//DSERIAL->println(F("getinsync - timeout"));
       return ERROR;
     case ZRPOS:
       /* ************************************* */
@@ -750,7 +750,7 @@ int getinsync(int flag)
 //      if (fseek(in, Rxpos, 0)) {
       // seekSet returns true on success
       if(!fout.seekSet(Rxpos)) {
-//DSERIAL.println(F("getinsync - fseek"));
+//DSERIAL->println(F("getinsync - fseek"));
         return ERROR;
       }
       Eofseen = 0;
@@ -792,7 +792,7 @@ int getinsync(int flag)
                  
 void sendzrqinit(void)
 {
-  ZSERIAL.print(ZRQINIT_STR);
+  ZSERIAL->print(ZRQINIT_STR);
 }
 
 /* Say "bibi" to the receiver, try to do it cleanly */

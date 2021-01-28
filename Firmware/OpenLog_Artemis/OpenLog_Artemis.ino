@@ -13,6 +13,9 @@
 
   The Board should be set to SparkFun Apollo3 \ SparkFun RedBoard Artemis ATP.
 
+  Please note: this firmware currently only compiles on v1.2.1 of the Apollo3 boards.
+  It does not yet work with the new Mbed version (v2.0) of the core.
+
   v1.0 Power Consumption:
    Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
    10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
@@ -74,6 +77,8 @@
   (done) Add a fix to make sure the MS8607 is detected correctly: https://github.com/sparkfun/OpenLog_Artemis/issues/54
   (done) Add logMicroseconds: https://github.com/sparkfun/OpenLog_Artemis/issues/49
   (done) Add an option to use autoPVT when logging GNSS data: https://github.com/sparkfun/OpenLog_Artemis/issues/50
+  (done) Corrected an issue when using multiple MS8607's: https://github.com/sparkfun/OpenLog_Artemis/issues/62
+  (done) Add a feature to use the TX and RX pins as a duplicate Terminal
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -87,7 +92,7 @@ const int FIRMWARE_VERSION_MINOR = 9;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x119 // Stored as 280 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x119 // Stored as 281 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -198,7 +203,7 @@ ICM_20948_SPI myICM;
 #include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
 #include "SparkFun_MS5637_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MS5637
 #include "SparkFun_TMP117.h" //Click here to get the library: http://librarymanager/All#SparkFun_TMP117
-#include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
+#include "SparkFun_u-blox_GNSS_Arduino_Library.h" //http://librarymanager/All#SparkFun_u-blox_GNSS
 #include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
 #include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
 #include "SparkFun_Qwiic_Humidity_AHT20.h" //Click here to get the library: http://librarymanager/All#Qwiic_Humidity_AHT20 by SparkFun
@@ -230,9 +235,34 @@ const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low
 volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger interrupt has been seen
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL = false); // Header
+
+// gfvalvo's flash string helper code: https://forum.arduino.cc/index.php?topic=533118.msg3634809#msg3634809
+void SerialPrint(const char *);
+void SerialPrint(const __FlashStringHelper *);
+void SerialPrintln(const char *);
+void SerialPrintln(const __FlashStringHelper *);
+void DoSerialPrint(char (*)(const char *), const char *, bool newLine = false);
+
 //unsigned long startTime = 0;
 
-#define DUMP(varname) {Serial.printf("%s: %llu\r\n", #varname, varname);}
+#define DUMP( varname ) {Serial.printf("%s: %llu\r\n", #varname, varname); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf("%s: %llu\r\n", #varname, varname);}
+#define SerialPrintf1( var ) {Serial.printf( var ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var );}
+#define SerialPrintf2( var1, var2 ) {Serial.printf( var1, var2 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2 );}
+#define SerialPrintf3( var1, var2, var3 ) {Serial.printf( var1, var2, var3 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2, var3 );}
+#define SerialPrintf4( var1, var2, var3, var4 ) {Serial.printf( var1, var2, var3, var4 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2, var3, var4 );}
+#define SerialPrintf5( var1, var2, var3, var4, var5 ) {Serial.printf( var1, var2, var3, var4, var5 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2, var3, var4, var5 );}
+
+// The Serial port for the Zmodem connection
+// must not be the same as DSERIAL unless all
+// debugging output to DSERIAL is removed
+//#define ZSERIAL Serial3
+//#define ZSERIAL Serial
+Stream *ZSERIAL;
+
+// Serial output for debugging info
+//#define DSERIAL Serial
+Stream *DSERIAL;
 
 void setup() {
   //If 3.3V rail drops below 3V, system will power down and maintain RTC
@@ -249,7 +279,7 @@ void setup() {
   digitalWrite(PIN_STAT_LED, HIGH); // Turn the STAT LED on while we configure everything
 
   Serial.begin(115200); //Default for initial debug messages if necessary
-  Serial.println();
+  SerialPrintln(F(""));
 
   SPI.begin(); //Needed if SD is disabled
 
@@ -270,13 +300,19 @@ void setup() {
 
   loadSettings(); //50 - 250ms
 
+  if (settings.useTxRxPinsForTerminal == true)
+  {
+    SerialLog.begin(settings.serialTerminalBaudRate); // Start the serial port
+  }
+
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
-  Serial.printf("Artemis OpenLog v%d.%d\r\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
+  
+  SerialPrintf3("Artemis OpenLog v%d.%d\r\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
 
   if (settings.useGPIO32ForStopLogging == true)
   {
-    Serial.println(F("Stop Logging is enabled. Pull GPIO pin 32 to GND to stop logging."));
+    SerialPrintln(F("Stop Logging is enabled. Pull GPIO pin 32 to GND to stop logging."));
     pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
     attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
@@ -289,12 +325,12 @@ void setup() {
     delay(1); // Let the pin stabilize
     if (settings.fallingEdgeTrigger == true)
     {
-      Serial.println(F("Falling-edge triggering is enabled. Sensor data will be logged on a falling edge on GPIO pin 11."));
+      SerialPrintln(F("Falling-edge triggering is enabled. Sensor data will be logged on a falling edge on GPIO pin 11."));
       attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
     }
     else
     {
-      Serial.println(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
+      SerialPrintln(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
       attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
     }
     triggerEdgeSeen = false; // Make sure the flag is clear
@@ -305,26 +341,29 @@ void setup() {
   beginDataLogging(); //180ms
   lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
 
-  beginSerialLogging(); //20 - 99ms
-  beginSerialOutput(); // Begin serial data output on the TX pin
+  if (settings.useTxRxPinsForTerminal == false)
+  {
+    beginSerialLogging(); //20 - 99ms
+    beginSerialOutput(); // Begin serial data output on the TX pin
+  }
 
   beginIMU(); //61ms
 
-  if (online.microSD == true) Serial.println(F("SD card online"));
-  else Serial.println(F("SD card offline"));
+  if (online.microSD == true) SerialPrintln(F("SD card online"));
+  else SerialPrintln(F("SD card offline"));
 
-  if (online.dataLogging == true) Serial.println(F("Data logging online"));
-  else Serial.println(F("Datalogging offline"));
+  if (online.dataLogging == true) SerialPrintln(F("Data logging online"));
+  else SerialPrintln(F("Datalogging offline"));
 
-  if (online.serialLogging == true) Serial.println(F("Serial logging online"));
-  else Serial.println(F("Serial logging offline"));
+  if (online.serialLogging == true) SerialPrintln(F("Serial logging online"));
+  else SerialPrintln(F("Serial logging offline"));
 
-  if (online.IMU == true) Serial.println(F("IMU online"));
-  else Serial.println(F("IMU offline"));
+  if (online.IMU == true) SerialPrintln(F("IMU online"));
+  else SerialPrintln(F("IMU offline"));
 
-  if (settings.logMaxRate == true) Serial.println(F("Logging analog pins at max data rate"));
+  if (settings.logMaxRate == true) SerialPrintln(F("Logging analog pins at max data rate"));
 
-  if (settings.enableTerminalOutput == false && settings.logData == true) Serial.println(F("Logging to microSD card with no terminal output"));
+  if (settings.enableTerminalOutput == false && settings.logData == true) SerialPrintln(F("Logging to microSD card with no terminal output"));
 
   if (detectQwiicDevices() == true) //159 - 865ms but varies based on number of devices attached
   {
@@ -334,7 +373,7 @@ void setup() {
     printOnlineDevice();
   }
   else
-    Serial.println(F("No Qwiic devices detected"));
+    SerialPrintln(F("No Qwiic devices detected"));
 
   if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
 
@@ -344,7 +383,7 @@ void setup() {
   else
     measurementStartTime = millis();
 
-  //Serial.printf("Setup time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
+  //SerialPrintf2("Setup time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
 
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
 
@@ -358,9 +397,10 @@ void loop() {
   
   checkBattery(); // Check for low battery
 
-  if (Serial.available()) menuMain(); //Present user menu
+  if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available())))
+    menuMain(); //Present user menu
 
-  if (settings.logSerial == true && online.serialLogging == true)
+  if (settings.logSerial == true && online.serialLogging == true && settings.useTxRxPinsForTerminal == false)
   {
     if (SerialLog.available())
     {
@@ -471,7 +511,7 @@ void loop() {
 
     //Print to terminal
     if (settings.enableTerminalOutput == true)
-      Serial.print(outputData); //Print to terminal
+      SerialPrint(outputData); //Print to terminal
 
     //Output to TX pin
     if ((settings.outputSerial == true) && (online.serialOutput == true))
@@ -487,7 +527,9 @@ void loop() {
         if (recordLength != strlen(outputData)) //Record the buffer to the card
         {
           if (settings.printDebugMessages == true)
-            Serial.printf("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\r\n", recordLength, strlen(outputData));
+          {
+            SerialPrintf3("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\r\n", recordLength, strlen(outputData));
+          }
         }
 
         //Force sync every 500ms
@@ -586,7 +628,7 @@ void beginSD()
       }
       if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
       {
-        Serial.println(F("SD init failed (second attempt). Is card present? Formatted?"));
+        SerialPrintln(F("SD init failed (second attempt). Is card present? Formatted?"));
         digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
         online.microSD = false;
         return;
@@ -596,7 +638,7 @@ void beginSD()
     //Change to root directory. All new file creation will be in root.
     if (sd.chdir() == false)
     {
-      Serial.println(F("SD change directory failed"));
+      SerialPrintln(F("SD change directory failed"));
       online.microSD = false;
       return;
     }
@@ -672,7 +714,7 @@ void beginIMU()
       {
         printDebug("beginIMU: second attempt at myICM.begin failed. myICM.status = " + (String)myICM.status + "\r\n");
         digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
-        Serial.println(F("ICM-20948 failed to init."));
+        SerialPrintln(F("ICM-20948 failed to init."));
         imuPowerOff();
         online.IMU = false;
         return;
@@ -691,12 +733,12 @@ void beginIMU()
     ICM_20948_Status_e retval = myICM.enableDLPF(ICM_20948_Internal_Acc, settings.imuAccDLPF);
     if (retval != ICM_20948_Stat_Ok)
     {
-      Serial.println(F("Error: Could not configure the IMU Accelerometer DLPF!"));
+      SerialPrintln(F("Error: Could not configure the IMU Accelerometer DLPF!"));
     }
     retval = myICM.enableDLPF(ICM_20948_Internal_Gyr, settings.imuGyroDLPF);
     if (retval != ICM_20948_Stat_Ok)
     {
-      Serial.println(F("Error: Could not configure the IMU Gyro DLPF!"));
+      SerialPrintln(F("Error: Could not configure the IMU Gyro DLPF!"));
     }
     ICM_20948_dlpcfg_t dlpcfg;
     dlpcfg.a = settings.imuAccDLPFBW;
@@ -704,7 +746,7 @@ void beginIMU()
     retval = myICM.setDLPFcfg((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), dlpcfg);
     if (retval != ICM_20948_Stat_Ok)
     {
-        Serial.println(F("Error: Could not configure the IMU DLPF BW!"));
+        SerialPrintln(F("Error: Could not configure the IMU DLPF BW!"));
     }
     ICM_20948_fss_t FSS;
     FSS.a = settings.imuAccFSS;
@@ -712,7 +754,7 @@ void beginIMU()
     retval = myICM.setFullScale((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), FSS);
     if (retval != ICM_20948_Stat_Ok)
     {
-      Serial.println(F("Error: Could not configure the IMU Full Scale!"));
+      SerialPrintln(F("Error: Could not configure the IMU Full Scale!"));
     }
 
     online.IMU = true;
@@ -738,7 +780,7 @@ void beginDataLogging()
     // O_WRITE - open for write
     if (sensorDataFile.open(sensorDataFileName, O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      Serial.println(F("Failed to create sensor data file"));
+      SerialPrintln(F("Failed to create sensor data file"));
       online.dataLogging = false;
       return;
     }
@@ -761,7 +803,7 @@ void beginSerialLogging()
 
     if (serialDataFile.open(serialDataFileName, O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      Serial.println(F("Failed to create serial log file"));
+      SerialPrintln(F("Failed to create serial log file"));
       //systemError(ERROR_FILE_OPEN);
       online.serialLogging = false;
       return;
@@ -824,4 +866,56 @@ void stopLoggingISR(void)
 void triggerPinISR(void)
 {
   triggerEdgeSeen = true;
+}
+
+void SerialFlush(void)
+{
+  Serial.flush();
+  if (settings.useTxRxPinsForTerminal == true)
+  {
+    SerialLog.flush();
+  }
+}
+
+// gfvalvo's flash string helper code: https://forum.arduino.cc/index.php?topic=533118.msg3634809#msg3634809
+
+void SerialPrint(const char *line)
+{
+  DoSerialPrint([](const char *ptr) {return *ptr;}, line);
+}
+
+void SerialPrint(const __FlashStringHelper *line)
+{
+  DoSerialPrint([](const char *ptr) {return (char) pgm_read_byte_near(ptr);},
+      (const char*) line);
+}
+
+void SerialPrintln(const char *line)
+{
+  DoSerialPrint([](const char *ptr) {return *ptr;}, line, true);
+}
+
+void SerialPrintln(const __FlashStringHelper *line)
+{
+  DoSerialPrint([](const char *ptr) {return (char) pgm_read_byte_near(ptr);},
+      (const char*) line, true);
+}
+
+void DoSerialPrint(char (*funct)(const char *), const char *string, bool newLine)
+{
+  char ch;
+
+  while ((ch = funct(string++)))
+  {
+    Serial.print(ch);
+    if (settings.useTxRxPinsForTerminal == true)
+      SerialLog.print(ch);
+  }
+
+  if (newLine)
+  {
+    Serial.println();
+    if (settings.useTxRxPinsForTerminal == true)
+      SerialLog.println();
+  }
 }

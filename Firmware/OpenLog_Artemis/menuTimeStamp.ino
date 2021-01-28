@@ -2,9 +2,9 @@ void menuTimeStamp()
 {
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure Time Stamp"));
-    Serial.print(F("Current date/time: "));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Time Stamp"));
+    SerialPrint(F("Current date/time: "));
     myRTC.getTime();
 
     char rtcDate[11]; //10/12/2019
@@ -13,8 +13,8 @@ void menuTimeStamp()
     else
       sprintf(rtcDate, "%02d/%02d/20%02d", myRTC.dayOfMonth, myRTC.month, myRTC.year);
 
-    Serial.print(rtcDate);
-    Serial.print(F(" "));
+    SerialPrint(rtcDate);
+    SerialPrint(F(" "));
 
     char rtcTime[12]; //09:14:37.41
     int adjustedHour = myRTC.hour;
@@ -23,55 +23,56 @@ void menuTimeStamp()
       if (adjustedHour > 12) adjustedHour -= 12;
     }
     sprintf(rtcTime, "%02d:%02d:%02d.%02d", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-    Serial.println(rtcTime);
+    SerialPrintln(rtcTime);
 
-    Serial.print(F("1) Log Date: "));
-    if (settings.logDate == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Log Date: "));
+    if (settings.logDate == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("2) Log Time: "));
-    if (settings.logTime == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("2) Log Time: "));
+    if (settings.logTime == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (settings.logDate == true || settings.logTime == true)
     {
-      Serial.println(F("3) Set RTC to compiler macro time"));
+      SerialPrintln(F("3) Set RTC to compiler macro time"));
     }
 
     if (settings.logDate == true)
     {
-      Serial.println(F("4) Manually set RTC date"));
+      SerialPrintln(F("4) Manually set RTC date"));
 
-      Serial.print(F("5) Toggle date style: "));
-      if (settings.americanDateStyle == true) Serial.println(F("mm/dd/yyyy"));
-      else Serial.println(F("dd/mm/yyyy"));
+      SerialPrint(F("5) Toggle date style: "));
+      if (settings.americanDateStyle == true) SerialPrintln(F("mm/dd/yyyy"));
+      else SerialPrintln(F("dd/mm/yyyy"));
     }
 
     if (settings.logTime == true)
     {
-      Serial.println(F("6) Manually set RTC time"));
+      SerialPrintln(F("6) Manually set RTC time"));
 
-      Serial.print(F("7) Toggle time style: "));
-      if (settings.hour24Style == true) Serial.println(F("24 hour"));
-      else Serial.println(F("12 hour"));
+      SerialPrint(F("7) Toggle time style: "));
+      if (settings.hour24Style == true) SerialPrintln(F("24 hour"));
+      else SerialPrintln(F("12 hour"));
     }
 
     if (settings.logDate == true || settings.logTime == true)
     {
       if (isUbloxAttached() == true)
       {
-        Serial.println(F("8) Synchronize RTC to GPS"));
+        SerialPrintln(F("8) Synchronize RTC to GPS"));
       }
-      Serial.print(F("9) Local offset from UTC: "));
+      SerialPrint(F("9) Local offset from UTC: "));
       Serial.println(settings.localUTCOffset);
-
+      if (settings.useTxRxPinsForTerminal == true)
+        SerialLog.println(settings.localUTCOffset);
     }
 
-    Serial.print(F("10) Log Microseconds: "));
-    if (settings.logMicroseconds == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("10) Log Microseconds: "));
+    if (settings.logMicroseconds == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
 
@@ -92,7 +93,7 @@ void menuTimeStamp()
       if (incoming == 3)
       {
         myRTC.setToCompilerTime(); //Set RTC using the system __DATE__ and __TIME__ macros from compiler
-        Serial.println(F("RTC set to compiler time"));
+        SerialPrintln(F("RTC set to compiler time"));
       }
       else if ((incoming == 8) && (isUbloxAttached() == true))
       {
@@ -102,18 +103,18 @@ void menuTimeStamp()
         getGPSDateTime(yy, mm, dd, h, m, s, ms, dateValid, timeValid); // Get the GPS date and time, corrected for localUTCOffset
         myRTC.setTime(h, m, s, (ms / 10), dd, mm, (yy - 2000)); //Manually set RTC
         lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
-        Serial.println(F("RTC set to GPS (UTC) time"));
+        SerialPrintln(F("RTC set to GPS (UTC) time"));
         if ((dateValid == false) || (timeValid == false))
         {
-          Serial.println(F("\r\nWarning: the GPS time or date was not valid. Please try again.\r\n"));
+          SerialPrintln(F("\r\nWarning: the GPS time or date was not valid. Please try again.\r\n"));
         }
       }
       else if (incoming == 9)
       {
-        Serial.print(F("Enter the local hour offset from UTC (-12 to 14): "));
+        SerialPrint(F("Enter the local hour offset from UTC (-12 to 14): "));
         int offset = getNumber(menuTimeout); //Timeout after x seconds
         if (offset < -12 || offset > 14)
-          Serial.println(F("Error: Offset is out of range"));
+          SerialPrintln(F("Error: Offset is out of range"));
         else
           settings.localUTCOffset = offset;
       }
@@ -127,14 +128,14 @@ void menuTimeStamp()
         myRTC.getTime();
         int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds;
 
-        Serial.print(F("Enter current two digit year: "));
+        SerialPrint(F("Enter current two digit year: "));
         yy = getNumber(menuTimeout); //Timeout after x seconds
         if (yy > 2000 && yy < 2100) yy -= 2000;
 
-        Serial.print(F("Enter current month (1 to 12): "));
+        SerialPrint(F("Enter current month (1 to 12): "));
         mm = getNumber(menuTimeout); //Timeout after x seconds
 
-        Serial.print(F("Enter current day (1 to 31): "));
+        SerialPrint(F("Enter current day (1 to 31): "));
         dd = getNumber(menuTimeout); //Timeout after x seconds
 
         myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
@@ -154,13 +155,13 @@ void menuTimeStamp()
         myRTC.getTime();
         int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds;
 
-        Serial.print(F("Enter current hour (0 to 23): "));
+        SerialPrint(F("Enter current hour (0 to 23): "));
         h = getNumber(menuTimeout); //Timeout after x seconds
 
-        Serial.print(F("Enter current minute (0 to 59): "));
+        SerialPrint(F("Enter current minute (0 to 59): "));
         m = getNumber(menuTimeout); //Timeout after x seconds
 
-        Serial.print(F("Enter current second (0 to 59): "));
+        SerialPrint(F("Enter current second (0 to 59): "));
         s = getNumber(menuTimeout); //Timeout after x seconds
 
         myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC

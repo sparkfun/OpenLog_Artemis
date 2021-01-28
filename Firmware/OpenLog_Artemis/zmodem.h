@@ -185,7 +185,7 @@ int wcrx();
 #define CPMEOF 032
 #define WANTCRC 0103    /* send C not NAK to get crc not checksum */
 #define WANTG 0107      /* Send G not NAK to get nonstop batch xmsn */
-#define TIMEOUT (-2)
+//#define TIMEOUT (-2)
 #define RCDO (-3)
 #define Tx_RETRYMAX 10
 #define Rx_RETRYMAX 5

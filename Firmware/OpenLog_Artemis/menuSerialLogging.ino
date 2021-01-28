@@ -4,29 +4,33 @@ void menuSerialLogging()
 {
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure Serial Logging"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Serial Logging"));
 
-    Serial.print(F("1) Log serial data: "));
-    if (settings.logSerial == true) Serial.println(F("Enabled, analog logging on RX/A13 pin disabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Log serial data: "));
+    if (settings.logSerial == true) SerialPrintln(F("Enabled, analog logging on RX/A13 pin disabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("2) Output serial data to TX pin: "));
-    if (settings.outputSerial == true) Serial.println(F("Enabled, analog logging on TX/A12 pin disabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("2) Output serial data to TX pin: "));
+    if (settings.outputSerial == true) SerialPrintln(F("Enabled, analog logging on TX/A12 pin disabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("3) zmodem start delay: "));
+    SerialPrint(F("3) zmodem start delay: "));
     Serial.print(settings.zmodemStartDelay);
-    Serial.println(F(" seconds"));
+    if (settings.useTxRxPinsForTerminal == true)
+      SerialLog.print(settings.zmodemStartDelay);
+    SerialPrintln(F(" seconds"));
 
     if ((settings.logSerial == true) || (settings.outputSerial == true))
     {
-      Serial.print(F("4) Set serial baud rate: "));
+      SerialPrint(F("4) Set serial baud rate: "));
       Serial.print(settings.serialLogBaudRate);
-      Serial.println(F(" bps"));
+      if (settings.useTxRxPinsForTerminal == true)
+        SerialLog.print(settings.zmodemStartDelay);
+      SerialPrintln(F(" bps"));
     }
 
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -69,11 +73,11 @@ void menuSerialLogging()
     }
     else if (incoming == '3')
     {
-      Serial.print(F("Enter zmodem start delay (5 to 60): "));
+      SerialPrint(F("Enter zmodem start delay (5 to 60): "));
       int newDelay = getNumber(menuTimeout); //Timeout after x seconds
       if (newDelay < 5 || newDelay > 60)
       {
-        Serial.println(F("Error: start delay out of range"));
+        SerialPrintln(F("Error: start delay out of range"));
       }
       else
       {
@@ -84,11 +88,11 @@ void menuSerialLogging()
     {
       if (incoming == '4')
       {
-        Serial.print(F("Enter baud rate (1200 to 500000): "));
+        SerialPrint(F("Enter baud rate (1200 to 500000): "));
         int newBaud = getNumber(menuTimeout); //Timeout after x seconds
         if (newBaud < 1200 || newBaud > 500000)
         {
-          Serial.println(F("Error: baud rate out of range"));
+          SerialPrintln(F("Error: baud rate out of range"));
         }
         else
         {

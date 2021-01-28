@@ -34,12 +34,16 @@
 #endif
 #endif
 
+int zdlread(void); // Header. Code is below.
+int zdlread2(int c); // Header. Code is below.
+
 // Shared globals
 long Bytesleft; // from rz - Shared with sz bytcnt
 long rxbytes;   // from rz - Shared with sz Lrxpos
 int Blklen;     // from rz - Shared with sz blklen
 
-#define Rxtimeout 100            /* Tenths of seconds to wait for something */
+//#define Rxtimeout 100            /* Tenths of seconds to wait for something */
+int Rxtimeout = 100;            /* Tenths of seconds to wait for something */
 #define Verbose 0
 
 // This buffer blends Txb (from sz) and secbuf (from rz) into a single buffer, saving 1K
@@ -108,8 +112,8 @@ char *frametypes[] = {
   (char *)"ZCOMMAND",
   (char *)"ZSTDERR",
   (char *)"xxxxx"
-#define FRTYPES 22      // Total number of frame types in this array 
-  //  not including psuedo negative entries 
+#define FRTYPES 22      // Total number of frame types in this array
+  //  not including psuedo negative entries
 };
 */
 #define badcrc F("Bad CRC");
@@ -128,18 +132,18 @@ void zsbhdr(int type, char *hdr)
     for (n = Znulls; --n >=0; )
       xsendline(0);
 */
-  xsendline(ZPAD); 
+  xsendline(ZPAD);
   xsendline(ZDLE);
 //Pete (El Supremo) This looks wrong but it is correct - the code fails if == is used
   if ((Crc32t = Txfcs32)) {
     int n;
     UNSL long crc;
-  
-    xsendline(ZBIN32);  
+
+    xsendline(ZBIN32);
     zsendline(type);
-    crc = 0xFFFFFFFFL; 
+    crc = 0xFFFFFFFFL;
     crc = UPDC32(type, crc);
-  
+
     for (n=4; --n >= 0; ++hdr) {
       crc = UPDC32((0377 & *hdr), crc);
       zsendline(*hdr);
@@ -152,9 +156,9 @@ void zsbhdr(int type, char *hdr)
   } else {
     int n;
     unsigned short crc;
-    
-    xsendline(ZBIN); 
-    zsendline(type); 
+
+    xsendline(ZBIN);
+    zsendline(type);
     crc = updcrc(type, 0);
 
     for (n=4; --n >= 0; ++hdr) {
@@ -177,24 +181,24 @@ void zshhdr(int type,char *hdr)
   unsigned short crc;
 
   vfile(F("zshhdr: %s %lx"), frametypes[type+FTOFFSET], rclhdr(hdr));
-  sendline(ZPAD); 
-  sendline(ZPAD); 
-  sendline(ZDLE); 
+  sendline(ZPAD);
+  sendline(ZPAD);
+  sendline(ZDLE);
   sendline(ZHEX);
   zputhex(type);
   Crc32t = 0;
 
   crc = updcrc(type, 0);
   for (n=4; --n >= 0; ++hdr) {
-    zputhex(*hdr); 
+    zputhex(*hdr);
     crc = updcrc((0377 & *hdr), crc);
   }
   crc = updcrc(0,updcrc(0,crc));
-  zputhex(crc>>8); 
+  zputhex(crc>>8);
   zputhex(crc);
 
   /* Make it printable on remote machine */
-  sendline(015); 
+  sendline(015);
   sendline(0212);
   /*
          * Uncork the remote in case a fake XOFF has stopped data flow
@@ -209,8 +213,8 @@ void zshhdr(int type,char *hdr)
  * Send binary array buf of length length, with ending ZDLE sequence frameend
  */
 /*
-static char *Zendnames[] = { 
-  (char *)"ZCRCE", 
+static char *Zendnames[] = {
+  (char *)"ZCRCE",
   (char *)"ZCRCG",
   (char *)"ZCRCQ",
   (char *)"ZCRCW"
@@ -224,7 +228,7 @@ void zsdata(char *buf,int length,int frameend)
   if (Crc32t) {
     int c;
     UNSL long crc;
-  
+
     crc = 0xFFFFFFFFL;
     for (;--length >= 0; ++buf) {
       c = *buf & 0377;
@@ -234,33 +238,33 @@ void zsdata(char *buf,int length,int frameend)
         zsendline(c);
       crc = UPDC32(c, crc);
     }
-    xsendline(ZDLE); 
+    xsendline(ZDLE);
     xsendline(frameend);
     crc = UPDC32(frameend, crc);
-  
+
     crc = ~crc;
     for (length=4; --length >= 0;) {
-      zsendline((int)crc);  
+      zsendline((int)crc);
       crc >>= 8;
     }
   } else {
     unsigned short crc;
-    
+
     crc = 0;
     for (;--length >= 0; ++buf) {
-      zsendline(*buf); 
+      zsendline(*buf);
       crc = updcrc((0377 & *buf), crc);
     }
-    xsendline(ZDLE); 
+    xsendline(ZDLE);
     xsendline(frameend);
     crc = updcrc(frameend, crc);
 
     crc = updcrc(0,updcrc(0,crc));
-    zsendline(crc>>8); 
+    zsendline(crc>>8);
     zsendline(crc);
   }
   if (frameend == ZCRCW) {
-    xsendline(XON);  
+    xsendline(XON);
     flushmo();
   }
 }
@@ -278,9 +282,9 @@ int zrdata(char *buf,int length)
 
   if (Rxframeind == ZBIN32) {
     UNSL long crc;
-  
-    crc = 0xFFFFFFFFL;  
-    Rxcount = 0;  
+
+    crc = 0xFFFFFFFFL;
+    Rxcount = 0;
     end = buf + length;
     while (buf <= end) {
       if ((c = zdlread()) & ~0377) {
@@ -290,7 +294,7 @@ int zrdata(char *buf,int length)
         case GOTCRCG:
         case GOTCRCQ:
         case GOTCRCW:
-          d = c;  
+          d = c;
           c &= 0377;
           crc = UPDC32(c, crc);
           if ((c = zdlread()) & ~0377)
@@ -332,7 +336,7 @@ int zrdata(char *buf,int length)
   } else {
     unsigned short crc;
 
-    crc = Rxcount = 0;  
+    crc = Rxcount = 0;
     end = buf + length;
     while (buf <= end) {
       if ((c = zdlread()) & ~0377) {
@@ -397,10 +401,10 @@ startover:
   cancount = 5;
 again:
   /* Return immediate ERROR if ZCRCW sequence seen */
-  ZSERIAL.setTimeout(Rxtimeout * 100);
+  ZSERIAL->setTimeout(Rxtimeout * 100);
   c = readline(Rxtimeout);
-  ZSERIAL.setTimeout(TYPICAL_SERIAL_TIMEOUT);
-  
+  ZSERIAL->setTimeout(TYPICAL_SERIAL_TIMEOUT);
+
   switch (c) {
   case RCDO:
   case TIMEOUT:
@@ -408,7 +412,7 @@ again:
   case CAN:
 gotcan:
     if (--cancount <= 0) {
-      c = ZCAN; 
+      c = ZCAN;
       goto fifi;
     }
     switch (c = readline(1)) {
@@ -423,7 +427,7 @@ gotcan:
       break;
     case CAN:
       if (--cancount <= 0) {
-        c = ZCAN; 
+        c = ZCAN;
         goto fifi;
       }
       goto again;
@@ -467,7 +471,7 @@ splat:
   case TIMEOUT:
     goto fifi;
   case ZBIN:
-    Rxframeind = ZBIN;  
+    Rxframeind = ZBIN;
     Crc32 = FALSE;
     c =  zrbhdr(hdr);
     break;
@@ -476,7 +480,7 @@ splat:
     c =  zrbhdr32(hdr);
     break;
   case ZHEX:
-    Rxframeind = ZHEX;  
+    Rxframeind = ZHEX;
     Crc32 = FALSE;
     c =  zrhhdr(hdr);
     break;
@@ -537,7 +541,7 @@ int zrbhdr(char *hdr)
   if ((c = zdlread()) & ~0377)
     return c;
   crc = updcrc(c, crc);
-  if (crc & 0xFFFF) {        
+  if (crc & 0xFFFF) {
     zperr(badcrc);
     return ERROR;
   }
@@ -559,7 +563,7 @@ int zrbhdr32(char *hdr)
   if ((c = zdlread()) & ~0377)
     return c;
   Rxtype = c;
-  crc = 0xFFFFFFFFL; 
+  crc = 0xFFFFFFFFL;
   crc = UPDC32(c, crc);
 #ifdef DEBUGZ
   vfile(F("zrbhdr32 c=%X  crc=%lX"), c, crc);
@@ -621,7 +625,7 @@ int zrhhdr(char *hdr)
     return c;
   crc = updcrc(c, crc);
   if (crc & 0xFFFF) {
-    zperr(badcrc); 
+    zperr(badcrc);
     return ERROR;
   }
   switch ( c = readline(1)) {
@@ -638,7 +642,7 @@ int zrhhdr(char *hdr)
 #ifdef ZMODEM
   Protocol = ZMODEM;
 #endif
-//  Zmodem = 1; 
+//  Zmodem = 1;
   return Rxtype;
 }
 
@@ -739,6 +743,16 @@ int zgethex(void)
  * Read a byte, checking for ZMODEM escape encoding
  *  including CAN*5 which represents a quick abort
  */
+
+int zdlread(void)
+{
+  int _z;
+  if ((_z = readline(Rxtimeout)) & 0140)
+    return (_z);
+  else
+    return (zdlread2(_z));
+}
+
 /*
 int zdlread(void)
 {
@@ -801,6 +815,7 @@ again2:
   return ERROR;
 }
 */
+
 int zdlread2(int c)
 {
 again:
@@ -814,7 +829,7 @@ again:
   case 021:
   case 0221:
     if ((c = readline(Rxtimeout)) & 0140)
-      return c;  
+      return c;
     goto again;
   default:
     if (Zctlesc && !(c & 0140)) {
@@ -921,13 +936,13 @@ long rclhdr(char *hdr)
 // Why was this called sendline ??
 //void sendline(int c)
 //{
-//  ZSERIAL.write(c & 0xFF);
-//  ZSERIAL.write(char(c));
-//  ZSERIAL.flush();
+//  ZSERIAL->write(c & 0xFF);
+//  ZSERIAL->write(char(c));
+//  ZSERIAL->flush();
 
-//DSERIAL.print("SEND: ");  
-//DSERIAL.print(c, HEX);
-//DSERIAL.println();
+//DSERIAL->print("SEND: ");
+//DSERIAL->print(c, HEX);
+//DSERIAL->println();
 
 //}
 /*
@@ -937,18 +952,18 @@ int readline(int timeout)
 {
   long then;
   unsigned char c;
-  
+
   then = millis();
-  while(ZSERIAL.available() < 1) {
+  while(ZSERIAL->available() < 1) {
     if(millis() - then > (unsigned int)timeout*100UL) {
-DSERIAL.println("readline - TIMEOUT");      
+DSERIAL->println("readline - TIMEOUT");
       return(TIMEOUT);
     }
   }
-  c = ZSERIAL.read();
-//DSERIAL.print("READ: ");  
-//DSERIAL.print(c, HEX);
-//DSERIAL.println();
+  c = ZSERIAL->read();
+//DSERIAL->print("READ: ");
+//DSERIAL->print(c, HEX);
+//DSERIAL->println();
   return(c);
 }
 */
@@ -958,7 +973,7 @@ DSERIAL.println("readline - TIMEOUT");
  */
 void purgeline(void)
 {
-  while(ZSERIAL.available())ZSERIAL.read();
+  while(ZSERIAL->available())ZSERIAL->read();
 }
 
 /*
@@ -974,21 +989,43 @@ void bttyout(int c)
 
 void flushmo(void)
 {
-  ZSERIAL.flush();
+  ZSERIAL->flush();
 }
-
-
 
 /* send cancel string to get the other end to shut up */
 void canit(void)
 {
   for (int i=0; i < 10; ++i) {
-    ZSERIAL.write(24);
+    ZSERIAL->write(24);
   }
   for (int i=0; i < 10; ++i) {
-    ZSERIAL.write(8);
+    ZSERIAL->write(8);
   }
-  ZSERIAL.flush();
+  ZSERIAL->flush();
+}
+
+int readline(int timeout)
+{
+  char _c;
+  if (ZSERIAL->readBytes(&_c, 1) > 0)
+    return (_c);
+  else
+    return (TIMEOUT);
+}
+
+void sendline(int _c)
+{
+  if (ZSERIAL->availableForWrite() > SERIAL_TX_BUFFER_SIZE / 2)
+    ZSERIAL->flush();
+  ZSERIAL->write(char(_c));
+}
+
+void zsendline(int _z)
+{
+  if (_z & 0140)
+    sendline(_z);
+  else
+    zsendline2(_z);
 }
 
 /* End of zm.c */

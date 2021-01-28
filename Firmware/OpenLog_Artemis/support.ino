@@ -2,7 +2,9 @@ void printDebug(String thingToPrint)
 {
   if(settings.printDebugMessages == true)
   {
-    Serial.print(thingToPrint);    
+    Serial.print(thingToPrint);
+    if (settings.useTxRxPinsForTerminal == true)
+      SerialLog.print(thingToPrint);
   }
 }
 
@@ -10,15 +12,19 @@ void printDebug(String thingToPrint)
 //Option not known
 void printUnknown(uint8_t unknownChoice)
 {
-  Serial.print(F("Unknown choice: "));
+  SerialPrint(F("Unknown choice: "));
   Serial.write(unknownChoice);
-  Serial.println();
+  if (settings.useTxRxPinsForTerminal == true)
+      SerialLog.write(unknownChoice);
+  SerialPrintln(F(""));
 }
 void printUnknown(int unknownValue)
 {
-  Serial.print(F("Unknown value: "));
+  SerialPrint(F("Unknown value: "));
   Serial.write(unknownValue);
-  Serial.println();
+  if (settings.useTxRxPinsForTerminal == true)
+      SerialLog.write(unknownValue);
+  SerialPrintln(F(""));
 }
 
 //Blocking wait for user input
@@ -29,9 +35,24 @@ void waitForInput()
     checkBattery();
     delay(1);
   }
+  
   while (Serial.available() > 0) Serial.read(); //Clear buffer
-  while (Serial.available() == 0)
+  
+  if (settings.useTxRxPinsForTerminal == true)
+    while (SerialLog.available() > 0) SerialLog.read(); //Clear buffer
+
+  bool keepChecking = true;    
+  while (keepChecking)
   {
+    if (Serial.available())
+      keepChecking = false;
+      
+    if (settings.useTxRxPinsForTerminal == true)
+    {
+      if (SerialLog.available())
+        keepChecking = false;
+    }
+    
     checkBattery();
   }
 }
@@ -40,15 +61,20 @@ void waitForInput()
 //Waits for and returns the character that the user provides
 //Returns STATUS_GETNUMBER_TIMEOUT if input times out
 //Returns 'x' if user presses 'x'
-uint8_t getByteChoice(int numberOfSeconds)
+uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL)
 {
-  Serial.flush();
+  SerialFlush();
+
   for (int i = 0; i < 50; i++) //Wait for any incoming chars to hit buffer
   {
     checkBattery();
     delay(1);
   }
+  
   while (Serial.available() > 0) Serial.read(); //Clear buffer
+
+  if (settings.useTxRxPinsForTerminal == true)
+    while (SerialLog.available() > 0) SerialLog.read(); //Clear buffer
 
   long startTime = millis();
   byte incoming;
@@ -57,8 +83,32 @@ uint8_t getByteChoice(int numberOfSeconds)
     if (Serial.available() > 0)
     {
       incoming = Serial.read();
-//      Serial.print(F("byte: 0x"));
+      if (updateDZSERIAL)
+      {
+        DSERIAL = &Serial;
+        ZSERIAL = &Serial;
+      }
+//      SerialPrint(F("byte: 0x"));
 //      Serial.println(incoming, HEX);
+//      if (settings.useTxRxPinsForTerminal == true)
+//        SerialLog.println(incoming, HEX);
+      if (incoming >= 'a' && incoming <= 'z') break;
+      if (incoming >= 'A' && incoming <= 'Z') break;
+      if (incoming >= '0' && incoming <= '9') break;
+    }
+
+    if ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available() > 0))
+    {
+      incoming = SerialLog.read();
+      if (updateDZSERIAL)
+      {
+        DSERIAL = &SerialLog;
+        ZSERIAL = &SerialLog;
+      }
+//      SerialPrint(F("byte: 0x"));
+//      Serial.println(incoming, HEX);
+//      if (settings.useTxRxPinsForTerminal == true)
+//        SerialLog.println(incoming, HEX);
       if (incoming >= 'a' && incoming <= 'z') break;
       if (incoming >= 'A' && incoming <= 'Z') break;
       if (incoming >= '0' && incoming <= '9') break;
@@ -66,7 +116,7 @@ uint8_t getByteChoice(int numberOfSeconds)
 
     if ( (millis() - startTime) / 1000 >= numberOfSeconds)
     {
-      Serial.println(F("No user input received."));
+      SerialPrintln(F("No user input received."));
       return (STATUS_GETBYTE_TIMEOUT); //Timeout. No user input.
     }
 
@@ -87,7 +137,11 @@ int64_t getNumber(int numberOfSeconds)
     checkBattery();
     delay(1);
   }
+  
   while (Serial.available() > 0) Serial.read(); //Clear buffer
+
+  if (settings.useTxRxPinsForTerminal == true)
+    while (SerialLog.available() > 0) SerialLog.read(); //Clear buffer
 
   //Get input from user
   char cleansed[20]; //Good for very large numbers: 123,456,789,012,345,678\0
@@ -96,15 +150,22 @@ int64_t getNumber(int numberOfSeconds)
   int spot = 0;
   while (spot < 20 - 1) //Leave room for terminating \0
   {
-    while (Serial.available() == 0) //Wait for user input
+    bool serialAvailable = false;
+    while (serialAvailable == false) //Wait for user input
     {
+      if (Serial.available())
+        serialAvailable = true;
+
+      if ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available()))
+        serialAvailable = true;
+        
       checkBattery();
       
       if ( (millis() - startTime) / 1000 >= numberOfSeconds)
       {
         if (spot == 0)
         {
-          Serial.println(F("No user input received. Do you have line endings turned on?"));
+          SerialPrintln(F("No user input received. Do you have line endings turned on?"));
           return (STATUS_GETNUMBER_TIMEOUT); //Timeout. No user input.
         }
         else if (spot > 0)
@@ -117,20 +178,31 @@ int64_t getNumber(int numberOfSeconds)
     //See if we timed out waiting for a line ending
     if (spot > 0 && (millis() - startTime) / 1000 >= numberOfSeconds)
     {
-      Serial.println(F("Do you have line endings turned on?"));
+      SerialPrintln(F("Do you have line endings turned on?"));
       break; //Timeout, but we have data
     }
 
-    byte incoming = Serial.read();
+    byte incoming;
+
+    if (Serial.available())
+      incoming = Serial.read();
+    
+    else
+      incoming = SerialLog.read();
+
     if (incoming == '\n' || incoming == '\r')
     {
-      Serial.println();
+      SerialPrintln(F(""));
       break;
     }
 
     if ((isDigit(incoming) == true) || ((incoming == '-') && (spot == 0))) // Check for digits and a minus sign
     {
       Serial.write(incoming); //Echo user's typing
+
+      if (settings.useTxRxPinsForTerminal == true)
+        SerialLog.write(incoming); //Echo user's typing
+      
       cleansed[spot++] = (char)incoming;
     }
 
@@ -170,7 +242,11 @@ double getDouble(int numberOfSeconds)
     checkBattery();
     delay(1);
   }
+  
   while (Serial.available() > 0) Serial.read(); //Clear buffer
+
+  if (settings.useTxRxPinsForTerminal == true)
+    while (SerialLog.available() > 0) SerialLog.read(); //Clear buffer
 
   //Get input from user
   char cleansed[20]; //Good for very large numbers: 123,456,789,012,345,678\0
@@ -180,15 +256,22 @@ double getDouble(int numberOfSeconds)
   bool dpSeen = false;
   while (spot < 20 - 1) //Leave room for terminating \0
   {
-    while (Serial.available() == 0) //Wait for user input
+    bool serialAvailable = false;
+    while (serialAvailable == false) //Wait for user input
     {
+      if (Serial.available())
+        serialAvailable = true;
+
+      if ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available()))
+        serialAvailable = true;
+
       checkBattery();
       
       if ( (millis() - startTime) / 1000 >= numberOfSeconds)
       {
         if (spot == 0)
         {
-          Serial.println(F("No user input received. Do you have line endings turned on?"));
+          SerialPrintln(F("No user input received. Do you have line endings turned on?"));
           return (STATUS_GETNUMBER_TIMEOUT); //Timeout. No user input.
         }
         else if (spot > 0)
@@ -201,20 +284,31 @@ double getDouble(int numberOfSeconds)
     //See if we timed out waiting for a line ending
     if (spot > 0 && (millis() - startTime) / 1000 >= numberOfSeconds)
     {
-      Serial.println(F("Do you have line endings turned on?"));
+      SerialPrintln(F("Do you have line endings turned on?"));
       break; //Timeout, but we have data
     }
 
-    byte incoming = Serial.read();
+    byte incoming;
+
+    if (Serial.available())
+      incoming = Serial.read();
+    
+    else
+      incoming = SerialLog.read();
+
     if (incoming == '\n' || incoming == '\r')
     {
-      Serial.println();
+      SerialPrintln(F(""));
       break;
     }
 
     if ((isDigit(incoming) == true) || ((incoming == '-') && (spot == 0)) || ((incoming == '.') && (dpSeen == false))) // Check for digits/minus/dp
     {
       Serial.write(incoming); //Echo user's typing
+      
+      if (settings.useTxRxPinsForTerminal == true)
+        SerialLog.write(incoming); //Echo user's typing
+      
       cleansed[spot++] = (char)incoming;
     }
 

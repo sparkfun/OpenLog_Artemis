@@ -45,7 +45,7 @@ void getData()
     } //end if use RTC for timestamp
     else //Use GPS for timestamp
     {
-      Serial.println(F("Print GPS Timestamp / not yet implemented"));
+      SerialPrintln(F("Print GPS Timestamp / not yet implemented"));
     }
   }
 
@@ -254,7 +254,7 @@ void gatherDeviceValues()
           {
             qwiic.setPullups(0); //Disable pullups to minimize CRC issues
 
-            SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
+            SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
             struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
             if (nodeSetting->log == true)
@@ -804,7 +804,7 @@ void gatherDeviceValues()
           }
           break;
         default:
-          Serial.printf("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
+          SerialPrintf2("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
       }
 
@@ -1173,7 +1173,7 @@ void printHelperText(bool terminalOnly)
           }
           break;
         default:
-          Serial.printf("\nprinterHelperText device not found: %d\r\n", temp->deviceType);
+          SerialPrintf2("\nprinterHelperText device not found: %d\r\n", temp->deviceType);
           break;
       }
     }
@@ -1188,7 +1188,7 @@ void printHelperText(bool terminalOnly)
 
   strcat(helperText, "\r\n");
 
-  Serial.print(helperText);
+  SerialPrint(helperText);
   if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
     sensorDataFile.print(helperText);
 }

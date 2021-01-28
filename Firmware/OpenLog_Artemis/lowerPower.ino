@@ -30,10 +30,10 @@ void checkBattery(void)
       
         delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
 
-        Serial.println(F("***      LOW BATTERY VOLTAGE DETECTED! GOING INTO POWERDOWN      ***"));
-        Serial.println(F("*** PLEASE CHANGE THE POWER SOURCE AND RESET THE OLA TO CONTINUE ***"));
+        SerialPrintln(F("***      LOW BATTERY VOLTAGE DETECTED! GOING INTO POWERDOWN      ***"));
+        SerialPrintln(F("*** PLEASE CHANGE THE POWER SOURCE AND RESET THE OLA TO CONTINUE ***"));
       
-        Serial.flush(); //Finish any prints
+        SerialFlush(); //Finish any prints
 
         powerDown(); // power down and wait for reset
       }
@@ -82,7 +82,7 @@ void powerDown()
   //    serialDataFile.close();
   //  }
 
-  //Serial.flush(); //Don't waste time waiting for prints to finish
+  //SerialFlush(); //Don't waste time waiting for prints to finish
 
   //  Wire.end(); //Power down I2C
   qwiic.end(); //Power down I2C
@@ -211,7 +211,7 @@ void goToSleep()
 
   delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
 
-  Serial.flush(); //Finish any prints
+  SerialFlush(); //Finish any prints
 
   //  Wire.end(); //Power down I2C
   qwiic.end(); //Power down I2C
@@ -367,6 +367,11 @@ void wakeFromSleep()
 
   Serial.begin(settings.serialTerminalBaudRate);
 
+  if (settings.useTxRxPinsForTerminal == true)
+  {
+    SerialLog.begin(settings.serialTerminalBaudRate); // Start the serial port
+  }
+
   printDebug("wakeFromSleep: I'm awake!\r\n");
   printDebug("wakeFromSleep: adcError is " + (String)adcError + ".");
   if (adcError > 0)
@@ -383,7 +388,10 @@ void wakeFromSleep()
 
   beginDataLogging(); //180ms
 
-  beginSerialLogging(); //20 - 99ms
+  if (settings.useTxRxPinsForTerminal == false)
+  {
+    beginSerialLogging(); //20 - 99ms
+  }
 
   beginIMU(); //61ms
   //printDebug("wakeFromSleep: online.IMU = " + (String)online.IMU + "\r\n");
@@ -396,7 +404,7 @@ void wakeFromSleep()
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
 
-  //Serial.printf("Wake up time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
+  //SerialPrintf2("Wake up time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
 
   //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
   takeReading = true;
@@ -420,9 +428,11 @@ void stopLogging(void)
     serialDataFile.close();
   }
 
-  Serial.print(F("Logging is stopped. Please reset OpenLog Artemis and open a terminal at "));
+  SerialPrint(F("Logging is stopped. Please reset OpenLog Artemis and open a terminal at "));
   Serial.print((String)settings.serialTerminalBaudRate);
-  Serial.println(F("bps..."));
+  if (settings.useTxRxPinsForTerminal == true)
+      SerialLog.print((String)settings.serialTerminalBaudRate);
+  SerialPrintln(F("bps..."));
   delay(sdPowerDownDelay); // Give the SD card time to shut down
   powerDown();
 }

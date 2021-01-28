@@ -137,7 +137,7 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
       break;
     case DEVICE_GPS_UBLOX:
       {
-        temp->classPtr = new SFE_UBLOX_GPS;
+        temp->classPtr = new SFE_UBLOX_GNSS;
         temp->configPtr = new struct_uBlox;
       }
       break;
@@ -238,7 +238,7 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
       }
       break;
     default:
-      Serial.printf("addDevice Device type not found: %d\r\n", deviceType);
+      SerialPrintf2("addDevice Device type not found: %d\r\n", deviceType);
       break;
   }
 
@@ -283,8 +283,8 @@ bool beginQwiicDevices()
     
     if (settings.printDebugMessages == true)
     {
-      Serial.printf("beginQwiicDevices: attempting to begin deviceType %s", getDeviceName(temp->deviceType));
-      Serial.printf(" at address 0x%02X using mux address 0x%02X and port number %d\r\n", temp->address, temp->muxAddress, temp->portNumber);
+      SerialPrintf2("beginQwiicDevices: attempting to begin deviceType %s", getDeviceName(temp->deviceType));
+      SerialPrintf4(" at address 0x%02X using mux address 0x%02X and port number %d\r\n", temp->address, temp->muxAddress, temp->portNumber);
     }
     
     //Attempt to begin the device
@@ -318,7 +318,7 @@ bool beginQwiicDevices()
       case DEVICE_GPS_UBLOX:
         {
           qwiic.setPullups(0); //Disable pullups for u-blox comms.
-          SFE_UBLOX_GPS *tempDevice = (SFE_UBLOX_GPS *)temp->classPtr;
+          SFE_UBLOX_GNSS *tempDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
@@ -460,7 +460,7 @@ bool beginQwiicDevices()
         }
         break;
       default:
-        Serial.printf("beginQwiicDevices: device type not found: %d\r\n", temp->deviceType);
+        SerialPrintf2("beginQwiicDevices: device type not found: %d\r\n", temp->deviceType);
         break;
     }
 
@@ -510,13 +510,15 @@ void printOnlineDevice()
     {
       sprintf(sensorOnlineText, "%s failed to respond\r\n", getDeviceName(temp->deviceType));
     }
-    Serial.print(sensorOnlineText);
+    SerialPrint(sensorOnlineText);
 
     temp = temp->next;
   }
 
   if (settings.printDebugMessages == true)
-    Serial.printf("Device count: %d\r\n", deviceCount);
+  {
+    SerialPrintf2("Device count: %d\r\n", deviceCount);
+  }
 }
 
 //Given the node number, apply the node's configuration settings to the device
@@ -569,7 +571,7 @@ void configureDevice(node * temp)
       {
         qwiic.setPullups(0); //Disable pullups for u-blox comms.
 
-        SFE_UBLOX_GPS *sensor = (SFE_UBLOX_GPS *)temp->classPtr;
+        SFE_UBLOX_GNSS *sensor = (SFE_UBLOX_GNSS *)temp->classPtr;
         struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
         sensor->setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
@@ -706,7 +708,7 @@ void configureDevice(node * temp)
       //Nothing to configure
       break;
     default:
-      Serial.printf("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
+      SerialPrintf3("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
   }
 }
@@ -796,8 +798,8 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       ptr = (FunctionPointer)menuConfigure_SNGCJA5;
       break;
     default:
-      Serial.println(F("getConfigFunctionPtr: Unknown device type"));
-      Serial.flush();
+      SerialPrintln(F("getConfigFunctionPtr: Unknown device type"));
+      SerialFlush();
       break;
   }
 
@@ -840,7 +842,7 @@ bool openConnection(uint8_t muxAddress, uint8_t portNumber)
 {
   if (head == NULL)
   {
-    Serial.println(F("OpenConnection Error: No devices in list"));
+    SerialPrintln(F("OpenConnection Error: No devices in list"));
     return false;
   }
 
@@ -1026,7 +1028,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Confidence: High - Sends/receives CRC checked data response
         qwiic.setPullups(0); //Disable pullups to minimize CRC issues
-        SFE_UBLOX_GPS sensor;
+        SFE_UBLOX_GNSS sensor;
         if(settings.printDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
         {
@@ -1260,14 +1262,18 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     default:
       {
         if (muxAddress == 0)
-          Serial.printf("Unknown device at address (0x%02X)\r\n", i2cAddress);
+        {
+          SerialPrintf2("Unknown device at address (0x%02X)\r\n", i2cAddress);
+        }
         else
-          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
+        {
+          SerialPrintf4("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
+        }
         return DEVICE_UNKNOWN_DEVICE;
       }
       break;
   }
-  Serial.printf("Known I2C address but device failed identification at address 0x%02X\r\n", i2cAddress);
+  SerialPrintf2("Known I2C address but device failed identification at address 0x%02X\r\n", i2cAddress);
   return DEVICE_UNKNOWN_DEVICE;
 }
 
@@ -1344,9 +1350,13 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
     default:
       {
         if (muxAddress == 0)
-          Serial.printf("Unknown device at address (0x%02X)\r\n", i2cAddress);
+        {
+          SerialPrintf2("Unknown device at address (0x%02X)\r\n", i2cAddress);
+        }
         else
-          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
+        {
+          SerialPrintf4("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
+        }
         return DEVICE_UNKNOWN_DEVICE;
       }
       break;

@@ -8,7 +8,7 @@ void loadSettings()
   uint32_t testRead = 0;
   if (EEPROM.get(0, testRead) == 0xFFFFFFFF)
   {
-    Serial.println(F("EEPROM is blank. Default settings applied"));
+    SerialPrintln(F("EEPROM is blank. Default settings applied"));
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 
@@ -18,7 +18,7 @@ void loadSettings()
   EEPROM.get(0, tempSize); //Load the sizeOfSettings
   if (tempSize != sizeof(settings))
   {
-    Serial.println(F("Settings wrong size. Default settings applied"));
+    SerialPrintln(F("Settings wrong size. Default settings applied"));
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 
@@ -28,7 +28,7 @@ void loadSettings()
   EEPROM.get(sizeof(int), tempIdentifier); //Load the identifier from the EEPROM location after sizeOfSettings (int)
   if (tempIdentifier != OLA_IDENTIFIER)
   {
-    Serial.println(F("Settings are not valid for this variant of the OLA. Default settings applied"));
+    SerialPrintln(F("Settings are not valid for this variant of the OLA. Default settings applied"));
     recordSystemSettings(); //Record default settings to EEPROM and config file. At power on, settings are in default state
   }
 
@@ -60,7 +60,7 @@ void recordSystemSettingsToFile()
     SdFile settingsFile; //FAT32
     if (settingsFile.open("OLA_settings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      Serial.println(F("Failed to create settings file"));
+      SerialPrintln(F("Failed to create settings file"));
       return;
     }
 
@@ -155,6 +155,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("imuGyroFSS=" + (String)settings.imuGyroFSS);
     settingsFile.println("imuGyroDLPFBW=" + (String)settings.imuGyroDLPFBW);
     settingsFile.println("logMicroseconds=" + (String)settings.logMicroseconds);
+    settingsFile.println("useTxRxPinsForTerminal=" + (String)settings.useTxRxPinsForTerminal);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -173,7 +174,7 @@ bool loadSystemSettingsFromFile()
       SdFile settingsFile; //FAT32
       if (settingsFile.open("OLA_settings.txt", O_READ) == false)
       {
-        Serial.println(F("Failed to open settings file"));
+        SerialPrintln(F("Failed to open settings file"));
         return (false);
       }
 
@@ -183,23 +184,23 @@ bool loadSystemSettingsFromFile()
       while (settingsFile.available()) {
         int n = settingsFile.fgets(line, sizeof(line));
         if (n <= 0) {
-          Serial.printf("Failed to read line %d from settings file\r\n", lineNumber);
+          SerialPrintf2("Failed to read line %d from settings file\r\n", lineNumber);
         }
         else if (line[n - 1] != '\n' && n == (sizeof(line) - 1)) {
-          Serial.printf("Settings line %d too long\r\n", lineNumber);
+          SerialPrintf2("Settings line %d too long\r\n", lineNumber);
           if (lineNumber == 0)
           {
             //If we can't read the first line of the settings file, give up
-            Serial.println(F("Giving up on settings file"));
+            SerialPrintln(F("Giving up on settings file"));
             return (false);
           }
         }
         else if (parseLine(line) == false) {
-          Serial.printf("Failed to parse line %d: %s\r\n", lineNumber, line);
+          SerialPrintf3("Failed to parse line %d: %s\r\n", lineNumber, line);
           if (lineNumber == 0)
           {
             //If we can't read the first line of the settings file, give up
-            Serial.println(F("Giving up on settings file"));
+            SerialPrintln(F("Giving up on settings file"));
             return (false);
           }
         }
@@ -207,19 +208,19 @@ bool loadSystemSettingsFromFile()
         lineNumber++;
       }
 
-      //Serial.println(F("Config file read complete"));
+      //SerialPrintln(F("Config file read complete"));
       settingsFile.close();
       return (true);
     }
     else
     {
-      Serial.println(F("No config file found. Using settings from EEPROM."));
+      SerialPrintln(F("No config file found. Using settings from EEPROM."));
       //The defaults of the struct will be recorded to a file later on.
       return (false);
     }
   }
 
-  Serial.println(F("Config file read failed: SD offline"));
+  SerialPrintln(F("Config file read failed: SD offline"));
   return (false); //SD offline
 }
 
@@ -235,8 +236,8 @@ bool parseLine(char* str) {
   char* ptr;
 
   //Debug
-  //Serial.printf("Line contents: %s", str);
-  //Serial.flush();
+  //SerialPrintf2("Line contents: %s", str);
+  //SerialFlush();
 
   // Set strtok start of line.
   str = strtok(str, "=");
@@ -250,15 +251,15 @@ bool parseLine(char* str) {
   str = strtok(nullptr, "\n");
   if (!str) return false;
 
-  //Serial.printf("s = %s\r\n", str);
-  //Serial.flush();
+  //SerialPrintf2("s = %s\r\n", str);
+  //SerialFlush();
 
   // Convert string to double.
   double d = strtod(str, &ptr);
   if (str == ptr || *skipSpace(ptr)) return false;
 
-  //Serial.printf("d = %lf\r\n", d);
-  //Serial.flush();
+  //SerialPrintf2("d = %lf\r\n", d);
+  //SerialFlush();
 
   // Get setting name
   if (strcmp(settingName, "sizeOfSettings") == 0)
@@ -269,13 +270,13 @@ bool parseLine(char* str) {
     {
       EEPROM.erase();
       sd.remove("OLA_settings.txt");
-      Serial.println(F("OpenLog Artemis has been factory reset. Freezing. Please restart and open terminal at 115200bps."));
+      SerialPrintln(F("OpenLog Artemis has been factory reset. Freezing. Please restart and open terminal at 115200bps."));
       while (1);
     }
 
     //Check to see if this setting file is compatible with this version of OLA
     if (d != sizeof(settings))
-      Serial.printf("Warning: Settings size is %d but current firmware expects %d. Attempting to use settings from file.\r\n", d, sizeof(settings));
+      SerialPrintf3("Warning: Settings size is %d but current firmware expects %d. Attempting to use settings from file.\r\n", d, sizeof(settings));
 
   }
   else if (strcmp(settingName, "olaIdentifier") == 0)
@@ -397,8 +398,10 @@ bool parseLine(char* str) {
     settings.imuGyroDLPFBW = d;
   else if (strcmp(settingName, "logMicroseconds") == 0)
     settings.logMicroseconds = d;
+  else if (strcmp(settingName, "useTxRxPinsForTerminal") == 0)
+    settings.useTxRxPinsForTerminal = d;
   else
-    Serial.printf("Unknown setting %s on line: %s\r\n", settingName, str);
+    SerialPrintf3("Unknown setting %s on line: %s\r\n", settingName, str);
 
   return (true);
 }
@@ -414,7 +417,7 @@ void recordDeviceSettingsToFile()
     SdFile settingsFile; //FAT32
     if (settingsFile.open("OLA_deviceSettings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
-      Serial.println(F("Failed to create device settings file"));
+      SerialPrintln(F("Failed to create device settings file"));
       return;
     }
 
@@ -650,7 +653,7 @@ void recordDeviceSettingsToFile()
           }
           break;
         default:
-          Serial.printf("recordSettingsToFile Unknown device: %s\r\n", base);
+          SerialPrintf2("recordSettingsToFile Unknown device: %s\r\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
           break;
       }
@@ -674,7 +677,7 @@ bool loadDeviceSettingsFromFile()
       SdFile settingsFile; //FAT32
       if (settingsFile.open("OLA_deviceSettings.txt", O_READ) == false)
       {
-        Serial.println(F("Failed to open device settings file"));
+        SerialPrintln(F("Failed to open device settings file"));
         return (false);
       }
 
@@ -684,32 +687,32 @@ bool loadDeviceSettingsFromFile()
       while (settingsFile.available()) {
         int n = settingsFile.fgets(line, sizeof(line));
         if (n <= 0) {
-          Serial.printf("Failed to read line %d from settings file\r\n", lineNumber);
+          SerialPrintf2("Failed to read line %d from settings file\r\n", lineNumber);
         }
         else if (line[n - 1] != '\n' && n == (sizeof(line) - 1)) {
-          Serial.printf("Settings line %d too long\n", lineNumber);
+          SerialPrintf2("Settings line %d too long\n", lineNumber);
         }
         else if (parseDeviceLine(line) == false) {
-          Serial.printf("Failed to parse line %d: %s\r\n", lineNumber + 1, line);
+          SerialPrintf3("Failed to parse line %d: %s\r\n", lineNumber + 1, line);
         }
 
         lineNumber++;
       }
 
-      //Serial.println(F("Device config file read complete"));
+      //SerialPrintln(F("Device config file read complete"));
       updateDataFileAccess(&settingsFile); // Update the file access time & date
       settingsFile.close();
       return (true);
     }
     else
     {
-      Serial.println(F("No device config file found. Creating one with device defaults."));
+      SerialPrintln(F("No device config file found. Creating one with device defaults."));
       recordDeviceSettingsToFile(); //Record the current settings to create the initial file
       return (false);
     }
   }
 
-  Serial.println(F("Device config file read failed: SD offline"));
+  SerialPrintln(F("Device config file read failed: SD offline"));
   return (false); //SD offline
 }
 
@@ -719,8 +722,8 @@ bool parseDeviceLine(char* str) {
   char* ptr;
 
   //Debug
-  //Serial.printf("Line contents: %s", str);
-  //Serial.flush();
+  //SerialPrintf2("Line contents: %s", str);
+  //SerialFlush();
 
   // Set strtok start of line.
   str = strtok(str, "=");
@@ -734,15 +737,15 @@ bool parseDeviceLine(char* str) {
   str = strtok(nullptr, "\n");
   if (!str) return false;
 
-  //Serial.printf("s = %s\r\n", str);
-  //Serial.flush();
+  //SerialPrintf2("s = %s\r\n", str);
+  //SerialFlush();
 
   // Convert string to double.
   double d = strtod(str, &ptr);
   if (str == ptr || *skipSpace(ptr)) return false;
 
-  //Serial.printf("d = %lf\r\n", d);
-  //Serial.flush();
+  //SerialPrintf2("d = %lf\r\n", d);
+  //SerialFlush();
 
   //Break device setting into its constituent parts
   char deviceSettingName[50];
@@ -772,19 +775,19 @@ bool parseDeviceLine(char* str) {
 
   if (count < 5)
   {
-    Serial.printf("Incomplete setting: %s\r\n", settingName);
+    SerialPrintf2("Incomplete setting: %s\r\n", settingName);
     return false;
   }
 
-  //Serial.printf("%d: %d.%d.%d - %s\r\n", deviceType, address, muxAddress, portNumber, deviceSettingName);
-  //Serial.flush();
+  //SerialPrintf6("%d: %d.%d.%d - %s\r\n", deviceType, address, muxAddress, portNumber, deviceSettingName);
+  //SerialFlush();
 
   //Find the device in the list that has this device type and address
   void *deviceConfigPtr = getConfigPointer(deviceType, address, muxAddress, portNumber);
   if (deviceConfigPtr == NULL)
   {
-    //Serial.printf("Setting in file found but no matching device on bus is available: %s\r\n", settingName);
-    //Serial.flush();
+    //SerialPrintf2("Setting in file found but no matching device on bus is available: %s\r\n", settingName);
+    //SerialFlush();
   }
   else
   {
@@ -792,7 +795,7 @@ bool parseDeviceLine(char* str) {
     {
       case DEVICE_MULTIPLEXER:
         {
-          Serial.println(F("There are no known settings for a multiplexer to load."));
+          SerialPrintln(F("There are no known settings for a multiplexer to load."));
         }
         break;
       case DEVICE_LOADCELL_NAU7802:
@@ -811,7 +814,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "averageAmount") == 0)
             nodeSetting->averageAmount = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_DISTANCE_VL53L1X:
@@ -834,7 +837,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "crosstalk") == 0)
             nodeSetting->crosstalk = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_GPS_UBLOX:
@@ -873,7 +876,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "useAutoPVT") == 0)
             nodeSetting->useAutoPVT = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_PROXIMITY_VCNL4040:
@@ -896,7 +899,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "resolution") == 0)
             nodeSetting->resolution = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_TEMPERATURE_TMP117:
@@ -907,7 +910,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logTemperature") == 0)
             nodeSetting->logTemperature = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_PRESSURE_MS5637:
@@ -920,7 +923,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logTemperature") == 0)
             nodeSetting->logTemperature = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_PRESSURE_LPS25HB:
@@ -933,7 +936,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logTemperature") == 0)
             nodeSetting->logTemperature = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_PHT_BME280:
@@ -950,7 +953,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logTemperature") == 0)
             nodeSetting->logTemperature = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_UV_VEML6075:
@@ -965,7 +968,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logUVIndex") == 0)
             nodeSetting->logUVIndex = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_VOC_CCS811:
@@ -978,7 +981,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logCO2") == 0)
             nodeSetting->logCO2 = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_VOC_SGP30:
@@ -995,7 +998,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logEthanol") == 0)
             nodeSetting->logEthanol = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_CO2_SCD30:
@@ -1018,7 +1021,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "temperatureOffset") == 0)
             nodeSetting->temperatureOffset = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_PHT_MS8607:
@@ -1039,7 +1042,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "humidityResolution") == 0)
             nodeSetting->humidityResolution = (MS8607_humidity_resolution)d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_TEMPERATURE_MCP9600:
@@ -1052,7 +1055,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logAmbientTemperature") == 0)
             nodeSetting->logAmbientTemperature = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_HUMIDITY_AHT20:
@@ -1065,7 +1068,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logTemperature") == 0)
             nodeSetting->logTemperature = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_HUMIDITY_SHTC3:
@@ -1078,7 +1081,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logTemperature") == 0)
             nodeSetting->logTemperature = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_ADC_ADS122C04:
@@ -1107,7 +1110,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "useTwoWireHighTemperatureMode") == 0)
             nodeSetting->useTwoWireHighTemperatureMode = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_PRESSURE_MPR0025PA1:
@@ -1134,7 +1137,7 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "useBAR") == 0)
             nodeSetting->useBAR = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_PARTICLE_SNGCJA5:
@@ -1169,12 +1172,12 @@ bool parseDeviceLine(char* str) {
           else if (strcmp(deviceSettingName, "logFanStatus") == 0)
             nodeSetting->logFanStatus = d;
           else
-            Serial.printf("Unknown device setting: %s\r\n", deviceSettingName);
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       default:
-        Serial.printf("Unknown device type: %d\r\n", deviceType);
-        Serial.flush();
+        SerialPrintf2("Unknown device type: %d\r\n", deviceType);
+        SerialFlush();
         break;
     }
   }

@@ -2,34 +2,34 @@ void menuPower()
 {
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure Power Options"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Power Options"));
 
-    Serial.print(F("1) Turn off Qwiic bus power between readings (>2s): "));
-    if (settings.powerDownQwiicBusBetweenReads == true) Serial.println(F("Yes"));
-    else Serial.println(F("No"));
+    SerialPrint(F("1) Turn off Qwiic bus power between readings (>2s): "));
+    if (settings.powerDownQwiicBusBetweenReads == true) SerialPrintln(F("Yes"));
+    else SerialPrintln(F("No"));
 
-    Serial.print(F("2) Use pin 32 to Stop Logging: "));
-    if (settings.useGPIO32ForStopLogging == true) Serial.println(F("Yes"));
-    else Serial.println(F("No"));
+    SerialPrint(F("2) Use pin 32 to Stop Logging: "));
+    if (settings.useGPIO32ForStopLogging == true) SerialPrintln(F("Yes"));
+    else SerialPrintln(F("No"));
 
 #if(HARDWARE_VERSION_MAJOR >= 1)
-    Serial.print(F("3) Power LED During Sleep: "));
-    if (settings.enablePwrLedDuringSleep == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("3) Power LED During Sleep: "));
+    if (settings.enablePwrLedDuringSleep == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("4) Low Battery Voltage Detection: "));
-    if (settings.enableLowBatteryDetection == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("4) Low Battery Voltage Detection: "));
+    if (settings.enableLowBatteryDetection == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("5) Low Battery Threshold (V): "));
-    Serial.printf("%.2f\r\n", settings.lowBatteryThreshold);
+    SerialPrint(F("5) Low Battery Threshold (V): "));
+    SerialPrintf2("%.2f\r\n", settings.lowBatteryThreshold);
 
-    Serial.print(F("6) VIN measurement correction factor: "));
-    Serial.printf("%.3f\r\n", settings.vinCorrectionFactor);
+    SerialPrint(F("6) VIN measurement correction factor: "));
+    SerialPrintf2("%.3f\r\n", settings.vinCorrectionFactor);
 #endif
 
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -69,22 +69,22 @@ void menuPower()
     }
     else if (incoming == '5')
     {
-      Serial.println(F("Please enter the new low battery threshold:"));
+      SerialPrintln(F("Please enter the new low battery threshold:"));
       float tempBT = (float)getDouble(menuTimeout); //Timeout after x seconds
       if ((tempBT < 3.0) || (tempBT > 6.0))
-        Serial.println(F("Error: Threshold out of range"));
+        SerialPrintln(F("Error: Threshold out of range"));
       else
         settings.lowBatteryThreshold = tempBT;
     }
     else if (incoming == '6')
     {
-      Serial.println(F("Please measure the voltage on the MEAS pin and enter it here:"));
+      SerialPrintln(F("Please measure the voltage on the MEAS pin and enter it here:"));
       float tempCF = (float)getDouble(menuTimeout); //Timeout after x seconds
       int div3 = analogRead(PIN_VIN_MONITOR); //Read VIN across a 1/3 resistor divider
       float vin = (float)div3 * 3.0 * 2.0 / 16384.0; //Convert 1/3 VIN to VIN (14-bit resolution)
       tempCF = tempCF / vin; //Calculate the new correction factor
       if ((tempCF < 1.0) || (tempCF > 2.0))
-        Serial.println(F("Error: Correction factor out of range"));
+        SerialPrintln(F("Error: Correction factor out of range"));
       else
         settings.vinCorrectionFactor = tempCF;
     }

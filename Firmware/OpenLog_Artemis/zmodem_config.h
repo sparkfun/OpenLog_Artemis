@@ -17,13 +17,15 @@
 //#endif
 
 // Serial output for debugging info
-#define DSERIAL Serial
+//#define DSERIAL Serial
+//Stream *DSERIAL;
 
 // The Serial port for the Zmodem connection
 // must not be the same as DSERIAL unless all
 // debugging output to DSERIAL is removed
 //#define ZSERIAL Serial3
-#define ZSERIAL Serial
+//#define ZSERIAL Serial
+//Stream *ZSERIAL;
 
 //#ifdef TEENSYDUINO
 //  #ifndef SERIAL_TX_BUFFER_SIZE
