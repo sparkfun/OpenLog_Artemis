@@ -362,7 +362,7 @@ void loop() {
   checkBattery(); // Check for low battery
 
   if (Serial.available()) menuMain(); //Present user menu
-  
+
   if (settings.logSerial == true && online.serialLogging == true)
   {
     if (SerialLog.available())
