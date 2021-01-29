@@ -79,6 +79,7 @@
   (done) Add an option to use autoPVT when logging GNSS data: https://github.com/sparkfun/OpenLog_Artemis/issues/50
   (done) Corrected an issue when using multiple MS8607's: https://github.com/sparkfun/OpenLog_Artemis/issues/62
   (done) Add a feature to use the TX and RX pins as a duplicate Terminal
+  (done) Add serial log timestamps with a token (as suggested by @DennisMelamed in PR https://github.com/sparkfun/OpenLog_Artemis/pull/70 and Issue https://github.com/sparkfun/OpenLog_Artemis/issues/63)
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -233,6 +234,7 @@ unsigned long qwiicPowerOnDelayMillis; //Wait for this many milliseconds after t
 int lowBatteryReadings = 0; // Count how many times the battery voltage has read low
 const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
 volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger interrupt has been seen
+char serialTimestamp[40]; //Buffer to store serial timestamp, if needed
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL = false); // Header
@@ -256,12 +258,9 @@ void DoSerialPrint(char (*)(const char *), const char *, bool newLine = false);
 // The Serial port for the Zmodem connection
 // must not be the same as DSERIAL unless all
 // debugging output to DSERIAL is removed
-//#define ZSERIAL Serial3
-//#define ZSERIAL Serial
 Stream *ZSERIAL;
 
-// Serial output for debugging info
-//#define DSERIAL Serial
+// Serial output for debugging info for Zmodem
 Stream *DSERIAL;
 
 void setup() {
@@ -279,6 +278,7 @@ void setup() {
   digitalWrite(PIN_STAT_LED, HIGH); // Turn the STAT LED on while we configure everything
 
   Serial.begin(115200); //Default for initial debug messages if necessary
+  SerialLog.begin(115200); //Default for initial debug messages if necessary
   SerialPrintln(F(""));
 
   SPI.begin(); //Needed if SD is disabled
@@ -302,7 +302,11 @@ void setup() {
 
   if (settings.useTxRxPinsForTerminal == true)
   {
-    SerialLog.begin(settings.serialTerminalBaudRate); // Start the serial port
+    SerialLog.begin(settings.serialTerminalBaudRate); // Restart the serial port
+  }
+  else
+  {
+    SerialLog.end(); // Stop the SerialLog port
   }
 
   Serial.flush(); //Complete any previous prints
@@ -340,6 +344,8 @@ void setup() {
 
   beginDataLogging(); //180ms
   lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
+
+  serialTimestamp[0] = '\0'; // Empty the serial timestamp buffer
 
   if (settings.useTxRxPinsForTerminal == false)
   {
@@ -402,11 +408,39 @@ void loop() {
 
   if (settings.logSerial == true && online.serialLogging == true && settings.useTxRxPinsForTerminal == false)
   {
-    if (SerialLog.available())
+    size_t timestampCharsLeftToWrite = strlen(serialTimestamp);
+    //SerialPrintf2("timestampCharsLeftToWrite is %d\r\n", timestampCharsLeftToWrite);
+    //SerialFlush();
+    
+    if (SerialLog.available() || (timestampCharsLeftToWrite > 0))
     {
-      while (SerialLog.available())
+      while (SerialLog.available() || (timestampCharsLeftToWrite > 0))
       {
-        incomingBuffer[incomingBufferSpot++] = SerialLog.read();
+        if (timestampCharsLeftToWrite > 0) // Based on code written by @DennisMelamed in PR #70
+        {
+          incomingBuffer[incomingBufferSpot++] = serialTimestamp[0]; // Add a timestamp character to incomingBuffer
+          
+          for (size_t i = 0; i < timestampCharsLeftToWrite; i++)
+          {
+            serialTimestamp[i] = serialTimestamp[i+1]; // Shuffle the remaining chars along by one
+          }
+
+          timestampCharsLeftToWrite -= 1;
+        }
+        else
+        {
+          incomingBuffer[incomingBufferSpot++] = SerialLog.read();
+
+          //Get the RTC timestamp if we just received the timestamp token
+          if (settings.timestampSerial && (incomingBuffer[incomingBufferSpot-1] == settings.timeStampToken))
+          {
+            getTimeString(&serialTimestamp[2]);
+            serialTimestamp[0] = 0x0A; // Add Line Feed at the start of the timestamp
+            serialTimestamp[1] = '^'; // Add an up-arrow to indicate the timestamp relates to the preceeding data
+            serialTimestamp[strlen(serialTimestamp) - 1] = 0x0A; // Change the final comma of the timestamp to a Line Feed
+          }
+        }
+        
         if (incomingBufferSpot == sizeof(incomingBuffer))
         {
           digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording

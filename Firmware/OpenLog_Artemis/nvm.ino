@@ -117,7 +117,6 @@ void recordSystemSettingsToFile()
     settingsFile.println("logIMUTemp=" + (String)settings.logIMUTemp);
     settingsFile.println("logRTC=" + (String)settings.logRTC);
     settingsFile.println("logHertz=" + (String)settings.logHertz);
-    settingsFile.println("getRTCfromGPS=" + (String)settings.getRTCfromGPS);
     settingsFile.println("correctForDST=" + (String)settings.correctForDST);
     settingsFile.println("americanDateStyle=" + (String)settings.americanDateStyle);
     settingsFile.println("hour24Style=" + (String)settings.hour24Style);
@@ -156,6 +155,8 @@ void recordSystemSettingsToFile()
     settingsFile.println("imuGyroDLPFBW=" + (String)settings.imuGyroDLPFBW);
     settingsFile.println("logMicroseconds=" + (String)settings.logMicroseconds);
     settingsFile.println("useTxRxPinsForTerminal=" + (String)settings.useTxRxPinsForTerminal);
+    settingsFile.println("timestampSerial=" + (String)settings.timestampSerial);
+    settingsFile.println("timeStampToken=" + (String)settings.timeStampToken);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -322,8 +323,6 @@ bool parseLine(char* str) {
     settings.logRTC = d;
   else if (strcmp(settingName, "logHertz") == 0)
     settings.logHertz = d;
-  else if (strcmp(settingName, "getRTCfromGPS") == 0)
-    settings.getRTCfromGPS = d;
   else if (strcmp(settingName, "correctForDST") == 0)
     settings.correctForDST = d;
   else if (strcmp(settingName, "americanDateStyle") == 0)
@@ -400,8 +399,15 @@ bool parseLine(char* str) {
     settings.logMicroseconds = d;
   else if (strcmp(settingName, "useTxRxPinsForTerminal") == 0)
     settings.useTxRxPinsForTerminal = d;
+  else if (strcmp(settingName, "timestampSerial") == 0)
+    settings.timestampSerial = d;
+  else if (strcmp(settingName, "timeStampToken") == 0)
+    settings.timeStampToken = d;
   else
-    SerialPrintf3("Unknown setting %s on line: %s\r\n", settingName, str);
+    {
+      SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);
+      return(false);
+    }
 
   return (true);
 }

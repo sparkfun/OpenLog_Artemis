@@ -9,44 +9,10 @@ void getData()
 
   if (settings.logRTC)
   {
-    //Decide if we are using the internal RTC or GPS for timestamps
-    if (settings.getRTCfromGPS == false)
-    {
-      myRTC.getTime();
-
-      if (settings.logDate)
-      {
-        char rtcDate[12]; //10/12/2019,
-        if (settings.americanDateStyle == true)
-          sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.month, myRTC.dayOfMonth, myRTC.year);
-        else
-          sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.dayOfMonth, myRTC.month, myRTC.year);
-        strcat(outputData, rtcDate);
-      }
-
-      if (settings.logTime)
-      {
-        char rtcTime[13]; //09:14:37.41,
-        int adjustedHour = myRTC.hour;
-        if (settings.hour24Style == false)
-        {
-          if (adjustedHour > 12) adjustedHour -= 12;
-        }
-        sprintf(rtcTime, "%02d:%02d:%02d.%02d,", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-        strcat(outputData, rtcTime);
-      }
-      
-      if (settings.logMicroseconds)
-      {
-        char microseconds[11]; //
-        sprintf(microseconds, "%lu,", micros());
-        strcat(outputData, microseconds);
-      }
-    } //end if use RTC for timestamp
-    else //Use GPS for timestamp
-    {
-      SerialPrintln(F("Print GPS Timestamp / not yet implemented"));
-    }
+    //Code written by @DennisMelamed in PR #70
+    char timeString[37];
+    getTimeString(timeString); // getTimeString is in timeStamp.ino
+    strcat(outputData, timeString);
   }
 
   if (settings.logA11)
@@ -821,19 +787,12 @@ void printHelperText(bool terminalOnly)
 
   if (settings.logRTC)
   {
-    //Decide if we are using the internal RTC or GPS for timestamps
-    if (settings.getRTCfromGPS == false)
-    {
-      if (settings.logDate)
-        strcat(helperText, "rtcDate,");
-      if (settings.logTime)
-        strcat(helperText, "rtcTime,");
-      if (settings.logMicroseconds)
-        strcat(helperText, "micros,");
-    }
-  } //end if use RTC for timestamp
-  else //Use GPS for timestamp
-  {
+    if (settings.logDate)
+      strcat(helperText, "rtcDate,");
+    if (settings.logTime)
+      strcat(helperText, "rtcTime,");
+    if (settings.logMicroseconds)
+      strcat(helperText, "micros,");
   }
 
   if (settings.logA11)

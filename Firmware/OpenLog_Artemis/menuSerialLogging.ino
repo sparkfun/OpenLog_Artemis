@@ -30,6 +30,40 @@ void menuSerialLogging()
       SerialPrintln(F(" bps"));
     }
 
+    if (settings.logSerial == true) // Suggested by @DennisMelamed in Issue #63
+    {
+      SerialPrint(F("5) Add RTC timestamp when token is received: "));
+      if (settings.timestampSerial == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+  
+      SerialPrint(F("6) Timestamp token: "));
+      Serial.print(settings.timeStampToken);
+      if (settings.useTxRxPinsForTerminal == true)
+        SerialLog.print(settings.timeStampToken);
+      SerialPrint(F(" (Decimal)"));
+      switch (settings.timeStampToken)
+      {
+        case 0x00:
+          SerialPrintln(F(" = NULL"));
+          break;
+        case 0x03:
+          SerialPrintln(F(" = End of Text"));
+          break;
+        case 0x0A:
+          SerialPrintln(F(" = Line Feed"));
+          break;
+        case 0x0D:
+          SerialPrintln(F(" = Carriage Return"));
+          break;
+        case 0x1B:
+          SerialPrintln(F(" = Escape"));
+          break;
+        default:
+          SerialPrintln(F(""));
+          break;
+      }
+    }
+
     SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -98,6 +132,21 @@ void menuSerialLogging()
         {
           settings.serialLogBaudRate = newBaud;
           SerialLog.begin(settings.serialLogBaudRate);
+        }
+      }
+      else if (incoming == '5')
+        settings.timestampSerial ^= 1;
+      else if (incoming == '6')
+      {
+        SerialPrint(F("Enter the timestamp token in decimal (0 to 255): "));
+        int newToken = getNumber(menuTimeout); //Timeout after x seconds
+        if (newToken < 0 || newToken > 255)
+        {
+          SerialPrintln(F("Error: token out of range"));
+        }
+        else
+        {
+          settings.timeStampToken = (uint8_t)newToken;
         }
       }
       else if (incoming == 'x')

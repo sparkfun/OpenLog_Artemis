@@ -309,7 +309,6 @@ struct struct_settings {
   bool logIMUTemp = true;
   bool logRTC = true;
   bool logHertz = true;
-  bool getRTCfromGPS = false;
   bool correctForDST = false;
   bool americanDateStyle = true;
   bool hour24Style = true;
@@ -352,6 +351,8 @@ struct struct_settings {
   int imuGyroDLPFBW = 7; // IMU gyro DLPF bandwidth - default to gyr_d361bw4_n376bw5 (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)  
   bool logMicroseconds = false; // Log micros()
   bool useTxRxPinsForTerminal = false; // If true, the terminal is echo'd to the Tx and Rx pins. Note: setting this to true will _permanently_ disable serial logging and analog input on those pins!
+  bool timestampSerial = false; // If true, the RTC time will be added to the serial log file when timeStampToken is received
+  uint8_t timeStampToken = 0x0A; // Add RTC time to the serial log when this token is received. Default to Line Feed (0x0A). Suggested by @DennisMelamed in Issue #63
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
