@@ -157,6 +157,12 @@ void recordSystemSettingsToFile()
     settingsFile.println("useTxRxPinsForTerminal=" + (String)settings.useTxRxPinsForTerminal);
     settingsFile.println("timestampSerial=" + (String)settings.timestampSerial);
     settingsFile.println("timeStampToken=" + (String)settings.timeStampToken);
+    settingsFile.println("useGPIO11ForFastSlowLogging=" + (String)settings.useGPIO11ForFastSlowLogging);
+    settingsFile.println("slowLoggingWhenPin11Is=" + (String)settings.slowLoggingWhenPin11Is);
+    settingsFile.println("useRTCForFastSlowLogging=" + (String)settings.useRTCForFastSlowLogging);
+    settingsFile.println("slowLoggingIntervalSeconds=" + (String)settings.slowLoggingIntervalSeconds);
+    settingsFile.println("slowLoggingStartMOD=" + (String)settings.slowLoggingStartMOD);
+    settingsFile.println("slowLoggingStopMOD=" + (String)settings.slowLoggingStopMOD);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -403,6 +409,18 @@ bool parseLine(char* str) {
     settings.timestampSerial = d;
   else if (strcmp(settingName, "timeStampToken") == 0)
     settings.timeStampToken = d;
+  else if (strcmp(settingName, "useGPIO11ForFastSlowLogging") == 0)
+    settings.useGPIO11ForFastSlowLogging = d;
+  else if (strcmp(settingName, "slowLoggingWhenPin11Is") == 0)
+    settings.slowLoggingWhenPin11Is = d;
+  else if (strcmp(settingName, "useRTCForFastSlowLogging") == 0)
+    settings.useRTCForFastSlowLogging = d;
+  else if (strcmp(settingName, "slowLoggingIntervalSeconds") == 0)
+    settings.slowLoggingIntervalSeconds = d;
+  else if (strcmp(settingName, "slowLoggingStartMOD") == 0)
+    settings.slowLoggingStartMOD = d;
+  else if (strcmp(settingName, "slowLoggingStopMOD") == 0)
+    settings.slowLoggingStopMOD = d;
   else
     {
       SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);

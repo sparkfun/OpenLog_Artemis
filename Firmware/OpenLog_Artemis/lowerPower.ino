@@ -154,25 +154,8 @@ void powerDown()
 }
 
 //Power everything down and wait for interrupt wakeup
-void goToSleep()
+void goToSleep(uint32_t sysTicksToSleep)
 {
-  //Counter/Timer 6 will use the 32kHz clock
-  //Calculate how many 32768Hz system ticks we need to sleep for:
-  //sysTicksToSleep = msToSleep * 32768L / 1000
-  //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
-  uint32_t msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
-  uint32_t sysTicksToSleep;
-  if (msToSleep < 131000)
-  {
-    sysTicksToSleep = msToSleep * 32768L; // Do the multiply first for short intervals
-    sysTicksToSleep = sysTicksToSleep / 1000L; // Now do the divide
-  }
-  else
-  {
-    sysTicksToSleep = msToSleep / 1000L; // Do the division first for long intervals (to avoid an overflow)
-    sysTicksToSleep = sysTicksToSleep * 32768L; // Now do the multiply
-  }
-
   //printDebug("goToSleep: sysTicksToSleep = " + (String)sysTicksToSleep + "\r\n");
 
   //printDebug("goToSleep: online.IMU = " + (String)online.IMU + "\r\n");
@@ -358,6 +341,11 @@ void wakeFromSleep()
     else
       attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
     triggerEdgeSeen = false; // Make sure the flag is clear
+  }
+
+  if (settings.useGPIO11ForFastSlowLogging == true)
+  {
+    pinMode(PIN_TRIGGER, INPUT_PULLUP);
   }
 
   pinMode(PIN_STAT_LED, OUTPUT);

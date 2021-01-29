@@ -98,6 +98,40 @@ void menuLogRate()
     }
     else SerialPrintln(F("Disabled"));
 
+    SerialPrint(F("15) Use Pin 11 to control fast/slow logging: "));
+    if (settings.useGPIO11ForFastSlowLogging == true) SerialPrintln(F("Yes"));
+    else SerialPrintln(F("No"));
+
+    if (settings.useGPIO11ForFastSlowLogging == true)
+    {
+      SerialPrint(F("16) Log slowly when Pin 11 is: "));
+      if (settings.slowLoggingWhenPin11Is == true) SerialPrintln(F("High"));
+      else SerialPrintln(F("Low"));
+    }
+
+    SerialPrint(F("17) Use RTC to control fast/slow logging: "));
+    if (settings.useRTCForFastSlowLogging == true) SerialPrintln(F("Yes"));
+    else SerialPrintln(F("No"));
+
+    if ((settings.useGPIO11ForFastSlowLogging == true) || (settings.useRTCForFastSlowLogging == true))
+    {
+      SerialPrint(F("18) Slow logging interval (seconds): "));
+      SerialPrintf2("%d\r\n", settings.slowLoggingIntervalSeconds);
+    }
+
+    if (settings.useRTCForFastSlowLogging == true)
+    {
+      SerialPrint(F("19) Slow logging starts at (minute of day): "));
+      int slowHour = settings.slowLoggingStartMOD / 60;
+      int slowMin = settings.slowLoggingStartMOD % 60;
+      SerialPrintf4("%d (%02d:%02d)\r\n", settings.slowLoggingStartMOD, slowHour, slowMin);
+
+      SerialPrint(F("20) Slow logging ends at (minute of day): "));
+      slowHour = settings.slowLoggingStopMOD / 60;
+      slowMin = settings.slowLoggingStopMOD % 60;
+      SerialPrintf4("%d (%02d:%02d)\r\n", settings.slowLoggingStopMOD, slowHour, slowMin);
+    }
+
     SerialPrintln(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
@@ -147,10 +181,10 @@ void menuLogRate()
         //The Deep Sleep duration is set with am_hal_stimer_compare_delta_set, the duration of which is uint32_t
         //So the maximum we can sleep for is 2^32 / 32768 = 131072 seconds = 36.4 hours
         //Let's limit this to 36 hours = 129600 seconds
-        SerialPrintln(F("How many seconds would you like to sleep between readings? (1 to 129,600):"));
+        SerialPrintln(F("How many seconds would you like to wait between readings? (1 to 129,600):"));
         int64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
         if (tempSeconds < 1 || tempSeconds > 129600)
-          SerialPrintln(F("Error: Readings Per Second out of range"));
+          SerialPrintln(F("Error: logging interval out of range"));
         else
           settings.usBetweenReadings = 1000000ULL * ((uint64_t)tempSeconds);
       }
@@ -230,6 +264,8 @@ void menuLogRate()
         triggerEdgeSeen = false; // Make sure the flag is clear
         settings.logA11 = false; // Disable analog logging on pin 11
         settings.logMaxRate = false; // Disable max rate logging
+        settings.useGPIO11ForFastSlowLogging = false;
+        settings.useRTCForFastSlowLogging = false;
       }
     }
     else if (incoming == 13)
@@ -285,6 +321,100 @@ void menuLogRate()
         SerialPrintln(F("You need to use \"Reset all settings to default\" from the main menu."));
         SerialPrintln(F(""));
       }
+    }
+    else if (incoming == 15)
+    {
+      if (settings.useGPIO11ForFastSlowLogging == false) // If the user is trying to enable Pin 11 fast / slow logging
+      {
+        settings.useGPIO11ForFastSlowLogging = true;
+        settings.useRTCForFastSlowLogging = false;
+        settings.logA11 = false; // Disable analog logging on pin 11
+        pinMode(PIN_TRIGGER, INPUT_PULLUP);
+        delay(1); // Let the pin stabilize
+        // Disable triggering
+        if (settings.useGPIO11ForTrigger == true)
+        {
+          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          triggerEdgeSeen = false; // Make sure the flag is clear
+        }
+        settings.useGPIO11ForTrigger = false;
+      }
+      else // If the user is trying to disable Pin 11 fast / slow logging
+      {
+        settings.useGPIO11ForFastSlowLogging = false;        
+        pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+      }
+    }
+    else if (incoming == 16)
+    {
+      if (settings.useGPIO11ForFastSlowLogging == true)
+      {
+        settings.slowLoggingWhenPin11Is ^= 1;
+      }
+    }
+    else if (incoming == 17)
+    {
+      if (settings.useRTCForFastSlowLogging == false) // If the user is trying to enable RTC fast / slow logging
+      {
+        settings.useRTCForFastSlowLogging = true;
+        if (settings.useGPIO11ForFastSlowLogging == true)
+        {
+          pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up          
+        }
+        settings.useGPIO11ForFastSlowLogging = false;
+        settings.logA11 = false; // Disable analog logging on pin 11
+        // Disable triggering
+        if (settings.useGPIO11ForTrigger == true)
+        {
+          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          triggerEdgeSeen = false; // Make sure the flag is clear
+        }
+        settings.useGPIO11ForTrigger = false;
+      }
+      else // If the user is trying to disable RTC fast / slow logging
+      {
+        settings.useRTCForFastSlowLogging = false;        
+      }
+    }
+    else if (incoming == 18)
+    {
+      if ((settings.useGPIO11ForFastSlowLogging == true) || (settings.useRTCForFastSlowLogging == true))
+      {
+        //The Deep Sleep duration is set with am_hal_stimer_compare_delta_set, the duration of which is uint32_t
+        //So the maximum we can sleep for is 2^32 / 32768 = 131072 seconds = 36.4 hours
+        //Let's limit this to 36 hours = 129600 seconds
+        SerialPrintln(F("How many seconds would you like to sleep between readings? (5 to 129,600):"));
+        int64_t tempSeconds = getNumber(menuTimeout); //Timeout after x seconds
+        if (tempSeconds < 5 || tempSeconds > 129600)
+          SerialPrintln(F("Error: sleep interval out of range"));
+        else
+          settings.slowLoggingIntervalSeconds = (int)tempSeconds;
+      }      
+    }
+    else if (incoming == 19)
+    {
+      if (settings.useRTCForFastSlowLogging == true)
+      {
+        SerialPrintln(F("Enter the time slow logging should start in Minutes Of Day (0 to 1439) (E.g. 1260 = 21:00):"));
+        int64_t tempMOD = getNumber(menuTimeout); //Timeout after x seconds
+        if (tempMOD < 1 || tempMOD > 1439)
+          SerialPrintln(F("Error: time out of range"));
+        else
+          settings.slowLoggingStartMOD = (int)tempMOD;
+      }      
+    }
+    else if (incoming == 20)
+    {
+      if (settings.useRTCForFastSlowLogging == true)
+      {
+        SerialPrintln(F("Enter the time slow logging should stop in Minutes Of Day (0 to 1439) (E.g. 420 = 07:00):"));
+        int64_t tempMOD = getNumber(menuTimeout); //Timeout after x seconds
+        if (tempMOD < 1 || tempMOD > 1439)
+          SerialPrintln(F("Error: time out of range"));
+        else
+          settings.slowLoggingStopMOD = (int)tempMOD;
+      }      
     }
     else if (incoming == STATUS_PRESSED_X)
       return;

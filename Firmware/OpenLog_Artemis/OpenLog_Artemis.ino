@@ -80,6 +80,8 @@
   (done) Corrected an issue when using multiple MS8607's: https://github.com/sparkfun/OpenLog_Artemis/issues/62
   (done) Add a feature to use the TX and RX pins as a duplicate Terminal
   (done) Add serial log timestamps with a token (as suggested by @DennisMelamed in PR https://github.com/sparkfun/OpenLog_Artemis/pull/70 and Issue https://github.com/sparkfun/OpenLog_Artemis/issues/63)
+  (done?) Add "sleep on pin" functionality based @ryanneve's PR https://github.com/sparkfun/OpenLog_Artemis/pull/64 and Issue https://github.com/sparkfun/OpenLog_Artemis/issues/46
+  (done?) Add "wake at specified times" functionality based on Issue https://github.com/sparkfun/OpenLog_Artemis/issues/46
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -395,7 +397,7 @@ void setup() {
 
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something
-  if (settings.usBetweenReadings >= maxUsBeforeSleep)
+  if (checkIfItIsTimeToSleep())
     menuMain();
 }
 
@@ -613,12 +615,97 @@ void loop() {
 
     triggerEdgeSeen = false; // Clear the trigger seen flag here - just in case another trigger was received while we were logging data to SD card
 
-    //Go to sleep if the time between readings is greater than maxUsBeforeSleep (2 seconds) and triggering is not enabled
-    if ((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+    // Code changes here are based on suggestions by @ryanneve in Issue #46 and PR #64
+    if (checkIfItIsTimeToSleep())
     {
-      goToSleep();
+      goToSleep(howLongToSleepFor());
     }
   }
+}
+
+uint32_t howLongToSleepFor(void)
+{
+  //Counter/Timer 6 will use the 32kHz clock
+  //Calculate how many 32768Hz system ticks we need to sleep for:
+  //sysTicksToSleep = msToSleep * 32768L / 1000
+  //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
+  
+  uint32_t msToSleep;
+
+  if (checkSleepOnRTCTime() || checkSleepOnFastSlowPin())
+    msToSleep = (uint32_t)(settings.slowLoggingIntervalSeconds * 1000UL);
+  else
+    msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
+  
+  uint32_t sysTicksToSleep;
+  if (msToSleep < 131000)
+  {
+    sysTicksToSleep = msToSleep * 32768L; // Do the multiply first for short intervals
+    sysTicksToSleep = sysTicksToSleep / 1000L; // Now do the divide
+  }
+  else
+  {
+    sysTicksToSleep = msToSleep / 1000L; // Do the division first for long intervals (to avoid an overflow)
+    sysTicksToSleep = sysTicksToSleep * 32768L; // Now do the multiply
+  }
+
+  return (sysTicksToSleep);
+}
+
+bool checkIfItIsTimeToSleep(void)
+{
+
+  if (checkSleepOnUsBetweenReadings()
+  || checkSleepOnRTCTime()
+  || checkSleepOnFastSlowPin())
+    return(true);
+  else
+    return(false);
+}
+
+//Go to sleep if the time between readings is greater than maxUsBeforeSleep (2 seconds) and triggering is not enabled
+bool checkSleepOnUsBetweenReadings(void)
+{
+  if ((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+    return (true);
+  else
+    return (false);
+}
+
+//Go to sleep if Fast/Slow logging on Pin 11 is enabled and Pin 11 is in the correct state
+bool checkSleepOnFastSlowPin(void)
+{
+  if ((settings.useGPIO11ForFastSlowLogging == true) && (digitalRead(PIN_TRIGGER) == settings.slowLoggingWhenPin11Is))
+    return (true);
+  else
+    return (false);
+}
+
+// Go to sleep if useRTCForFastSlowLogging is enabled and RTC time is between the start and stop times
+bool checkSleepOnRTCTime(void)
+{
+  // Check if we should be sleeping based on useGPIO11ForFastSlowLogging and slowLoggingStartMOD + slowLoggingStopMOD
+  bool sleepOnRTCTime = false;
+  if (settings.useRTCForFastSlowLogging == true)
+  {
+    if (settings.slowLoggingStartMOD != settings.slowLoggingStopMOD) // Only perform the check if the start and stop times are not equal
+    {
+      myRTC.getTime(); // Get the RTC time
+      int minutesOfDay = (myRTC.hour * 60) + myRTC.minute;
+      
+      if (settings.slowLoggingStartMOD > settings.slowLoggingStopMOD) // If slow logging starts later than the stop time (i.e. slow over midnight)
+      {
+        if ((minutesOfDay >= settings.slowLoggingStartMOD) || (minutesOfDay < settings.slowLoggingStopMOD))
+          sleepOnRTCTime = true;
+      }
+      else // Slow logging starts earlier than the stop time
+      {
+        if ((minutesOfDay >= settings.slowLoggingStartMOD) && (minutesOfDay < settings.slowLoggingStopMOD))
+          sleepOnRTCTime = true;
+      }
+    }
+  }
+  return(sleepOnRTCTime);
 }
 
 void beginQwiic()

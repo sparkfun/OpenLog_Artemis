@@ -353,6 +353,13 @@ struct struct_settings {
   bool useTxRxPinsForTerminal = false; // If true, the terminal is echo'd to the Tx and Rx pins. Note: setting this to true will _permanently_ disable serial logging and analog input on those pins!
   bool timestampSerial = false; // If true, the RTC time will be added to the serial log file when timeStampToken is received
   uint8_t timeStampToken = 0x0A; // Add RTC time to the serial log when this token is received. Default to Line Feed (0x0A). Suggested by @DennisMelamed in Issue #63
+  bool useGPIO11ForFastSlowLogging = false; // If true, Pin 11 will control if readings are taken quickly or slowly. Suggested by @ryanneve in Issue #46 and PR #64
+  bool slowLoggingWhenPin11Is = false; // Controls the polarity of Pin 11 for fast / slow logging
+  bool useRTCForFastSlowLogging = false; // If true, logging will be slow during the specified times
+  int slowLoggingIntervalSeconds = 300; // Slow logging interval in seconds. Default to 5 mins
+  int slowLoggingStartMOD = 1260; // Start slow logging at this many Minutes Of Day. Default to 21:00
+  int slowLoggingStopMOD = 420; // Stop slow logging at this many Minutes Of Day. Default to 07:00
+
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.
