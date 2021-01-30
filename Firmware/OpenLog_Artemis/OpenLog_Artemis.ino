@@ -635,9 +635,30 @@ uint32_t howLongToSleepFor(void)
   
   uint32_t msToSleep;
 
-  if (checkSleepOnRTCTime() || checkSleepOnFastSlowPin())
+  if (checkSleepOnFastSlowPin())
     msToSleep = (uint32_t)(settings.slowLoggingIntervalSeconds * 1000UL);
-  else
+  else if (checkSleepOnRTCTime())
+  {
+    // checkSleepOnRTCTime has returned true, so we know that we are between slowLoggingStartMOD and slowLoggingStopMOD
+    // We need to check how long it is until slowLoggingStopMOD (accounting for midnight!) and adjust the sleep duration
+    // if slowLoggingStopMOD occurs before slowLoggingIntervalSeconds
+
+    msToSleep = (uint32_t)(settings.slowLoggingIntervalSeconds * 1000UL); // Default to this
+
+    myRTC.getTime(); // Get the RTC time
+    long secondsOfDay = (myRTC.hour * 60 * 60) + (myRTC.minute * 60) + myRTC.seconds;
+
+    long slowLoggingStopSOD = settings.slowLoggingStopMOD * 60; // Convert slowLoggingStop to seconds-of-day
+
+    long secondsUntilStop = slowLoggingStopSOD - secondsOfDay; // Calculate how long it is until slowLoggingStop
+
+    // If secondsUntilStop is negative then we know that now is before midnight and slowLoggingStop is after midnight
+    if (secondsUntilStop < 0) secondsUntilStop += 24 * 60 * 60; // Add a day's worth of seconds if required to make secondsUntilStop positive
+
+    if (secondsUntilStop < settings.slowLoggingIntervalSeconds) // If we need to sleep for less than slowLoggingIntervalSeconds
+      msToSleep = (secondsUntilStop + 1) * 1000UL; // Adjust msToSleep, adding one extra second to make sure the next wake is > slowLoggingStop
+  }
+  else // checkSleepOnUsBetweenReadings
     msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
   
   uint32_t sysTicksToSleep;
