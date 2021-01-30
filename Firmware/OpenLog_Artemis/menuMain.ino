@@ -169,8 +169,11 @@ void menuMain()
   //Reset measurements
   measurementCount = 0;
   totalCharactersPrinted = 0;
-  //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
-  if (settings.usBetweenReadings >= maxUsBeforeSleep)
+  //If we are sleeping between readings then we cannot rely on millis() as it is powered down
+  //Use RTC instead
+  if (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+  || (settings.useGPIO11ForFastSlowLogging == true)
+  || (settings.useRTCForFastSlowLogging == true))
     measurementStartTime = rtcMillis();
   else
     measurementStartTime = millis();

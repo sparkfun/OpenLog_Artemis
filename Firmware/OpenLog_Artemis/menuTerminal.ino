@@ -121,15 +121,15 @@ void menuLogRate()
 
     if (settings.useRTCForFastSlowLogging == true)
     {
-      SerialPrint(F("19) Slow logging starts at (minute of day): "));
+      SerialPrint(F("19) Slow logging starts at: "));
       int slowHour = settings.slowLoggingStartMOD / 60;
       int slowMin = settings.slowLoggingStartMOD % 60;
-      SerialPrintf4("%d (%02d:%02d)\r\n", settings.slowLoggingStartMOD, slowHour, slowMin);
+      SerialPrintf3("%02d:%02d\r\n", slowHour, slowMin);
 
-      SerialPrint(F("20) Slow logging ends at (minute of day): "));
+      SerialPrint(F("20) Slow logging ends at: "));
       slowHour = settings.slowLoggingStopMOD / 60;
       slowMin = settings.slowLoggingStopMOD % 60;
-      SerialPrintf4("%d (%02d:%02d)\r\n", settings.slowLoggingStopMOD, slowHour, slowMin);
+      SerialPrintf3("%02d:%02d\r\n", slowHour, slowMin);
     }
 
     SerialPrintln(F("x) Exit"));
@@ -396,24 +396,40 @@ void menuLogRate()
     {
       if (settings.useRTCForFastSlowLogging == true)
       {
-        SerialPrintln(F("Enter the time slow logging should start in Minutes Of Day (0 to 1439) (E.g. 1260 = 21:00):"));
+        SerialPrintln(F("Enter the Hour slow logging should start (0 to 23):"));
         int64_t tempMOD = getNumber(menuTimeout); //Timeout after x seconds
-        if (tempMOD < 1 || tempMOD > 1439)
+        if (tempMOD < 0 || tempMOD > 23)
           SerialPrintln(F("Error: time out of range"));
         else
-          settings.slowLoggingStartMOD = (int)tempMOD;
+        {
+          settings.slowLoggingStartMOD = (int)tempMOD * 60; // Convert to minutes
+          SerialPrintln(F("\r\nEnter the Minute slow logging should start (0 to 59):"));
+          tempMOD = getNumber(menuTimeout); //Timeout after x seconds
+          if (tempMOD < 0 || tempMOD > 59)
+            SerialPrintln(F("Error: time out of range"));
+          else
+            settings.slowLoggingStartMOD += (int)tempMOD;
+        }
       }      
     }
     else if (incoming == 20)
     {
       if (settings.useRTCForFastSlowLogging == true)
       {
-        SerialPrintln(F("Enter the time slow logging should stop in Minutes Of Day (0 to 1439) (E.g. 420 = 07:00):"));
+        SerialPrintln(F("Enter the Hour slow logging should end (0 to 23):"));
         int64_t tempMOD = getNumber(menuTimeout); //Timeout after x seconds
-        if (tempMOD < 1 || tempMOD > 1439)
+        if (tempMOD < 0 || tempMOD > 23)
           SerialPrintln(F("Error: time out of range"));
         else
-          settings.slowLoggingStopMOD = (int)tempMOD;
+        {
+          settings.slowLoggingStopMOD = (int)tempMOD * 60; // Convert to minutes
+          SerialPrintln(F("\r\nEnter the Minute slow logging should end (0 to 59):"));
+          tempMOD = getNumber(menuTimeout); //Timeout after x seconds
+          if (tempMOD < 0 || tempMOD > 59)
+            SerialPrintln(F("Error: time out of range"));
+          else
+            settings.slowLoggingStopMOD += (int)tempMOD;
+        }
       }      
     }
     else if (incoming == STATUS_PRESSED_X)

@@ -127,8 +127,10 @@ void getData()
     uint64_t currentMillis;
 
     //If we are sleeping between readings then we cannot rely on millis() as it is powered down
-    //Used RTC instead
-    if (settings.usBetweenReadings >= maxUsBeforeSleep)
+    //Use RTC instead
+    if (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+    || (settings.useGPIO11ForFastSlowLogging == true)
+    || (settings.useRTCForFastSlowLogging == true))
     {
       currentMillis = rtcMillis();
     }
