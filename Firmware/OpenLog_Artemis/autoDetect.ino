@@ -1124,11 +1124,11 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_MCP9600);
 
-        //Confidence: Medium - Begin doesn't confirm anything, but a readMeasurement() must pass CRC check
+        //Confidence: High - begin now checks FW Ver CRC
         SCD30 sensor1;
+        //sensor1.enableDebugging();
         if (sensor1.begin(qwiic) == true) //Wire port
-          if (sensor1.readMeasurement() == true) //This reads the measurement register and calculates a CRC on the interchange
-            return (DEVICE_CO2_SCD30);
+          return (DEVICE_CO2_SCD30);
       }
       break;
     case 0x62:

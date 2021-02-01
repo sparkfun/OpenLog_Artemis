@@ -204,7 +204,7 @@ struct struct_SCD30 {
   bool logTemperature = true;
   int measurementInterval = 2; //2 seconds
   int altitudeCompensation = 0; //0 m above sea level
-  int ambientPressure = 835; //mBar STP
+  int ambientPressure = 1000; //mBar STP (Toto, I have a feeling we're not in Boulder anymore)
   int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
   unsigned long powerOnDelayMillis = 5000; // Wait for at least this many millis before communicating with this device
 };
