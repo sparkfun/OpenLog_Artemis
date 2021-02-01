@@ -268,6 +268,8 @@ bool beginQwiicDevices()
   
   qwiicPowerOnDelayMillis = settings.qwiicBusPowerUpDelayMs; // Set qwiicPowerOnDelayMillis to the _minimum_ defined by settings.qwiicBusPowerUpDelayMs. It will be increased if required.
 
+  int numberOfSCD30s = 0; // Keep track of how many SCD30s we begin so we can delay before starting the second and subsequent ones
+
   //Step through the list
   node *temp = head;
 
@@ -395,6 +397,13 @@ bool beginQwiicDevices()
           SCD30 *tempDevice = (SCD30 *)temp->classPtr;
           struct_SCD30 *nodeSetting = (struct_SCD30 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          numberOfSCD30s++; // Keep track of how many SCD30s we begin
+          // Delay before starting the second and subsequent SCD30s to try and stagger the measurements and the peak current draw
+          if (numberOfSCD30s >= 2)
+          {
+            printDebug("beginQwiicDevices: found more than one SCD30. Delaying for 375ms to stagger the peak current draw...\r\n");
+            delay(375);
+          }
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
@@ -1127,7 +1136,8 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Confidence: High - begin now checks FW Ver CRC
         SCD30 sensor1;
         //sensor1.enableDebugging();
-        if (sensor1.begin(qwiic) == true) //Wire port
+        // Set measBegin to false. beginQwiicDevices will call begin with measBegin set true.
+        if (sensor1.begin(qwiic, true, false) == true) //Wire port, autoCalibrate, measBegin
           return (DEVICE_CO2_SCD30);
       }
       break;
