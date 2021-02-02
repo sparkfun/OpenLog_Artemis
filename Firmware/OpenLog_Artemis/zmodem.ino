@@ -145,29 +145,29 @@ size_t DSERIALprint(const __FlashStringHelper *ifsh)
   while (1) {
     unsigned char c = pgm_read_byte(p++);
     if (c == 0) break;
-    if (DSERIAL.availableForWrite() > SERIAL_TX_BUFFER_SIZE / 2) DSERIAL.flush();
-    if (DSERIAL.write(c)) n++;
+    if (DSERIAL->availableForWrite() > SERIAL_TX_BUFFER_SIZE / 2) DSERIAL->flush();
+    if (DSERIAL->write(c)) n++;
     else break;
   }
   return n;
 }
 
-#define DSERIALprintln(_p) ({ DSERIALprint(_p); DSERIAL.write("\r\n"); })
+#define DSERIALprintln(_p) ({ DSERIALprint(_p); DSERIAL->write("\r\n"); })
 
 void sdCardHelp(void)
 {
   DSERIALprint(F("\r\n"));
   DSERIALprint(Progname);
   DSERIALprint(F(" - Transfer rate: "));
-  DSERIAL.flush(); DSERIAL.println(settings.serialTerminalBaudRate); DSERIAL.flush();
-  DSERIALprintln(F("Available Commands:")); DSERIAL.flush();
-  DSERIALprintln(F("HELP     - Print this list of commands")); DSERIAL.flush();
-  DSERIALprintln(F("DIR      - List files in current working directory - alternate LS")); DSERIAL.flush();
-  DSERIALprintln(F("DEL file - Delete file - alternate RM")); DSERIAL.flush();
-  DSERIALprintln(F("SZ  file - Send file from OLA to terminal using ZModem (\"SZ *\" will send all files)")); DSERIAL.flush();
-  DSERIALprintln(F("SS  file - Send file from OLA using serial TX pin")); DSERIAL.flush();
-  DSERIALprintln(F("CAT file - Type file to this terminal - alternate TYPE")); DSERIAL.flush();
-  DSERIALprintln(F("X        - Exit to OpenLog Artemis Main Menu")); DSERIAL.flush();
+  DSERIAL->flush(); DSERIAL->println(settings.serialTerminalBaudRate); DSERIAL->flush();
+  DSERIALprintln(F("Available Commands:")); DSERIAL->flush();
+  DSERIALprintln(F("HELP     - Print this list of commands")); DSERIAL->flush();
+  DSERIALprintln(F("DIR      - List files in current working directory - alternate LS")); DSERIAL->flush();
+  DSERIALprintln(F("DEL file - Delete file - alternate RM")); DSERIAL->flush();
+  DSERIALprintln(F("SZ  file - Send file from OLA to terminal using ZModem (\"SZ *\" will send all files)")); DSERIAL->flush();
+  DSERIALprintln(F("SS  file - Send file from OLA using serial TX pin")); DSERIAL->flush();
+  DSERIALprintln(F("CAT file - Type file to this terminal - alternate TYPE")); DSERIAL->flush();
+  DSERIALprintln(F("X        - Exit to OpenLog Artemis Main Menu")); DSERIAL->flush();
   DSERIALprint(F("\r\n"));
 }
 
@@ -214,17 +214,17 @@ void sdCardMenu(void)
   
     *cmd = 0;
 
-    while (DSERIAL.available()) DSERIAL.read();
+    while (DSERIAL->available()) DSERIAL->read();
     
     char c = 0;
     while(1)
     {
-      if (DSERIAL.available() > 0)
+      if (DSERIAL->available() > 0)
       {
-        c = DSERIAL.read();
+        c = DSERIAL->read();
         if ((c == 8 or c == 127) && strlen(cmd) > 0) cmd[strlen(cmd)-1] = 0;
         if (c == '\n' || c == '\r') break;
-        DSERIAL.write(c);
+        DSERIAL->write(c);
         if (c != 8 && c != 127) strncat(cmd, &c, 1);
       }
       else
@@ -251,7 +251,7 @@ void sdCardMenu(void)
     }
   
     strupr(cmd);
-    DSERIAL.println();
+    DSERIAL->println();
   //  DSERIALprintln(command);
   //  DSERIALprintln(parameter);
   
@@ -264,7 +264,10 @@ void sdCardMenu(void)
     {
       DSERIALprintln(F("\r\nRoot Directory Listing:"));
 
-      sd.ls("/", LS_DATE | LS_SIZE); // Do a non-recursive LS of the root directory showing file modification dates and sizes
+      if (DSERIAL == &Serial)
+        sd.ls("/", LS_DATE | LS_SIZE); // Do a non-recursive LS of the root directory showing file modification dates and sizes
+      else
+        sd.ls(&SerialLog, "/", LS_DATE | LS_SIZE);
   
       DSERIALprintln(F("End of Directory\r\n"));
     }
@@ -274,13 +277,13 @@ void sdCardMenu(void)
       if (!sd.remove(param))
       {
         DSERIALprint(F("\r\nFailed to delete file "));
-        DSERIAL.flush(); DSERIAL.println(param); DSERIAL.flush();
+        DSERIAL->flush(); DSERIAL->println(param); DSERIAL->flush();
         DSERIALprintln(F("\r\n"));
       }
       else
       {
         DSERIALprint(F("\r\nFile "));
-        DSERIAL.flush(); DSERIAL.print(param); DSERIAL.flush();
+        DSERIAL->flush(); DSERIAL->print(param); DSERIAL->flush();
         DSERIALprintln(F(" deleted\r\n"));
       }
     }
@@ -291,14 +294,14 @@ void sdCardMenu(void)
       {
        
         count_files(&Filesleft, &Totalleft);
-        DSERIALprint(F("\r\nTransferring ")); DSERIAL.print(Filesleft); DSERIALprint(F(" files (")); DSERIAL.print(Totalleft); DSERIALprintln(F(" bytes)")); 
+        DSERIALprint(F("\r\nTransferring ")); DSERIAL->print(Filesleft); DSERIALprint(F(" files (")); DSERIAL->print(Totalleft); DSERIALprintln(F(" bytes)")); 
         
         root.open("/"); // (re)open the root directory
         root.rewind(); // rewind
 
         if (Filesleft > 0)
         {
-          DSERIALprint(F("Starting zmodem transfer in ")); Serial.print(settings.zmodemStartDelay); DSERIALprintln(F(" seconds..."));
+          DSERIALprint(F("Starting zmodem transfer in ")); DSERIAL->print(settings.zmodemStartDelay); DSERIALprintln(F(" seconds..."));
           DSERIALprintln(F("(If you are using Tera Term, you need to start your File\\Transfer\\ZMODEM\\Receive now!)"));
           if (oneTime == false)
           {
@@ -327,7 +330,7 @@ void sdCardMenu(void)
               char fname[30];
               size_t fsize = 30;
               fout.getName(fname, fsize);
-              //Serial.print("fname: "); Serial.println(fname);
+              //DSERIAL->print("fname: "); DSERIAL->println(fname);
               if (wcs(fname) == ERROR)
               {
                 for (int i = 0; i < 500; i++)
@@ -367,7 +370,7 @@ void sdCardMenu(void)
         }
         else
         {
-          DSERIALprint(F("\r\nStarting zmodem transfer in ")); Serial.print(settings.zmodemStartDelay); DSERIALprintln(F(" seconds..."));
+          DSERIALprint(F("\r\nStarting zmodem transfer in ")); DSERIAL->print(settings.zmodemStartDelay); DSERIALprintln(F(" seconds..."));
           DSERIALprintln(F("(If you are using Tera Term, you need to start your File\\Transfer\\ZMODEM\\Receive now!)"));
           if (oneTime == false)
           {
@@ -384,7 +387,7 @@ void sdCardMenu(void)
           // Start the ZMODEM transfer
           Filesleft = 1;
           Totalleft = fout.fileSize();
-          //ZSERIAL.print(F("rz\r"));
+          //ZSERIAL->print(F("rz\r"));
           sendzrqinit();
           for (int i = 0; i < 200; i++)
           {
@@ -408,9 +411,10 @@ void sdCardMenu(void)
       else
       {
         settings.logA12 = false; //Disable analog readings on TX pin
-        SerialLog.begin(settings.serialLogBaudRate); // (Re)start the serial port
+        if (settings.useTxRxPinsForTerminal == false)
+          SerialLog.begin(settings.serialLogBaudRate); // (Re)start the serial port
 
-        DSERIALprint(F("\r\nSending ")); Serial.print(param); DSERIALprint(F(" to the TX pin at ")); Serial.print(settings.serialLogBaudRate); DSERIALprintln(F(" baud"));
+        DSERIALprint(F("\r\nSending ")); DSERIAL->print(param); DSERIALprint(F(" to the TX pin at ")); DSERIAL->print(settings.serialLogBaudRate); DSERIALprintln(F(" baud"));
 
         while (fout.available())
         {
@@ -438,7 +442,7 @@ void sdCardMenu(void)
         {
           char ch;
           if (fout.read(&ch, 1) == 1) // Read a single char
-            Serial.write(ch); // Send it via SerialLog (TX pin)
+            DSERIAL->write(ch); // Send it via SerialLog (TX pin)
         }
         
         fout.close();

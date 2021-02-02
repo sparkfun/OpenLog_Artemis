@@ -30,10 +30,10 @@ void checkBattery(void)
       
         delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
 
-        Serial.println(F("***      LOW BATTERY VOLTAGE DETECTED! GOING INTO POWERDOWN      ***"));
-        Serial.println(F("*** PLEASE CHANGE THE POWER SOURCE AND RESET THE OLA TO CONTINUE ***"));
+        SerialPrintln(F("***      LOW BATTERY VOLTAGE DETECTED! GOING INTO POWERDOWN      ***"));
+        SerialPrintln(F("*** PLEASE CHANGE THE POWER SOURCE AND RESET THE OLA TO CONTINUE ***"));
       
-        Serial.flush(); //Finish any prints
+        SerialFlush(); //Finish any prints
 
         powerDown(); // power down and wait for reset
       }
@@ -82,7 +82,7 @@ void powerDown()
   //    serialDataFile.close();
   //  }
 
-  //Serial.flush(); //Don't waste time waiting for prints to finish
+  //SerialFlush(); //Don't waste time waiting for prints to finish
 
   //  Wire.end(); //Power down I2C
   qwiic.end(); //Power down I2C
@@ -153,26 +153,80 @@ void powerDown()
   }
 }
 
-//Power everything down and wait for interrupt wakeup
-void goToSleep()
+//Reset the Artemis
+void resetArtemis(void)
 {
-  //Counter/Timer 6 will use the 32kHz clock
-  //Calculate how many 32768Hz system ticks we need to sleep for:
-  //sysTicksToSleep = msToSleep * 32768L / 1000
-  //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
-  uint32_t msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
-  uint32_t sysTicksToSleep;
-  if (msToSleep < 131000)
+  //Save files before resetting
+  if (online.dataLogging == true)
   {
-    sysTicksToSleep = msToSleep * 32768L; // Do the multiply first for short intervals
-    sysTicksToSleep = sysTicksToSleep / 1000L; // Now do the divide
+    sensorDataFile.sync();
+    updateDataFileAccess(&sensorDataFile); // Update the file access time & date
+    sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
   }
-  else
+  if (online.serialLogging == true)
   {
-    sysTicksToSleep = msToSleep / 1000L; // Do the division first for long intervals (to avoid an overflow)
-    sysTicksToSleep = sysTicksToSleep * 32768L; // Now do the multiply
+    serialDataFile.sync();
+    updateDataFileAccess(&serialDataFile); // Update the file access time & date
+    serialDataFile.close();
   }
 
+  delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
+
+  SerialFlush(); //Finish any prints
+
+  //  Wire.end(); //Power down I2C
+  qwiic.end(); //Power down I2C
+
+  SPI.end(); //Power down SPI
+
+  power_adc_disable(); //Power down ADC. It it started by default before setup().
+
+  Serial.end(); //Power down UART
+  SerialLog.end();
+
+  //Force the peripherals off
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
+
+  //Disable pads
+  for (int x = 0; x < 50; x++)
+  {
+    if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
+        //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+        (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+    {
+      am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
+    }
+  }
+
+  //We can't leave these power control pins floating
+  imuPowerOff();
+  microSDPowerOff();
+
+  //Disable power for the Qwiic bus
+  qwiicPowerOff();
+
+  //Disable the power LED
+  powerLEDOff();
+
+  //Enable the Watchdog so it can reset the Artemis
+  startWatchdog();
+  while (1) // That's all folks! Artemis will reset in 1.25 seconds
+    ;
+}
+
+//Power everything down and wait for interrupt wakeup
+void goToSleep(uint32_t sysTicksToSleep)
+{
   //printDebug("goToSleep: sysTicksToSleep = " + (String)sysTicksToSleep + "\r\n");
 
   //printDebug("goToSleep: online.IMU = " + (String)online.IMU + "\r\n");
@@ -211,7 +265,7 @@ void goToSleep()
 
   delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
 
-  Serial.flush(); //Finish any prints
+  SerialFlush(); //Finish any prints
 
   //  Wire.end(); //Power down I2C
   qwiic.end(); //Power down I2C
@@ -360,6 +414,11 @@ void wakeFromSleep()
     triggerEdgeSeen = false; // Make sure the flag is clear
   }
 
+  if (settings.useGPIO11ForFastSlowLogging == true)
+  {
+    pinMode(PIN_TRIGGER, INPUT_PULLUP);
+  }
+
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, LOW);
 
@@ -367,11 +426,16 @@ void wakeFromSleep()
 
   Serial.begin(settings.serialTerminalBaudRate);
 
-  printDebug("wakeFromSleep: I'm awake!\r\n");
+  if (settings.useTxRxPinsForTerminal == true)
+  {
+    SerialLog.begin(settings.serialTerminalBaudRate); // Start the serial port
+  }
+
+  printDebug(F("wakeFromSleep: I'm awake!\r\n"));
   printDebug("wakeFromSleep: adcError is " + (String)adcError + ".");
   if (adcError > 0)
-    printDebug(" This indicates an error was returned by ap3_adc_setup or one of the calls to ap3_set_pin_to_analog.");
-  printDebug("\r\n");
+    printDebug(F(" This indicates an error was returned by ap3_adc_setup or one of the calls to ap3_set_pin_to_analog."));
+  printDebug(F("\r\n"));
 
   beginQwiic(); //Power up Qwiic bus as early as possible
 
@@ -383,7 +447,10 @@ void wakeFromSleep()
 
   beginDataLogging(); //180ms
 
-  beginSerialLogging(); //20 - 99ms
+  if (settings.useTxRxPinsForTerminal == false)
+  {
+    beginSerialLogging(); //20 - 99ms
+  }
 
   beginIMU(); //61ms
   //printDebug("wakeFromSleep: online.IMU = " + (String)online.IMU + "\r\n");
@@ -396,7 +463,7 @@ void wakeFromSleep()
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
 
-  //Serial.printf("Wake up time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
+  //SerialPrintf2("Wake up time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
 
   //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
   takeReading = true;
@@ -420,9 +487,11 @@ void stopLogging(void)
     serialDataFile.close();
   }
 
-  Serial.print(F("Logging is stopped. Please reset OpenLog Artemis and open a terminal at "));
+  SerialPrint(F("Logging is stopped. Please reset OpenLog Artemis and open a terminal at "));
   Serial.print((String)settings.serialTerminalBaudRate);
-  Serial.println(F("bps..."));
+  if (settings.useTxRxPinsForTerminal == true)
+      SerialLog.print((String)settings.serialTerminalBaudRate);
+  SerialPrintln(F("bps..."));
   delay(sdPowerDownDelay); // Give the SD card time to shut down
   powerDown();
 }
@@ -561,4 +630,47 @@ int calculateDayOfYear(int day, int month, int year)
 
   doy += day;
   return doy;
+}
+
+//WatchDog Timer code by Adam Garbo:
+//https://forum.sparkfun.com/viewtopic.php?f=169&t=52431&p=213296#p213296
+
+// Watchdog timer configuration structure.
+am_hal_wdt_config_t g_sWatchdogConfig = {
+
+  // Configuration values for generated watchdog timer event.
+  .ui32Config = AM_HAL_WDT_LFRC_CLK_16HZ | AM_HAL_WDT_ENABLE_RESET | AM_HAL_WDT_ENABLE_INTERRUPT,
+
+  // Number of watchdog timer ticks allowed before a watchdog interrupt event is generated.
+  .ui16InterruptCount = 16, // Set WDT interrupt timeout for 1 second.
+
+  // Number of watchdog timer ticks allowed before the watchdog will issue a system reset.
+  .ui16ResetCount = 20 // Set WDT reset timeout for 1.25 seconds.
+};
+
+void startWatchdog()
+{
+  // LFRC must be turned on for this example as the watchdog only runs off of the LFRC.
+  am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_LFRC_START, 0);
+
+  // Configure the watchdog.
+  am_hal_wdt_init(&g_sWatchdogConfig);
+
+  // Enable the interrupt for the watchdog in the NVIC.
+  NVIC_EnableIRQ(WDT_IRQn);
+  //NVIC_SetPriority(WDT_IRQn, 0); // Set the interrupt priority to 0 = highest (255 = lowest)
+  //am_hal_interrupt_master_enable(); // ap3_initialization.cpp does this - no need to do it here
+
+  // Enable the watchdog.
+  am_hal_wdt_start();
+}
+
+// Interrupt handler for the watchdog.
+extern "C++" void am_watchdog_isr(void)
+{
+  // Clear the watchdog interrupt.
+  am_hal_wdt_int_clear();
+
+  // DON'T Restart the watchdog.
+  //am_hal_wdt_restart(); // "Pet" the dog.
 }

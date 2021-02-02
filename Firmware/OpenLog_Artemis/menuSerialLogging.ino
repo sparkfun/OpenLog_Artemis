@@ -4,29 +4,67 @@ void menuSerialLogging()
 {
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure Serial Logging"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Serial Logging"));
 
-    Serial.print(F("1) Log serial data: "));
-    if (settings.logSerial == true) Serial.println(F("Enabled, analog logging on RX/A13 pin disabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Log serial data: "));
+    if (settings.logSerial == true) SerialPrintln(F("Enabled, analog logging on RX/A13 pin disabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("2) Output serial data to TX pin: "));
-    if (settings.outputSerial == true) Serial.println(F("Enabled, analog logging on TX/A12 pin disabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("2) Output serial data to TX pin: "));
+    if (settings.outputSerial == true) SerialPrintln(F("Enabled, analog logging on TX/A12 pin disabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("3) zmodem start delay: "));
+    SerialPrint(F("3) zmodem start delay: "));
     Serial.print(settings.zmodemStartDelay);
-    Serial.println(F(" seconds"));
+    if (settings.useTxRxPinsForTerminal == true)
+      SerialLog.print(settings.zmodemStartDelay);
+    SerialPrintln(F(" seconds"));
 
     if ((settings.logSerial == true) || (settings.outputSerial == true))
     {
-      Serial.print(F("4) Set serial baud rate: "));
+      SerialPrint(F("4) Set serial baud rate: "));
       Serial.print(settings.serialLogBaudRate);
-      Serial.println(F(" bps"));
+      if (settings.useTxRxPinsForTerminal == true)
+        SerialLog.print(settings.zmodemStartDelay);
+      SerialPrintln(F(" bps"));
     }
 
-    Serial.println(F("x) Exit"));
+    if (settings.logSerial == true) // Suggested by @DennisMelamed in Issue #63
+    {
+      SerialPrint(F("5) Add RTC timestamp when token is received: "));
+      if (settings.timestampSerial == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+  
+      SerialPrint(F("6) Timestamp token: "));
+      Serial.print(settings.timeStampToken);
+      if (settings.useTxRxPinsForTerminal == true)
+        SerialLog.print(settings.timeStampToken);
+      SerialPrint(F(" (Decimal)"));
+      switch (settings.timeStampToken)
+      {
+        case 0x00:
+          SerialPrintln(F(" = NULL"));
+          break;
+        case 0x03:
+          SerialPrintln(F(" = End of Text"));
+          break;
+        case 0x0A:
+          SerialPrintln(F(" = Line Feed"));
+          break;
+        case 0x0D:
+          SerialPrintln(F(" = Carriage Return"));
+          break;
+        case 0x1B:
+          SerialPrintln(F(" = Escape"));
+          break;
+        default:
+          SerialPrintln(F(""));
+          break;
+      }
+    }
+
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -69,11 +107,11 @@ void menuSerialLogging()
     }
     else if (incoming == '3')
     {
-      Serial.print(F("Enter zmodem start delay (5 to 60): "));
+      SerialPrint(F("Enter zmodem start delay (5 to 60): "));
       int newDelay = getNumber(menuTimeout); //Timeout after x seconds
       if (newDelay < 5 || newDelay > 60)
       {
-        Serial.println(F("Error: start delay out of range"));
+        SerialPrintln(F("Error: start delay out of range"));
       }
       else
       {
@@ -84,16 +122,31 @@ void menuSerialLogging()
     {
       if (incoming == '4')
       {
-        Serial.print(F("Enter baud rate (1200 to 500000): "));
+        SerialPrint(F("Enter baud rate (1200 to 500000): "));
         int newBaud = getNumber(menuTimeout); //Timeout after x seconds
         if (newBaud < 1200 || newBaud > 500000)
         {
-          Serial.println(F("Error: baud rate out of range"));
+          SerialPrintln(F("Error: baud rate out of range"));
         }
         else
         {
           settings.serialLogBaudRate = newBaud;
           SerialLog.begin(settings.serialLogBaudRate);
+        }
+      }
+      else if (incoming == '5')
+        settings.timestampSerial ^= 1;
+      else if (incoming == '6')
+      {
+        SerialPrint(F("Enter the timestamp token in decimal (0 to 255): "));
+        int newToken = getNumber(menuTimeout); //Timeout after x seconds
+        if (newToken < 0 || newToken > 255)
+        {
+          SerialPrintln(F("Error: token out of range"));
+        }
+        else
+        {
+          settings.timeStampToken = (uint8_t)newToken;
         }
       }
       else if (incoming == 'x')

@@ -9,44 +9,10 @@ void getData()
 
   if (settings.logRTC)
   {
-    //Decide if we are using the internal RTC or GPS for timestamps
-    if (settings.getRTCfromGPS == false)
-    {
-      myRTC.getTime();
-
-      if (settings.logDate)
-      {
-        char rtcDate[12]; //10/12/2019,
-        if (settings.americanDateStyle == true)
-          sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.month, myRTC.dayOfMonth, myRTC.year);
-        else
-          sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.dayOfMonth, myRTC.month, myRTC.year);
-        strcat(outputData, rtcDate);
-      }
-
-      if (settings.logTime)
-      {
-        char rtcTime[13]; //09:14:37.41,
-        int adjustedHour = myRTC.hour;
-        if (settings.hour24Style == false)
-        {
-          if (adjustedHour > 12) adjustedHour -= 12;
-        }
-        sprintf(rtcTime, "%02d:%02d:%02d.%02d,", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-        strcat(outputData, rtcTime);
-      }
-      
-      if (settings.logMicroseconds)
-      {
-        char microseconds[11]; //
-        sprintf(microseconds, "%d,", micros());
-        strcat(outputData, microseconds);
-      }
-    } //end if use RTC for timestamp
-    else //Use GPS for timestamp
-    {
-      Serial.println(F("Print GPS Timestamp / not yet implemented"));
-    }
+    //Code written by @DennisMelamed in PR #70
+    char timeString[37];
+    getTimeString(timeString); // getTimeString is in timeStamp.ino
+    strcat(outputData, timeString);
   }
 
   if (settings.logA11)
@@ -161,8 +127,10 @@ void getData()
     uint64_t currentMillis;
 
     //If we are sleeping between readings then we cannot rely on millis() as it is powered down
-    //Used RTC instead
-    if (settings.usBetweenReadings >= maxUsBeforeSleep)
+    //Use RTC instead
+    if (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+    || (settings.useGPIO11ForFastSlowLogging == true)
+    || (settings.useRTCForFastSlowLogging == true))
     {
       currentMillis = rtcMillis();
     }
@@ -254,7 +222,7 @@ void gatherDeviceValues()
           {
             qwiic.setPullups(0); //Disable pullups to minimize CRC issues
 
-            SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
+            SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
             struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
             if (nodeSetting->log == true)
@@ -803,66 +771,8 @@ void gatherDeviceValues()
             }
           }
           break;
-        case DEVICE_IMU_BNO080:
-          {
-            BNO080 *nodeDevice = (BNO080 *)temp->classPtr;
-            struct_BNO080 *nodeSetting = (struct_BNO080 *)temp->configPtr;
-            if (nodeSetting->log == true)
-            {
-              // Check that at least one set of readings is being logged
-              if ((nodeSetting->logQuat) || (nodeSetting->logAccel) || (nodeSetting->logLinAccel) || (nodeSetting->logGyro) || (nodeSetting->logFastGyro) ||
-                (nodeSetting->logMag) || (nodeSetting->logEuler))
-              {
-                if (nodeDevice->dataAvailable()) // Check if new data is available (dangerous? what happens if data is not available?)
-                {
-                  if (nodeSetting->logQuat)
-                  {
-                    sprintf(tempData, "%.02f,%.02f,%.02f,%.02f,%d,", nodeDevice->getQuatI(), nodeDevice->getQuatJ(), nodeDevice->getQuatK(),
-                      nodeDevice->getQuatReal(), nodeDevice->getQuatRadianAccuracy());
-                    strcat(outputData, tempData);
-                  }
-                  if (nodeSetting->logAccel)
-                  {
-                    sprintf(tempData, "%.02f,%.02f,%.02f,%d,", nodeDevice->getAccelX(), nodeDevice->getAccelY(), nodeDevice->getAccelZ(),
-                      nodeDevice->getAccelAccuracy());
-                    strcat(outputData, tempData);
-                  }
-                  if (nodeSetting->logLinAccel)
-                  {
-                    sprintf(tempData, "%.02f,%.02f,%.02f,%d,", nodeDevice->getLinAccelX(), nodeDevice->getLinAccelY(), nodeDevice->getLinAccelZ(),
-                      nodeDevice->getLinAccelAccuracy());
-                    strcat(outputData, tempData);
-                  }
-                  if (nodeSetting->logGyro)
-                  {
-                    sprintf(tempData, "%.02f,%.02f,%.02f,%d,", nodeDevice->getGyroX(), nodeDevice->getGyroY(), nodeDevice->getGyroZ(),
-                      nodeDevice->getGyroAccuracy());
-                    strcat(outputData, tempData);
-                  }
-                  if (nodeSetting->logFastGyro)
-                  {
-                    sprintf(tempData, "%.02f,%.02f,%.02f,", nodeDevice->getFastGyroX(), nodeDevice->getFastGyroY(), nodeDevice->getFastGyroZ());
-                    strcat(outputData, tempData);
-                  }
-                  if (nodeSetting->logMag)
-                  {
-                    sprintf(tempData, "%.02f,%.02f,%.02f,%d,", nodeDevice->getMagX(), nodeDevice->getMagY(), nodeDevice->getMagZ(),
-                      nodeDevice->getMagAccuracy());
-                    strcat(outputData, tempData);
-                  }
-                  if (nodeSetting->logEuler)
-                  {
-                    sprintf(tempData, "%.01f,%.01f,%.01f,", nodeDevice->getRoll() * 180.0 / PI, nodeDevice->getPitch() * 180.0 / PI,
-                      nodeDevice->getYaw() * 180.0 / PI);
-                    strcat(outputData, tempData);
-                  }
-                }
-              }
-            }
-          }
-          break;
         default:
-          Serial.printf("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
+          SerialPrintf2("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
       }
 
@@ -879,19 +789,12 @@ void printHelperText(bool terminalOnly)
 
   if (settings.logRTC)
   {
-    //Decide if we are using the internal RTC or GPS for timestamps
-    if (settings.getRTCfromGPS == false)
-    {
-      if (settings.logDate)
-        strcat(helperText, "rtcDate,");
-      if (settings.logTime)
-        strcat(helperText, "rtcTime,");
-      if (settings.logMicroseconds)
-        strcat(helperText, "micros,");
-    }
-  } //end if use RTC for timestamp
-  else //Use GPS for timestamp
-  {
+    if (settings.logDate)
+      strcat(helperText, "rtcDate,");
+    if (settings.logTime)
+      strcat(helperText, "rtcTime,");
+    if (settings.logMicroseconds)
+      strcat(helperText, "micros,");
   }
 
   if (settings.logA11)
@@ -1230,30 +1133,8 @@ void printHelperText(bool terminalOnly)
             }
           }
           break;
-        case DEVICE_IMU_BNO080:
-          {
-            struct_BNO080 *nodeSetting = (struct_BNO080 *)temp->configPtr;
-            if (nodeSetting->log)
-            {
-              if (nodeSetting->logQuat)
-                strcat(helperText, "QuatI,QuatJ,QuatK,QuatR,QuatAcc,");
-              if (nodeSetting->logAccel)
-                strcat(helperText, "AccelX,AccelY,AccelZ,AccelAcc,");
-              if (nodeSetting->logLinAccel)
-                strcat(helperText, "LinAccelX,LinAccelY,LinAccelZ,LinAccelAcc,");
-              if (nodeSetting->logGyro)
-                strcat(helperText, "GyroX,GyroY,GyroZ,GyroAcc,");
-              if (nodeSetting->logFastGyro)
-                strcat(helperText, "FastGyroX,FastGyroY,FastGyroZ,");
-              if (nodeSetting->logMag)
-                strcat(helperText, "MagX,MagY,MagZ,MagAcc,");
-              if (nodeSetting->logEuler)
-                strcat(helperText, "Roll,Pitch,Yaw,");
-            }
-          }
-          break;
         default:
-          Serial.printf("\nprinterHelperText device not found: %d\r\n", temp->deviceType);
+          SerialPrintf2("\nprinterHelperText device not found: %d\r\n", temp->deviceType);
           break;
       }
     }
@@ -1268,7 +1149,7 @@ void printHelperText(bool terminalOnly)
 
   strcat(helperText, "\r\n");
 
-  Serial.print(helperText);
+  SerialPrint(helperText);
   if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
     sensorDataFile.print(helperText);
 }

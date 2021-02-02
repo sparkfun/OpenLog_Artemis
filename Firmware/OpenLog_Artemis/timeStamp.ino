@@ -1,54 +1,41 @@
-//Gets the current time from GPS
-//Adjust the hour by local hour offset
-//Adjust the hour by DST as necessary
-//Adjust the date as necessary
-//Returns a string according to user's settings
-//Leap year is taken into account but does not interact with DST (DST happens later in March)
-//
-//Note: this function should only be called if we know that a u-blox GNSS is actually connected
-//
-String getGPSDateTimeAsStr() {
-  //Get latested date/time from GPS
-//  int year = gpsSensor_ublox.getYear();
-//  int month = gpsSensor_ublox.getMonth();
-//  int day = gpsSensor_ublox.getDay();
-//  int hour = gpsSensor_ublox.getHour();
-//  int minute = gpsSensor_ublox.getMinute();
-//  int second = gpsSensor_ublox.getSecond();
+//Query the RTC and put the appropriately formatted (according to settings) 
+//string into the passed buffer. timeStringBuffer should be at least 37 chars long
+//Code modified by @DennisMelamed in PR #70
+void getTimeString(char timeStringBuffer[])
+{
+  //reset the buffer
+  timeStringBuffer[0] = '\0';
 
-  int year = 19;
-  int month = 1;
-  int day = 1;
-  int hour = 6;
-  int minute = 14;
-  int second = 37;
+  myRTC.getTime();
 
-  adjustToLocalDateTime(year, month, day, hour, settings.localUTCOffset);
-
-  if (settings.hour24Style == false)
+  if (settings.logDate)
   {
-    if (hour > 12) hour -= 12;
-  }
-
-  String myTime = "";
-
-  if (settings.logDate == true)
-  {
-    char gpsDate[11]; //10/12/2019
+    char rtcDate[12]; //10/12/2019,
     if (settings.americanDateStyle == true)
-      sprintf(gpsDate, "%02d/%02d/20%02d", month, day, year);
+      sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.month, myRTC.dayOfMonth, myRTC.year);
     else
-      sprintf(gpsDate, "%02d/%02d/20%02d", day, month, year);
-    myTime += String(gpsDate);
-    myTime += ",";
+      sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.dayOfMonth, myRTC.month, myRTC.year);
+    strcat(timeStringBuffer, rtcDate);
   }
 
-  char gpsTime[13]; //09:14:37.412
-  sprintf(gpsTime, "%02d:%02d:%02d.%03d", hour, minute, second, millis() % 1000); //TODO get GPS hundredths()
-  myTime += String(gpsTime);
-  myTime += ",";
-
-  return (myTime);
+  if (settings.logTime)
+  {
+    char rtcTime[13]; //09:14:37.41,
+    int adjustedHour = myRTC.hour;
+    if (settings.hour24Style == false)
+    {
+      if (adjustedHour > 12) adjustedHour -= 12;
+    }
+    sprintf(rtcTime, "%02d:%02d:%02d.%02d,", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+    strcat(timeStringBuffer, rtcTime);
+  }
+  
+  if (settings.logMicroseconds)
+  {
+    char microseconds[11]; //
+    sprintf(microseconds, "%lu,", micros());
+    strcat(timeStringBuffer, microseconds);
+  }
 }
 
 //Gets the current time from GPS

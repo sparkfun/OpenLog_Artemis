@@ -23,7 +23,6 @@ typedef enum
   DEVICE_ADC_ADS122C04,
   DEVICE_PRESSURE_MPR0025PA1, // 0-25 PSI, I2C Address 0x18
   DEVICE_PARTICLE_SNGCJA5,
-  DEVICE_IMU_BNO080,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -205,7 +204,7 @@ struct struct_SCD30 {
   bool logTemperature = true;
   int measurementInterval = 2; //2 seconds
   int altitudeCompensation = 0; //0 m above sea level
-  int ambientPressure = 835; //mBar STP
+  int ambientPressure = 1000; //mBar STP (Toto, I have a feeling we're not in Boulder anymore)
   int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
   unsigned long powerOnDelayMillis = 5000; // Wait for at least this many millis before communicating with this device
 };
@@ -282,18 +281,6 @@ struct struct_SNGCJA5 {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
-struct struct_BNO080 {
-  bool log = true;
-  bool logQuat = true;
-  bool logAccel = true;
-  bool logLinAccel = true;
-  bool logGyro = true;
-  bool logFastGyro = true;
-  bool logMag = true;  
-  bool logEuler = true;
-  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
-};
-
 
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
@@ -322,7 +309,6 @@ struct struct_settings {
   bool logIMUTemp = true;
   bool logRTC = true;
   bool logHertz = true;
-  bool getRTCfromGPS = false;
   bool correctForDST = false;
   bool americanDateStyle = true;
   bool hour24Style = true;
@@ -364,6 +350,16 @@ struct struct_settings {
   int imuGyroFSS = 0; // IMU gyro full scale - default to 250 degrees per second (ICM_20948_GYRO_CONFIG_1_FS_SEL_e)
   int imuGyroDLPFBW = 7; // IMU gyro DLPF bandwidth - default to gyr_d361bw4_n376bw5 (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)  
   bool logMicroseconds = false; // Log micros()
+  bool useTxRxPinsForTerminal = false; // If true, the terminal is echo'd to the Tx and Rx pins. Note: setting this to true will _permanently_ disable serial logging and analog input on those pins!
+  bool timestampSerial = false; // If true, the RTC time will be added to the serial log file when timeStampToken is received
+  uint8_t timeStampToken = 0x0A; // Add RTC time to the serial log when this token is received. Default to Line Feed (0x0A). Suggested by @DennisMelamed in Issue #63
+  bool useGPIO11ForFastSlowLogging = false; // If true, Pin 11 will control if readings are taken quickly or slowly. Suggested by @ryanneve in Issue #46 and PR #64
+  bool slowLoggingWhenPin11Is = false; // Controls the polarity of Pin 11 for fast / slow logging
+  bool useRTCForFastSlowLogging = false; // If true, logging will be slow during the specified times
+  int slowLoggingIntervalSeconds = 300; // Slow logging interval in seconds. Default to 5 mins
+  int slowLoggingStartMOD = 1260; // Start slow logging at this many Minutes Of Day. Default to 21:00
+  int slowLoggingStopMOD = 420; // Stop slow logging at this many Minutes Of Day. Default to 07:00
+  bool resetOnZeroDeviceCount = false; // A work-around for I2C bus crashes. Enable this via the debug menu.
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

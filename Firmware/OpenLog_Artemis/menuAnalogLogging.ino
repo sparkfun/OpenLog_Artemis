@@ -3,37 +3,39 @@ void menuAnalogLogging()
   while (1)
   {
 #if(HARDWARE_VERSION_MAJOR == 0)
-    Serial.println();
-    Serial.println(F("Note: VIN logging is only supported on V10+ hardware. X04 will show 0.0V."));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Note: VIN logging is only supported on V10+ hardware. X04 will show 0.0V."));
 #endif
-    Serial.println();
-    Serial.println(F("Menu: Configure Analog Logging"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Analog Logging"));
 
-    Serial.print(F("1) Log analog pin 11 (2V Max): "));
-    if (settings.logA11 == true) Serial.println(F("Enabled. (Triggering is disabled)"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Log analog pin 11 (2V Max): "));
+    if (settings.logA11 == true) SerialPrintln(F("Enabled. (Triggering is disabled)"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("2) Log analog pin 12 (TX) (2V Max): "));
-    if (settings.logA12 == true) Serial.println(F("Enabled. (Serial output is disabled)"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("2) Log analog pin 12 (TX) (2V Max): "));
+    if (settings.useTxRxPinsForTerminal == true) SerialPrintln(F("Disabled. (TX and RX pins are being used for the Terminal)"));
+    else if (settings.logA12 == true) SerialPrintln(F("Enabled. (Serial output is disabled)"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("3) Log analog pin 13 (RX) (2V Max): "));
-    if (settings.logA13 == true) Serial.println(F("Enabled. (Serial logging is disabled)"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("3) Log analog pin 13 (RX) (2V Max): "));
+    if (settings.useTxRxPinsForTerminal == true) SerialPrintln(F("Disabled. (TX and RX pins are being used for the Terminal)"));
+    else if (settings.logA13 == true) SerialPrintln(F("Enabled. (Serial logging is disabled)"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("4) Log analog pin 32 (2V Max): "));
-    if (settings.logA32 == true) Serial.println(F("Enabled. (Stop logging is disabled)"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("4) Log analog pin 32 (2V Max): "));
+    if (settings.logA32 == true) SerialPrintln(F("Enabled. (Stop logging is disabled)"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.print(F("5) Log output type: "));
-    if (settings.logAnalogVoltages == true) Serial.println(F("Calculated Voltage"));
-    else Serial.println(F("Raw ADC reading"));
+    SerialPrint(F("5) Log output type: "));
+    if (settings.logAnalogVoltages == true) SerialPrintln(F("Calculated Voltage"));
+    else SerialPrintln(F("Raw ADC reading"));
 
-    Serial.print(F("6) Log VIN (battery) voltage (6V Max): "));
-    if (settings.logVIN == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("6) Log VIN (battery) voltage (6V Max): "));
+    if (settings.logVIN == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -55,9 +57,18 @@ void menuAnalogLogging()
     {
       if(settings.logA12 == false)
       {
-        online.serialOutput = false; // Disable serial output
-        settings.outputSerial = false;
-        settings.logA12 = true;
+        if (settings.useTxRxPinsForTerminal == true)
+        {
+          SerialPrintln(F(""));
+          SerialPrintln(F("Analog logging on pin 12 is not possible. TX and RX pins are being used for the Terminal."));
+          SerialPrintln(F(""));
+        }
+        else
+        {
+          online.serialOutput = false; // Disable serial output
+          settings.outputSerial = false;
+          settings.logA12 = true;
+        }
       }
       else
         settings.logA12 = false;
@@ -66,9 +77,18 @@ void menuAnalogLogging()
     {
       if(settings.logA13 == false)
       {
-        online.serialLogging = false; //Disable serial logging
-        settings.logSerial = false;
-        settings.logA13 = true;
+        if (settings.useTxRxPinsForTerminal == true)
+        {
+          SerialPrintln(F(""));
+          SerialPrintln(F("Analog logging on pin 13 is not possible. TX and RX pins are being used for the Terminal."));
+          SerialPrintln(F(""));
+        }
+        else
+        {
+          online.serialLogging = false; //Disable serial logging
+          settings.logSerial = false;
+          settings.logA13 = true;
+        }
       }
       else
         settings.logA13 = false;
