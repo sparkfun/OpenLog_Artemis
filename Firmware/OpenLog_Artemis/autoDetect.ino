@@ -237,6 +237,24 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_SNGCJA5;
       }
       break;
+    case DEVICE_VOC_SGP40:
+      {
+        temp->classPtr = new SGP40;
+        temp->configPtr = new struct_SGP40;
+      }
+      break;
+    case DEVICE_PRESSURE_SDP3X:
+      {
+        temp->classPtr = new SDP3X;
+        temp->configPtr = new struct_SDP3X;
+      }
+      break;
+    case DEVICE_PRESSURE_MS5837:
+      {
+        temp->classPtr = new MS5837;
+        temp->configPtr = new struct_MS5837;
+      }
+      break;
     default:
       SerialPrintf2("addDevice Device type not found: %d\r\n", deviceType);
       break;
@@ -464,6 +482,33 @@ bool beginQwiicDevices()
         {
           SFE_PARTICLE_SENSOR *tempDevice = (SFE_PARTICLE_SENSOR *)temp->classPtr;
           struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic) == true) //Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_VOC_SGP40:
+        {
+          SGP40 *tempDevice = (SGP40 *)temp->classPtr;
+          struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic) == true) //Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_PRESSURE_SDP3X:
+        {
+          SDP3X *tempDevice = (SDP3X *)temp->classPtr;
+          struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_PRESSURE_MS5837:
+        {
+          MS5837 *tempDevice = (MS5837 *)temp->classPtr;
+          struct_MS5837 *nodeSetting = (struct_MS5837 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin(qwiic) == true) //Wire port. Returns true on success.
             temp->online = true;
@@ -719,6 +764,21 @@ void configureDevice(node * temp)
     case DEVICE_PARTICLE_SNGCJA5:
       //Nothing to configure
       break;
+    case DEVICE_VOC_SGP40:
+      //Nothing to configure
+      break;
+    case DEVICE_PRESSURE_SDP3X:
+      //Nothing to configure
+      break;
+    case DEVICE_PRESSURE_MS5837:
+      {
+        MS5837 *sensor = (MS5837 *)temp->classPtr;
+        struct_MS5837 *sensorSetting = (struct_MS5837 *)temp->configPtr;
+
+        sensor->setModel(sensorSetting->model);
+        sensor->setFluidDensity(sensorSetting->fluidDensity);
+      }
+      break;
     default:
       SerialPrintf3("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
@@ -808,6 +868,15 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_PARTICLE_SNGCJA5:
       ptr = (FunctionPointer)menuConfigure_SNGCJA5;
+      break;
+    case DEVICE_VOC_SGP40:
+      ptr = (FunctionPointer)menuConfigure_SGP40;
+      break;
+    case DEVICE_PRESSURE_SDP3X:
+      ptr = (FunctionPointer)menuConfigure_SDP3X;
+      break;
+    case DEVICE_PRESSURE_MS5837:
+      ptr = (FunctionPointer)menuConfigure_MS5837;
       break;
     default:
       SerialPrintln(F("getConfigFunctionPtr: Unknown device type"));
@@ -938,6 +1007,7 @@ void swap(struct node * a, struct node * b)
 //We no longer use defines in the search table. These are just here for reference.
 #define ADR_VEML6075 0x10
 #define ADR_MPR0025PA1 0x18
+#define ADR_SDP3X 0x21 //Alternates: 0x22, 0x23
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
 #define ADR_SNGCJA5 0x33
@@ -947,6 +1017,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_SGP30 0x58
+#define ADR_SGP40 0x59
 #define ADR_CCS811 0x5B //Alternates: 0x5A
 #define ADR_LPS25HB 0x5D //Alternates: 0x5C
 #define ADR_VCNL4040 0x60
@@ -955,6 +1026,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_MULTIPLEXER 0x70 //0x70 to 0x77
 #define ADR_SHTC3 0x70
 #define ADR_MS5637 0x76
+#define ADR_MS5837 0x76
 //#define ADR_MS8607 0x76 //Pressure portion of the MS8607 sensor. We'll catch the 0x40 first
 #define ADR_BME280 0x77 //Alternates: 0x76
 
@@ -979,6 +1051,30 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           if ((sensor.readStatus() & 0x5A) == 0x40) // Mask the power indication bit and three "always 0" bits
             return (DEVICE_PRESSURE_MPR0025PA1);
+      }
+      break;
+    case 0x21:
+      {
+        //Confidence: Medium - .begin reads the product ID
+        SDP3X sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_PRESSURE_SDP3X);
+      }
+      break;
+    case 0x22:
+      {
+        //Confidence: Medium - .begin reads the product ID
+        SDP3X sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_PRESSURE_SDP3X);
+      }
+      break;
+    case 0x23:
+      {
+        //Confidence: Medium - .begin reads the product ID
+        SDP3X sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_PRESSURE_SDP3X);
       }
       break;
     case 0x2A:
@@ -1096,6 +1192,13 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         SGP30 sensor;
         if (sensor.begin(qwiic) == true) //Wire port
           return (DEVICE_VOC_SGP30);
+      }
+      break;
+    case 0x59:
+      {
+        SGP40 sensor;
+        if (sensor.begin(qwiic) == true) //Wire port
+          return (DEVICE_VOC_SGP40);
       }
       break;
     case 0x5A:
@@ -1244,7 +1347,12 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //Confidence: High - does CRC on internal EEPROM read
+        //Confidence: High - does CRC on internal EEPROM read and checks sensor version
+        MS5837 sensor2;
+        if (sensor2.begin(qwiic) == true) //Wire port
+          return (DEVICE_PRESSURE_MS5837);
+
+        //Confidence: High - does CRC on internal EEPROM read - but do this second as a MS5837 will appear as a MS5637
         MS5637 sensor;
         if (sensor.begin(qwiic) == true) //Wire port
           return (DEVICE_PRESSURE_MS5637);
@@ -1492,6 +1600,15 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_PARTICLE_SNGCJA5:
       return "Particle-SNGCJA5";
+      break;
+    case DEVICE_VOC_SGP40:
+      return "VOC-SGP40";
+      break;
+    case DEVICE_PRESSURE_SDP3X:
+      return "Pressure-SDP3X";
+      break;
+    case DEVICE_PRESSURE_MS5837:
+      return "Pressure-MS5837";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:

@@ -23,6 +23,9 @@ typedef enum
   DEVICE_ADC_ADS122C04,
   DEVICE_PRESSURE_MPR0025PA1, // 0-25 PSI, I2C Address 0x18
   DEVICE_PARTICLE_SNGCJA5,
+  DEVICE_VOC_SGP40,
+  DEVICE_PRESSURE_SDP3X,
+  DEVICE_PRESSURE_MS5837,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -278,6 +281,35 @@ struct struct_SNGCJA5 {
   bool logPDStatus = true;
   bool logLDStatus = true;
   bool logFanStatus = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_SGP40 {
+  bool log = true;
+  bool logVOC = true;
+  float RH = 50;
+  float T = 25;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_SDP3X {
+  bool log = true;
+  bool logPressure = true;
+  bool logTemperature = true;
+  bool massFlow = true;
+  bool clockStretching = false;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_MS5837 {
+  bool log = true;
+  bool logPressure = true;
+  bool logTemperature = true;
+  bool logDepth = true;
+  bool logAltitude = true;
+  bool model = true; // Valid options are: 0 (MS5837::MS5837_30BA) and 1 (MS5837::MS5837_02BA)
+  float fluidDensity = 997;
+  float conversion = 1.0;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

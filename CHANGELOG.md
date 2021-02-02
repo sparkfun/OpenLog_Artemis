@@ -1,6 +1,13 @@
 Change Log
 ======================
 
+v1.9
+---------
+
+* Added support for the SGP40 air quality sensor
+* Added support for the SDP3X differential pressure sensor
+* Added support for the MS5837 depth / pressure sensor - as used in the BlueRobotics Bar02
+
 v1.8
 ---------
 

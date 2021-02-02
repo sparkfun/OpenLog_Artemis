@@ -327,6 +327,15 @@ void menuAttachedDevices()
           case DEVICE_PARTICLE_SNGCJA5:
             SerialPrintf3("%s SN-GCJA5 Particle Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_VOC_SGP40:
+            SerialPrintf3("%s SGP40 VOC Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_PRESSURE_SDP3X:
+            SerialPrintf3("%s SDP3X Differential Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_PRESSURE_MS5837:
+            SerialPrintf3("%s MS5837 (BAR30 / BAR02) Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
           default:
             SerialPrintf2("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
             break;
@@ -2152,6 +2161,221 @@ void menuConfigure_SNGCJA5(void *configPtr)
         sensorSetting->logLDStatus ^= 1;
       else if (incoming == 14)
         sensorSetting->logFanStatus ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_SGP40(void *configPtr)
+{
+  struct_SGP40 *sensorSetting = (struct_SGP40*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure SGP40 VOC Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log VOC: "));
+      if (sensorSetting->logVOC == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrintf2("3) Sensor Compensation: Relative Humidity (%): %d\r\n", sensorSetting->RH);
+  
+      SerialPrintf2("4) Sensor Compensation: Temperature (C): %d\r\n", sensorSetting->T);
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logVOC ^= 1;
+      else if (incoming == 3)
+      {
+        SerialPrint(F("Enter the %RH for sensor compensation (0 to 100): "));
+        int RH = getNumber(menuTimeout); //x second timeout
+        if (RH < 0 || RH > 100)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->RH = RH;
+      }
+      else if (incoming == 4)
+      {
+        SerialPrint(F("Enter the temperature (C) for sensor compensation (-45 to 130): "));
+        int T = getNumber(menuTimeout); //x second timeout
+        if (T < -45 || T > 130)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->T = T;
+      }
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_SDP3X(void *configPtr)
+{
+  struct_SDP3X *sensorSetting = (struct_SDP3X*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure SDP3X Differential Pressure Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Temperature Compensation: "));
+      if (sensorSetting->massFlow == true) SerialPrintln(F("Mass Flow"));
+      else SerialPrintln(F("Differential Pressure"));
+  
+      SerialPrint(F("5) Use Clock Stretching: "));
+      if (sensorSetting->clockStretching == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logPressure ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logTemperature ^= 1;
+      else if (incoming == 4)
+        sensorSetting->massFlow ^= 1;
+      else if (incoming == 5)
+        sensorSetting->clockStretching ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_MS5837(void *configPtr)
+{
+  struct_MS5837 *sensorSetting = (struct_MS5837*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MS5837 Pressure Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Log Depth: "));
+      if (sensorSetting->logDepth == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+  
+      SerialPrint(F("5) Log Altitude: "));
+      if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("6) Sensor Model: "));
+      if (sensorSetting->model == true) SerialPrintln(F("MS5837-02BA / BlueRobotics Bar02: 2 Bar Absolute / 10m Depth"));
+      else SerialPrintln(F("MS5837-30BA / BlueRobotics Bar30: 30 Bar Absolute / 300m Depth"));
+      
+      SerialPrintf2("7) Fluid Density (kg/m^3): %f\r\n", sensorSetting->fluidDensity);
+  
+      SerialPrintf2("8) Pressure Conversion Factor: %.02f\r\n", sensorSetting->conversion);
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logPressure ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logTemperature ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logDepth ^= 1;
+      else if (incoming == 5)
+        sensorSetting->logAltitude ^= 1;
+      else if (incoming == 6)
+        sensorSetting->model ^= 1;
+      else if (incoming == 7)
+      {
+        SerialPrint(F("Enter the Fluid Density (kg/m^3): "));
+        double FD = getDouble(menuTimeout); //x second timeout
+        sensorSetting->fluidDensity = (float)FD;
+      }        
+      else if (incoming == 8)
+      {
+        SerialPrint(F("Enter the Pressure Conversion Factor: "));
+        double PCF = getDouble(menuTimeout); //x second timeout
+        sensorSetting->conversion = (float)PCF;
+      }        
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

@@ -679,6 +679,37 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logFanStatus=" + nodeSetting->logFanStatus);
           }
           break;
+        case DEVICE_VOC_SGP40:
+          {
+            struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logVOC=" + nodeSetting->logVOC);
+            settingsFile.println((String)base + "RH=" + nodeSetting->RH);
+            settingsFile.println((String)base + "T=" + nodeSetting->T);
+          }
+          break;
+        case DEVICE_PRESSURE_SDP3X:
+          {
+            struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr;
+            settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+            settingsFile.println((String)base + "massFlow=" + nodeSetting->massFlow);
+            settingsFile.println((String)base + "clockStretching=" + nodeSetting->clockStretching);
+          }
+          break;
+        case DEVICE_PRESSURE_MS5837:
+          {
+            struct_MS5837 *nodeSetting = (struct_MS5837 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+            settingsFile.println((String)base + "logDepth=" + nodeSetting->logDepth);
+            settingsFile.println((String)base + "logAltitude=" + nodeSetting->logAltitude);
+            settingsFile.println((String)base + "model=" + nodeSetting->model);
+            settingsFile.println((String)base + "fluidDensity=" + nodeSetting->fluidDensity);
+            settingsFile.println((String)base + "conversion=" + nodeSetting->conversion);
+          }
+          break;
         default:
           SerialPrintf2("recordSettingsToFile Unknown device: %s\r\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
@@ -1198,6 +1229,61 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logLDStatus = d;
           else if (strcmp(deviceSettingName, "logFanStatus") == 0)
             nodeSetting->logFanStatus = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_VOC_SGP40:
+        {
+          struct_SGP40 *nodeSetting = (struct_SGP40 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logVOC") == 0)
+            nodeSetting->logVOC = d;
+          else if (strcmp(deviceSettingName, "RH") == 0)
+            nodeSetting->RH = d;
+          else if (strcmp(deviceSettingName, "T") == 0)
+            nodeSetting->T = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PRESSURE_SDP3X:
+        {
+          struct_SDP3X *nodeSetting = (struct_SDP3X *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logPressure") == 0)
+            nodeSetting->logPressure = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else if (strcmp(deviceSettingName, "massFlow") == 0)
+            nodeSetting->massFlow = d;
+          else if (strcmp(deviceSettingName, "clockStretching") == 0)
+            nodeSetting->clockStretching = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PRESSURE_MS5837:
+        {
+          struct_MS5837 *nodeSetting = (struct_MS5837 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logPressure") == 0)
+            nodeSetting->logPressure = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else if (strcmp(deviceSettingName, "logDepth") == 0)
+            nodeSetting->logDepth = d;
+          else if (strcmp(deviceSettingName, "logAltitude") == 0)
+            nodeSetting->logAltitude = d;
+          else if (strcmp(deviceSettingName, "model") == 0)
+            nodeSetting->model = d;
+          else if (strcmp(deviceSettingName, "fluidDensity") == 0)
+            nodeSetting->fluidDensity = d;
+          else if (strcmp(deviceSettingName, "conversion") == 0)
+            nodeSetting->conversion = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }

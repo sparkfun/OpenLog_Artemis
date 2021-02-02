@@ -771,6 +771,79 @@ void gatherDeviceValues()
             }
           }
           break;
+        case DEVICE_VOC_SGP40:
+          {
+            SGP40 *nodeDevice = (SGP40 *)temp->classPtr;
+            struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              if (nodeSetting->logVOC)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getVOCindex(nodeSetting->RH, nodeSetting->T));
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_SDP3X:
+          {
+            SDP3X *nodeDevice = (SDP3X *)temp->classPtr;
+            struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              float pressure;
+              float temperature;
+              if ((nodeSetting->logPressure) || (nodeSetting->logTemperature))
+              {
+                nodeDevice->triggeredMeasurement(nodeSetting->massFlow, nodeSetting->clockStretching);
+                nodeDevice->readMeasurement(&pressure, &temperature);
+              }
+              if (nodeSetting->logPressure)
+              {
+                sprintf(tempData, "%.02f,", pressure);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logTemperature)
+              {
+                sprintf(tempData, "%.02f,", temperature);
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_MS5837:
+          {
+            MS5837 *nodeDevice = (MS5837 *)temp->classPtr;
+            struct_MS5837 *nodeSetting = (struct_MS5837 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              if ((nodeSetting->logPressure) || (nodeSetting->logTemperature) || (nodeSetting->logDepth) || (nodeSetting->logAltitude))
+              {
+                nodeDevice->read();
+              }
+              if (nodeSetting->logPressure)
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->pressure(nodeSetting->conversion));
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logTemperature)
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->temperature());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logDepth)
+              {
+                sprintf(tempData, "%.03f,", nodeDevice->depth());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logAltitude)
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->altitude());
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
         default:
           SerialPrintf2("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
@@ -923,7 +996,7 @@ void printHelperText(bool terminalOnly)
               if (nodeSetting->logPressure)
                 strcat(helperText, "pressure_hPa,");
               if (nodeSetting->logTemperature)
-                strcat(helperText, "pressure_degC,");
+                strcat(helperText, "temperature_degC,");
             }
           }
           break;
@@ -1130,6 +1203,44 @@ void printHelperText(bool terminalOnly)
                 strcat(helperText, "LD,");
               if (nodeSetting->logFanStatus)
                 strcat(helperText, "Fan,");
+            }
+          }
+          break;
+        case DEVICE_VOC_SGP40:
+          {
+            struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logVOC)
+                strcat(helperText, "VOCindex,");
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_SDP3X:
+          {
+            struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressure)
+                strcat(helperText, "Pa,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "degC,");
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_MS5837:
+          {
+            struct_MS5837 *nodeSetting = (struct_MS5837 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressure)
+                strcat(helperText, "mbar,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "degC,");
+              if (nodeSetting->logDepth)
+                strcat(helperText, "depth_m,");
+              if (nodeSetting->logAltitude)
+                strcat(helperText, "alt_m,");
             }
           }
           break;
