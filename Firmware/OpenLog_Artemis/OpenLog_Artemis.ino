@@ -379,12 +379,18 @@ void setup() {
     beginQwiicDevices(); //Begin() each device in the node list
     loadDeviceSettingsFromFile(); //Load config settings into node list
     configureQwiicDevices(); //Apply config settings to each device in the node list
-    int deviceCount = printOnlineDevice();
-    if ((deviceCount == 0) && (settings.resetOnZeroDeviceCount == true))
+    int deviceCount = printOnlineDevice(); // Pretty-print the online devices
+    
+    if ((deviceCount == 0) && (settings.resetOnZeroDeviceCount == true)) // Check for resetOnZeroDeviceCount
     {
-      SerialPrintln(F("*** Zero Qwiic Devices Found! Resetting... ***"));
-      SerialFlush();
-      resetArtemis(); //Thank you and goodnight...
+      if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available())))
+        menuMain(); //Present user menu - in case the user wants to disable resetOnZeroDeviceCount
+      else
+      {
+        SerialPrintln(F("*** Zero Qwiic Devices Found! Resetting... ***"));
+        SerialFlush();
+        resetArtemis(); //Thank you and goodnight...
+      }
     }
   }
   else
