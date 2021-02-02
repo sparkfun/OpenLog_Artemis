@@ -379,7 +379,13 @@ void setup() {
     beginQwiicDevices(); //Begin() each device in the node list
     loadDeviceSettingsFromFile(); //Load config settings into node list
     configureQwiicDevices(); //Apply config settings to each device in the node list
-    printOnlineDevice();
+    int deviceCount = printOnlineDevice();
+    if ((deviceCount == 0) && (settings.resetOnZeroDeviceCount == true))
+    {
+      SerialPrintln(F("*** Zero Qwiic Devices Found! Resetting... ***"));
+      SerialFlush();
+      resetArtemis(); //Thank you and goodnight...
+    }
   }
   else
     SerialPrintln(F("No Qwiic devices detected"));
@@ -766,7 +772,7 @@ void beginSD()
 
     if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
     {
-      printDebug("SD init failed (first attempt). Trying again...\r\n");
+      printDebug(F("SD init failed (first attempt). Trying again...\r\n"));
       for (int i = 0; i < 250; i++) //Give SD more time to power up, then try again
       {
         checkBattery();
@@ -810,7 +816,7 @@ void enableCIPOpullUp()
   cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
   padMode(MISO, cipoPinCfg, &retval);
   if (retval != AP3_OK)
-    printDebug("Setting CIPO padMode failed!");
+    printDebug(F("Setting CIPO padMode failed!"));
 }
 
 void beginIMU()

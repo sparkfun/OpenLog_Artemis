@@ -98,9 +98,9 @@ void recordSystemSettingsToFile()
     
     settingsFile.println("usBetweenReadings=" + (String)tempTime);
 
-    //printDebug("Saving usBetweenReadings to SD card: ");
+    //printDebug(F("Saving usBetweenReadings to SD card: "));
     //printDebug((String)tempTime);
-    //printDebug("\r\n");
+    //printDebug(F("\r\n"));
 
     settingsFile.println("logMaxRate=" + (String)settings.logMaxRate);
     settingsFile.println("enableRTC=" + (String)settings.enableRTC);
@@ -163,6 +163,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("slowLoggingIntervalSeconds=" + (String)settings.slowLoggingIntervalSeconds);
     settingsFile.println("slowLoggingStartMOD=" + (String)settings.slowLoggingStartMOD);
     settingsFile.println("slowLoggingStopMOD=" + (String)settings.slowLoggingStopMOD);
+    settingsFile.println("resetOnZeroDeviceCount=" + (String)settings.resetOnZeroDeviceCount);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -295,9 +296,9 @@ bool parseLine(char* str) {
   else if (strcmp(settingName, "usBetweenReadings") == 0)
   {
     settings.usBetweenReadings = d;
-    //printDebug("Read usBetweenReadings from SD card: ");
+    //printDebug(F("Read usBetweenReadings from SD card: "));
     //printDebug(String(d));
-    //printDebug("\r\n");
+    //printDebug(F("\r\n"));
   }
   else if (strcmp(settingName, "logMaxRate") == 0)
     settings.logMaxRate = d;
@@ -421,6 +422,8 @@ bool parseLine(char* str) {
     settings.slowLoggingStartMOD = d;
   else if (strcmp(settingName, "slowLoggingStopMOD") == 0)
     settings.slowLoggingStopMOD = d;
+  else if (strcmp(settingName, "resetOnZeroDeviceCount") == 0)
+    settings.resetOnZeroDeviceCount = d;
   else
     {
       SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);

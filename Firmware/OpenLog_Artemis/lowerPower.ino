@@ -153,6 +153,77 @@ void powerDown()
   }
 }
 
+//Reset the Artemis
+void resetArtemis(void)
+{
+  //Save files before resetting
+  if (online.dataLogging == true)
+  {
+    sensorDataFile.sync();
+    updateDataFileAccess(&sensorDataFile); // Update the file access time & date
+    sensorDataFile.close(); //No need to close files. https://forum.arduino.cc/index.php?topic=149504.msg1125098#msg1125098
+  }
+  if (online.serialLogging == true)
+  {
+    serialDataFile.sync();
+    updateDataFileAccess(&serialDataFile); // Update the file access time & date
+    serialDataFile.close();
+  }
+
+  delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
+
+  SerialFlush(); //Finish any prints
+
+  //  Wire.end(); //Power down I2C
+  qwiic.end(); //Power down I2C
+
+  SPI.end(); //Power down SPI
+
+  power_adc_disable(); //Power down ADC. It it started by default before setup().
+
+  Serial.end(); //Power down UART
+  SerialLog.end();
+
+  //Force the peripherals off
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
+
+  //Disable pads
+  for (int x = 0; x < 50; x++)
+  {
+    if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
+        //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+        (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
+        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+    {
+      am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
+    }
+  }
+
+  //We can't leave these power control pins floating
+  imuPowerOff();
+  microSDPowerOff();
+
+  //Disable power for the Qwiic bus
+  qwiicPowerOff();
+
+  //Disable the power LED
+  powerLEDOff();
+
+  //Enable the Watchdog so it can reset the Artemis
+  startWatchdog();
+  while (1) // That's all folks! Artemis will reset in 1.25 seconds
+    ;
+}
+
 //Power everything down and wait for interrupt wakeup
 void goToSleep(uint32_t sysTicksToSleep)
 {
@@ -360,11 +431,11 @@ void wakeFromSleep()
     SerialLog.begin(settings.serialTerminalBaudRate); // Start the serial port
   }
 
-  printDebug("wakeFromSleep: I'm awake!\r\n");
+  printDebug(F("wakeFromSleep: I'm awake!\r\n"));
   printDebug("wakeFromSleep: adcError is " + (String)adcError + ".");
   if (adcError > 0)
-    printDebug(" This indicates an error was returned by ap3_adc_setup or one of the calls to ap3_set_pin_to_analog.");
-  printDebug("\r\n");
+    printDebug(F(" This indicates an error was returned by ap3_adc_setup or one of the calls to ap3_set_pin_to_analog."));
+  printDebug(F("\r\n"));
 
   beginQwiic(); //Power up Qwiic bus as early as possible
 
@@ -559,4 +630,47 @@ int calculateDayOfYear(int day, int month, int year)
 
   doy += day;
   return doy;
+}
+
+//WatchDog Timer code by Adam Garbo:
+//https://forum.sparkfun.com/viewtopic.php?f=169&t=52431&p=213296#p213296
+
+// Watchdog timer configuration structure.
+am_hal_wdt_config_t g_sWatchdogConfig = {
+
+  // Configuration values for generated watchdog timer event.
+  .ui32Config = AM_HAL_WDT_LFRC_CLK_16HZ | AM_HAL_WDT_ENABLE_RESET | AM_HAL_WDT_ENABLE_INTERRUPT,
+
+  // Number of watchdog timer ticks allowed before a watchdog interrupt event is generated.
+  .ui16InterruptCount = 16, // Set WDT interrupt timeout for 1 second.
+
+  // Number of watchdog timer ticks allowed before the watchdog will issue a system reset.
+  .ui16ResetCount = 20 // Set WDT reset timeout for 1.25 seconds.
+};
+
+void startWatchdog()
+{
+  // LFRC must be turned on for this example as the watchdog only runs off of the LFRC.
+  am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_LFRC_START, 0);
+
+  // Configure the watchdog.
+  am_hal_wdt_init(&g_sWatchdogConfig);
+
+  // Enable the interrupt for the watchdog in the NVIC.
+  NVIC_EnableIRQ(WDT_IRQn);
+  //NVIC_SetPriority(WDT_IRQn, 0); // Set the interrupt priority to 0 = highest (255 = lowest)
+  //am_hal_interrupt_master_enable(); // ap3_initialization.cpp does this - no need to do it here
+
+  // Enable the watchdog.
+  am_hal_wdt_start();
+}
+
+// Interrupt handler for the watchdog.
+extern "C++" void am_watchdog_isr(void)
+{
+  // Clear the watchdog interrupt.
+  am_hal_wdt_int_clear();
+
+  // DON'T Restart the watchdog.
+  //am_hal_wdt_restart(); // "Pet" the dog.
 }

@@ -97,7 +97,7 @@ void menuMain()
     }
     else if (incoming == 'r')
     {
-      SerialPrintln(F("\r\nResetting to factory defaults. Press 'y' to confirm:"));
+      SerialPrintln(F("\r\nResetting to factory defaults. Press 'y' to confirm: "));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {

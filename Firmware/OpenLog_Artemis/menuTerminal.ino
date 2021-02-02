@@ -288,11 +288,10 @@ void menuLogRate()
       if (settings.useTxRxPinsForTerminal == false)
       {
         SerialPrintln(F(""));
-        SerialPrintln(F("WARNING:"));
         SerialPrintln(F("\"Use TX and RX pins for terminal\" can only be disabled by \"Reset all settings to default\"."));
         SerialPrintln(F("Analog logging on TX/A12 and RX/A13 will be disabled."));
         SerialPrintln(F("Serial logging will be disabled."));
-        SerialPrintln(F("Are you sure? Press 'y' to confirm:"));
+        SerialPrintln(F("Are you sure? Press 'y' to confirm: "));
         byte bContinue = getByteChoice(menuTimeout);
         if (bContinue == 'y')
         {

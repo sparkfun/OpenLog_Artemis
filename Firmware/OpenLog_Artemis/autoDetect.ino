@@ -401,9 +401,10 @@ bool beginQwiicDevices()
           // Delay before starting the second and subsequent SCD30s to try and stagger the measurements and the peak current draw
           if (numberOfSCD30s >= 2)
           {
-            printDebug("beginQwiicDevices: found more than one SCD30. Delaying for 375ms to stagger the peak current draw...\r\n");
+            printDebug(F("beginQwiicDevices: found more than one SCD30. Delaying for 375ms to stagger the peak current draw...\r\n"));
             delay(375);
           }
+          if(settings.printDebugMessages == true) tempDevice->enableDebugging(); // Enable debug messages if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
@@ -475,11 +476,11 @@ bool beginQwiicDevices()
 
     if (temp->online == true)
     {
-      printDebug("beginQwiicDevices: device is online\r\n");
+      printDebug(F("beginQwiicDevices: device is online\r\n"));
     }
     else
     {
-      printDebug("beginQwiicDevices: device is **NOT** online\r\n");
+      printDebug(F("beginQwiicDevices: device is **NOT** online\r\n"));
       everythingStarted = false;
     }
 
@@ -490,7 +491,7 @@ bool beginQwiicDevices()
 }
 
 //Pretty print all the online devices
-void printOnlineDevice()
+int printOnlineDevice()
 {
   int deviceCount = 0;
 
@@ -500,7 +501,7 @@ void printOnlineDevice()
   if (temp == NULL)
   {
     printDebug(F("printOnlineDevice: No devices detected\r\n"));
-    return;
+    return (0);
   }
 
   while (temp != NULL)
@@ -528,6 +529,8 @@ void printOnlineDevice()
   {
     SerialPrintf2("Device count: %d\r\n", deviceCount);
   }
+
+  return (deviceCount);
 }
 
 //Given the node number, apply the node's configuration settings to the device
@@ -1135,7 +1138,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
 
         //Confidence: High - begin now checks FW Ver CRC
         SCD30 sensor1;
-        //sensor1.enableDebugging();
+        if(settings.printDebugMessages == true) sensor1.enableDebugging(); // Enable debug messages if required
         // Set measBegin to false. beginQwiicDevices will call begin with measBegin set true.
         if (sensor1.begin(qwiic, true, false) == true) //Wire port, autoCalibrate, measBegin
           return (DEVICE_CO2_SCD30);

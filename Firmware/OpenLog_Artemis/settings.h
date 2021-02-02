@@ -359,7 +359,7 @@ struct struct_settings {
   int slowLoggingIntervalSeconds = 300; // Slow logging interval in seconds. Default to 5 mins
   int slowLoggingStartMOD = 1260; // Start slow logging at this many Minutes Of Day. Default to 21:00
   int slowLoggingStopMOD = 420; // Stop slow logging at this many Minutes Of Day. Default to 07:00
-
+  bool resetOnZeroDeviceCount = false; // A work-around for I2C bus crashes. Enable this via the debug menu.
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

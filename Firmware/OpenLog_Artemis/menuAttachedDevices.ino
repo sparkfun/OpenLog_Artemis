@@ -30,7 +30,7 @@
 //Returns true if devices detected > 0
 bool detectQwiicDevices()
 {
-  printDebug("detectQwiicDevices started\r\n");
+  printDebug(F("detectQwiicDevices started\r\n"));
   bool somethingDetected = false;
 
   qwiic.setClock(100000); //During detection, go slow
@@ -154,7 +154,7 @@ bool detectQwiicDevices()
       QWIICMUX *myMux = (QWIICMUX *)muxNode->classPtr;
 
       printDebug("detectQwiicDevices: scanning the ports of multiplexer " + (String)muxNumber);
-      printDebug("\r\n");
+      printDebug(F("\r\n"));
 
       for (int portNumber = 0 ; portNumber < 8 ; portNumber++) //Assumes we are using a mux with 8 ports max
       {
@@ -163,7 +163,7 @@ bool detectQwiicDevices()
 
         printDebug("detectQwiicDevices: scanning port number " + (String)portNumber);
         printDebug(" on multiplexer " + (String)muxNumber);
-        printDebug("\r\n");
+        printDebug(F("\r\n"));
 
         //Scan this new bus for new addresses
         for (uint8_t address = 1 ; address < 127 ; address++)
