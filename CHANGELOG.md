@@ -1,6 +1,12 @@
 Change Log
 ======================
 
+v1.9
+---------
+
+* Started to add support for the BNO080 so users can have access to Quaternions and Euler angles [47](https://github.com/sparkfun/OpenLog_Artemis/issues/47)
+  * This is work in progress. The BNO080 does not currently .begin reliably - especially on the second attempt - and I don't understand why...
+
 v1.8
 ---------
 

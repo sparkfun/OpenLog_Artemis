@@ -771,6 +771,64 @@ void gatherDeviceValues()
             }
           }
           break;
+        case DEVICE_IMU_BNO080:
+          {
+            BNO080 *nodeDevice = (BNO080 *)temp->classPtr;
+            struct_BNO080 *nodeSetting = (struct_BNO080 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              // Check that at least one set of readings is being logged
+              if ((nodeSetting->logQuat) || (nodeSetting->logAccel) || (nodeSetting->logLinAccel) || (nodeSetting->logGyro) || (nodeSetting->logFastGyro) ||
+                (nodeSetting->logMag) || (nodeSetting->logEuler))
+              {
+                if (nodeDevice->dataAvailable()) // Check if new data is available (dangerous? what happens if data is not available?)
+                {
+                  if (nodeSetting->logQuat)
+                  {
+                    sprintf(tempData, "%.02f,%.02f,%.02f,%.02f,%d,", nodeDevice->getQuatI(), nodeDevice->getQuatJ(), nodeDevice->getQuatK(),
+                      nodeDevice->getQuatReal(), nodeDevice->getQuatRadianAccuracy());
+                    strcat(outputData, tempData);
+                  }
+                  if (nodeSetting->logAccel)
+                  {
+                    sprintf(tempData, "%.02f,%.02f,%.02f,%d,", nodeDevice->getAccelX(), nodeDevice->getAccelY(), nodeDevice->getAccelZ(),
+                      nodeDevice->getAccelAccuracy());
+                    strcat(outputData, tempData);
+                  }
+                  if (nodeSetting->logLinAccel)
+                  {
+                    sprintf(tempData, "%.02f,%.02f,%.02f,%d,", nodeDevice->getLinAccelX(), nodeDevice->getLinAccelY(), nodeDevice->getLinAccelZ(),
+                      nodeDevice->getLinAccelAccuracy());
+                    strcat(outputData, tempData);
+                  }
+                  if (nodeSetting->logGyro)
+                  {
+                    sprintf(tempData, "%.02f,%.02f,%.02f,%d,", nodeDevice->getGyroX(), nodeDevice->getGyroY(), nodeDevice->getGyroZ(),
+                      nodeDevice->getGyroAccuracy());
+                    strcat(outputData, tempData);
+                  }
+                  if (nodeSetting->logFastGyro)
+                  {
+                    sprintf(tempData, "%.02f,%.02f,%.02f,", nodeDevice->getFastGyroX(), nodeDevice->getFastGyroY(), nodeDevice->getFastGyroZ());
+                    strcat(outputData, tempData);
+                  }
+                  if (nodeSetting->logMag)
+                  {
+                    sprintf(tempData, "%.02f,%.02f,%.02f,%d,", nodeDevice->getMagX(), nodeDevice->getMagY(), nodeDevice->getMagZ(),
+                      nodeDevice->getMagAccuracy());
+                    strcat(outputData, tempData);
+                  }
+                  if (nodeSetting->logEuler)
+                  {
+                    sprintf(tempData, "%.01f,%.01f,%.01f,", nodeDevice->getRoll() * 180.0 / PI, nodeDevice->getPitch() * 180.0 / PI,
+                      nodeDevice->getYaw() * 180.0 / PI);
+                    strcat(outputData, tempData);
+                  }
+                }
+              }
+            }
+          }
+          break;
         default:
           SerialPrintf2("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
@@ -1130,6 +1188,28 @@ void printHelperText(bool terminalOnly)
                 strcat(helperText, "LD,");
               if (nodeSetting->logFanStatus)
                 strcat(helperText, "Fan,");
+            }
+          }
+          break;
+        case DEVICE_IMU_BNO080:
+          {
+            struct_BNO080 *nodeSetting = (struct_BNO080 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logQuat)
+                strcat(helperText, "QuatI,QuatJ,QuatK,QuatR,QuatAcc,");
+              if (nodeSetting->logAccel)
+                strcat(helperText, "AccelX,AccelY,AccelZ,AccelAcc,");
+              if (nodeSetting->logLinAccel)
+                strcat(helperText, "LinAccelX,LinAccelY,LinAccelZ,LinAccelAcc,");
+              if (nodeSetting->logGyro)
+                strcat(helperText, "GyroX,GyroY,GyroZ,GyroAcc,");
+              if (nodeSetting->logFastGyro)
+                strcat(helperText, "FastGyroX,FastGyroY,FastGyroZ,");
+              if (nodeSetting->logMag)
+                strcat(helperText, "MagX,MagY,MagZ,MagAcc,");
+              if (nodeSetting->logEuler)
+                strcat(helperText, "Roll,Pitch,Yaw,");
             }
           }
           break;

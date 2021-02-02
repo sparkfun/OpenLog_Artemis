@@ -83,6 +83,7 @@
   (done?) Add "sleep on pin" functionality based @ryanneve's PR https://github.com/sparkfun/OpenLog_Artemis/pull/64 and Issue https://github.com/sparkfun/OpenLog_Artemis/issues/46
   (done?) Add "wake at specified times" functionality based on Issue https://github.com/sparkfun/OpenLog_Artemis/issues/46
   (done?) Add corrections for the SCD30 based on Forum post by paulvha: https://forum.sparkfun.com/viewtopic.php?p=222455#p222455
+  (work in progress) Add support for the BNO080 so users have access to Quaternions and Euler angles: https://github.com/sparkfun/OpenLog_Artemis/issues/47
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -215,6 +216,7 @@ ICM_20948_SPI myICM;
 #include "SparkFun_ADS122C04_ADC_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_ADS122C04
 #include "SparkFun_MicroPressure.h" // Click here to get the library: http://librarymanager/All#SparkFun_MicroPressure
 #include "SparkFun_Particle_Sensor_SN-GCJA5_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Particle_Sensor_SN-GCJA5
+#include "SparkFun_BNO080_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_BNO080
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -294,7 +296,7 @@ void setup() {
   // Use the worst case power on delay for the Qwiic bus for now as we don't yet know what sensors are connected
   // (worstCaseQwiicPowerOnDelay is defined in settings.h)
   qwiicPowerOnDelayMillis = worstCaseQwiicPowerOnDelay;
-  
+
   beginQwiic(); // Turn the qwiic power on as early as possible
 
   beginSD(); //285 - 293ms
@@ -314,7 +316,7 @@ void setup() {
 
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
-  
+
   SerialPrintf3("Artemis OpenLog v%d.%d\r\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
 
   if (settings.useGPIO32ForStopLogging == true)
@@ -412,7 +414,7 @@ void setup() {
 }
 
 void loop() {
-  
+
   checkBattery(); // Check for low battery
 
   if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available())))
@@ -423,7 +425,7 @@ void loop() {
     size_t timestampCharsLeftToWrite = strlen(serialTimestamp);
     //SerialPrintf2("timestampCharsLeftToWrite is %d\r\n", timestampCharsLeftToWrite);
     //SerialFlush();
-    
+
     if (SerialLog.available() || (timestampCharsLeftToWrite > 0))
     {
       while (SerialLog.available() || (timestampCharsLeftToWrite > 0))
@@ -431,7 +433,7 @@ void loop() {
         if (timestampCharsLeftToWrite > 0) // Based on code written by @DennisMelamed in PR #70
         {
           incomingBuffer[incomingBufferSpot++] = serialTimestamp[0]; // Add a timestamp character to incomingBuffer
-          
+
           for (size_t i = 0; i < timestampCharsLeftToWrite; i++)
           {
             serialTimestamp[i] = serialTimestamp[i+1]; // Shuffle the remaining chars along by one
@@ -452,7 +454,7 @@ void loop() {
             serialTimestamp[strlen(serialTimestamp) - 1] = 0x0A; // Change the final comma of the timestamp to a Line Feed
           }
         }
-        
+
         if (incomingBufferSpot == sizeof(incomingBuffer))
         {
           digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
@@ -639,7 +641,7 @@ uint32_t howLongToSleepFor(void)
   //Calculate how many 32768Hz system ticks we need to sleep for:
   //sysTicksToSleep = msToSleep * 32768L / 1000
   //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
-  
+
   uint32_t msToSleep;
 
   if (checkSleepOnFastSlowPin())
@@ -667,7 +669,7 @@ uint32_t howLongToSleepFor(void)
   }
   else // checkSleepOnUsBetweenReadings
     msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
-  
+
   uint32_t sysTicksToSleep;
   if (msToSleep < 131000)
   {
@@ -723,7 +725,7 @@ bool checkSleepOnRTCTime(void)
     {
       myRTC.getTime(); // Get the RTC time
       int minutesOfDay = (myRTC.hour * 60) + myRTC.minute;
-      
+
       if (settings.slowLoggingStartMOD > settings.slowLoggingStopMOD) // If slow logging starts later than the stop time (i.e. slow over midnight)
       {
         if ((minutesOfDay >= settings.slowLoggingStartMOD) || (minutesOfDay < settings.slowLoggingStopMOD))

@@ -237,6 +237,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_SNGCJA5;
       }
       break;
+    case DEVICE_IMU_BNO080:
+      {
+        temp->classPtr = new BNO080;
+        temp->configPtr = new struct_BNO080;
+      }
+      break;
     default:
       SerialPrintf2("addDevice Device type not found: %d\r\n", deviceType);
       break;
@@ -265,7 +271,7 @@ bool beginQwiicDevices()
   bool everythingStarted = true;
 
   waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up - if required
-  
+
   qwiicPowerOnDelayMillis = settings.qwiicBusPowerUpDelayMs; // Set qwiicPowerOnDelayMillis to the _minimum_ defined by settings.qwiicBusPowerUpDelayMs. It will be increased if required.
 
   int numberOfSCD30s = 0; // Keep track of how many SCD30s we begin so we can delay before starting the second and subsequent ones
@@ -282,13 +288,13 @@ bool beginQwiicDevices()
   while (temp != NULL)
   {
     openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
-    
+
     if (settings.printDebugMessages == true)
     {
       SerialPrintf2("beginQwiicDevices: attempting to begin deviceType %s", getDeviceName(temp->deviceType));
       SerialPrintf4(" at address 0x%02X using mux address 0x%02X and port number %d\r\n", temp->address, temp->muxAddress, temp->portNumber);
     }
-    
+
     //Attempt to begin the device
     switch (temp->deviceType)
     {
@@ -469,6 +475,18 @@ bool beginQwiicDevices()
             temp->online = true;
         }
         break;
+      case DEVICE_IMU_BNO080:
+        {
+          BNO080 *tempDevice = (BNO080 *)temp->classPtr;
+          struct_BNO080 *nodeSetting = (struct_BNO080 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          //if(settings.printDebugMessages == true) tempDevice->enableDebugging();
+          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+            temp->online = true;
+          else
+            printDebug(F("beginQwiicDevices: BNO080.begin failed.\r\n"));
+        }
+        break;
       default:
         SerialPrintf2("beginQwiicDevices: device type not found: %d\r\n", temp->deviceType);
         break;
@@ -591,7 +609,7 @@ void configureDevice(node * temp)
         sensor->saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the current ioPortsettings to flash and BBR
 
         sensor->setAutoPVT(nodeSetting->useAutoPVT); // Use autoPVT as required
-        
+
         if (1000000ULL / settings.usBetweenReadings <= 1) //If we are slower than 1Hz logging rate
           // setNavigationFrequency expects a uint8_t to define the number of updates per second
           // So the slowest rate we can set with setNavigationFrequency is 1Hz
@@ -697,7 +715,7 @@ void configureDevice(node * temp)
         SFE_ADS122C04 *sensor = (SFE_ADS122C04 *)temp->classPtr;
         struct_ADS122C04 *sensorSetting = (struct_ADS122C04 *)temp->configPtr;
 
-        //Configure the wite mode for readPT100Centigrade and readPT100Fahrenheit
+        //Configure the wire mode for readPT100Centigrade and readPT100Fahrenheit
         //(readInternalTemperature and readRawVoltage change and restore the mode automatically)
         if (sensorSetting->useFourWireMode)
           sensor->configureADCmode(ADS122C04_4WIRE_MODE);
@@ -718,6 +736,23 @@ void configureDevice(node * temp)
       break;
     case DEVICE_PARTICLE_SNGCJA5:
       //Nothing to configure
+      break;
+    case DEVICE_IMU_BNO080:
+      {
+        BNO080 *sensor = (BNO080 *)temp->classPtr;
+        struct_BNO080 *sensorSetting = (struct_BNO080 *)temp->configPtr;
+
+        if ((sensorSetting->logQuat) || (sensorSetting->logEuler))
+          sensor->enableRotationVector((uint16_t)(settings.usBetweenReadings / 1000));
+        if (sensorSetting->logAccel)
+          sensor->enableAccelerometer((uint16_t)(settings.usBetweenReadings / 1000));
+        if (sensorSetting->logLinAccel)
+          sensor->enableLinearAccelerometer((uint16_t)(settings.usBetweenReadings / 1000));
+        if ((sensorSetting->logGyro) || (sensorSetting->logFastGyro))
+          sensor->enableGyro((uint16_t)(settings.usBetweenReadings / 1000));
+        if (sensorSetting->logMag)
+          sensor->enableMagnetometer((uint16_t)(settings.usBetweenReadings / 1000));
+      }
       break;
     default:
       SerialPrintf3("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
@@ -808,6 +843,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_PARTICLE_SNGCJA5:
       ptr = (FunctionPointer)menuConfigure_SNGCJA5;
+      break;
+    case DEVICE_IMU_BNO080:
+      ptr = (FunctionPointer)menuConfigure_BNO080;
       break;
     default:
       SerialPrintln(F("getConfigFunctionPtr: Unknown device type"));
@@ -946,6 +984,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_UBLOX 0x42 //But can be set to any address
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
+#define ADR_BNO080 0x4B //Alternate: 0x4A
 #define ADR_SGP30 0x58
 #define ADR_CCS811 0x5B //Alternates: 0x5A
 #define ADR_LPS25HB 0x5D //Alternates: 0x5C
@@ -1077,6 +1116,14 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x4A:
       {
+        //Confidence: High - Checks product ID report
+        BNO080 sensor1;
+        if(settings.printDebugMessages == true) sensor1.enableDebugging();
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_IMU_BNO080);
+        else
+          printDebug(F("testDevice: BNO080.begin failed.\r\n"));
+
         //Confidence: High - Checks 16 bit ID
         TMP117 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1085,6 +1132,14 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x4B:
       {
+        //Confidence: High - Checks product ID report
+        BNO080 sensor1;
+        if(settings.printDebugMessages == true) sensor1.enableDebugging();
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_IMU_BNO080);
+        else
+          printDebug(F("testDevice: BNO080.begin failed.\r\n"));
+
         //Confidence: High - Checks 16 bit ID
         TMP117 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1265,7 +1320,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-        
+
         BME280 sensor;
         sensor.setI2CAddress(i2cAddress);
         if (sensor.beginI2C(qwiic) == true) //Wire port
@@ -1306,7 +1361,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-        
+
         //Confidence: Medium - Write/Read/Clear to 0x00
         if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1317,7 +1372,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        // If an MS8607 is connected, multiplexerBegin causes the MS8607 to 'crash' and lock up the I2C bus... So we need to check if an MS8607 is connected first. 
+        // If an MS8607 is connected, multiplexerBegin causes the MS8607 to 'crash' and lock up the I2C bus... So we need to check if an MS8607 is connected first.
         // We will use the MS5637 as this will test for itself and the pressure sensor of the MS8607
         // Just to make life even more complicated, a mux with address 0x76 will also appear as an MS5637 due to the way the MS5637 eeprom crc check is calculated.
         // So, we can't use .begin as the test for a MS5637 / MS8607. We need to be more creative!
@@ -1326,7 +1381,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
         //  An MS5637 / MS8607 will return the value stored in its eeprom which _hopefully_ is not 0xA0A0!
 
         // Let's hope this doesn't cause problems for the BME280...! We should be OK as the default address for the BME280 is 0x77.
-        
+
         qwiic.beginTransmission((uint8_t)i2cAddress);
         qwiic.write((uint8_t)0xA0);
         uint8_t i2c_status = qwiic.endTransmission();
@@ -1354,7 +1409,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-        
+
         //Confidence: Medium - Write/Read/Clear to 0x00
         if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1492,6 +1547,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_PARTICLE_SNGCJA5:
       return "Particle-SNGCJA5";
+      break;
+    case DEVICE_IMU_BNO080:
+      return "IMU-BNO080";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:
