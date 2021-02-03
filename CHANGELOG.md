@@ -10,7 +10,7 @@ v1.9
 * Added support for the SGP40 air quality sensor - which provides a robust VOC Index for indoor air quality
 * Added support for the SDP3X differential pressure sensor - opening up possibilities for air flow and air speed measurement
 * Added support for the MS5837 depth / pressure sensor - as used in the BlueRobotics Bar02
-* Corrects an issue which was corrupting data when using multiple MS8607s [62]https://github.com/sparkfun/OpenLog_Artemis/issues/62
+* Corrects an issue which was corrupting data when using multiple MS8607s [62](https://github.com/sparkfun/OpenLog_Artemis/issues/62)
 * Adds serial logging timestamps with a configurable timestamp token [63](https://github.com/sparkfun/OpenLog_Artemis/issues/63) - thank you @DennisMelamed
 * Adds a _slow logging_ feature to extend battery life
   * Pin11 can be used to enter slow logging mode [60](https://github.com/sparkfun/OpenLog_Artemis/issues/60) - thank you @ryanneve
