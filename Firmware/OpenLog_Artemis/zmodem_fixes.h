@@ -19,18 +19,39 @@ extern SdFat sd;
 
 #include <string.h>
 
-// Dylan (monte_carlo_ecm, bitflipper, etc.) - changed serial read/write to macros to try to squeeze 
+// Dylan (monte_carlo_ecm, bitflipper, etc.) - changed serial read/write to macros to try to squeeze
 // out higher speed
 
 #define READCHECK
 #define TYPICAL_SERIAL_TIMEOUT 1200
 
-#define readline(timeout) ({ char _c; ZSERIAL.readBytes(&_c, 1) > 0 ? _c : TIMEOUT; })
-int zdlread2(int);
-#define zdlread(void) ({ int _z; ((_z = readline(Rxtimeout)) & 0140) ? _z : zdlread2(_z); })
-//#define sendline(_c) ZSERIAL.write(char(_c))
-#define sendline(_c) ({ if (ZSERIAL.availableForWrite() > SERIAL_TX_BUFFER_SIZE / 2) ZSERIAL.flush(); ZSERIAL.write(char(_c)); })
-#define zsendline(_z) ({ (_z & 0140 ) ? sendline(_z) : zsendline2(_z); })
+extern Stream *ZSERIAL;
+extern int Rxtimeout;
+#define TIMEOUT (-2)
+
+//#define readline(timeout) ({ char _c; ZSERIAL->readBytes(&_c, 1) > 0 ? _c : TIMEOUT; })
+//#define zdlread(void) ({ int _z; ((_z = readline(Rxtimeout)) & 0140) ? _z : zdlread2(_z); })
+//#define sendline(_c) ZSERIAL->write(char(_c))
+//#define sendline(_c) ({ if (ZSERIAL->availableForWrite() > SERIAL_TX_BUFFER_SIZE / 2) ZSERIAL->flush(); ZSERIAL->write(char(_c)); })
+//#define zsendline(_z) ({ (_z & 0140 ) ? sendline(_z) : zsendline2(_z); })
+
+int readline(int timeout);  // Header. Code is in zmodem_zm.cpp
+
+void sendline(int _c); // Header. Code is in zmodem_zm.cpp
+#define xsendline(c) sendline(c)
+
+//int zdlread2(int); // Header. Code is in zmodem_zm.cpp
+
+void zsendline(int _z); // Header. Code is in zmodem_zm.cpp
+
+//int zdlread(void)
+//{
+//  int _z;
+//  if ((_z = readline(Rxtimeout)) & 0140)
+//    return (_z);
+//  else
+//    return (zdlread2(_z));
+//}
 
 void sendzrqinit(void);
 int wctxpn(const char *name);
@@ -62,7 +83,7 @@ extern int Filcnt;
 // enter the "if" statement's clause
 #define setjmp(...)
 
-#define printf(s, ... ) DSERIAL.println(s);
+#define printf(s, ... ) DSERIAL->println(s);
 #define fprintf(...)
 
 // fseek(in, Rxpos, 0)

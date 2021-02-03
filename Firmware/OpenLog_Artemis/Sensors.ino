@@ -9,44 +9,10 @@ void getData()
 
   if (settings.logRTC)
   {
-    //Decide if we are using the internal RTC or GPS for timestamps
-    if (settings.getRTCfromGPS == false)
-    {
-      myRTC.getTime();
-
-      if (settings.logDate)
-      {
-        char rtcDate[12]; //10/12/2019,
-        if (settings.americanDateStyle == true)
-          sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.month, myRTC.dayOfMonth, myRTC.year);
-        else
-          sprintf(rtcDate, "%02d/%02d/20%02d,", myRTC.dayOfMonth, myRTC.month, myRTC.year);
-        strcat(outputData, rtcDate);
-      }
-
-      if (settings.logTime)
-      {
-        char rtcTime[13]; //09:14:37.41,
-        int adjustedHour = myRTC.hour;
-        if (settings.hour24Style == false)
-        {
-          if (adjustedHour > 12) adjustedHour -= 12;
-        }
-        sprintf(rtcTime, "%02d:%02d:%02d.%02d,", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
-        strcat(outputData, rtcTime);
-      }
-      
-      if (settings.logMicroseconds)
-      {
-        char microseconds[11]; //
-        sprintf(microseconds, "%d,", micros());
-        strcat(outputData, microseconds);
-      }
-    } //end if use RTC for timestamp
-    else //Use GPS for timestamp
-    {
-      Serial.println(F("Print GPS Timestamp / not yet implemented"));
-    }
+    //Code written by @DennisMelamed in PR #70
+    char timeString[37];
+    getTimeString(timeString); // getTimeString is in timeStamp.ino
+    strcat(outputData, timeString);
   }
 
   if (settings.logA11)
@@ -161,8 +127,10 @@ void getData()
     uint64_t currentMillis;
 
     //If we are sleeping between readings then we cannot rely on millis() as it is powered down
-    //Used RTC instead
-    if (settings.usBetweenReadings >= maxUsBeforeSleep)
+    //Use RTC instead
+    if (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+    || (settings.useGPIO11ForFastSlowLogging == true)
+    || (settings.useRTCForFastSlowLogging == true))
     {
       currentMillis = rtcMillis();
     }
@@ -254,7 +222,7 @@ void gatherDeviceValues()
           {
             qwiic.setPullups(0); //Disable pullups to minimize CRC issues
 
-            SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
+            SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
             struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
             if (nodeSetting->log == true)
@@ -803,8 +771,81 @@ void gatherDeviceValues()
             }
           }
           break;
+        case DEVICE_VOC_SGP40:
+          {
+            SGP40 *nodeDevice = (SGP40 *)temp->classPtr;
+            struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              if (nodeSetting->logVOC)
+              {
+                sprintf(tempData, "%d,", nodeDevice->getVOCindex(nodeSetting->RH, nodeSetting->T));
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_SDP3X:
+          {
+            SDP3X *nodeDevice = (SDP3X *)temp->classPtr;
+            struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              float pressure;
+              float temperature;
+              if ((nodeSetting->logPressure) || (nodeSetting->logTemperature))
+              {
+                nodeDevice->triggeredMeasurement(nodeSetting->massFlow, nodeSetting->clockStretching);
+                nodeDevice->readMeasurement(&pressure, &temperature);
+              }
+              if (nodeSetting->logPressure)
+              {
+                sprintf(tempData, "%.02f,", pressure);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logTemperature)
+              {
+                sprintf(tempData, "%.02f,", temperature);
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_MS5837:
+          {
+            MS5837 *nodeDevice = (MS5837 *)temp->classPtr;
+            struct_MS5837 *nodeSetting = (struct_MS5837 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              if ((nodeSetting->logPressure) || (nodeSetting->logTemperature) || (nodeSetting->logDepth) || (nodeSetting->logAltitude))
+              {
+                nodeDevice->read();
+              }
+              if (nodeSetting->logPressure)
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->pressure(nodeSetting->conversion));
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logTemperature)
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->temperature());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logDepth)
+              {
+                sprintf(tempData, "%.03f,", nodeDevice->depth());
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logAltitude)
+              {
+                sprintf(tempData, "%.02f,", nodeDevice->altitude());
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
         default:
-          Serial.printf("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
+          SerialPrintf2("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
       }
 
@@ -821,19 +862,12 @@ void printHelperText(bool terminalOnly)
 
   if (settings.logRTC)
   {
-    //Decide if we are using the internal RTC or GPS for timestamps
-    if (settings.getRTCfromGPS == false)
-    {
-      if (settings.logDate)
-        strcat(helperText, "rtcDate,");
-      if (settings.logTime)
-        strcat(helperText, "rtcTime,");
-      if (settings.logMicroseconds)
-        strcat(helperText, "micros,");
-    }
-  } //end if use RTC for timestamp
-  else //Use GPS for timestamp
-  {
+    if (settings.logDate)
+      strcat(helperText, "rtcDate,");
+    if (settings.logTime)
+      strcat(helperText, "rtcTime,");
+    if (settings.logMicroseconds)
+      strcat(helperText, "micros,");
   }
 
   if (settings.logA11)
@@ -962,7 +996,7 @@ void printHelperText(bool terminalOnly)
               if (nodeSetting->logPressure)
                 strcat(helperText, "pressure_hPa,");
               if (nodeSetting->logTemperature)
-                strcat(helperText, "pressure_degC,");
+                strcat(helperText, "temperature_degC,");
             }
           }
           break;
@@ -1172,8 +1206,46 @@ void printHelperText(bool terminalOnly)
             }
           }
           break;
+        case DEVICE_VOC_SGP40:
+          {
+            struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logVOC)
+                strcat(helperText, "VOCindex,");
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_SDP3X:
+          {
+            struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressure)
+                strcat(helperText, "Pa,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "degC,");
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_MS5837:
+          {
+            struct_MS5837 *nodeSetting = (struct_MS5837 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressure)
+                strcat(helperText, "mbar,");
+              if (nodeSetting->logTemperature)
+                strcat(helperText, "degC,");
+              if (nodeSetting->logDepth)
+                strcat(helperText, "depth_m,");
+              if (nodeSetting->logAltitude)
+                strcat(helperText, "alt_m,");
+            }
+          }
+          break;
         default:
-          Serial.printf("\nprinterHelperText device not found: %d\r\n", temp->deviceType);
+          SerialPrintf2("\nprinterHelperText device not found: %d\r\n", temp->deviceType);
           break;
       }
     }
@@ -1188,7 +1260,7 @@ void printHelperText(bool terminalOnly)
 
   strcat(helperText, "\r\n");
 
-  Serial.print(helperText);
+  SerialPrint(helperText);
   if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
     sensorDataFile.print(helperText);
 }

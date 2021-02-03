@@ -20,14 +20,20 @@ This document summarizes the units used for each sensor measurement.
 - [MS8607 PHT sensor](#MS8607-PHT-sensor)
 - [MPR0025PA MicroPressure sensor](#MPR0025PA-MicroPressure-sensor)
 - [MS5637 barometric pressure sensor](#MS5637-barometric-pressure-sensor)
+- [MS5837 depth and pressure sensor](#MS5837-depth-pressure-sensor)
 - [AHT20 humidity and temperature sensor](#AHT20-humidity-and-temperature-sensor)
 - [SHTC3 humidity and temperature sensor](#SHTC3-humidity-and-temperature-sensor)
+
+### Differential Pressure:
+
+- [SDP3X differential pressure sensor](#SDP3X-differential-pressure-sensor)
 
 ### Air Quality and Environmental Sensors:
 
 - [CCS811 air quality sensor](#CCS811-air-quality-sensor)
 - [VEML6075 UV light sensor](#VEML6075-UV-light-sensor)
 - [SGP30 air quality and Volatile Organic Compound (VOC) sensor](#SGP30-air-quality-and-VOC-sensor)
+- [SGP40 air quality (VOC index) sensor](#SGP40-air-quality-sensor)
 - [SCD30 CO2 humidity and temperature sensor](#SCD30-CO2-humidity-and-temperature-sensor)
 - [SN-GCJA5 Particle Sensor](#SN-GCJA5-Particle-Sensor)
 
@@ -146,7 +152,25 @@ Carrier Solution:
 | []() | | |
 |---|---|---|
 | Pressure | pressure_hPa | hectoPascals |
-| Temperature | pressure_degC | Degrees Centigrade |
+| Temperature | temperature_degC | Degrees Centigrade |
+
+---
+## MS5837 depth pressure sensor
+
+| []() | | |
+|---|---|---|
+| Pressure | mbar | millibar |
+| Temperature | degC | Degrees Centigrade |
+| Depth | depth_m | Metres |
+| Altitude | alt_m | Metres |
+
+---
+## SDP3X differential pressure sensor
+
+| []() | | |
+|---|---|---|
+| Pressure | Pa | Pascals |
+| Temperature | degC | Degrees Centigrade |
 
 ---
 ## AHT20 humidity and temperature sensor
@@ -192,6 +216,13 @@ VOC = Volatile Organic Compounds
 | CO<sub>2</sub> | co2_ppm | Parts Per Million |
 | H<sub>2</sub> | H2 | none |
 | Ethanol | ethanol | none |
+
+---
+## SGP40 air quality sensor
+
+| []() | | |
+|---|---|---|
+| VOC Index | VOCindex | none |
 
 ---
 ## SCD30 CO2 humidity and temperature sensor

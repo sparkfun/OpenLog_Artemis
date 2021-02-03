@@ -1,7 +1,7 @@
 //Print a message both to terminal and to log
 void msg(const char * message)
 {
-  Serial.println(message);
+  SerialPrintln(message);
   if (online.microSD)
     sensorDataFile.println(message);
 }
@@ -15,8 +15,8 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
 
   if (newFileNumber < 2) //If the settings have been reset, let's warn the user that this could take a while!
   {
-    Serial.println(F("Finding the next available log file."));
-    Serial.println(F("This could take a long time if the SD card contains many existing log files."));
+    SerialPrintln(F("Finding the next available log file."));
+    SerialPrintln(F("This could take a long time if the SD card contains many existing log files."));
   }
 
   if (newFileNumber > 0)
@@ -46,15 +46,15 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
 
   if (newFileNumber >= 100000) // Have we hit the maximum number of files?
   {
-    Serial.print(F("***** WARNING! File number limit reached! (Overwriting "));
-    Serial.print(newFileName);
-    Serial.println(F(") *****"));
+    SerialPrint(F("***** WARNING! File number limit reached! (Overwriting "));
+    SerialPrint(newFileName);
+    SerialPrintln(F(") *****"));
     newFileNumber = 100000; // This will overwrite Log99999.TXT next time thanks to the newFileNumber-- above
   }
   else
   {
-    Serial.print(F("Logging to: "));
-    Serial.println(newFileName);    
+    SerialPrint(F("Logging to: "));
+    SerialPrintln(newFileName);    
   }
 
   //Record new file number to EEPROM and to config file

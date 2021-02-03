@@ -30,7 +30,7 @@
 //Returns true if devices detected > 0
 bool detectQwiicDevices()
 {
-  printDebug("detectQwiicDevices started\r\n");
+  printDebug(F("detectQwiicDevices started\r\n"));
   bool somethingDetected = false;
 
   qwiic.setClock(100000); //During detection, go slow
@@ -47,7 +47,7 @@ bool detectQwiicDevices()
   // lock up the I2C bus if you don't discover it and then begin it in one go...
   // The following code has been restructured to try and keep the MCP9600 happy.
 
-  Serial.println(F("Identifying Qwiic Muxes..."));
+  SerialPrintln(F("Identifying Qwiic Muxes..."));
 
   //First scan for Muxes. Valid addresses are 0x70 to 0x77 (112 to 119).
   //If any are found, they will be begin()'d causing their ports to turn off
@@ -65,19 +65,25 @@ bool detectQwiicDevices()
       //}
       somethingDetected = true;
       if (settings.printDebugMessages == true)
-        Serial.printf("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
+      {
+        SerialPrintf2("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
+      }
       deviceType_e foundType = testMuxDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType == DEVICE_MULTIPLEXER)
       {
         addDevice(foundType, address, 0, 0); //Add this device to our map
         if (settings.printDebugMessages == true)
-          Serial.printf("detectQwiicDevices: multiplexer found at address 0x%02X\r\n", address);
+        {
+          SerialPrintf2("detectQwiicDevices: multiplexer found at address 0x%02X\r\n", address);
+        }
         muxCount++;
       }
       else if (foundType == DEVICE_PRESSURE_MS5637)
       {
         if (settings.printDebugMessages == true)
-          Serial.printf("detectQwiicDevices: MS8607/MS5637 found at address 0x%02X. Ignoring it for now...\r\n", address);        
+        {
+          SerialPrintf2("detectQwiicDevices: MS8607/MS5637 found at address 0x%02X. Ignoring it for now...\r\n", address);
+        }
       }
     }
   }
@@ -86,17 +92,17 @@ bool detectQwiicDevices()
   {
     if (settings.printDebugMessages == true)
     {
-      Serial.printf("detectQwiicDevices: found %d", muxCount);
+      SerialPrintf2("detectQwiicDevices: found %d", muxCount);
       if (muxCount == 1)
-        Serial.println(F(" multiplexer"));
+        SerialPrintln(F(" multiplexer"));
       else
-        Serial.println(F(" multiplexers"));
+        SerialPrintln(F(" multiplexers"));
     }
     beginQwiicDevices(); //begin() the muxes to disable their ports
   }
 
   //Before going into mux sub branches, scan the main branch for all remaining devices
-  Serial.println(F("Identifying Qwiic Devices..."));
+  SerialPrintln(F("Identifying Qwiic Devices..."));
   bool foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
@@ -105,7 +111,9 @@ bool detectQwiicDevices()
     {
       somethingDetected = true;
       if (settings.printDebugMessages == true)
-        Serial.printf("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
+      {
+        SerialPrintf2("detectQwiicDevices: something detected at address 0x%02X\r\n", address);
+      }
       deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType != DEVICE_UNKNOWN_DEVICE)
       {
@@ -118,7 +126,9 @@ bool detectQwiicDevices()
           if (addDevice(foundType, address, 0, 0) == true) //Records this device. //Returns false if mux/device was already recorded.
           {
             if (settings.printDebugMessages == true)
-              Serial.printf("detectQwiicDevices: added %s at address 0x%02X\r\n", getDeviceName(foundType), address);
+            {
+              SerialPrintf3("detectQwiicDevices: added %s at address 0x%02X\r\n", getDeviceName(foundType), address);
+            }
           }
         }
         if (foundType == DEVICE_PHT_MS8607)
@@ -134,7 +144,7 @@ bool detectQwiicDevices()
   //If we have muxes, begin scanning their sub nets
   if (muxCount > 0)
   {
-    Serial.println(F("Multiplexers found. Scanning sub nets..."));
+    SerialPrintln(F("Multiplexers found. Scanning sub nets..."));
 
     //Step into first mux and begin stepping through ports
     for (int muxNumber = 0 ; muxNumber < muxCount ; muxNumber++)
@@ -144,7 +154,7 @@ bool detectQwiicDevices()
       QWIICMUX *myMux = (QWIICMUX *)muxNode->classPtr;
 
       printDebug("detectQwiicDevices: scanning the ports of multiplexer " + (String)muxNumber);
-      printDebug("\r\n");
+      printDebug(F("\r\n"));
 
       for (int portNumber = 0 ; portNumber < 8 ; portNumber++) //Assumes we are using a mux with 8 ports max
       {
@@ -153,7 +163,7 @@ bool detectQwiicDevices()
 
         printDebug("detectQwiicDevices: scanning port number " + (String)portNumber);
         printDebug(" on multiplexer " + (String)muxNumber);
-        printDebug("\r\n");
+        printDebug(F("\r\n"));
 
         //Scan this new bus for new addresses
         for (uint8_t address = 1 ; address < 127 ; address++)
@@ -162,7 +172,9 @@ bool detectQwiicDevices()
           if (deviceExists(DEVICE_TOTAL_DEVICES, address, 0, 0)) // Check if we found any type of device with this address on the main branch
           {
             if (settings.printDebugMessages == true)
-              Serial.printf("detectQwiicDevices: skipping device address 0x%02X because we found one on the main branch\r\n", address);
+            {
+              SerialPrintf2("detectQwiicDevices: skipping device address 0x%02X because we found one on the main branch\r\n", address);
+            }
           }
           else
           {
@@ -186,14 +198,14 @@ bool detectQwiicDevices()
                   if (foundType == DEVICE_MULTIPLEXER) // Let's ignore multiplexers hanging off multiplexer ports. (Multiple muxes on the main branch is OK.)
                   {
                     if (settings.printDebugMessages == true)
-                      Serial.printf("detectQwiicDevices: ignoring %s at address 0x%02X.0x%02X.%d\r\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+                      SerialPrintf5("detectQwiicDevices: ignoring %s at address 0x%02X.0x%02X.%d\r\n", getDeviceName(foundType), address, muxNode->address, portNumber);
                   }
                   else
                   {
                     if (addDevice(foundType, address, muxNode->address, portNumber) == true) //Record this device, with mux port specifics.
                     {
                       if (settings.printDebugMessages == true)
-                        Serial.printf("detectQwiicDevices: added %s at address 0x%02X.0x%02X.%d\r\n", getDeviceName(foundType), address, muxNode->address, portNumber);
+                        SerialPrintf5("detectQwiicDevices: added %s at address 0x%02X.0x%02X.%d\r\n", getDeviceName(foundType), address, muxNode->address, portNumber);
                     }
                   }
                 }
@@ -219,7 +231,7 @@ bool detectQwiicDevices()
 
   setMaxI2CSpeed(); //Try for 400kHz but reduce to 100kHz or low if certain devices are attached
 
-  Serial.println(F("Autodetect complete"));
+  SerialPrintln(F("Autodetect complete"));
 
   return (true);
 } // /detectQwiicDevices
@@ -228,8 +240,8 @@ void menuAttachedDevices()
 {
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure Attached Devices"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Attached Devices"));
 
     int availableDevices = 0;
 
@@ -237,7 +249,7 @@ void menuAttachedDevices()
     node *temp = head;
 
     if (temp == NULL)
-      Serial.println(F("**No devices detected on Qwiic bus**"));
+      SerialPrintln(F("**No devices detected on Qwiic bus**"));
 
     while (temp != NULL)
     {
@@ -256,67 +268,76 @@ void menuAttachedDevices()
         switch (temp->deviceType)
         {
           case DEVICE_MULTIPLEXER:
-            //Serial.printf("%s Multiplexer %s\r\n", strDeviceMenu, strAddress);
+            //SerialPrintf3("%s Multiplexer %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_LOADCELL_NAU7802:
-            Serial.printf("%s NAU7802 Weight Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s NAU7802 Weight Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_DISTANCE_VL53L1X:
-            Serial.printf("%s VL53L1X Distance Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s VL53L1X Distance Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_GPS_UBLOX:
-            Serial.printf("%s u-blox GPS Receiver %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s u-blox GPS Receiver %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PROXIMITY_VCNL4040:
-            Serial.printf("%s VCNL4040 Proximity Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s VCNL4040 Proximity Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_TEMPERATURE_TMP117:
-            Serial.printf("%s TMP117 High Precision Temperature Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s TMP117 High Precision Temperature Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PRESSURE_MS5637:
-            Serial.printf("%s MS5637 Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s MS5637 Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PRESSURE_LPS25HB:
-            Serial.printf("%s LPS25HB Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s LPS25HB Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PHT_BME280:
-            Serial.printf("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_UV_VEML6075:
-            Serial.printf("%s VEML6075 UV Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s VEML6075 UV Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_VOC_CCS811:
-            Serial.printf("%s CCS811 tVOC and CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s CCS811 tVOC and CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_VOC_SGP30:
-            Serial.printf("%s SGP30 tVOC and CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s SGP30 tVOC and CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_CO2_SCD30:
-            Serial.printf("%s SCD30 CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s SCD30 CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PHT_MS8607:
-            Serial.printf("%s MS8607 Pressure/Humidity/Temp (PHT) Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s MS8607 Pressure/Humidity/Temp (PHT) Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_TEMPERATURE_MCP9600:
-            Serial.printf("%s MCP9600 Thermocouple Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s MCP9600 Thermocouple Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_HUMIDITY_AHT20:
-            Serial.printf("%s AHT20 Humidity Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s AHT20 Humidity Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_HUMIDITY_SHTC3:
-            Serial.printf("%s SHTC3 Humidity Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s SHTC3 Humidity Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_ADC_ADS122C04:
-            Serial.printf("%s ADS122C04 ADC (Qwiic PT100) %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s ADS122C04 ADC (Qwiic PT100) %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PRESSURE_MPR0025PA1:
-            Serial.printf("%s MPR MicroPressure Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s MPR MicroPressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PARTICLE_SNGCJA5:
-            Serial.printf("%s SN-GCJA5 Particle Sensor %s\r\n", strDeviceMenu, strAddress);
+            SerialPrintf3("%s SN-GCJA5 Particle Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_VOC_SGP40:
+            SerialPrintf3("%s SGP40 VOC Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_PRESSURE_SDP3X:
+            SerialPrintf3("%s SDP3X Differential Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_PRESSURE_MS5837:
+            SerialPrintf3("%s MS5837 (BAR30 / BAR02) Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           default:
-            Serial.printf("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
+            SerialPrintf2("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
             break;
         }
       }
@@ -324,9 +345,9 @@ void menuAttachedDevices()
       temp = temp->next;
     }
 
-    Serial.printf("%d) Configure Qwiic Settings\r\n", availableDevices++ + 1);
+    SerialPrintf2("%d) Configure Qwiic Settings\r\n", availableDevices++ + 1);
 
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     int nodeNumber = getNumber(menuTimeout); //Timeout after x seconds
     if (nodeNumber > 0 && nodeNumber < availableDevices)
@@ -357,30 +378,30 @@ void menuConfigure_QwiicBus()
 {
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure Qwiic Bus"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Qwiic Bus"));
 
-    Serial.print(F("1) Turn off bus power between readings (>2s): "));
-    if (settings.powerDownQwiicBusBetweenReads == true) Serial.println(F("Yes"));
-    else Serial.println(F("No"));
+    SerialPrint(F("1) Turn off bus power between readings (>2s): "));
+    if (settings.powerDownQwiicBusBetweenReads == true) SerialPrintln(F("Yes"));
+    else SerialPrintln(F("No"));
 
-    Serial.printf("2) Set Max Qwiic Bus Speed: %d Hz\r\n", settings.qwiicBusMaxSpeed);
+    SerialPrintf2("2) Set Max Qwiic Bus Speed: %d Hz\r\n", settings.qwiicBusMaxSpeed);
 
-    Serial.printf("3) Set minimum Qwiic bus power up delay: %d ms\r\n", settings.qwiicBusPowerUpDelayMs);
+    SerialPrintf2("3) Set minimum Qwiic bus power up delay: %d ms\r\n", settings.qwiicBusPowerUpDelayMs);
 
-    Serial.print(F("4) Qwiic bus pull-ups (internal to the Artemis): "));
+    SerialPrint(F("4) Qwiic bus pull-ups (internal to the Artemis): "));
     if (settings.qwiicBusPullUps == 1)
-      Serial.println(F("1.5k"));
+      SerialPrintln(F("1.5k"));
     else if (settings.qwiicBusPullUps == 6)
-      Serial.println(F("6k"));
+      SerialPrintln(F("6k"));
     else if (settings.qwiicBusPullUps == 12)
-      Serial.println(F("12k"));
+      SerialPrintln(F("12k"));
     else if (settings.qwiicBusPullUps == 24)
-      Serial.println(F("24k"));
+      SerialPrintln(F("24k"));
     else
-      Serial.println(F("None"));
+      SerialPrintln(F("None"));
 
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -388,32 +409,32 @@ void menuConfigure_QwiicBus()
       settings.powerDownQwiicBusBetweenReads ^= 1;
     else if (incoming == '2')
     {
-      Serial.print(F("Enter max frequency to run Qwiic bus: (100000 or 400000): "));
+      SerialPrint(F("Enter max frequency to run Qwiic bus: (100000 or 400000): "));
       uint32_t amt = getNumber(menuTimeout);
       if ((amt == 100000) || (amt == 400000))
         settings.qwiicBusMaxSpeed = amt;
       else
-        Serial.println(F("Error: Out of range"));
+        SerialPrintln(F("Error: Out of range"));
     }
     else if (incoming == '3')
     {
       // 60 seconds is more than long enough for a ZED-F9P to do a warm start after being powered cycled, so that seems a sensible maximum
       // minimumQwiicPowerOnDelay is defined in settings.h
-      Serial.printf("Enter the minimum number of milliseconds to wait for Qwiic VCC to stabilize before communication: (%d to 60000): ", minimumQwiicPowerOnDelay);
+      SerialPrintf2("Enter the minimum number of milliseconds to wait for Qwiic VCC to stabilize before communication: (%d to 60000): ", minimumQwiicPowerOnDelay);
       unsigned long amt = getNumber(menuTimeout);
       if ((amt >= minimumQwiicPowerOnDelay) && (amt <= 60000))
         settings.qwiicBusPowerUpDelayMs = amt;
       else
-        Serial.println(F("Error: Out of range"));
+        SerialPrintln(F("Error: Out of range"));
     }
     else if (incoming == '4')
     {
-      Serial.print(F("Enter the Artemis pull-up resistance (0 = None; 1 = 1.5k; 6 = 6k; 12 = 12k; 24 = 24k): "));
+      SerialPrint(F("Enter the Artemis pull-up resistance (0 = None; 1 = 1.5k; 6 = 6k; 12 = 12k; 24 = 24k): "));
       uint32_t pur = (uint32_t)getNumber(menuTimeout);
       if ((pur == 0) || (pur == 1) || (pur == 6) || (pur == 12) || (pur == 24))
         settings.qwiicBusPullUps = pur;
       else
-        Serial.println(F("Error: Invalid resistance. Possible values are 0,1,6,12,24."));
+        SerialPrintln(F("Error: Invalid resistance. Possible values are 0,1,6,12,24."));
     }
     else if (incoming == 'x')
       break;
@@ -428,10 +449,10 @@ void menuConfigure_Multiplexer(void *configPtr)
 {
   //struct_multiplexer *sensor = (struct_multiplexer*)configPtr;
 
-  Serial.println();
-  Serial.println(F("Menu: Configure Multiplexer"));
+  SerialPrintln(F(""));
+  SerialPrintln(F("Menu: Configure Multiplexer"));
 
-  Serial.println(F("There are currently no configurable options for this device."));
+  SerialPrintln(F("There are currently no configurable options for this device."));
   for (int i = 0; i < 500; i++)
   {
     checkBattery();
@@ -449,39 +470,39 @@ void menuConfigure_VL53L1X(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure VL53L1X Distance Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure VL53L1X Distance Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Distance: "));
-      if (sensorSetting->logDistance == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Distance: "));
+      if (sensorSetting->logDistance == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Range Status: "));
-      if (sensorSetting->logRangeStatus == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Range Status: "));
+      if (sensorSetting->logRangeStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("4) Log Signal Rate: "));
-      if (sensorSetting->logSignalRate == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("4) Log Signal Rate: "));
+      if (sensorSetting->logSignalRate == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("5) Set Distance Mode: "));
+      SerialPrint(F("5) Set Distance Mode: "));
       if (sensorSetting->distanceMode == VL53L1X_DISTANCE_MODE_SHORT)
-        Serial.print(F("Short"));
+        SerialPrint(F("Short"));
       else
-        Serial.print(F("Long"));
-      Serial.println();
+        SerialPrint(F("Long"));
+      SerialPrintln(F(""));
 
-      Serial.printf("6) Set Intermeasurement Period: %d ms\r\n", sensorSetting->intermeasurementPeriod);
-      Serial.printf("7) Set Offset: %d mm\r\n", sensorSetting->offset);
-      Serial.printf("8) Set Cross Talk (counts per second): %d cps\r\n", sensorSetting->crosstalk);
+      SerialPrintf2("6) Set Intermeasurement Period: %d ms\r\n", sensorSetting->intermeasurementPeriod);
+      SerialPrintf2("7) Set Offset: %d mm\r\n", sensorSetting->offset);
+      SerialPrintf2("8) Set Cross Talk (counts per second): %d cps\r\n", sensorSetting->crosstalk);
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -506,7 +527,7 @@ void menuConfigure_VL53L1X(void *configPtr)
         if (sensorSetting->distanceMode == VL53L1X_DISTANCE_MODE_LONG && sensorSetting->intermeasurementPeriod < 140)
         {
           sensorSetting->intermeasurementPeriod = 140;
-          Serial.println(F("Intermeasurement Period increased to 140ms"));
+          SerialPrintln(F("Intermeasurement Period increased to 140ms"));
         }
       }
       else if (incoming == '6')
@@ -516,28 +537,28 @@ void menuConfigure_VL53L1X(void *configPtr)
           min = 140;
 
 
-        Serial.printf("Set timing budget (%d to 1000ms): ", min);
+        SerialPrintf2("Set timing budget (%d to 1000ms): ", min);
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < min || amt > 1000)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->intermeasurementPeriod = amt;
       }
       else if (incoming == '7')
       {
-        Serial.print(F("Set Offset in mm (0 to 4000mm): "));
+        SerialPrint(F("Set Offset in mm (0 to 4000mm): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 0 || amt > 4000)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->offset = amt;
       }
       else if (incoming == '8')
       {
-        Serial.print(F("Set Crosstalk in Counts Per Second: "));
+        SerialPrint(F("Set Crosstalk in Counts Per Second: "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 0 || amt > 4000)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->crosstalk = amt;
       }
@@ -564,32 +585,32 @@ void menuConfigure_BME280(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure BME280 Pressure/Humidity/Temperature Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure BME280 Pressure/Humidity/Temperature Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Pressure: "));
-      if (sensorSetting->logPressure == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Humidity: "));
-      if (sensorSetting->logHumidity == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Humidity: "));
+      if (sensorSetting->logHumidity == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("4) Log Altitude: "));
-      if (sensorSetting->logAltitude == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("4) Log Altitude: "));
+      if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("5) Log Temperature: "));
-      if (sensorSetting->logTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("5) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -627,24 +648,24 @@ void menuConfigure_CCS811(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure CCS811 tVOC and CO2 Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure CCS811 tVOC and CO2 Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log tVOC: "));
-      if (sensorSetting->logTVOC == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log tVOC: "));
+      if (sensorSetting->logTVOC == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log CO2: "));
-      if (sensorSetting->logCO2 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log CO2: "));
+      if (sensorSetting->logCO2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -677,24 +698,24 @@ void menuConfigure_LPS25HB(void *configPtr)
   struct_LPS25HB *sensorSetting = (struct_LPS25HB*)configPtr;
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure LPS25HB Pressure Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure LPS25HB Pressure Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Pressure: "));
-      if (sensorSetting->logPressure == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Temperature: "));
-      if (sensorSetting->logTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -736,7 +757,7 @@ void menuConfigure_NAU7802(void *configPtr)
   }
   if (temp == NULL)
   {
-    Serial.println(F("NAU7802 node not found. Returning."));
+    SerialPrintln(F("NAU7802 node not found. Returning."));
     for (int i = 0; i < 1000; i++)
     {
       checkBattery();
@@ -750,27 +771,27 @@ void menuConfigure_NAU7802(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure NAU7802 Load Cell Amplifier"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure NAU7802 Load Cell Amplifier"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorConfig->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorConfig->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorConfig->log == true)
     {
-      Serial.println(F("2) Calibrate Scale"));
-      Serial.printf("\tScale calibration factor: %f\r\n", sensorConfig->calibrationFactor);
-      Serial.printf("\tScale zero offset: %d\r\n", sensorConfig->zeroOffset);
-      Serial.printf("\tWeight currently on scale: %f\r\n", sensor->getWeight());
+      SerialPrintln(F("2) Calibrate Scale"));
+      SerialPrintf2("\tScale calibration factor: %f\r\n", sensorConfig->calibrationFactor);
+      SerialPrintf2("\tScale zero offset: %d\r\n", sensorConfig->zeroOffset);
+      SerialPrintf2("\tWeight currently on scale: %f\r\n", sensor->getWeight());
 
-      Serial.printf("3) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
-      Serial.printf("4) Average number of readings to take per weight read: %d\r\n", sensorConfig->averageAmount);
+      SerialPrintf2("3) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
+      SerialPrintf2("4) Average number of readings to take per weight read: %d\r\n", sensorConfig->averageAmount);
     }
 
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
-    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+    byte incoming = getByteChoice(menuTimeout, true); //Timeout after x seconds and set DSERIAL & ZSERIAL
 
     if (incoming == '1')
     {
@@ -781,38 +802,40 @@ void menuConfigure_NAU7802(void *configPtr)
       if (incoming == '2')
       {
         //Gives user the ability to set a known weight on the scale and calculate a calibration factor
-        Serial.println();
-        Serial.println(F("Scale calibration"));
+        SerialPrintln(F(""));
+        SerialPrintln(F("Scale calibration"));
 
-        Serial.println(F("Setup scale with no weight on it. Press a key when ready."));
+        SerialPrintln(F("Setup scale with no weight on it. Press a key when ready."));
         waitForInput();
 
         sensor->calculateZeroOffset(64); //Zero or Tare the scale. Average over 64 readings.
-        Serial.print(F("New zero offset: "));
+        SerialPrint(F("New zero offset: "));
         Serial.println(sensor->getZeroOffset());
+        if (settings.useTxRxPinsForTerminal == true)
+          SerialLog.println(sensor->getZeroOffset());
 
-        Serial.println(F("Place known weight on scale. Press a key when weight is in place and stable."));
+        SerialPrintln(F("Place known weight on scale. Press a key when weight is in place and stable."));
         waitForInput();
 
-        Serial.print(F("Please enter the weight, without units, currently sitting on the scale (for example '4.25'): "));
+        SerialPrint(F("Please enter the weight, without units, currently sitting on the scale (for example '4.25'): "));
         waitForInput();
 
         //Read user input
-        float weightOnScale = Serial.parseFloat();
+        float weightOnScale = DSERIAL->parseFloat();
         sensor->calculateCalibrationFactor(weightOnScale, 64); //Tell the library how much weight is currently on it. Average over 64 readings.
 
         sensorConfig->calibrationFactor = sensor->getCalibrationFactor();
         sensorConfig->zeroOffset = sensor->getZeroOffset();
 
-        Serial.println();
+        SerialPrintln(F(""));
       }
       else if (incoming == '3')
       {
-        Serial.print(F("Enter number of decimal places to print (1 to 10): "));
+        SerialPrint(F("Enter number of decimal places to print (1 to 10): "));
         int places = getNumber(menuTimeout);
         if (places < 1 || places > 10)
         {
-          Serial.println(F("Error: Decimal places out of range"));
+          SerialPrintln(F("Error: Decimal places out of range"));
         }
         else
         {
@@ -821,11 +844,11 @@ void menuConfigure_NAU7802(void *configPtr)
       }
       else if (incoming == '4')
       {
-        Serial.print(F("Enter number of readings to take per weight read (1 to 10): "));
+        SerialPrint(F("Enter number of readings to take per weight read (1 to 10): "));
         int amt = getNumber(menuTimeout);
         if (amt < 1 || amt > 10)
         {
-          Serial.println(F("Error: Average number of readings out of range"));
+          SerialPrintln(F("Error: Average number of readings out of range"));
         }
         else
         {
@@ -854,72 +877,72 @@ void menuConfigure_uBlox(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure uBlox GPS Receiver"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure uBlox GPS Receiver"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log GPS Date: "));
-      if (sensorSetting->logDate == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log GPS Date: "));
+      if (sensorSetting->logDate == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log GPS Time: "));
-      if (sensorSetting->logTime == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log GPS Time: "));
+      if (sensorSetting->logTime == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("4) Log Longitude/Latitude: "));
-      if (sensorSetting->logPosition == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("4) Log Longitude/Latitude: "));
+      if (sensorSetting->logPosition == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("5) Log Altitude: "));
-      if (sensorSetting->logAltitude == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("5) Log Altitude: "));
+      if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("6) Log Altitude Mean Sea Level: "));
-      if (sensorSetting->logAltitudeMSL == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("6) Log Altitude Mean Sea Level: "));
+      if (sensorSetting->logAltitudeMSL == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("7) Log Satellites In View: "));
-      if (sensorSetting->logSIV == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("7) Log Satellites In View: "));
+      if (sensorSetting->logSIV == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("8) Log Fix Type: "));
-      if (sensorSetting->logFixType == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("8) Log Fix Type: "));
+      if (sensorSetting->logFixType == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("9) Log Carrier Solution: "));
-      if (sensorSetting->logCarrierSolution == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("9) Log Carrier Solution: "));
+      if (sensorSetting->logCarrierSolution == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("10) Log Ground Speed: "));
-      if (sensorSetting->logGroundSpeed == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("10) Log Ground Speed: "));
+      if (sensorSetting->logGroundSpeed == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("11) Log Heading of Motion: "));
-      if (sensorSetting->logHeadingOfMotion == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("11) Log Heading of Motion: "));
+      if (sensorSetting->logHeadingOfMotion == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("12) Log Position Dilution of Precision (pDOP): "));
-      if (sensorSetting->logpDOP == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("12) Log Position Dilution of Precision (pDOP): "));
+      if (sensorSetting->logpDOP == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("13) Log Interval Time Of Week (iTOW): "));
-      if (sensorSetting->logiTOW == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("13) Log Interval Time Of Week (iTOW): "));
+      if (sensorSetting->logiTOW == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.printf("14) Set I2C Interface Speed (u-blox modules have pullups built in. Remove *all* I2C pullups to achieve 400kHz): %d\r\n", sensorSetting->i2cSpeed);
+      SerialPrintf2("14) Set I2C Interface Speed (u-blox modules have pullups built in. Remove *all* I2C pullups to achieve 400kHz): %d\r\n", sensorSetting->i2cSpeed);
 
-      Serial.print(F("15) Use autoPVT: "));
-      if (sensorSetting->useAutoPVT == true) Serial.println(F("Yes"));
-      else Serial.println(F("No"));
+      SerialPrint(F("15) Use autoPVT: "));
+      if (sensorSetting->useAutoPVT == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
 
-      Serial.flush();
+      SerialFlush();
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after 10 seconds
 
@@ -1010,7 +1033,7 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
         {
           qwiic.setPullups(0); //Disable pullups to minimize CRC issues
 
-          SFE_UBLOX_GPS *nodeDevice = (SFE_UBLOX_GPS *)temp->classPtr;
+          SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
           //Get latested date/time from GPS
@@ -1037,24 +1060,24 @@ void menuConfigure_MCP9600(void *configPtr)
   struct_MCP9600 *sensorSetting = (struct_MCP9600*)configPtr;
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure MCP9600 Thermocouple Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MCP9600 Thermocouple Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Thermocouple Temperature: "));
-      if (sensorSetting->logTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Thermocouple Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Ambient Temperature: "));
-      if (sensorSetting->logAmbientTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Ambient Temperature: "));
+      if (sensorSetting->logAmbientTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1088,30 +1111,30 @@ void menuConfigure_VCNL4040(void *configPtr)
   struct_VCNL4040 *sensorSetting = (struct_VCNL4040*)configPtr;
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure VCNL4040 Proximity Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure VCNL4040 Proximity Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Proximity: "));
-      if (sensorSetting->logProximity == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Proximity: "));
+      if (sensorSetting->logProximity == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Ambient Light: "));
-      if (sensorSetting->logAmbientLight == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Ambient Light: "));
+      if (sensorSetting->logAmbientLight == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.printf("4) Set LED Current: %d\r\n", sensorSetting->LEDCurrent);
-      Serial.printf("5) Set IR Duty Cycle: %d\r\n", sensorSetting->IRDutyCycle);
-      Serial.printf("6) Set Proximity Integration Time: %d\r\n", sensorSetting->proximityIntegrationTime);
-      Serial.printf("7) Set Ambient Integration Time: %d\r\n", sensorSetting->ambientIntegrationTime);
-      Serial.printf("8) Set Resolution (bits): %d\r\n", sensorSetting->resolution);
+      SerialPrintf2("4) Set LED Current: %d\r\n", sensorSetting->LEDCurrent);
+      SerialPrintf2("5) Set IR Duty Cycle: %d\r\n", sensorSetting->IRDutyCycle);
+      SerialPrintf2("6) Set Proximity Integration Time: %d\r\n", sensorSetting->proximityIntegrationTime);
+      SerialPrintf2("7) Set Ambient Integration Time: %d\r\n", sensorSetting->ambientIntegrationTime);
+      SerialPrintf2("8) Set Resolution (bits): %d\r\n", sensorSetting->resolution);
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1125,48 +1148,48 @@ void menuConfigure_VCNL4040(void *configPtr)
         sensorSetting->logAmbientLight ^= 1;
       else if (incoming == '4')
       {
-        Serial.print(F("Enter current (mA) for IR LED drive (50 to 200mA): "));
+        SerialPrint(F("Enter current (mA) for IR LED drive (50 to 200mA): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 50 || amt > 200)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->LEDCurrent = amt;
       }
       else if (incoming == '5')
       {
-        Serial.print(F("Enter IR Duty Cycle (40 to 320): "));
+        SerialPrint(F("Enter IR Duty Cycle (40 to 320): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 40 || amt > 320)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->IRDutyCycle = amt;
       }
       else if (incoming == '6')
       {
-        Serial.print(F("Enter Proximity Integration Time (1 to 8): "));
+        SerialPrint(F("Enter Proximity Integration Time (1 to 8): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 1 || amt > 8)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->proximityIntegrationTime = amt;
       }
       else if (incoming == '7')
       {
-        Serial.print(F("Enter Ambient Light Integration Time (80 to 640ms): "));
+        SerialPrint(F("Enter Ambient Light Integration Time (80 to 640ms): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 80 || amt > 640)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->ambientIntegrationTime = amt;
       }
       else if (incoming == '8')
       {
-        Serial.print(F("Enter Proximity Resolution (12 or 16 bit): "));
+        SerialPrint(F("Enter Proximity Resolution (12 or 16 bit): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt == 12 || amt == 16)
           sensorSetting->resolution = amt;
         else
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
       }
       else if (incoming == 'x')
         break;
@@ -1190,14 +1213,14 @@ void menuConfigure_TMP117(void *configPtr)
   struct_TMP117 *sensorSetting = (struct_TMP117*)configPtr;
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure TMP117 Precision Temperature Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure TMP117 Precision Temperature Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1219,32 +1242,32 @@ void menuConfigure_SGP30(void *configPtr)
   struct_SGP30 *sensorSetting = (struct_SGP30*)configPtr;
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure SGP30 tVOC and CO2 Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure SGP30 tVOC and CO2 Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log tVOC: "));
-      if (sensorSetting->logTVOC == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log tVOC: "));
+      if (sensorSetting->logTVOC == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log CO2: "));
-      if (sensorSetting->logCO2 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log CO2: "));
+      if (sensorSetting->logCO2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("4) Log H2: "));
-      if (sensorSetting->logH2 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("4) Log H2: "));
+      if (sensorSetting->logH2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("5) Log Ethanol: "));
-      if (sensorSetting->logEthanol == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("5) Log Ethanol: "));
+      if (sensorSetting->logEthanol == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1281,28 +1304,28 @@ void menuConfigure_VEML6075(void *configPtr)
   struct_VEML6075 *sensorSetting = (struct_VEML6075*)configPtr;
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure VEML6075 UV Index Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure VEML6075 UV Index Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log UVA: "));
-      if (sensorSetting->logUVA == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log UVA: "));
+      if (sensorSetting->logUVA == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log UVB: "));
-      if (sensorSetting->logUVB == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log UVB: "));
+      if (sensorSetting->logUVB == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("4) Log UV Index: "));
-      if (sensorSetting->logUVIndex == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("4) Log UV Index: "));
+      if (sensorSetting->logUVIndex == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1339,24 +1362,24 @@ void menuConfigure_MS5637(void *configPtr)
   struct_MS5637 *sensorSetting = (struct_MS5637*)configPtr;
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure MS5637 Pressure Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MS5637 Pressure Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Pressure: "));
-      if (sensorSetting->logPressure == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Temperature: "));
-      if (sensorSetting->logTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1399,7 +1422,7 @@ void menuConfigure_SCD30(void *configPtr)
   }
   if (temp == NULL)
   {
-    Serial.println(F("SCD30 node not found. Returning."));
+    SerialPrintln(F("SCD30 node not found. Returning."));
     for (int i = 0; i < 1000; i++)
     {
       checkBattery();
@@ -1413,33 +1436,33 @@ void menuConfigure_SCD30(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure SCD30 CO2 and Humidity Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure SCD30 CO2 and Humidity Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log CO2: "));
-      if (sensorSetting->logCO2 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log CO2: "));
+      if (sensorSetting->logCO2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Humidity: "));
-      if (sensorSetting->logHumidity == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Humidity: "));
+      if (sensorSetting->logHumidity == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("4) Log Temperature: "));
-      if (sensorSetting->logTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("4) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.printf("5) Set Measurement Interval: %d\r\n", sensorSetting->measurementInterval);
-      Serial.printf("6) Set Altitude Compensation: %d\r\n", sensorSetting->altitudeCompensation);
-      Serial.printf("7) Set Ambient Pressure: %d\r\n", sensorSetting->ambientPressure);
-      Serial.printf("8) Set Temperature Offset: %d\r\n", sensorSetting->temperatureOffset);
+      SerialPrintf2("5) Set Measurement Interval: %d\r\n", sensorSetting->measurementInterval);
+      SerialPrintf2("6) Set Altitude Compensation: %d\r\n", sensorSetting->altitudeCompensation);
+      SerialPrintf2("7) Set Ambient Pressure: %d\r\n", sensorSetting->ambientPressure);
+      SerialPrintf2("8) Set Temperature Offset: %d\r\n", sensorSetting->temperatureOffset);
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1455,42 +1478,44 @@ void menuConfigure_SCD30(void *configPtr)
         sensorSetting->logTemperature ^= 1;
       else if (incoming == '5')
       {
-        Serial.print(F("Enter the seconds between measurements (2 to 1800): "));
+        SerialPrint(F("Enter the seconds between measurements (2 to 1800): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 2 || amt > 1800)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->measurementInterval = amt;
       }
       else if (incoming == '6')
       {
-        Serial.print(F("Enter the Altitude Compensation in meters (0 to 10000): "));
+        SerialPrint(F("Enter the Altitude Compensation in meters (0 to 10000): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 0 || amt > 10000)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->altitudeCompensation = amt;
       }
       else if (incoming == '7')
       {
-        Serial.print(F("Enter Ambient Pressure in mBar (700 to 1200): "));
+        SerialPrint(F("Enter Ambient Pressure in mBar (700 to 1200): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < 700 || amt > 1200)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->ambientPressure = amt;
       }
       else if (incoming == '8')
       {
-        Serial.print(F("The current temperature offset read from the sensor is: "));
+        SerialPrint(F("The current temperature offset read from the sensor is: "));
         Serial.print(sensor->getTemperatureOffset(), 2);
-        Serial.println(F("C"));
-        Serial.print(F("Enter new temperature offset in C (-50 to 50): "));
+        if (settings.useTxRxPinsForTerminal == true)
+          SerialLog.print(sensor->getTemperatureOffset(), 2);
+        SerialPrintln(F("C"));
+        SerialPrint(F("Enter new temperature offset in C (-50 to 50): "));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt < -50 || amt > 50)
           sensorSetting->temperatureOffset = amt;
         else
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
       }
       else if (incoming == 'x')
         break;
@@ -1515,58 +1540,58 @@ void menuConfigure_MS8607(void *configPtr)
   struct_MS8607 *sensorSetting = (struct_MS8607*)configPtr;
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure MS8607 Pressure Humidity Temperature (PHT) Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MS8607 Pressure Humidity Temperature (PHT) Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Pressure: "));
-      if (sensorSetting->logPressure == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Humidity: "));
-      if (sensorSetting->logHumidity == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Humidity: "));
+      if (sensorSetting->logHumidity == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("4) Log Temperature: "));
-      if (sensorSetting->logTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("4) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("5) Heater: "));
-      if (sensorSetting->enableHeater == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("5) Heater: "));
+      if (sensorSetting->enableHeater == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("6) Set Pressure Resolution: "));
+      SerialPrint(F("6) Set Pressure Resolution: "));
       if (sensorSetting->pressureResolution == MS8607_pressure_resolution_osr_256)
-        Serial.print(F("0.11"));
+        SerialPrint(F("0.11"));
       else if (sensorSetting->pressureResolution == MS8607_pressure_resolution_osr_512)
-        Serial.print(F("0.062"));
+        SerialPrint(F("0.062"));
       else if (sensorSetting->pressureResolution == MS8607_pressure_resolution_osr_1024)
-        Serial.print(F("0.039"));
+        SerialPrint(F("0.039"));
       else if (sensorSetting->pressureResolution == MS8607_pressure_resolution_osr_2048)
-        Serial.print(F("0.028"));
+        SerialPrint(F("0.028"));
       else if (sensorSetting->pressureResolution == MS8607_pressure_resolution_osr_4096)
-        Serial.print(F("0.021"));
+        SerialPrint(F("0.021"));
       else if (sensorSetting->pressureResolution == MS8607_pressure_resolution_osr_8192)
-        Serial.print(F("0.016"));
-      Serial.println(F(" mbar"));
+        SerialPrint(F("0.016"));
+      SerialPrintln(F(" mbar"));
 
-      Serial.print(F("7) Set Humidity Resolution: "));
+      SerialPrint(F("7) Set Humidity Resolution: "));
       if (sensorSetting->humidityResolution == MS8607_humidity_resolution_8b)
-        Serial.print(F("8"));
+        SerialPrint(F("8"));
       else if (sensorSetting->humidityResolution == MS8607_humidity_resolution_10b)
-        Serial.print(F("10"));
+        SerialPrint(F("10"));
       else if (sensorSetting->humidityResolution == MS8607_humidity_resolution_11b)
-        Serial.print(F("11"));
+        SerialPrint(F("11"));
       else if (sensorSetting->humidityResolution == MS8607_humidity_resolution_12b)
-        Serial.print(F("12"));
-      Serial.println(F(" bits"));
+        SerialPrint(F("12"));
+      SerialPrintln(F(" bits"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1584,26 +1609,26 @@ void menuConfigure_MS8607(void *configPtr)
         sensorSetting->enableHeater ^= 1;
       else if (incoming == '6')
       {
-        Serial.println(F("Set Pressure Resolution:"));
-        Serial.println(F("1) 0.11 mbar"));
-        Serial.println(F("2) 0.062 mbar"));
-        Serial.println(F("3) 0.039 mbar"));
-        Serial.println(F("4) 0.028 mbar"));
-        Serial.println(F("5) 0.021 mbar"));
-        Serial.println(F("6) 0.016 mbar"));
+        SerialPrintln(F("Set Pressure Resolution:"));
+        SerialPrintln(F("1) 0.11 mbar"));
+        SerialPrintln(F("2) 0.062 mbar"));
+        SerialPrintln(F("3) 0.039 mbar"));
+        SerialPrintln(F("4) 0.028 mbar"));
+        SerialPrintln(F("5) 0.021 mbar"));
+        SerialPrintln(F("6) 0.016 mbar"));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt >= 1 && amt <= 6)
           sensorSetting->pressureResolution = (MS8607_pressure_resolution)(amt - 1);
         else
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
       }
       else if (incoming == '7')
       {
-        Serial.println(F("Set Humidity Resolution:"));
-        Serial.println(F("1) 8 bit"));
-        Serial.println(F("2) 10 bit"));
-        Serial.println(F("3) 11 bit"));
-        Serial.println(F("4) 12 bit"));
+        SerialPrintln(F("Set Humidity Resolution:"));
+        SerialPrintln(F("1) 8 bit"));
+        SerialPrintln(F("2) 10 bit"));
+        SerialPrintln(F("3) 11 bit"));
+        SerialPrintln(F("4) 12 bit"));
         int amt = getNumber(menuTimeout); //x second timeout
         if (amt >= 1 && amt <= 4)
         {
@@ -1614,7 +1639,7 @@ void menuConfigure_MS8607(void *configPtr)
           if (amt == 4) sensorSetting->humidityResolution = MS8607_humidity_resolution_12b;
         }
         else
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
       }
       else if (incoming == 'x')
         break;
@@ -1638,24 +1663,24 @@ void menuConfigure_AHT20(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure AHT20 Humidity Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure AHT20 Humidity Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Humidity: "));
-      if (sensorSetting->logHumidity == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Humidity: "));
+      if (sensorSetting->logHumidity == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Temperature: "));
-      if (sensorSetting->logTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1689,24 +1714,24 @@ void menuConfigure_SHTC3(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure SHTC3 Humidity Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure SHTC3 Humidity Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Humidity: "));
-      if (sensorSetting->logHumidity == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Humidity: "));
+      if (sensorSetting->logHumidity == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Temperature: "));
-      if (sensorSetting->logTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
 
@@ -1740,56 +1765,56 @@ void menuConfigure_ADS122C04(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure ADS122C04 ADC (Qwiic PT100)"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure ADS122C04 ADC (Qwiic PT100)"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Centigrade: "));
-      if (sensorSetting->logCentigrade == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Centigrade: "));
+      if (sensorSetting->logCentigrade == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Fahrenheit: "));
-      if (sensorSetting->logFahrenheit == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Fahrenheit: "));
+      if (sensorSetting->logFahrenheit == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("4) Log Internal Temperature: "));
-      if (sensorSetting->logInternalTemperature == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("4) Log Internal Temperature: "));
+      if (sensorSetting->logInternalTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("5) Log Raw Voltage: "));
-      if (sensorSetting->logRawVoltage == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("5) Log Raw Voltage: "));
+      if (sensorSetting->logRawVoltage == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("6) Use 4-Wire Mode: "));
-      if (sensorSetting->useFourWireMode == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("6) Use 4-Wire Mode: "));
+      if (sensorSetting->useFourWireMode == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("7) Use 3-Wire Mode: "));
-      if (sensorSetting->useThreeWireMode == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("7) Use 3-Wire Mode: "));
+      if (sensorSetting->useThreeWireMode == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("8) Use 2-Wire Mode: "));
-      if (sensorSetting->useTwoWireMode == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("8) Use 2-Wire Mode: "));
+      if (sensorSetting->useTwoWireMode == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("9) Use 4-Wire High Temperature Mode: "));
-      if (sensorSetting->useFourWireHighTemperatureMode == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("9) Use 4-Wire High Temperature Mode: "));
+      if (sensorSetting->useFourWireHighTemperatureMode == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("10) Use 3-Wire High Temperature Mode: "));
-      if (sensorSetting->useThreeWireHighTemperatureMode == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("10) Use 3-Wire High Temperature Mode: "));
+      if (sensorSetting->useThreeWireHighTemperatureMode == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("11) Use 2-Wire High Temperature Mode: "));
-      if (sensorSetting->useTwoWireHighTemperatureMode == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("11) Use 2-Wire High Temperature Mode: "));
+      if (sensorSetting->useTwoWireHighTemperatureMode == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
 
@@ -1881,49 +1906,49 @@ void menuConfigure_MPR0025PA1(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure MPR MicroPressure Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MPR MicroPressure Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.printf("2) Minimum PSI: %d\r\n", sensorSetting->minimumPSI);
+      SerialPrintf2("2) Minimum PSI: %d\r\n", sensorSetting->minimumPSI);
 
-      Serial.printf("3) Maximum PSI: %d\r\n", sensorSetting->maximumPSI);
+      SerialPrintf2("3) Maximum PSI: %d\r\n", sensorSetting->maximumPSI);
 
-      Serial.print(F("4) Use PSI: "));
-      if (sensorSetting->usePSI == true) Serial.println(F("Yes"));
-      else Serial.println(F("No"));
+      SerialPrint(F("4) Use PSI: "));
+      if (sensorSetting->usePSI == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
 
-      Serial.print(F("5) Use Pa: "));
-      if (sensorSetting->usePA == true) Serial.println(F("Yes"));
-      else Serial.println(F("No"));
+      SerialPrint(F("5) Use Pa: "));
+      if (sensorSetting->usePA == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
 
-      Serial.print(F("6) Use kPa: "));
-      if (sensorSetting->useKPA == true) Serial.println(F("Yes"));
-      else Serial.println(F("No"));
+      SerialPrint(F("6) Use kPa: "));
+      if (sensorSetting->useKPA == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
 
-      Serial.print(F("7) Use torr: "));
-      if (sensorSetting->useTORR == true) Serial.println(F("Yes"));
-      else Serial.println(F("No"));
+      SerialPrint(F("7) Use torr: "));
+      if (sensorSetting->useTORR == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
 
-      Serial.print(F("8) Use inHg: "));
-      if (sensorSetting->useINHG == true) Serial.println(F("Yes"));
-      else Serial.println(F("No"));
+      SerialPrint(F("8) Use inHg: "));
+      if (sensorSetting->useINHG == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
 
-      Serial.print(F("9) Use atm: "));
-      if (sensorSetting->useATM == true) Serial.println(F("Yes"));
-      else Serial.println(F("No"));
+      SerialPrint(F("9) Use atm: "));
+      if (sensorSetting->useATM == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
 
-      Serial.print(F("10) Use bar: "));
-      if (sensorSetting->useBAR == true) Serial.println(F("Yes"));
-      else Serial.println(F("No"));
+      SerialPrint(F("10) Use bar: "));
+      if (sensorSetting->useBAR == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
 
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
 
@@ -1933,19 +1958,19 @@ void menuConfigure_MPR0025PA1(void *configPtr)
     {
       if (incoming == 2)
       {
-        Serial.print(F("Enter the sensor minimum pressure in PSI (this should be 0 for the MPR0025PA): "));
+        SerialPrint(F("Enter the sensor minimum pressure in PSI (this should be 0 for the MPR0025PA): "));
         int minPSI = getNumber(menuTimeout); //x second timeout
         if (minPSI < 0 || minPSI > 30)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->minimumPSI = minPSI;
       }
       else if (incoming == 3)
       {
-        Serial.print(F("Enter the sensor maximum pressure in PSI (this should be 25 for the MPR0025PA): "));
+        SerialPrint(F("Enter the sensor maximum pressure in PSI (this should be 25 for the MPR0025PA): "));
         int maxPSI = getNumber(menuTimeout); //x second timeout
         if (maxPSI < 0 || maxPSI > 30)
-          Serial.println(F("Error: Out of range"));
+          SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->maximumPSI = maxPSI;
       }
@@ -2041,68 +2066,68 @@ void menuConfigure_SNGCJA5(void *configPtr)
 
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Configure SNGCJA5 Particle Sensor"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure SNGCJA5 Particle Sensor"));
 
-    Serial.print(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) Serial.println(F("Enabled"));
-    else Serial.println(F("Disabled"));
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     if (sensorSetting->log == true)
     {
-      Serial.print(F("2) Log Particle Mass Density 1.0um (ug/m^3): "));
-      if (sensorSetting->logPM1 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("2) Log Particle Mass Density 1.0um (ug/m^3): "));
+      if (sensorSetting->logPM1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("3) Log Particle Mass Density 2.5um (ug/m^3): "));
-      if (sensorSetting->logPM25 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("3) Log Particle Mass Density 2.5um (ug/m^3): "));
+      if (sensorSetting->logPM25 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("4) Log Particle Mass Density 10.0um (ug/m^3): "));
-      if (sensorSetting->logPM10 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("4) Log Particle Mass Density 10.0um (ug/m^3): "));
+      if (sensorSetting->logPM10 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("5) Log Particle Count 0.5um: "));
-      if (sensorSetting->logPC05 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("5) Log Particle Count 0.5um: "));
+      if (sensorSetting->logPC05 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("6) Log Particle Count 1.0um: "));
-      if (sensorSetting->logPC1 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("6) Log Particle Count 1.0um: "));
+      if (sensorSetting->logPC1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("7) Log Particle Count 2.5um: "));
-      if (sensorSetting->logPC25 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("7) Log Particle Count 2.5um: "));
+      if (sensorSetting->logPC25 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("8) Log Particle Count 5.0um: "));
-      if (sensorSetting->logPC50 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("8) Log Particle Count 5.0um: "));
+      if (sensorSetting->logPC50 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("9) Log Particle Count 7.5um: "));
-      if (sensorSetting->logPC75 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("9) Log Particle Count 7.5um: "));
+      if (sensorSetting->logPC75 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("10) Log Particle Count 10.0um: "));
-      if (sensorSetting->logPC10 == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("10) Log Particle Count 10.0um: "));
+      if (sensorSetting->logPC10 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("11) Log Combined Sensor Status: "));
-      if (sensorSetting->logSensorStatus == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("11) Log Combined Sensor Status: "));
+      if (sensorSetting->logSensorStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("12) Log PhotoDiode Status: "));
-      if (sensorSetting->logPDStatus == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("12) Log PhotoDiode Status: "));
+      if (sensorSetting->logPDStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("13) Log LaserDiode Status: "));
-      if (sensorSetting->logLDStatus == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("13) Log LaserDiode Status: "));
+      if (sensorSetting->logLDStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
 
-      Serial.print(F("14) Log Fan Status: "));
-      if (sensorSetting->logFanStatus == true) Serial.println(F("Enabled"));
-      else Serial.println(F("Disabled"));
+      SerialPrint(F("14) Log Fan Status: "));
+      if (sensorSetting->logFanStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
-    Serial.println(F("x) Exit"));
+    SerialPrintln(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
 
@@ -2136,6 +2161,219 @@ void menuConfigure_SNGCJA5(void *configPtr)
         sensorSetting->logLDStatus ^= 1;
       else if (incoming == 14)
         sensorSetting->logFanStatus ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_SGP40(void *configPtr)
+{
+  struct_SGP40 *sensorSetting = (struct_SGP40*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure SGP40 VOC Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log VOC: "));
+      if (sensorSetting->logVOC == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrintf2("3) Sensor Compensation: Relative Humidity (%): %d\r\n", sensorSetting->RH);
+  
+      SerialPrintf2("4) Sensor Compensation: Temperature (C): %d\r\n", sensorSetting->T);
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logVOC ^= 1;
+      else if (incoming == 3)
+      {
+        SerialPrint(F("Enter the %RH for sensor compensation (0 to 100): "));
+        int RH = getNumber(menuTimeout); //x second timeout
+        if (RH < 0 || RH > 100)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->RH = RH;
+      }
+      else if (incoming == 4)
+      {
+        SerialPrint(F("Enter the temperature (C) for sensor compensation (-45 to 130): "));
+        int T = getNumber(menuTimeout); //x second timeout
+        if (T < -45 || T > 130)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->T = T;
+      }
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_SDP3X(void *configPtr)
+{
+  struct_SDP3X *sensorSetting = (struct_SDP3X*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure SDP3X Differential Pressure Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Temperature Compensation: "));
+      if (sensorSetting->massFlow == true) SerialPrintln(F("Mass Flow"));
+      else SerialPrintln(F("Differential Pressure"));
+  
+      SerialPrint(F("5) Use Clock Stretching: "));
+      if (sensorSetting->clockStretching == true) SerialPrintln(F("Yes"));
+      else SerialPrintln(F("No"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logPressure ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logTemperature ^= 1;
+      else if (incoming == 4)
+        sensorSetting->massFlow ^= 1;
+      else if (incoming == 5)
+        sensorSetting->clockStretching ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_MS5837(void *configPtr)
+{
+  struct_MS5837 *sensorSetting = (struct_MS5837*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MS5837 Pressure Sensor"));
+
+    SerialPrint(F("Sensor Model: "));
+    if (sensorSetting->model == true) SerialPrintln(F("MS5837-02BA / BlueRobotics Bar02: 2 Bar Absolute / 10m Depth"));
+    else SerialPrintln(F("MS5837-30BA / BlueRobotics Bar30: 30 Bar Absolute / 300m Depth"));
+      
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Log Depth: "));
+      if (sensorSetting->logDepth == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+  
+      SerialPrint(F("5) Log Altitude: "));
+      if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrintf2("6) Fluid Density (kg/m^3): %f\r\n", sensorSetting->fluidDensity);
+  
+      SerialPrintf2("7) Pressure Conversion Factor: %.02f\r\n", sensorSetting->conversion);
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logPressure ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logTemperature ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logDepth ^= 1;
+      else if (incoming == 5)
+        sensorSetting->logAltitude ^= 1;
+      else if (incoming == 6)
+      {
+        SerialPrint(F("Enter the Fluid Density (kg/m^3): "));
+        double FD = getDouble(menuTimeout); //x second timeout
+        sensorSetting->fluidDensity = (float)FD;
+      }        
+      else if (incoming == 7)
+      {
+        SerialPrint(F("Enter the Pressure Conversion Factor: "));
+        double PCF = getDouble(menuTimeout); //x second timeout
+        sensorSetting->conversion = (float)PCF;
+      }        
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

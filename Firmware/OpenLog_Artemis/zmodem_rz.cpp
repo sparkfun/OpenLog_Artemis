@@ -27,14 +27,14 @@
  *  Professional-YAM, PowerCom, YAM, IMP, or programs supporting XMODEM.
  *  rz uses Unix buffered input to reduce wasted CPU time.
  *
- * Iff the program is invoked by rzCOMMAND, output is piped to 
+ * Iff the program is invoked by rzCOMMAND, output is piped to
  * "COMMAND filename"  (Unix only)
  *
  *  Some systems (Venix, Coherent, Regulus) may not support tty raw mode
  *  read(2) the same way as Unix. ONEREAD must be defined to force one
  *  character reads for these systems. Added 7-01-84 CAF
  *
- *  Alarm signal handling changed to work with 4.2 BSD 7-15-84 CAF 
+ *  Alarm signal handling changed to work with 4.2 BSD 7-15-84 CAF
  *
  *  BIX added 6-30-87 to support BIX(TM) upload protocol used by the
  *  Byte Information Exchange.
@@ -61,8 +61,6 @@
 #ifdef ARDUINO_SMALL_MEMORY_INCLUDE_RZ
 
 #include <stdio.h>
-
-#define xsendline(c) sendline(c)
 
 #include "zmodem.h"
 #include "zmodem_zm.h"
@@ -222,7 +220,7 @@ void bibi(int n)
 {
   if (Zmodem)
     zmputs(Attn);
-  canit(); 
+  canit();
   mode(0);
   fprintf(stderr, "rz: caught signal %d; exiting\n", n);
   cucheck();
@@ -265,47 +263,47 @@ int wcreceive(int argc, char **argp)
         return OK;
       }
       if (c == ERROR) {
-//DSERIAL.println(F("fubar 1"));
+//DSERIAL->println(F("fubar 1"));
         goto fubar;
       }
       c = rzfiles();
       if (c) {
-//DSERIAL.println(F("fubar 2"));
+//DSERIAL->println(F("fubar 2"));
         goto fubar;
       }
-    } 
+    }
     else {
       for (;;) {
         if (wcrxpn(secbuf)== ERROR) {
-//DSERIAL.println(F("fubar 3"));
+//DSERIAL->println(F("fubar 3"));
           goto fubar;
         }
         if (secbuf[0]==0)
           return OK;
         if (procheader(secbuf) == ERROR) {
-//DSERIAL.println(F("fubar 4"));
+//DSERIAL->println(F("fubar 4"));
           goto fubar;
         }
         if (wcrx()==ERROR) {
-//DSERIAL.println(F("fubar 5"));          
+//DSERIAL->println(F("fubar 5"));
           goto fubar;
         }
       }
     }
-  } 
+  }
   else {
-    Bytesleft = DEFBYTL; 
-    //Filemode = 0; 
+    Bytesleft = DEFBYTL;
+    //Filemode = 0;
     //Modtime = 0L;
 
-    procheader(""); 
-    strcpy(Pathname, *argp); 
+    procheader("");
+    strcpy(Pathname, *argp);
 //    if (checkpath(Pathname)) {
 //      canit();
 //      return ERROR;
 //    }
-//DSERIAL.print("rz: ready to receive ");
-//DSERIAL.println(Pathname);
+//DSERIAL->print("rz: ready to receive ");
+//DSERIAL->println(Pathname);
 #ifndef ARDUINO
     if ((fout=fopen(Pathname, "w")) == NULL)
 #else
@@ -313,9 +311,9 @@ int wcreceive(int argc, char **argp)
 #endif
       return ERROR;
     rxbytes = fout.fileSize();
-    
+
     if (wcrx()==ERROR) {
-DSERIAL.println(F("fubar 6"));
+//DSERIAL->println(F("fubar 6"));
       goto fubar;
     }
   }
@@ -326,7 +324,7 @@ fubar:
 #ifndef ARDUINO
 #ifndef vax11c
   if (Topipe && fout) {
-    pclose(fout);  
+    pclose(fout);
     return ERROR;
   }
 #endif
@@ -364,7 +362,7 @@ int wcrxpn(char *rpn)
 #endif
 
 et_tu:
-  Firstsec=TRUE;  
+  Firstsec=TRUE;
   Eofseen=FALSE;
   sendline(Crcflg?WANTCRC:NAK);
   Lleft=0;        /* Do read next time ... */
@@ -378,7 +376,7 @@ et_tu:
     }
     return ERROR;
 
-  
+
   }
   sendline(ACK);
   return OK;
@@ -396,7 +394,7 @@ int wcrx()
   int cblklen;                    /* bytes to dump this block */
 
   Firstsec=TRUE;
-  sectnum=0; 
+  sectnum=0;
   Eofseen=FALSE;
   sendchar=Crcflg?WANTCRC:NAK;
 
@@ -454,7 +452,7 @@ int wcgetsec(char *rxbuf,int maxtime)
   for (Lastrx=errors=0; errors<Rx_RETRYMAX; errors++) {
 
     if ((firstch=readline(maxtime))==STX) {
-      Blklen=1024; 
+      Blklen=1024;
       goto get2;
     }
     if (firstch==SOH) {
@@ -465,21 +463,21 @@ get2:
         oldcrc=checksum=0;
         for (p=rxbuf,wcj=Blklen; --wcj>=0; ) {
           if ((firstch=readline(1)) < 0) {
-//DSERIAL.println(F("bilge 1"));
+//DSERIAL->println(F("bilge 1"));
             goto bilge;
           }
           oldcrc=updcrc(firstch, oldcrc);
           checksum += (*p++ = firstch);
         }
         if ((firstch=readline(1)) < 0) {
-//DSERIAL.println(F("bilge 2"));
+//DSERIAL->println(F("bilge 2"));
 
           goto bilge;
         }
         if (Crcflg) {
           oldcrc=updcrc(firstch, oldcrc);
           if ((firstch=readline(1)) < 0) {
-//DSERIAL.println(F("bilge 3"));
+//DSERIAL->println(F("bilge 3"));
 
             goto bilge;
           }
@@ -513,7 +511,7 @@ get2:
       if (Lastrx==CAN) {
         zperr( "Sender CANcelled");
         return ERROR;
-      } 
+      }
       else {
         Lastrx=CAN;
         continue;
@@ -535,9 +533,9 @@ humbug:
     if (Firstsec) {
       sendline(Crcflg?WANTCRC:NAK);
       Lleft=0;        /* Do read next time ... */
-    } 
+    }
     else {
-      maxtime=40; 
+      maxtime=40;
       sendline(NAK);
       Lleft=0;        /* Do read next time ... */
     }
@@ -578,7 +576,7 @@ int procheader(char *name)
   /* Check for existing file */
 #ifndef ARDUINO
   if (!Rxclob && (zmanag&ZMMASK) != ZMCLOB && (fout=fopen(name, "r"))) {
-    fclose(fout);  
+    fclose(fout);
     return ERROR;
   }
 #else
@@ -588,8 +586,8 @@ int procheader(char *name)
 #endif
 #endif
 
-  Bytesleft = DEFBYTL; 
-  //Filemode = 0; 
+  Bytesleft = DEFBYTL;
+  //Filemode = 0;
   //Modtime = 0L;
 
   p = name + 1 + strlen(name);
@@ -645,7 +643,7 @@ int procheader(char *name)
       if ( !(fout = popen(name+1, "w"))) {
         return ERROR;
       }
-      Topipe = -1;  
+      Topipe = -1;
       return(OK);
     }
 #endif
@@ -696,10 +694,10 @@ int putsec(char *buf,int n)
       if ( *p == '\r')
         continue;
       if (*p == CPMEOF) {
-        Eofseen=TRUE; 
+        Eofseen=TRUE;
         return OK;
       }
-#ifndef ARDUINO      
+#ifndef ARDUINO
       putc(*p ,fout);
 #else
       fout.write(*p);
@@ -748,7 +746,7 @@ int tryz(void)
   int c, n;
   int cmdzack1flg;
 
-//DSERIAL.println(F("Entering tryz"));
+//DSERIAL->println(F("Entering tryz"));
 
   if (Nozmodem)           /* Check for "rb" program name */
     return 0;
@@ -766,7 +764,7 @@ int tryz(void)
 // This unfortunate piece is a limiting factor.  This parameter is supposed to control
 // the maximum buffer size that the sender expects us to have.  It seems most ZModem send implementations
 // ignore it, with Hyperterminal being the only exception I can find.  Without setting this, even
-// Hyperterminal outstrips the Arduino's speed and buffer (64 bytes) at 57600 baud. 
+// Hyperterminal outstrips the Arduino's speed and buffer (64 bytes) at 57600 baud.
     stohdr(SECBUF_LEN);
 
 #endif
@@ -786,16 +784,16 @@ int tryz(void)
 again:
     switch (zgethdr(Rxhdr, 0)) {
     case ZRQINIT:
-//DSERIAL.println(F("tryz got ZRQINIT"));
+//DSERIAL->println(F("tryz got ZRQINIT"));
       continue;
     case ZEOF:
-//DSERIAL.println(F("tryz got ZEOF"));
+//DSERIAL->println(F("tryz got ZEOF"));
       continue;
     case TIMEOUT:
-//DSERIAL.println(F("tryz got TIMEOUT"));
+//DSERIAL->println(F("tryz got TIMEOUT"));
       continue;
     case ZFILE:
-//DSERIAL.println(F("tryz got ZFILE"));
+//DSERIAL->println(F("tryz got ZFILE"));
 
       zconv = Rxhdr[ZF0];
       zmanag = Rxhdr[ZF1];
@@ -808,7 +806,7 @@ again:
       zshhdr(ZNAK, Txhdr);
       goto again;
     case ZSINIT:
-//DSERIAL.println(F("tryz got ZSINIT"));
+//DSERIAL->println(F("tryz got ZSINIT"));
 
       Zctlesc = TESCCTL & Rxhdr[ZF0];
       if (zrdata(Attn, ZATTNLEN) == GOTCRCW) {
@@ -826,7 +824,7 @@ again:
 #ifdef vax11c
       return ERROR;
 #else
-//DSERIAL.println(F("tryz got ZCOMMAND"));
+//DSERIAL->println(F("tryz got ZCOMMAND"));
 
       cmdzack1flg = Rxhdr[ZF0];
       if (zrdata(secbuf, SECBUF_LEN) == GOTCRCW) {
@@ -844,24 +842,24 @@ again:
 //          exec2(secbuf);
         return ZCOMPL;
       }
-      zshhdr(ZNAK, Txhdr); 
+      zshhdr(ZNAK, Txhdr);
       goto again;
 #endif
     case ZCOMPL:
-//DSERIAL.println(F("tryz got ZCOMPL"));
+//DSERIAL->println(F("tryz got ZCOMPL"));
 
       goto again;
     default:
-//DSERIAL.println(F("tryz got default"));
-    
+//DSERIAL->println(F("tryz got default"));
+
       continue;
     case ZFIN:
-//DSERIAL.println(F("tryz got ZFIN"));
+//DSERIAL->println(F("tryz got ZFIN"));
 
-      ackbibi(); 
+      ackbibi();
       return ZCOMPL;
     case ZCAN:
-//DSERIAL.println(F("tryz got ZCAN"));
+//DSERIAL->println(F("tryz got ZCAN"));
 
       return ERROR;
     }
@@ -911,7 +909,7 @@ int rzfile(void)
     return (tryzhdrtype = ZSKIP);
   }
 
-  n = 20; 
+  n = 20;
 //  rxbytes = 0l;
 
   for (;;) {
@@ -949,7 +947,7 @@ nxthdr:
          *  a timeout because the eof might have gone
          *  out before we sent our zrpos.
          */
-        errors = 0;  
+        errors = 0;
         goto nxthdr;
       }
       if (closeit()) {
@@ -987,7 +985,7 @@ nxthdr:
         putsec(secbuf, chinseg);
         chinseg = 0;
 #endif
-        zmputs(Attn);  
+        zmputs(Attn);
         continue;
       }
 moredata:
@@ -1091,14 +1089,14 @@ void zmputs(char *s)
   while (*s) {
     switch (c = *s++) {
     case '\336':
-#ifndef ARDUINO    
-      sleep(1); 
+#ifndef ARDUINO
+      sleep(1);
 #else
       delay(1000);
 #endif
       continue;
     case '\335':
-      sendbrk(); 
+      sendbrk();
       continue;
     default:
       sendline(c);

@@ -4,37 +4,38 @@ void menuMain()
 {
   while (1)
   {
-    Serial.println();
-    Serial.println(F("Menu: Main Menu"));
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Main Menu"));
 
-    Serial.println(F("1) Configure Terminal Output"));
+    SerialPrintln(F("1) Configure Terminal Output"));
 
-    Serial.println(F("2) Configure Time Stamp"));
+    SerialPrintln(F("2) Configure Time Stamp"));
 
-    Serial.println(F("3) Configure IMU Logging"));
+    SerialPrintln(F("3) Configure IMU Logging"));
 
-    Serial.println(F("4) Configure Serial Logging"));
+    if (settings.useTxRxPinsForTerminal == false)
+      SerialPrintln(F("4) Configure Serial Logging"));
 
-    Serial.println(F("5) Configure Analog Logging"));
+    SerialPrintln(F("5) Configure Analog Logging"));
 
-    Serial.println(F("6) Detect / Configure Attached Devices"));
+    SerialPrintln(F("6) Detect / Configure Attached Devices"));
 
-    Serial.println(F("7) Configure Power Options"));
+    SerialPrintln(F("7) Configure Power Options"));
 
-    Serial.println(F("h) Print Sensor Helper Text (and return to logging)"));
+    SerialPrintln(F("h) Print Sensor Helper Text (and return to logging)"));
 
     if (settings.enableSD && online.microSD)
-      Serial.println(F("s) SD Card File Transfer"));
+      SerialPrintln(F("s) SD Card File Transfer"));
 
-    Serial.println(F("r) Reset all settings to default"));
+    SerialPrintln(F("r) Reset all settings to default"));
 
-    Serial.println(F("q) Quit: Close log files and power down"));
+    SerialPrintln(F("q) Quit: Close log files and power down"));
 
-    //Serial.println(F("d) Debug Menu"));
+    //SerialPrintln(F("d) Debug Menu"));
 
-    Serial.println(F("x) Return to logging"));
+    SerialPrintln(F("x) Return to logging"));
 
-    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+    byte incoming = getByteChoice(menuTimeout, true); //Get byte choice and set DSERIAL & ZSERIAL
 
     if (incoming == '1')
       menuLogRate();
@@ -42,7 +43,7 @@ void menuMain()
       menuTimeStamp();
     else if (incoming == '3')
       menuIMU();
-    else if (incoming == '4')
+    else if ((incoming == '4') && (settings.useTxRxPinsForTerminal == false))
       menuSerialLogging();
     else if (incoming == '5')
       menuAnalogLogging();
@@ -75,11 +76,11 @@ void menuMain()
           serialDataFile.close();
         }
   
-        Serial.println();
-        Serial.println();
+        SerialPrintln(F(""));
+        SerialPrintln(F(""));
         sdCardMenu(); // Located in zmodem.ino
-        Serial.println();
-        Serial.println();
+        SerialPrintln(F(""));
+        SerialPrintln(F(""));
         
         if (online.dataLogging == true)
         {
@@ -96,7 +97,7 @@ void menuMain()
     }
     else if (incoming == 'r')
     {
-      Serial.println(F("\r\nResetting to factory defaults. Press 'y' to confirm:"));
+      SerialPrintln(F("\r\nResetting to factory defaults. Press 'y' to confirm: "));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
@@ -106,17 +107,19 @@ void menuMain()
         if (sd.exists("OLA_deviceSettings.txt"))
           sd.remove("OLA_deviceSettings.txt");
 
-        Serial.print(F("Settings erased. Please reset OpenLog Artemis and open a terminal at "));
+        SerialPrint(F("Settings erased. Please reset OpenLog Artemis and open a terminal at "));
         Serial.print((String)settings.serialTerminalBaudRate);
-        Serial.println(F("bps..."));
+        if (settings.useTxRxPinsForTerminal == true)
+          SerialLog.print((String)settings.serialTerminalBaudRate);
+        SerialPrintln(F("bps..."));
         while (1);
       }
       else
-        Serial.println(F("Reset aborted"));
+        SerialPrintln(F("Reset aborted"));
     }
     else if (incoming == 'q')
     {
-      Serial.println(F("\r\nQuit? Press 'y' to confirm:"));
+      SerialPrintln(F("\r\nQuit? Press 'y' to confirm:"));
       byte bContinue = getByteChoice(menuTimeout);
       if (bContinue == 'y')
       {
@@ -133,14 +136,16 @@ void menuMain()
           updateDataFileAccess(&serialDataFile); // Update the file access time & date
           serialDataFile.close();
         }
-        Serial.print(F("Log files are closed. Please reset OpenLog Artemis and open a terminal at "));
+        SerialPrint(F("Log files are closed. Please reset OpenLog Artemis and open a terminal at "));
         Serial.print((String)settings.serialTerminalBaudRate);
-        Serial.println(F("bps..."));
+        if (settings.useTxRxPinsForTerminal == true)
+          SerialLog.print((String)settings.serialTerminalBaudRate);
+        SerialPrintln(F("bps..."));
         delay(sdPowerDownDelay); // Give the SD card time to shut down
         powerDown();
       }
       else
-        Serial.println(F("Quit aborted"));
+        SerialPrintln(F("Quit aborted"));
     }
     else if (incoming == 'x')
       break;
@@ -158,11 +163,17 @@ void menuMain()
 
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 
+  if (settings.useTxRxPinsForTerminal == true)
+    while (SerialLog.available()) SerialLog.read(); //Empty buffer of any newline chars
+
   //Reset measurements
   measurementCount = 0;
   totalCharactersPrinted = 0;
-  //If we are sleeping between readings then we cannot rely on millis() as it is powered down. Used RTC instead.
-  if (settings.usBetweenReadings >= maxUsBeforeSleep)
+  //If we are sleeping between readings then we cannot rely on millis() as it is powered down
+  //Use RTC instead
+  if (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+  || (settings.useGPIO11ForFastSlowLogging == true)
+  || (settings.useRTCForFastSlowLogging == true))
     measurementStartTime = rtcMillis();
   else
     measurementStartTime = millis();

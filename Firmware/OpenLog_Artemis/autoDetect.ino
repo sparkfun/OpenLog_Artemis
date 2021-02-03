@@ -137,7 +137,7 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
       break;
     case DEVICE_GPS_UBLOX:
       {
-        temp->classPtr = new SFE_UBLOX_GPS;
+        temp->classPtr = new SFE_UBLOX_GNSS;
         temp->configPtr = new struct_uBlox;
       }
       break;
@@ -237,8 +237,26 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_SNGCJA5;
       }
       break;
+    case DEVICE_VOC_SGP40:
+      {
+        temp->classPtr = new SGP40;
+        temp->configPtr = new struct_SGP40;
+      }
+      break;
+    case DEVICE_PRESSURE_SDP3X:
+      {
+        temp->classPtr = new SDP3X;
+        temp->configPtr = new struct_SDP3X;
+      }
+      break;
+    case DEVICE_PRESSURE_MS5837:
+      {
+        temp->classPtr = new MS5837;
+        temp->configPtr = new struct_MS5837;
+      }
+      break;
     default:
-      Serial.printf("addDevice Device type not found: %d\r\n", deviceType);
+      SerialPrintf2("addDevice Device type not found: %d\r\n", deviceType);
       break;
   }
 
@@ -268,6 +286,8 @@ bool beginQwiicDevices()
   
   qwiicPowerOnDelayMillis = settings.qwiicBusPowerUpDelayMs; // Set qwiicPowerOnDelayMillis to the _minimum_ defined by settings.qwiicBusPowerUpDelayMs. It will be increased if required.
 
+  int numberOfSCD30s = 0; // Keep track of how many SCD30s we begin so we can delay before starting the second and subsequent ones
+
   //Step through the list
   node *temp = head;
 
@@ -283,8 +303,8 @@ bool beginQwiicDevices()
     
     if (settings.printDebugMessages == true)
     {
-      Serial.printf("beginQwiicDevices: attempting to begin deviceType %s", getDeviceName(temp->deviceType));
-      Serial.printf(" at address 0x%02X using mux address 0x%02X and port number %d\r\n", temp->address, temp->muxAddress, temp->portNumber);
+      SerialPrintf2("beginQwiicDevices: attempting to begin deviceType %s", getDeviceName(temp->deviceType));
+      SerialPrintf4(" at address 0x%02X using mux address 0x%02X and port number %d\r\n", temp->address, temp->muxAddress, temp->portNumber);
     }
     
     //Attempt to begin the device
@@ -318,7 +338,7 @@ bool beginQwiicDevices()
       case DEVICE_GPS_UBLOX:
         {
           qwiic.setPullups(0); //Disable pullups for u-blox comms.
-          SFE_UBLOX_GPS *tempDevice = (SFE_UBLOX_GPS *)temp->classPtr;
+          SFE_UBLOX_GNSS *tempDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
@@ -395,6 +415,14 @@ bool beginQwiicDevices()
           SCD30 *tempDevice = (SCD30 *)temp->classPtr;
           struct_SCD30 *nodeSetting = (struct_SCD30 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          numberOfSCD30s++; // Keep track of how many SCD30s we begin
+          // Delay before starting the second and subsequent SCD30s to try and stagger the measurements and the peak current draw
+          if (numberOfSCD30s >= 2)
+          {
+            printDebug(F("beginQwiicDevices: found more than one SCD30. Delaying for 375ms to stagger the peak current draw...\r\n"));
+            delay(375);
+          }
+          if(settings.printDebugMessages == true) tempDevice->enableDebugging(); // Enable debug messages if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
         break;
@@ -459,18 +487,45 @@ bool beginQwiicDevices()
             temp->online = true;
         }
         break;
+      case DEVICE_VOC_SGP40:
+        {
+          SGP40 *tempDevice = (SGP40 *)temp->classPtr;
+          struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic) == true) //Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_PRESSURE_SDP3X:
+        {
+          SDP3X *tempDevice = (SDP3X *)temp->classPtr;
+          struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_PRESSURE_MS5837:
+        {
+          MS5837 *tempDevice = (MS5837 *)temp->classPtr;
+          struct_MS5837 *nodeSetting = (struct_MS5837 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic) == true) //Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
       default:
-        Serial.printf("beginQwiicDevices: device type not found: %d\r\n", temp->deviceType);
+        SerialPrintf2("beginQwiicDevices: device type not found: %d\r\n", temp->deviceType);
         break;
     }
 
     if (temp->online == true)
     {
-      printDebug("beginQwiicDevices: device is online\r\n");
+      printDebug(F("beginQwiicDevices: device is online\r\n"));
     }
     else
     {
-      printDebug("beginQwiicDevices: device is **NOT** online\r\n");
+      printDebug(F("beginQwiicDevices: device is **NOT** online\r\n"));
       everythingStarted = false;
     }
 
@@ -481,7 +536,7 @@ bool beginQwiicDevices()
 }
 
 //Pretty print all the online devices
-void printOnlineDevice()
+int printOnlineDevice()
 {
   int deviceCount = 0;
 
@@ -491,7 +546,7 @@ void printOnlineDevice()
   if (temp == NULL)
   {
     printDebug(F("printOnlineDevice: No devices detected\r\n"));
-    return;
+    return (0);
   }
 
   while (temp != NULL)
@@ -510,13 +565,17 @@ void printOnlineDevice()
     {
       sprintf(sensorOnlineText, "%s failed to respond\r\n", getDeviceName(temp->deviceType));
     }
-    Serial.print(sensorOnlineText);
+    SerialPrint(sensorOnlineText);
 
     temp = temp->next;
   }
 
   if (settings.printDebugMessages == true)
-    Serial.printf("Device count: %d\r\n", deviceCount);
+  {
+    SerialPrintf2("Device count: %d\r\n", deviceCount);
+  }
+
+  return (deviceCount);
 }
 
 //Given the node number, apply the node's configuration settings to the device
@@ -569,7 +628,7 @@ void configureDevice(node * temp)
       {
         qwiic.setPullups(0); //Disable pullups for u-blox comms.
 
-        SFE_UBLOX_GPS *sensor = (SFE_UBLOX_GPS *)temp->classPtr;
+        SFE_UBLOX_GNSS *sensor = (SFE_UBLOX_GNSS *)temp->classPtr;
         struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
         sensor->setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
@@ -705,8 +764,24 @@ void configureDevice(node * temp)
     case DEVICE_PARTICLE_SNGCJA5:
       //Nothing to configure
       break;
+    case DEVICE_VOC_SGP40:
+      //Nothing to configure
+      break;
+    case DEVICE_PRESSURE_SDP3X:
+      //Nothing to configure
+      break;
+    case DEVICE_PRESSURE_MS5837:
+      {
+        MS5837 *sensor = (MS5837 *)temp->classPtr;
+        struct_MS5837 *sensorSetting = (struct_MS5837 *)temp->configPtr;
+
+        //sensor->setModel(sensorSetting->model);
+        sensorSetting->model = sensor->getModel();
+        sensor->setFluidDensity(sensorSetting->fluidDensity);
+      }
+      break;
     default:
-      Serial.printf("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
+      SerialPrintf3("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
   }
 }
@@ -795,9 +870,18 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
     case DEVICE_PARTICLE_SNGCJA5:
       ptr = (FunctionPointer)menuConfigure_SNGCJA5;
       break;
+    case DEVICE_VOC_SGP40:
+      ptr = (FunctionPointer)menuConfigure_SGP40;
+      break;
+    case DEVICE_PRESSURE_SDP3X:
+      ptr = (FunctionPointer)menuConfigure_SDP3X;
+      break;
+    case DEVICE_PRESSURE_MS5837:
+      ptr = (FunctionPointer)menuConfigure_MS5837;
+      break;
     default:
-      Serial.println(F("getConfigFunctionPtr: Unknown device type"));
-      Serial.flush();
+      SerialPrintln(F("getConfigFunctionPtr: Unknown device type"));
+      SerialFlush();
       break;
   }
 
@@ -840,7 +924,7 @@ bool openConnection(uint8_t muxAddress, uint8_t portNumber)
 {
   if (head == NULL)
   {
-    Serial.println(F("OpenConnection Error: No devices in list"));
+    SerialPrintln(F("OpenConnection Error: No devices in list"));
     return false;
   }
 
@@ -924,6 +1008,7 @@ void swap(struct node * a, struct node * b)
 //We no longer use defines in the search table. These are just here for reference.
 #define ADR_VEML6075 0x10
 #define ADR_MPR0025PA1 0x18
+#define ADR_SDP3X 0x21 //Alternates: 0x22, 0x23
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
 #define ADR_SNGCJA5 0x33
@@ -933,6 +1018,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_SGP30 0x58
+#define ADR_SGP40 0x59
 #define ADR_CCS811 0x5B //Alternates: 0x5A
 #define ADR_LPS25HB 0x5D //Alternates: 0x5C
 #define ADR_VCNL4040 0x60
@@ -941,6 +1027,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_MULTIPLEXER 0x70 //0x70 to 0x77
 #define ADR_SHTC3 0x70
 #define ADR_MS5637 0x76
+#define ADR_MS5837 0x76
 //#define ADR_MS8607 0x76 //Pressure portion of the MS8607 sensor. We'll catch the 0x40 first
 #define ADR_BME280 0x77 //Alternates: 0x76
 
@@ -965,6 +1052,30 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           if ((sensor.readStatus() & 0x5A) == 0x40) // Mask the power indication bit and three "always 0" bits
             return (DEVICE_PRESSURE_MPR0025PA1);
+      }
+      break;
+    case 0x21:
+      {
+        //Confidence: Medium - .begin reads the product ID
+        SDP3X sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_PRESSURE_SDP3X);
+      }
+      break;
+    case 0x22:
+      {
+        //Confidence: Medium - .begin reads the product ID
+        SDP3X sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_PRESSURE_SDP3X);
+      }
+      break;
+    case 0x23:
+      {
+        //Confidence: Medium - .begin reads the product ID
+        SDP3X sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_PRESSURE_SDP3X);
       }
       break;
     case 0x2A:
@@ -1026,7 +1137,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Confidence: High - Sends/receives CRC checked data response
         qwiic.setPullups(0); //Disable pullups to minimize CRC issues
-        SFE_UBLOX_GPS sensor;
+        SFE_UBLOX_GNSS sensor;
         if(settings.printDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
         {
@@ -1084,6 +1195,13 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
           return (DEVICE_VOC_SGP30);
       }
       break;
+    case 0x59:
+      {
+        SGP40 sensor;
+        if (sensor.begin(qwiic) == true) //Wire port
+          return (DEVICE_VOC_SGP40);
+      }
+      break;
     case 0x5A:
     case 0x5B:
       {
@@ -1122,11 +1240,12 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_MCP9600);
 
-        //Confidence: Medium - Begin doesn't confirm anything, but a readMeasurement() must pass CRC check
+        //Confidence: High - begin now checks FW Ver CRC
         SCD30 sensor1;
-        if (sensor1.begin(qwiic) == true) //Wire port
-          if (sensor1.readMeasurement() == true) //This reads the measurement register and calculates a CRC on the interchange
-            return (DEVICE_CO2_SCD30);
+        if(settings.printDebugMessages == true) sensor1.enableDebugging(); // Enable debug messages if required
+        // Set measBegin to false. beginQwiicDevices will call begin with measBegin set true.
+        if (sensor1.begin(qwiic, true, false) == true) //Wire port, autoCalibrate, measBegin
+          return (DEVICE_CO2_SCD30);
       }
       break;
     case 0x62:
@@ -1229,7 +1348,12 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        //Confidence: High - does CRC on internal EEPROM read
+        //Confidence: High - does CRC on internal EEPROM read and checks sensor version
+        MS5837 sensor2;
+        if (sensor2.begin(qwiic) == true) //Wire port
+          return (DEVICE_PRESSURE_MS5837);
+
+        //Confidence: High - does CRC on internal EEPROM read - but do this second as a MS5837 will appear as a MS5637
         MS5637 sensor;
         if (sensor.begin(qwiic) == true) //Wire port
           return (DEVICE_PRESSURE_MS5637);
@@ -1260,14 +1384,18 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     default:
       {
         if (muxAddress == 0)
-          Serial.printf("Unknown device at address (0x%02X)\r\n", i2cAddress);
+        {
+          SerialPrintf2("Unknown device at address (0x%02X)\r\n", i2cAddress);
+        }
         else
-          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
+        {
+          SerialPrintf4("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
+        }
         return DEVICE_UNKNOWN_DEVICE;
       }
       break;
   }
-  Serial.printf("Known I2C address but device failed identification at address 0x%02X\r\n", i2cAddress);
+  SerialPrintf2("Known I2C address but device failed identification at address 0x%02X\r\n", i2cAddress);
   return DEVICE_UNKNOWN_DEVICE;
 }
 
@@ -1344,9 +1472,13 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
     default:
       {
         if (muxAddress == 0)
-          Serial.printf("Unknown device at address (0x%02X)\r\n", i2cAddress);
+        {
+          SerialPrintf2("Unknown device at address (0x%02X)\r\n", i2cAddress);
+        }
         else
-          Serial.printf("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
+        {
+          SerialPrintf4("Unknown device at address (0x%02X)(Mux:0x%02X Port:%d)\r\n", i2cAddress, muxAddress, portNumber);
+        }
         return DEVICE_UNKNOWN_DEVICE;
       }
       break;
@@ -1469,6 +1601,15 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_PARTICLE_SNGCJA5:
       return "Particle-SNGCJA5";
+      break;
+    case DEVICE_VOC_SGP40:
+      return "VOC-SGP40";
+      break;
+    case DEVICE_PRESSURE_SDP3X:
+      return "Pressure-SDP3X";
+      break;
+    case DEVICE_PRESSURE_MS5837:
+      return "Pressure-MS5837";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:
