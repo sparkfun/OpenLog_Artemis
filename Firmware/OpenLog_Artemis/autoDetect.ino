@@ -775,7 +775,8 @@ void configureDevice(node * temp)
         MS5837 *sensor = (MS5837 *)temp->classPtr;
         struct_MS5837 *sensorSetting = (struct_MS5837 *)temp->configPtr;
 
-        sensor->setModel(sensorSetting->model);
+        //sensor->setModel(sensorSetting->model);
+        sensorSetting->model = sensor->getModel();
         sensor->setFluidDensity(sensorSetting->fluidDensity);
       }
       break;

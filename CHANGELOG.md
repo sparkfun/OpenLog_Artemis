@@ -4,9 +4,19 @@ Change Log
 v1.9
 ---------
 
-* Added support for the SGP40 air quality sensor
-* Added support for the SDP3X differential pressure sensor
+* Allows the TX and RX pins to be used for the serial terminal / console
+  * This is very cool as it means you can now connect the OLA to your choice of (e.g.) Bluetooth or radio modem and access your data over that instead of USB
+  * File transfer using ZMODEM is possible on both USB and TX/RX
+* Added support for the SGP40 air quality sensor - which provides a robust VOC Index for indoor air quality
+* Added support for the SDP3X differential pressure sensor - opening up possibilities for air flow and air speed measurement
 * Added support for the MS5837 depth / pressure sensor - as used in the BlueRobotics Bar02
+* Corrects an issue which was corrupting data when using multiple MS8607s [62]https://github.com/sparkfun/OpenLog_Artemis/issues/62
+* Adds serial logging timestamps with a configurable timestamp token [63](https://github.com/sparkfun/OpenLog_Artemis/issues/63) - thank you @DennisMelamed
+* Adds a _slow logging_ feature to extend battery life
+  * Pin11 can be used to enter slow logging mode [60](https://github.com/sparkfun/OpenLog_Artemis/issues/60) - thank you @ryanneve
+  * Slow logging can be entered once per day, with configurable start and end time [46](https://github.com/sparkfun/OpenLog_Artemis/issues/46)
+* Adds improved support for the SCD30 [67](https://github.com/sparkfun/OpenLog_Artemis/issues/67) - thank you @paulvha
+* Corrects a bug in logMicroseconds [57](https://github.com/sparkfun/OpenLog_Artemis/issues/57)
 
 v1.8
 ---------

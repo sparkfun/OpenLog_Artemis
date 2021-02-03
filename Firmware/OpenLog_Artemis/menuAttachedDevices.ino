@@ -2316,6 +2316,10 @@ void menuConfigure_MS5837(void *configPtr)
     SerialPrintln(F(""));
     SerialPrintln(F("Menu: Configure MS5837 Pressure Sensor"));
 
+    SerialPrint(F("Sensor Model: "));
+    if (sensorSetting->model == true) SerialPrintln(F("MS5837-02BA / BlueRobotics Bar02: 2 Bar Absolute / 10m Depth"));
+    else SerialPrintln(F("MS5837-30BA / BlueRobotics Bar30: 30 Bar Absolute / 300m Depth"));
+      
     SerialPrint(F("1) Sensor Logging: "));
     if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
     else SerialPrintln(F("Disabled"));
@@ -2338,13 +2342,9 @@ void menuConfigure_MS5837(void *configPtr)
       if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
       
-      SerialPrint(F("6) Sensor Model: "));
-      if (sensorSetting->model == true) SerialPrintln(F("MS5837-02BA / BlueRobotics Bar02: 2 Bar Absolute / 10m Depth"));
-      else SerialPrintln(F("MS5837-30BA / BlueRobotics Bar30: 30 Bar Absolute / 300m Depth"));
-      
-      SerialPrintf2("7) Fluid Density (kg/m^3): %f\r\n", sensorSetting->fluidDensity);
+      SerialPrintf2("6) Fluid Density (kg/m^3): %f\r\n", sensorSetting->fluidDensity);
   
-      SerialPrintf2("8) Pressure Conversion Factor: %.02f\r\n", sensorSetting->conversion);
+      SerialPrintf2("7) Pressure Conversion Factor: %.02f\r\n", sensorSetting->conversion);
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2363,14 +2363,12 @@ void menuConfigure_MS5837(void *configPtr)
       else if (incoming == 5)
         sensorSetting->logAltitude ^= 1;
       else if (incoming == 6)
-        sensorSetting->model ^= 1;
-      else if (incoming == 7)
       {
         SerialPrint(F("Enter the Fluid Density (kg/m^3): "));
         double FD = getDouble(menuTimeout); //x second timeout
         sensorSetting->fluidDensity = (float)FD;
       }        
-      else if (incoming == 8)
+      else if (incoming == 7)
       {
         SerialPrint(F("Enter the Pressure Conversion Factor: "));
         double PCF = getDouble(menuTimeout); //x second timeout
