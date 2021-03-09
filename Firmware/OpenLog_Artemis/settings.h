@@ -298,6 +298,7 @@ struct struct_SDP3X {
   bool logTemperature = true;
   bool massFlow = true;
   bool averaging = false;
+  bool measurementsStarted = false; // Flag if measurements have been stared - so we can stop them (don't save in NVM)
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

@@ -773,7 +773,10 @@ void configureDevice(node * temp)
         struct_SDP3X *sensorSetting = (struct_SDP3X *)temp->configPtr;
 
         // Each conversion takes 45ms to complete so we need to use continuous measurements
+        if (sensorSetting->measurementsStarted)
+          sensor->stopContinuousMeasurement(); // We must stopContinuousMeasurement before restarting
         sensor->startContinuousMeasurement(sensorSetting->massFlow, sensorSetting->averaging); //Request continuous measurements
+        sensorSetting->measurementsStarted = true;
       }
       break;
     case DEVICE_PRESSURE_MS5837:
@@ -1062,7 +1065,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x21:
       {
-        //Confidence: Medium - .begin reads the product ID
+        //Confidence: High - .begin reads the product ID
         SDP3X sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_PRESSURE_SDP3X);
@@ -1070,7 +1073,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x22:
       {
-        //Confidence: Medium - .begin reads the product ID
+        //Confidence: High - .begin reads the product ID
         SDP3X sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_PRESSURE_SDP3X);
@@ -1078,7 +1081,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x23:
       {
-        //Confidence: Medium - .begin reads the product ID
+        //Confidence: High - .begin reads the product ID
         SDP3X sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_PRESSURE_SDP3X);
