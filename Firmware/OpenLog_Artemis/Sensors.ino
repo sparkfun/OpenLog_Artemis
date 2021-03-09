@@ -795,8 +795,8 @@ void gatherDeviceValues()
               float temperature;
               if ((nodeSetting->logPressure) || (nodeSetting->logTemperature))
               {
-                nodeDevice->triggeredMeasurement(nodeSetting->massFlow, nodeSetting->clockStretching);
-                nodeDevice->readMeasurement(&pressure, &temperature);
+                // Each conversion takes 45ms to complete so we need to use continuous measurements
+                nodeDevice->readMeasurement(&pressure, &temperature); // Read the latest measurement
               }
               if (nodeSetting->logPressure)
               {

@@ -853,6 +853,7 @@ void beginIMU()
       delay(1);
     }
 
+    if (settings.printDebugMessages) myICM.enableDebugging();
     myICM.begin(PIN_IMU_CHIP_SELECT, SPI, 4000000); //Set IMU SPI rate to 4MHz
     if (myICM.status != ICM_20948_Stat_Ok)
     {

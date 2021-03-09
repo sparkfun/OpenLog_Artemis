@@ -768,7 +768,13 @@ void configureDevice(node * temp)
       //Nothing to configure
       break;
     case DEVICE_PRESSURE_SDP3X:
-      //Nothing to configure
+      {
+        SDP3X *sensor = (SDP3X *)temp->classPtr;
+        struct_SDP3X *sensorSetting = (struct_SDP3X *)temp->configPtr;
+
+        // Each conversion takes 45ms to complete so we need to use continuous measurements
+        sensor->startContinuousMeasurement(true, true); //Request continuous measurements with mass flow temperature compensation and with averaging
+      }
       break;
     case DEVICE_PRESSURE_MS5837:
       {
