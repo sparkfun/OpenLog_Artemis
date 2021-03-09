@@ -297,7 +297,7 @@ struct struct_SDP3X {
   bool logPressure = true;
   bool logTemperature = true;
   bool massFlow = true;
-  bool clockStretching = false;
+  bool averaging = false;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

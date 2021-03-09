@@ -2271,9 +2271,9 @@ void menuConfigure_SDP3X(void *configPtr)
       if (sensorSetting->massFlow == true) SerialPrintln(F("Mass Flow"));
       else SerialPrintln(F("Differential Pressure"));
   
-      SerialPrint(F("5) Use Clock Stretching: "));
-      if (sensorSetting->clockStretching == true) SerialPrintln(F("Yes"));
-      else SerialPrintln(F("No"));
+      SerialPrint(F("5) Measurement Averaging: "));
+      if (sensorSetting->averaging == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2290,7 +2290,7 @@ void menuConfigure_SDP3X(void *configPtr)
       else if (incoming == 4)
         sensorSetting->massFlow ^= 1;
       else if (incoming == 5)
-        sensorSetting->clockStretching ^= 1;
+        sensorSetting->averaging ^= 1;
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

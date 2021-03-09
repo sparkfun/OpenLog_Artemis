@@ -773,7 +773,7 @@ void configureDevice(node * temp)
         struct_SDP3X *sensorSetting = (struct_SDP3X *)temp->configPtr;
 
         // Each conversion takes 45ms to complete so we need to use continuous measurements
-        sensor->startContinuousMeasurement(true, true); //Request continuous measurements with mass flow temperature compensation and with averaging
+        sensor->startContinuousMeasurement(sensorSetting->massFlow, sensorSetting->averaging); //Request continuous measurements
       }
       break;
     case DEVICE_PRESSURE_MS5837:
