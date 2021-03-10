@@ -772,9 +772,12 @@ void configureDevice(node * temp)
         SDP3X *sensor = (SDP3X *)temp->classPtr;
         struct_SDP3X *sensorSetting = (struct_SDP3X *)temp->configPtr;
 
-        // Each conversion takes 45ms to complete so we need to use continuous measurements
+        // Each triggered measurement takes 45ms to complete so we need to use continuous measurements
         if (sensorSetting->measurementsStarted)
+        {
           sensor->stopContinuousMeasurement(); // We must stopContinuousMeasurement before restarting
+          delay(1); // Datasheet says the sensor will be receptive for another command after 500us 
+        }
         sensor->startContinuousMeasurement(sensorSetting->massFlow, sensorSetting->averaging); //Request continuous measurements
         sensorSetting->measurementsStarted = true;
       }
