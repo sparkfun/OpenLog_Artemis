@@ -1,6 +1,15 @@
 Change Log
 ======================
 
+v1.10
+---------
+
+* Improved support for the MS5837
+* Adds IMU DMP examples
+* Corrects support for the SDP31
+* Updates the low-power code as per [78](https://github.com/sparkfun/OpenLog_Artemis/issues/78)
+* Corrects wakeFromSleep when using the Tx pin for serial output [79](https://github.com/sparkfun/OpenLog_Artemis/issues/79)
+
 v1.9
 ---------
 

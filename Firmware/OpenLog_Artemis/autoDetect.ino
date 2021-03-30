@@ -501,6 +501,7 @@ bool beginQwiicDevices()
           SDP3X *tempDevice = (SDP3X *)temp->classPtr;
           struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          tempDevice->stopContinuousMeasurement(temp->address, qwiic); //Make sure continuous measurements are stopped or .begin will fail
           if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
             temp->online = true;
         }
@@ -768,14 +769,21 @@ void configureDevice(node * temp)
       //Nothing to configure
       break;
     case DEVICE_PRESSURE_SDP3X:
-      //Nothing to configure
+      {
+        SDP3X *sensor = (SDP3X *)temp->classPtr;
+        struct_SDP3X *sensorSetting = (struct_SDP3X *)temp->configPtr;
+
+        // Each triggered measurement takes 45ms to complete so we need to use continuous measurements
+        sensor->stopContinuousMeasurement(); //Make sure continuous measurements are stopped or startContinuousMeasurement will fail
+        sensor->startContinuousMeasurement(sensorSetting->massFlow, sensorSetting->averaging); //Request continuous measurements
+      }
       break;
     case DEVICE_PRESSURE_MS5837:
       {
         MS5837 *sensor = (MS5837 *)temp->classPtr;
         struct_MS5837 *sensorSetting = (struct_MS5837 *)temp->configPtr;
 
-        //sensor->setModel(sensorSetting->model);
+        //sensor->setModel(sensorSetting->model); // We could override the sensor model, but let's not...
         sensorSetting->model = sensor->getModel();
         sensor->setFluidDensity(sensorSetting->fluidDensity);
       }
@@ -1056,24 +1064,27 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x21:
       {
-        //Confidence: Medium - .begin reads the product ID
+        //Confidence: High - .begin reads the product ID
         SDP3X sensor;
+        sensor.stopContinuousMeasurement(i2cAddress, qwiic); //Make sure continuous measurements are stopped or .begin will fail
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_PRESSURE_SDP3X);
       }
       break;
     case 0x22:
       {
-        //Confidence: Medium - .begin reads the product ID
+        //Confidence: High - .begin reads the product ID
         SDP3X sensor;
+        sensor.stopContinuousMeasurement(i2cAddress, qwiic); //Make sure continuous measurements are stopped or .begin will fail
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_PRESSURE_SDP3X);
       }
       break;
     case 0x23:
       {
-        //Confidence: Medium - .begin reads the product ID
+        //Confidence: High - .begin reads the product ID
         SDP3X sensor;
+        sensor.stopContinuousMeasurement(i2cAddress, qwiic); //Make sure continuous measurements are stopped or .begin will fail
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_PRESSURE_SDP3X);
       }
@@ -1351,7 +1362,10 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Confidence: High - does CRC on internal EEPROM read and checks sensor version
         MS5837 sensor2;
         if (sensor2.begin(qwiic) == true) //Wire port
-          return (DEVICE_PRESSURE_MS5837);
+        {
+          if (sensor2.getModel() <= 1) // Check that getModel returns 0 or 1. It will (hopefully) return 255 if an MS5637 is attached.
+            return (DEVICE_PRESSURE_MS5837);          
+        }
 
         //Confidence: High - does CRC on internal EEPROM read - but do this second as a MS5837 will appear as a MS5637
         MS5637 sensor;
@@ -1427,12 +1441,12 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
         // If an MS8607 is connected, multiplexerBegin causes the MS8607 to 'crash' and lock up the I2C bus... So we need to check if an MS8607 is connected first. 
-        // We will use the MS5637 as this will test for itself and the pressure sensor of the MS8607
+        // We will use the MS5637 as this will test for itself, the MS5837 and the pressure sensor of the MS8607
         // Just to make life even more complicated, a mux with address 0x76 will also appear as an MS5637 due to the way the MS5637 eeprom crc check is calculated.
-        // So, we can't use .begin as the test for a MS5637 / MS8607. We need to be more creative!
+        // So, we can't use .begin as the test for a MS5637 / MS5837 / MS8607. We need to be more creative!
         // If we write 0xA0 to i2cAddress and then read two bytes:
         //  A mux will return 0xA0A0
-        //  An MS5637 / MS8607 will return the value stored in its eeprom which _hopefully_ is not 0xA0A0!
+        //  An MS5637 / MS5837 / MS8607 will return the value stored in its eeprom which _hopefully_ is not 0xA0A0!
 
         // Let's hope this doesn't cause problems for the BME280...! We should be OK as the default address for the BME280 is 0x77.
         
@@ -1448,7 +1462,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
           {
             buffer[i] = qwiic.read();
           }
-          if ((buffer[0] != 0xA0) || (buffer[1] != 0xA0)) // If we read back something other than 0xA0A0 then we are probably talking to an MS5637 / MS8607, not a mux
+          if ((buffer[0] != 0xA0) || (buffer[1] != 0xA0)) // If we read back something other than 0xA0A0 then we are probably talking to an MS5637 / MS5837 / MS8607, not a mux
           {
             return (DEVICE_PRESSURE_MS5637);
           }

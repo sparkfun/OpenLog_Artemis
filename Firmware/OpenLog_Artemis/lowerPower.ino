@@ -137,11 +137,9 @@ void powerDown()
   qwiicPowerOff();
 #endif
 
-  //Power down Flash, SRAM, cache
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE);         //Turn off CACHE
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K);    //Turn off everything but lower 512k
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k
-  //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
+  //Power down cache, flash, SRAM
+  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); // Power down all flash and cache
+  am_hal_pwrctrl_memory_deepsleep_retain(AM_HAL_PWRCTRL_MEM_SRAM_384K); // Retain all SRAM
 
   //Keep the 32kHz clock running for RTC
   am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
@@ -320,11 +318,9 @@ void goToSleep(uint32_t sysTicksToSleep)
   //else
   //  powerLEDOff();
 
-  //Power down Flash, SRAM, cache
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE);         //Turn off CACHE
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K);    //Turn off everything but lower 512k
-  //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k (Leaving 64K powered up probably isn't enough - "Global variables use 70496 bytes of dynamic memory.")
-  //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
+  //Power down cache, flash, SRAM
+  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); // Power down all flash and cache
+  am_hal_pwrctrl_memory_deepsleep_retain(AM_HAL_PWRCTRL_MEM_SRAM_384K); // Retain all SRAM
 
   //Use the lower power 32kHz clock. Use it to run CT6 as well.
   am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
@@ -365,9 +361,6 @@ void goToSleep(uint32_t sysTicksToSleep)
 //Power everything up gracefully
 void wakeFromSleep()
 {
-  //Power up SRAM, turn on entire Flash
-  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_MAX);
-
   //Go back to using the main clock
   //am_hal_stimer_int_enable(AM_HAL_STIMER_INT_OVERFLOW);
   //NVIC_EnableIRQ(STIMER_IRQn);
@@ -450,6 +443,7 @@ void wakeFromSleep()
   if (settings.useTxRxPinsForTerminal == false)
   {
     beginSerialLogging(); //20 - 99ms
+    beginSerialOutput();
   }
 
   beginIMU(); //61ms

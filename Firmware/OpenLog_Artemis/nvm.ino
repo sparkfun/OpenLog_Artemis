@@ -694,7 +694,7 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
             settingsFile.println((String)base + "massFlow=" + nodeSetting->massFlow);
-            settingsFile.println((String)base + "clockStretching=" + nodeSetting->clockStretching);
+            settingsFile.println((String)base + "averaging=" + nodeSetting->averaging);
           }
           break;
         case DEVICE_PRESSURE_MS5837:
@@ -1259,8 +1259,8 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logTemperature = d;
           else if (strcmp(deviceSettingName, "massFlow") == 0)
             nodeSetting->massFlow = d;
-          else if (strcmp(deviceSettingName, "clockStretching") == 0)
-            nodeSetting->clockStretching = d;
+          else if (strcmp(deviceSettingName, "averaging") == 0)
+            nodeSetting->averaging = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }

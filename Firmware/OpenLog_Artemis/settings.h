@@ -297,7 +297,7 @@ struct struct_SDP3X {
   bool logPressure = true;
   bool logTemperature = true;
   bool massFlow = true;
-  bool clockStretching = false;
+  bool averaging = false;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
@@ -307,7 +307,7 @@ struct struct_MS5837 {
   bool logTemperature = true;
   bool logDepth = true;
   bool logAltitude = true;
-  bool model = true; // Valid options are: 0 (MS5837::MS5837_30BA) and 1 (MS5837::MS5837_02BA)
+  uint8_t model = 1; // Valid options are: 0 (MS5837::MS5837_30BA); 1 (MS5837::MS5837_02BA) and 255 (MS5837::MS5837_UNRECOGNISED)
   float fluidDensity = 997;
   float conversion = 1.0;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!

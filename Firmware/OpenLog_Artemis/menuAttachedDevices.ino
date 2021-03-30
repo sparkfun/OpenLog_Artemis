@@ -82,7 +82,7 @@ bool detectQwiicDevices()
       {
         if (settings.printDebugMessages == true)
         {
-          SerialPrintf2("detectQwiicDevices: MS8607/MS5637 found at address 0x%02X. Ignoring it for now...\r\n", address);
+          SerialPrintf2("detectQwiicDevices: MS8607/MS5637/MS5837 found at address 0x%02X. Ignoring it for now...\r\n", address);
         }
       }
     }
@@ -103,7 +103,7 @@ bool detectQwiicDevices()
 
   //Before going into mux sub branches, scan the main branch for all remaining devices
   SerialPrintln(F("Identifying Qwiic Devices..."));
-  bool foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637 if we have found a MS8607.
+  bool foundMS8607 = false; // The MS8607 appears as two devices (MS8607 and MS5637). We need to skip the MS5637/MS5837 if we have found a MS8607.
   for (uint8_t address = 1 ; address < 127 ; address++)
   {
     qwiic.beginTransmission(address);
@@ -117,9 +117,9 @@ bool detectQwiicDevices()
       deviceType_e foundType = testDevice(address, 0, 0); //No mux or port numbers for this test
       if (foundType != DEVICE_UNKNOWN_DEVICE)
       {
-        if ((foundType == DEVICE_PRESSURE_MS5637) && (foundMS8607 == true))
+        if ((foundMS8607 == true) && ((foundType == DEVICE_PRESSURE_MS5637) || (foundType == DEVICE_PRESSURE_MS5837)))
         {
-          ; // Skip MS5637 as we have already found an MS8607
+          ; // Skip MS5637/MS5837 as we have already found an MS8607
         }
         else
         {
@@ -2271,9 +2271,9 @@ void menuConfigure_SDP3X(void *configPtr)
       if (sensorSetting->massFlow == true) SerialPrintln(F("Mass Flow"));
       else SerialPrintln(F("Differential Pressure"));
   
-      SerialPrint(F("5) Use Clock Stretching: "));
-      if (sensorSetting->clockStretching == true) SerialPrintln(F("Yes"));
-      else SerialPrintln(F("No"));
+      SerialPrint(F("5) Measurement Averaging: "));
+      if (sensorSetting->averaging == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2290,7 +2290,7 @@ void menuConfigure_SDP3X(void *configPtr)
       else if (incoming == 4)
         sensorSetting->massFlow ^= 1;
       else if (incoming == 5)
-        sensorSetting->clockStretching ^= 1;
+        sensorSetting->averaging ^= 1;
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -2317,7 +2317,7 @@ void menuConfigure_MS5837(void *configPtr)
     SerialPrintln(F("Menu: Configure MS5837 Pressure Sensor"));
 
     SerialPrint(F("Sensor Model: "));
-    if (sensorSetting->model == true) SerialPrintln(F("MS5837-02BA / BlueRobotics Bar02: 2 Bar Absolute / 10m Depth"));
+    if (sensorSetting->model == 1) SerialPrintln(F("MS5837-02BA / BlueRobotics Bar02: 2 Bar Absolute / 10m Depth"));
     else SerialPrintln(F("MS5837-30BA / BlueRobotics Bar30: 30 Bar Absolute / 300m Depth"));
       
     SerialPrint(F("1) Sensor Logging: "));
