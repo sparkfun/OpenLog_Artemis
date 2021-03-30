@@ -86,10 +86,11 @@
   (done) Add support for the SGP40 VOC Index sensor
   (done) Add support for the SDP3X Differential Pressure sensor
   (done) Add support for the MS5837 - as used in the BlueRobotics BAR02 and BAR30 water pressure sensors
+  (done) Correct an issue which was causing the OLA to crash when waking from sleep and outputting serial data https://github.com/sparkfun/OpenLog_Artemis/issues/79
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 9;
+const int FIRMWARE_VERSION_MINOR = 10;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -99,7 +100,7 @@ const int FIRMWARE_VERSION_MINOR = 9;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x119 // Stored as 281 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x11A // Stored as 282 decimal in OLA_settings.txt
 
 #include "settings.h"
 
