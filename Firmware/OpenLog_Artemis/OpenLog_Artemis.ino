@@ -87,6 +87,7 @@
   (done) Add support for the SDP3X Differential Pressure sensor
   (done) Add support for the MS5837 - as used in the BlueRobotics BAR02 and BAR30 water pressure sensors
   (done) Correct an issue which was causing the OLA to crash when waking from sleep and outputting serial data https://github.com/sparkfun/OpenLog_Artemis/issues/79
+  (done) Correct low-power code as per https://github.com/sparkfun/OpenLog_Artemis/issues/78
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
