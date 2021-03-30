@@ -450,6 +450,7 @@ void wakeFromSleep()
   if (settings.useTxRxPinsForTerminal == false)
   {
     beginSerialLogging(); //20 - 99ms
+    beginSerialOutput();
   }
 
   beginIMU(); //61ms
