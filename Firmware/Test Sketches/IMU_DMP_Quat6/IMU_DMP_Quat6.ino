@@ -224,15 +224,15 @@ void setup() {
   // Configure the B2S Mounting Matrix
   const unsigned char b2sMountMultiplierZero[4] = {0x00, 0x00, 0x00, 0x00};
   const unsigned char b2sMountMultiplierPlus[4] = {0x40, 0x00, 0x00, 0x00}; // Value taken from InvenSense Nucleo example
-  success &= (myICM.writeDMPmems(B2S_MTX_00, 4, &mountMultiplierPlus[0]) == ICM_20948_Stat_Ok);
-  success &= (myICM.writeDMPmems(B2S_MTX_01, 4, &mountMultiplierZero[0]) == ICM_20948_Stat_Ok);
-  success &= (myICM.writeDMPmems(B2S_MTX_02, 4, &mountMultiplierZero[0]) == ICM_20948_Stat_Ok);
-  success &= (myICM.writeDMPmems(B2S_MTX_10, 4, &mountMultiplierZero[0]) == ICM_20948_Stat_Ok);
-  success &= (myICM.writeDMPmems(B2S_MTX_11, 4, &mountMultiplierPlus[0]) == ICM_20948_Stat_Ok);
-  success &= (myICM.writeDMPmems(B2S_MTX_12, 4, &mountMultiplierZero[0]) == ICM_20948_Stat_Ok);
-  success &= (myICM.writeDMPmems(B2S_MTX_20, 4, &mountMultiplierZero[0]) == ICM_20948_Stat_Ok);
-  success &= (myICM.writeDMPmems(B2S_MTX_21, 4, &mountMultiplierZero[0]) == ICM_20948_Stat_Ok);
-  success &= (myICM.writeDMPmems(B2S_MTX_22, 4, &mountMultiplierPlus[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(B2S_MTX_00, 4, &b2sMountMultiplierPlus[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(B2S_MTX_01, 4, &b2sMountMultiplierZero[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(B2S_MTX_02, 4, &b2sMountMultiplierZero[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(B2S_MTX_10, 4, &b2sMountMultiplierZero[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(B2S_MTX_11, 4, &b2sMountMultiplierPlus[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(B2S_MTX_12, 4, &b2sMountMultiplierZero[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(B2S_MTX_20, 4, &b2sMountMultiplierZero[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(B2S_MTX_21, 4, &b2sMountMultiplierZero[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(B2S_MTX_22, 4, &b2sMountMultiplierPlus[0]) == ICM_20948_Stat_Ok);
 
   // Configure the DMP Gyro Scaling Factor
   // @param[in] gyro_div Value written to GYRO_SMPLRT_DIV register, where
@@ -262,7 +262,7 @@ void setup() {
   // Configure the Accel A Var: 47721859 (225Hz) 95869806 (112Hz) 191739611 (56Hz)
   const unsigned char accelAVar[4] = {0x0B, 0x6D, 0xB6, 0xDB}; // 56Hz
   //const unsigned char accelAVar[4] = {0x39, 0x99, 0x99, 0x9A}; // Value taken from InvenSense Nucleo example
-  success &= (myICM.writeDMPmems(ACCEL_A_VAR, 4, &accelAlphaVar[0]) == ICM_20948_Stat_Ok);
+  success &= (myICM.writeDMPmems(ACCEL_A_VAR, 4, &accelAVar[0]) == ICM_20948_Stat_Ok);
   
   // Configure the Accel Cal Rate
   const unsigned char accelCalRate[4] = {0x00, 0x00}; // Value taken from InvenSense Nucleo example
