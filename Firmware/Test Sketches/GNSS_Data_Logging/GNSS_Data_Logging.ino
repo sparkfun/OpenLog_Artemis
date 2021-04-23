@@ -207,6 +207,11 @@ void setup()
   // If you want to log additional data, call the associated setAuto and log functions here
 
 
+  while (Serial.available()) // Make sure the Serial buffer is empty
+  {
+    Serial.read();
+  }
+
   Serial.println(F("Press any key to stop logging."));
 
   lastPrint = millis(); // Initialize lastPrint
@@ -220,7 +225,7 @@ void loop()
 
   // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-  if ((powerLossSeen) || (stopLoggingSeen)) // Check for power loss or stop logging interrupts
+  if ((powerLossSeen) || (stopLoggingSeen) || (Serial.available() > 0)) // Check for power loss or stop logging interrupts
   {
     stopLogging();
   }
