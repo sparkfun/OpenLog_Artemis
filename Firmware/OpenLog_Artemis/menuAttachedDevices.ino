@@ -345,7 +345,8 @@ void menuAttachedDevices()
       temp = temp->next;
     }
 
-    SerialPrintf2("%d) Configure Qwiic Settings\r\n", availableDevices++ + 1);
+    availableDevices++;
+    SerialPrintf2("%d) Configure Qwiic Settings\r\n", availableDevices);
 
     SerialPrintln(F("x) Exit"));
 
