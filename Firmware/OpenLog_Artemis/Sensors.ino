@@ -86,37 +86,75 @@ void getData()
   {
     //printDebug("getData: online.IMU = " + (String)online.IMU + "\r\n");
 
-    if (myICM.dataReady())
+    if (settings.imuUseDMP == false)
     {
-      //printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
-      
-      myICM.getAGMT(); //Update values
-
-      if (settings.logIMUAccel)
+      if (myICM.dataReady())
       {
-        sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.accX(), myICM.accY(), myICM.accZ());
+        //printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+        
+        myICM.getAGMT(); //Update values
+  
+        if (settings.logIMUAccel)
+        {
+          sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.accX(), myICM.accY(), myICM.accZ());
+          strcat(outputData, tempData);
+        }
+        if (settings.logIMUGyro)
+        {
+          sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.gyrX(), myICM.gyrY(), myICM.gyrZ());
+          strcat(outputData, tempData);
+        }
+        if (settings.logIMUMag)
+        {
+          sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.magX(), myICM.magY(), myICM.magZ());
+          strcat(outputData, tempData);
+        }
+        if (settings.logIMUTemp)
+        {
+          sprintf(tempData, "%.2f,", myICM.temp());
+          strcat(outputData, tempData);
+        }
+      }
+      //else
+      //{
+      //  printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+      //}
+    }
+    else
+    {
+      myICM.readDMPdataFromFIFO(&dmpData);
+      while (myICM.status == ICM_20948_Stat_FIFOMoreDataAvail)
+      {
+        myICM.readDMPdataFromFIFO(&dmpData); // Empty the FIFO - make sure data contains the most recent data
+      }
+      if (settings.imuLogDMPQuat6)
+      {
+        sprintf(tempData, "%.3f,%.3f,%.3f,", ((double)dmpData.Quat6.Data.Q1) / 1073741824.0,
+          ((double)dmpData.Quat6.Data.Q2) / 1073741824.0, ((double)dmpData.Quat6.Data.Q3) / 1073741824.0);
         strcat(outputData, tempData);
       }
-      if (settings.logIMUGyro)
+      if (settings.imuLogDMPQuat9)
       {
-        sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.gyrX(), myICM.gyrY(), myICM.gyrZ());
+        sprintf(tempData, "%.3f,%.3f,%.3f,%d,", ((double)dmpData.Quat9.Data.Q1) / 1073741824.0,
+          ((double)dmpData.Quat9.Data.Q2) / 1073741824.0, ((double)dmpData.Quat9.Data.Q3) / 1073741824.0, dmpData.Quat9.Data.Accuracy);
         strcat(outputData, tempData);
       }
-      if (settings.logIMUMag)
+      if (settings.imuLogDMPAccel)
       {
-        sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.magX(), myICM.magY(), myICM.magZ());
+        sprintf(tempData, "%d,%d,%d,", dmpData.Raw_Accel.Data.X, dmpData.Raw_Accel.Data.Y, dmpData.Raw_Accel.Data.Z);
         strcat(outputData, tempData);
       }
-      if (settings.logIMUTemp)
+      if (settings.imuLogDMPGyro)
       {
-        sprintf(tempData, "%.2f,", myICM.temp());
+        sprintf(tempData, "%d,%d,%d,", dmpData.Raw_Gyro.Data.X, dmpData.Raw_Gyro.Data.Y, dmpData.Raw_Gyro.Data.Z);
+        strcat(outputData, tempData);
+      }
+      if (settings.imuLogDMPCpass)
+      {
+        sprintf(tempData, "%d,%d,%d,", dmpData.Compass.Data.X, dmpData.Compass.Data.Y, dmpData.Compass.Data.Z);
         strcat(outputData, tempData);
       }
     }
-    //else
-    //{
-    //  printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
-    //}
   }
 
   //Append all external sensor data on linked list to outputData
@@ -887,14 +925,30 @@ void printHelperText(bool terminalOnly)
 
   if (online.IMU)
   {
-    if (settings.logIMUAccel)
-      strcat(helperText, "aX,aY,aZ,");
-    if (settings.logIMUGyro)
-      strcat(helperText, "gX,gY,gZ,");
-    if (settings.logIMUMag)
-      strcat(helperText, "mX,mY,mZ,");
-    if (settings.logIMUTemp)
-      strcat(helperText, "imu_degC,");
+    if (settings.imuUseDMP == false)
+    {
+      if (settings.logIMUAccel)
+        strcat(helperText, "aX,aY,aZ,");
+      if (settings.logIMUGyro)
+        strcat(helperText, "gX,gY,gZ,");
+      if (settings.logIMUMag)
+        strcat(helperText, "mX,mY,mZ,");
+      if (settings.logIMUTemp)
+        strcat(helperText, "imu_degC,");
+    }
+    else
+    {
+      if (settings.imuLogDMPQuat6)
+        strcat(helperText, "Q6_1,Q6_2,Q6_3,");
+      if (settings.imuLogDMPQuat9)
+        strcat(helperText, "Q9_1,Q9_2,Q9_3,HeadAcc,");
+      if (settings.imuLogDMPAccel)
+        strcat(helperText, "RawAX,RawAY,RawAZ,");
+      if (settings.imuLogDMPGyro)
+        strcat(helperText, "RawGX,RawGY,RawGZ,");
+      if (settings.imuLogDMPCpass)
+        strcat(helperText, "RawMX,RawMY,RawMZ,");
+    }
   }
 
   //Step through list, printing values as we go

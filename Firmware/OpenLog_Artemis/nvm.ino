@@ -164,6 +164,12 @@ void recordSystemSettingsToFile()
     settingsFile.println("slowLoggingStartMOD=" + (String)settings.slowLoggingStartMOD);
     settingsFile.println("slowLoggingStopMOD=" + (String)settings.slowLoggingStopMOD);
     settingsFile.println("resetOnZeroDeviceCount=" + (String)settings.resetOnZeroDeviceCount);
+    settingsFile.println("imuUseDMP=" + (String)settings.imuUseDMP);
+    settingsFile.println("imuLogDMPQuat6=" + (String)settings.imuLogDMPQuat6);
+    settingsFile.println("imuLogDMPQuat9=" + (String)settings.imuLogDMPQuat9);
+    settingsFile.println("imuLogDMPAccel=" + (String)settings.imuLogDMPAccel);
+    settingsFile.println("imuLogDMPGyro=" + (String)settings.imuLogDMPGyro);
+    settingsFile.println("imuLogDMPCpass=" + (String)settings.imuLogDMPCpass);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -424,6 +430,18 @@ bool parseLine(char* str) {
     settings.slowLoggingStopMOD = d;
   else if (strcmp(settingName, "resetOnZeroDeviceCount") == 0)
     settings.resetOnZeroDeviceCount = d;
+  else if (strcmp(settingName, "imuUseDMP") == 0)
+    settings.imuUseDMP = d;
+  else if (strcmp(settingName, "imuLogDMPQuat6") == 0)
+    settings.imuLogDMPQuat6 = d;
+  else if (strcmp(settingName, "imuLogDMPQuat9") == 0)
+    settings.imuLogDMPQuat9 = d;
+  else if (strcmp(settingName, "imuLogDMPAccel") == 0)
+    settings.imuLogDMPAccel = d;
+  else if (strcmp(settingName, "imuLogDMPGyro") == 0)
+    settings.imuLogDMPGyro = d;
+  else if (strcmp(settingName, "imuLogDMPCpass") == 0)
+    settings.imuLogDMPCpass = d;
   else
     {
       SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);

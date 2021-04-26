@@ -2,6 +2,7 @@
 //If user doesn't respond within a few seconds, return to main loop
 void menuMain()
 {
+  bool restartIMU = false;
   while (1)
   {
     SerialPrintln(F(""));
@@ -42,7 +43,7 @@ void menuMain()
     else if (incoming == '2')
       menuTimeStamp();
     else if (incoming == '3')
-      menuIMU();
+      restartIMU = menuIMU();
     else if ((incoming == '4') && (settings.useTxRxPinsForTerminal == false))
       menuSerialLogging();
     else if (incoming == '5')
@@ -160,6 +161,9 @@ void menuMain()
   recordDeviceSettingsToFile(); //Record the current devices settings to device config file
 
   configureQwiicDevices(); //Reconfigure the qwiic devices in case any settings have changed
+
+  if (restartIMU == true)
+    beginIMU(); // Restart the IMU if required
 
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 
