@@ -132,6 +132,9 @@ void menuLogRate()
       SerialPrintf3("%02d:%02d\r\n", slowHour, slowMin);
     }
 
+    SerialPrint(F("21) Minimum awake time between sleeps: "));
+    SerialPrintf2("%dms\r\n", settings.minimumAwakeTimeMillis);
+
     SerialPrintln(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
@@ -430,6 +433,19 @@ void menuLogRate()
             settings.slowLoggingStopMOD += (int)tempMOD;
         }
       }      
+    }
+    else if (incoming == 21)
+    {
+      SerialPrintf2("Enter minimum awake time (ms: 0 to %d): : ", settings.usBetweenReadings / 1000ULL);
+      int newAwake = getNumber(menuTimeout); //Timeout after x seconds
+      if (newAwake < 0 || newAwake > settings.usBetweenReadings / 1000ULL)
+      {
+        SerialPrintln(F("Error: awake time out of range"));
+      }
+      else
+      {
+        settings.minimumAwakeTimeMillis = newAwake;
+      }
     }
     else if (incoming == STATUS_PRESSED_X)
       return;

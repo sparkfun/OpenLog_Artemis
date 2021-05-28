@@ -178,6 +178,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("imuLogDMPAccel=" + (String)settings.imuLogDMPAccel);
     settingsFile.println("imuLogDMPGyro=" + (String)settings.imuLogDMPGyro);
     settingsFile.println("imuLogDMPCpass=" + (String)settings.imuLogDMPCpass);
+    settingsFile.println("minimumAwakeTimeMillis=" + (String)settings.minimumAwakeTimeMillis);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -450,6 +451,8 @@ bool parseLine(char* str) {
     settings.imuLogDMPGyro = d;
   else if (strcmp(settingName, "imuLogDMPCpass") == 0)
     settings.imuLogDMPCpass = d;
+  else if (strcmp(settingName, "minimumAwakeTimeMillis") == 0)
+    settings.minimumAwakeTimeMillis = d;
   else
     {
       SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);

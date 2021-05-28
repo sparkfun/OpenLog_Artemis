@@ -89,8 +89,9 @@
   (done) Correct an issue which was causing the OLA to crash when waking from sleep and outputting serial data https://github.com/sparkfun/OpenLog_Artemis/issues/79
   (done) Correct low-power code as per https://github.com/sparkfun/OpenLog_Artemis/issues/78
   (done) Correct a bug in menuAttachedDevices when useTxRxPinsForTerminal is enabled https://github.com/sparkfun/OpenLog_Artemis/issues/82
-  (done) Add ICM-20948 DMP support. Requires v1.2.6 of the ICM-20948 library. DMP logging is limited to: Quat6 or Quat9, plus raw accel, gyro and compass
-  (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library
+  (done) Add ICM-20948 DMP support. Requires v1.2.6 of the ICM-20948 library. DMP logging is limited to: Quat6 or Quat9, plus raw accel, gyro and compass. https://github.com/sparkfun/OpenLog_Artemis/issues/47
+  (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library. https://github.com/sparkfun/OpenLog_Artemis/issues/34
+  (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -261,6 +262,7 @@ unsigned long lastReadTime = 0; //Used to delay until user wants to record a new
 unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
+bool sleepAfterRead = false; //Used to keep the code awake for at least minimumAwakeTimeMillis
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
 volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
@@ -663,11 +665,23 @@ void loop() {
 
     triggerEdgeSeen = false; // Clear the trigger seen flag here - just in case another trigger was received while we were logging data to SD card
 
-    // Code changes here are based on suggestions by @ryanneve in Issue #46 and PR #64
+    // Code changes here are based on suggestions by @ryanneve in Issue #46, PR #64 and Issue #83
     if (checkIfItIsTimeToSleep())
     {
-      goToSleep(howLongToSleepFor());
+      sleepAfterRead = true;
     }
+  }
+
+  if (sleepAfterRead == true)
+  {
+    if (settings.minimumAwakeTimeMillis > 0) // Check if we should stay awake because settings.minimumAwakeTimeMillis is non-zero
+    {
+      if (millis() < settings.minimumAwakeTimeMillis) // Check if we have been awake long enough (millis is reset to zero when waking from sleep)
+        return; // Too early to sleep - but leave sleepAfterRead set true
+    }
+
+    sleepAfterRead = false;
+    goToSleep(howLongToSleepFor());
   }
 }
 
@@ -704,7 +718,20 @@ uint32_t howLongToSleepFor(void)
       msToSleep = (secondsUntilStop + 1) * 1000UL; // Adjust msToSleep, adding one extra second to make sure the next wake is > slowLoggingStop
   }
   else // checkSleepOnUsBetweenReadings
-    msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
+  {
+    msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL); // Sleep for usBetweenReadings
+
+    if (settings.minimumAwakeTimeMillis > 0)
+    {
+      unsigned long millisNow = millis(); // Subtract our awake time from msToSleep (millis is reset to zero when waking from sleep)
+      if (millisNow < msToSleep)
+      {
+        msToSleep -= millisNow;
+      }
+      else
+        msToSleep = 1;
+    }
+  }
   
   uint32_t sysTicksToSleep;
   if (msToSleep < 131000)
@@ -1090,6 +1117,7 @@ void beginIMU()
     if (success)
     {
       online.IMU = true;
+      delay(50); // Give the IMU time to get its first measurement ready
     }
     else
     {
