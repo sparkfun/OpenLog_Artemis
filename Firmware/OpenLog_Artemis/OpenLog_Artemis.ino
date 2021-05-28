@@ -55,7 +55,7 @@
   (done) Use the WDT to reset the Artemis when power is reconnected (previously the Artemis would have stayed in deep sleep)
   Add a callback function to the u-blox library so we can abort waiting for UBX data if the power goes low
   (done) Add support for the ADS122C04 ADC (Qwiic PT100)
-  Investigate why usBetweenReadings appears to be ~0.8s longer than expected
+  (done) Investigate why usBetweenReadings appears to be longer than expected. We needed to read millis _before_ enabling the lower power clock!
   (done) Correct u-blox pull-ups
   (done) Add an olaIdentifier to prevent problems when using two code variants that have the same sizeOfSettings
   (done) Add a fix for the IMU wake-up issue identified in https://github.com/sparkfun/OpenLog_Artemis/issues/18
@@ -674,10 +674,13 @@ void loop() {
 
   if (sleepAfterRead == true)
   {
-    if (settings.minimumAwakeTimeMillis > 0) // Check if we should stay awake because settings.minimumAwakeTimeMillis is non-zero
+    // Check if we should stay awake because settings.minimumAwakeTimeMillis is non-zero
+    if ((settings.usBetweenReadings >= maxUsBeforeSleep) && (settings.minimumAwakeTimeMillis > 0))
     {
-      if (millis() < settings.minimumAwakeTimeMillis) // Check if we have been awake long enough (millis is reset to zero when waking from sleep)
-        return; // Too early to sleep - but leave sleepAfterRead set true
+      // Check if we have been awake long enough (millis is reset to zero when waking from sleep)
+      // goToSleep will automatically compensate for how long we have been awake
+      if (millis() < settings.minimumAwakeTimeMillis)
+        return; // Too early to sleep - leave sleepAfterRead set true
     }
 
     sleepAfterRead = false;
@@ -691,6 +694,8 @@ uint32_t howLongToSleepFor(void)
   //Calculate how many 32768Hz system ticks we need to sleep for:
   //sysTicksToSleep = msToSleep * 32768L / 1000
   //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
+
+  //goToSleep will automatically compensate for how long we have been awake
   
   uint32_t msToSleep;
 
@@ -720,17 +725,6 @@ uint32_t howLongToSleepFor(void)
   else // checkSleepOnUsBetweenReadings
   {
     msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL); // Sleep for usBetweenReadings
-
-    if (settings.minimumAwakeTimeMillis > 0)
-    {
-      unsigned long millisNow = millis(); // Subtract our awake time from msToSleep (millis is reset to zero when waking from sleep)
-      if (millisNow < msToSleep)
-      {
-        msToSleep -= millisNow;
-      }
-      else
-        msToSleep = 1;
-    }
   }
   
   uint32_t sysTicksToSleep;

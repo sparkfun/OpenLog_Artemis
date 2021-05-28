@@ -132,8 +132,11 @@ void menuLogRate()
       SerialPrintf3("%02d:%02d\r\n", slowHour, slowMin);
     }
 
-    SerialPrint(F("21) Minimum awake time between sleeps: "));
-    SerialPrintf2("%dms\r\n", settings.minimumAwakeTimeMillis);
+    if ((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+    {
+      SerialPrint(F("21) Minimum awake time between sleeps: "));
+      SerialPrintf2("%dms\r\n", settings.minimumAwakeTimeMillis);
+    }
 
     SerialPrintln(F("x) Exit"));
 
@@ -189,7 +192,16 @@ void menuLogRate()
         if (tempSeconds < 1 || tempSeconds > 129600)
           SerialPrintln(F("Error: logging interval out of range"));
         else
+        {
           settings.usBetweenReadings = 1000000ULL * ((uint64_t)tempSeconds);
+
+          if (settings.usBetweenReadings >= maxUsBeforeSleep) // Check if minimumAwakeTimeMillis needs to be reduced
+          {
+            // Limit minimumAwakeTimeMillis to usBetweenReadings minus one second
+            if (settings.minimumAwakeTimeMillis > ((settings.usBetweenReadings / 1000ULL) - 1000ULL))
+              settings.minimumAwakeTimeMillis = (unsigned long)((settings.usBetweenReadings / 1000ULL) - 1000ULL);
+          }
+        }
       }
     }
     else if (incoming == 6)
@@ -436,15 +448,23 @@ void menuLogRate()
     }
     else if (incoming == 21)
     {
-      SerialPrintf2("Enter minimum awake time (ms: 0 to %d): : ", settings.usBetweenReadings / 1000ULL);
-      int newAwake = getNumber(menuTimeout); //Timeout after x seconds
-      if (newAwake < 0 || newAwake > settings.usBetweenReadings / 1000ULL)
+      if (settings.useGPIO11ForTrigger == false)
       {
-        SerialPrintln(F("Error: awake time out of range"));
-      }
-      else
-      {
-        settings.minimumAwakeTimeMillis = newAwake;
+        if (settings.usBetweenReadings >= maxUsBeforeSleep)
+        {
+          // Limit minimumAwakeTimeMillis to usBetweenReadings minus one second
+          unsigned long maxAwakeMillis = (unsigned long)((settings.usBetweenReadings / 1000ULL) - 1000ULL);
+          SerialPrintf2("Enter minimum awake time (ms: 0 to %d): : ", maxAwakeMillis);
+          int newAwake = getNumber(menuTimeout); //Timeout after x seconds
+          if (newAwake < 0 || newAwake > maxAwakeMillis)
+          {
+            SerialPrintln(F("Error: awake time out of range"));
+          }
+          else
+          {
+            settings.minimumAwakeTimeMillis = newAwake;
+          }
+        }
       }
     }
     else if (incoming == STATUS_PRESSED_X)
