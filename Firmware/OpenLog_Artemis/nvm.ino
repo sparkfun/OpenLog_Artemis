@@ -57,7 +57,15 @@ void recordSystemSettingsToFile()
     if (sd.exists("OLA_settings.txt"))
       sd.remove("OLA_settings.txt");
 
-    SdFile settingsFile; //FAT32
+    #if SD_FAT_TYPE == 1
+    File32 settingsFile;
+    #elif SD_FAT_TYPE == 2
+    ExFile settingsFile;
+    #elif SD_FAT_TYPE == 3
+    FsFile settingsFile;
+    #else // SD_FAT_TYPE == 0
+    File settingsFile;
+    #endif  // SD_FAT_TYPE
     if (settingsFile.open("OLA_settings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       SerialPrintln(F("Failed to create settings file"));
@@ -459,7 +467,15 @@ void recordDeviceSettingsToFile()
     if (sd.exists("OLA_deviceSettings.txt"))
       sd.remove("OLA_deviceSettings.txt");
 
-    SdFile settingsFile; //FAT32
+    #if SD_FAT_TYPE == 1
+    File32 settingsFile;
+    #elif SD_FAT_TYPE == 2
+    ExFile settingsFile;
+    #elif SD_FAT_TYPE == 3
+    FsFile settingsFile;
+    #else // SD_FAT_TYPE == 0
+    File settingsFile;
+    #endif  // SD_FAT_TYPE
     if (settingsFile.open("OLA_deviceSettings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       SerialPrintln(F("Failed to create device settings file"));
@@ -750,7 +766,16 @@ bool loadDeviceSettingsFromFile()
   {
     if (sd.exists("OLA_deviceSettings.txt"))
     {
-      SdFile settingsFile; //FAT32
+      #if SD_FAT_TYPE == 1
+      File32 settingsFile;
+      #elif SD_FAT_TYPE == 2
+      ExFile settingsFile;
+      #elif SD_FAT_TYPE == 3
+      FsFile settingsFile;
+      #else // SD_FAT_TYPE == 0
+      File settingsFile;
+      #endif  // SD_FAT_TYPE
+
       if (settingsFile.open("OLA_deviceSettings.txt", O_READ) == false)
       {
         SerialPrintln(F("Failed to open device settings file"));

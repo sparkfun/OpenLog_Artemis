@@ -89,6 +89,8 @@
   (done) Correct an issue which was causing the OLA to crash when waking from sleep and outputting serial data https://github.com/sparkfun/OpenLog_Artemis/issues/79
   (done) Correct low-power code as per https://github.com/sparkfun/OpenLog_Artemis/issues/78
   (done) Correct a bug in menuAttachedDevices when useTxRxPinsForTerminal is enabled https://github.com/sparkfun/OpenLog_Artemis/issues/82
+  (done) Add ICM-20948 DMP support. Requires v1.2.6 of the ICM-20948 library. DMP logging is limited to: Quat6 or Quat9, plus raw accel, gyro and compass
+  (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
@@ -164,10 +166,30 @@ TwoWire qwiic(1); //Will use pads 8/9
 //microSD Interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
-#include <SdFat.h> //SdFat (FAT32) by Bill Greiman: http://librarymanager/All#SdFat
+
+#include <SdFat.h> //SdFat v2.0.6 by Bill Greiman: http://librarymanager/All#SdFat_exFAT
+
+#define SD_FAT_TYPE 3 // SD_FAT_TYPE = 0 for SdFat/File, 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
+#define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
+
+#if SD_FAT_TYPE == 1
+SdFat32 sd;
+File32 sensorDataFile; //File that all sensor data is written to
+File32 serialDataFile; //File that all incoming serial data is written to
+#elif SD_FAT_TYPE == 2
+SdExFat sd;
+ExFile sensorDataFile; //File that all sensor data is written to
+ExFile serialDataFile; //File that all incoming serial data is written to
+#elif SD_FAT_TYPE == 3
+SdFs sd;
+FsFile sensorDataFile; //File that all sensor data is written to
+FsFile serialDataFile; //File that all incoming serial data is written to
+#else // SD_FAT_TYPE == 0
 SdFat sd;
-SdFile sensorDataFile; //File that all sensor data is written to
-SdFile serialDataFile; //File that all incoming serial data is written to
+File sensorDataFile; //File that all sensor data is written to
+File serialDataFile; //File that all incoming serial data is written to
+#endif  // SD_FAT_TYPE
+
 //#define PRINT_LAST_WRITE_TIME // Uncomment this line to enable the 'measure the time between writes' diagnostic
 
 char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
@@ -786,7 +808,7 @@ void beginSD()
       delay(1);
     }
 
-    if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
+    if (sd.begin(SD_CONFIG) == false) // Try to begin the SD card using the correct chip select
     {
       printDebug(F("SD init failed (first attempt). Trying again...\r\n"));
       for (int i = 0; i < 250; i++) //Give SD more time to power up, then try again
@@ -794,7 +816,7 @@ void beginSD()
         checkBattery();
         delay(1);
       }
-      if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
+      if (sd.begin(SD_CONFIG) == false) // Try to begin the SD card using the correct chip select
       {
         SerialPrintln(F("SD init failed (second attempt). Is card present? Formatted?"));
         digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
@@ -1146,14 +1168,30 @@ void beginSerialOutput()
     online.serialOutput = false;
 }
 
-void updateDataFileCreate(SdFile *dataFile)
+#if SD_FAT_TYPE == 1
+void updateDataFileCreate(File32 *dataFile)
+#elif SD_FAT_TYPE == 2
+void updateDataFileCreate(ExFile *dataFile)
+#elif SD_FAT_TYPE == 3
+void updateDataFileCreate(FsFile *dataFile)
+#else // SD_FAT_TYPE == 0
+void updateDataFileCreate(File *dataFile)
+#endif  // SD_FAT_TYPE
 {
   myRTC.getTime(); //Get the RTC time so we can use it to update the create time
   //Update the file create time
   dataFile->timestamp(T_CREATE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
 }
 
-void updateDataFileAccess(SdFile *dataFile)
+#if SD_FAT_TYPE == 1
+void updateDataFileAccess(File32 *dataFile)
+#elif SD_FAT_TYPE == 2
+void updateDataFileAccess(ExFile *dataFile)
+#elif SD_FAT_TYPE == 3
+void updateDataFileAccess(FsFile *dataFile)
+#else // SD_FAT_TYPE == 0
+void updateDataFileAccess(File *dataFile)
+#endif  // SD_FAT_TYPE
 {
   myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
   //Update the file access time
