@@ -26,6 +26,8 @@ typedef enum
   DEVICE_VOC_SGP40,
   DEVICE_PRESSURE_SDP3X,
   DEVICE_PRESSURE_MS5837,
+  DEVICE_QWIIC_BUTTON,
+  DEVICE_BIO_SENSOR_HUB,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -313,6 +315,25 @@ struct struct_MS5837 {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
+struct struct_QWIIC_BUTTON {
+  bool log = true;
+  bool logPressed = true;
+  bool logClicked = true;
+  bool toggleLEDOnClick = true;
+  bool ledState = false; // Do not store in NVM
+  uint8_t ledBrightness = 255;
+  unsigned long powerOnDelayMillis = 3000; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_BIO_SENSOR_HUB {
+  bool log = true;
+  bool logHeartrate = true;
+  bool logConfidence = true;
+  bool logOxygen = true;
+  bool logStatus = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
 
 //This is all the settings that can be set on OpenLog. It's recorded to NVM and the config file.
 struct struct_settings {
@@ -399,6 +420,7 @@ struct struct_settings {
   bool imuLogDMPGyro = false; // If true, log INV_ICM20948_SENSOR_RAW_GYROSCOPE
   bool imuLogDMPCpass = false; // If true, log INV_ICM20948_SENSOR_MAGNETIC_FIELD_UNCALIBRATED
   unsigned long minimumAwakeTimeMillis = 0; // Set to greater than zero to keep the Artemis awake for this long between sleeps
+  bool identifyBioSensorHubs = false; // If true, Bio Sensor Hubs (Pulse Oximeters) will be included in autoDetect (requires exclusive use of pins 32 and 11)
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

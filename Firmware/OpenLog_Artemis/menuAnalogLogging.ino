@@ -9,9 +9,12 @@ void menuAnalogLogging()
     SerialPrintln(F(""));
     SerialPrintln(F("Menu: Configure Analog Logging"));
 
-    SerialPrint(F("1) Log analog pin 11 (2V Max): "));
-    if (settings.logA11 == true) SerialPrintln(F("Enabled. (Triggering is disabled)"));
-    else SerialPrintln(F("Disabled"));
+    if (settings.identifyBioSensorHubs == false)
+    {
+      SerialPrint(F("1) Log analog pin 11 (2V Max): "));
+      if (settings.logA11 == true) SerialPrintln(F("Enabled. (Triggering is disabled)"));
+      else SerialPrintln(F("Disabled"));
+    }
 
     SerialPrint(F("2) Log analog pin 12 (TX) (2V Max): "));
     if (settings.useTxRxPinsForTerminal == true) SerialPrintln(F("Disabled. (TX and RX pins are being used for the Terminal)"));
@@ -23,9 +26,12 @@ void menuAnalogLogging()
     else if (settings.logA13 == true) SerialPrintln(F("Enabled. (Serial logging is disabled)"));
     else SerialPrintln(F("Disabled"));
 
-    SerialPrint(F("4) Log analog pin 32 (2V Max): "));
-    if (settings.logA32 == true) SerialPrintln(F("Enabled. (Stop logging is disabled)"));
-    else SerialPrintln(F("Disabled"));
+    if (settings.identifyBioSensorHubs == false)
+    {
+      SerialPrint(F("4) Log analog pin 32 (2V Max): "));
+      if (settings.logA32 == true) SerialPrintln(F("Enabled. (Stop logging is disabled)"));
+      else SerialPrintln(F("Disabled"));
+    }
 
     SerialPrint(F("5) Log output type: "));
     if (settings.logAnalogVoltages == true) SerialPrintln(F("Calculated Voltage"));
@@ -41,17 +47,26 @@ void menuAnalogLogging()
 
     if (incoming == '1')
     {
-      if(settings.logA11 == false)
+      if (settings.identifyBioSensorHubs == false)
       {
-        settings.logA11 = true;
-        // Disable triggering
-        settings.useGPIO11ForTrigger = false;
-        detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
-        pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
-        triggerEdgeSeen = false; // Make sure the flag is clear
+        if(settings.logA11 == false)
+        {
+          settings.logA11 = true;
+          // Disable triggering
+          settings.useGPIO11ForTrigger = false;
+          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          triggerEdgeSeen = false; // Make sure the flag is clear
+        }
+        else
+          settings.logA11 = false;
       }
       else
-        settings.logA11 = false;
+      {
+        SerialPrintln(F(""));
+        SerialPrintln(F("Analog logging on pin 11 is not possible. Bio Sensor Hubs (Pulse Oximeters) are enabled."));
+        SerialPrintln(F(""));
+      }      
     }
     else if (incoming == '2')
     {
@@ -95,16 +110,25 @@ void menuAnalogLogging()
     }
     else if (incoming == '4')
     {
-      if(settings.logA32 == false)
+      if (settings.identifyBioSensorHubs == false)
       {
-        settings.logA32 = true;
-        // Disable stop logging
-        settings.useGPIO32ForStopLogging = false;
-        detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
-        pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+        if(settings.logA32 == false)
+        {
+          settings.logA32 = true;
+          // Disable stop logging
+          settings.useGPIO32ForStopLogging = false;
+          detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+          pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+        }
+        else
+          settings.logA32 = false;
       }
       else
-        settings.logA32 = false;
+      {
+        SerialPrintln(F(""));
+        SerialPrintln(F("Analog logging on pin 32 is not possible. Bio Sensor Hubs (Pulse Oximeters) are enabled."));
+        SerialPrintln(F(""));
+      }      
     }
     else if (incoming == '5')
       settings.logAnalogVoltages ^= 1;

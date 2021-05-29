@@ -1,6 +1,22 @@
 Change Log
 ======================
 
+v1.11
+---------
+
+* Adds support for the ICM-20948 Digital Motion Processor [47](https://github.com/sparkfun/OpenLog_Artemis/issues/47)
+  * The OLA's orientation can be logged as a 6-axis or 9-axis Quaternion
+* Adds support for exFAT microSD cards [34](https://github.com/sparkfun/OpenLog_Artemis/issues/34)
+* Adds a minimum awake time, making it easier to open the Serial menu when the OLA is sleeping between measurements [83](https://github.com/sparkfun/OpenLog_Artemis/issues/83)
+* Adds support for the Qwiic Button [81](https://github.com/sparkfun/OpenLog_Artemis/issues/81)
+  * Buttons with I2C addresses 0x68 to 0x6F are supported
+* Adds support for the Bio Sensor Hub Pulse Oximeter and Heart Rate Sensor [81](https://github.com/sparkfun/OpenLog_Artemis/issues/81)
+  * Requires exclusive use of pins 32 and 11
+* Adds stand-alone examples for:
+  * ICM-20948 DMP (orientation in Quat6 and Quat9)
+  * GNSS RAWX logging
+  * GNSS TIM-TM2 logging
+
 v1.10
 ---------
 

@@ -39,24 +39,33 @@ void menuPower()
     }
     else if (incoming == '2')
     {
-      if (settings.useGPIO32ForStopLogging == true)
+      if (settings.identifyBioSensorHubs == false)
       {
-        // Disable stop logging
-        settings.useGPIO32ForStopLogging = false;
-        detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
-        pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
-        stopLoggingSeen = false; // Make sure the flag is clear
+        if (settings.useGPIO32ForStopLogging == true)
+        {
+          // Disable stop logging
+          settings.useGPIO32ForStopLogging = false;
+          detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+          pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+          stopLoggingSeen = false; // Make sure the flag is clear
+        }
+        else
+        {
+          // Enable stop logging
+          settings.useGPIO32ForStopLogging = true;
+          pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
+          delay(1); // Let the pin stabilize
+          attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+          stopLoggingSeen = false; // Make sure the flag is clear
+          settings.logA32 = false; // Disable analog logging on pin 32
+        }
       }
       else
       {
-        // Enable stop logging
-        settings.useGPIO32ForStopLogging = true;
-        pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
-        delay(1); // Let the pin stabilize
-        attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
-        stopLoggingSeen = false; // Make sure the flag is clear
-        settings.logA32 = false; // Disable analog logging on pin 32
-      }
+        SerialPrintln(F(""));
+        SerialPrintln(F("Stop logging via pin 32 is not possible. \"Detect Bio Sensor Pulse Oximeter\" is enabled."));
+        SerialPrintln(F(""));
+      }              
     }
 #if(HARDWARE_VERSION_MAJOR >= 1)
     else if (incoming == '3')

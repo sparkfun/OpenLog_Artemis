@@ -179,6 +179,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("imuLogDMPGyro=" + (String)settings.imuLogDMPGyro);
     settingsFile.println("imuLogDMPCpass=" + (String)settings.imuLogDMPCpass);
     settingsFile.println("minimumAwakeTimeMillis=" + (String)settings.minimumAwakeTimeMillis);
+    settingsFile.println("identifyBioSensorHubs=" + (String)settings.identifyBioSensorHubs);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -453,6 +454,8 @@ bool parseLine(char* str) {
     settings.imuLogDMPCpass = d;
   else if (strcmp(settingName, "minimumAwakeTimeMillis") == 0)
     settings.minimumAwakeTimeMillis = d;
+  else if (strcmp(settingName, "identifyBioSensorHubs") == 0)
+    settings.identifyBioSensorHubs = d;
   else
     {
       SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);
@@ -728,6 +731,7 @@ void recordDeviceSettingsToFile()
         case DEVICE_PRESSURE_SDP3X:
           {
             struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
             settingsFile.println((String)base + "massFlow=" + nodeSetting->massFlow);
@@ -745,6 +749,26 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "model=" + nodeSetting->model);
             settingsFile.println((String)base + "fluidDensity=" + nodeSetting->fluidDensity);
             settingsFile.println((String)base + "conversion=" + nodeSetting->conversion);
+          }
+          break;
+        case DEVICE_QWIIC_BUTTON:
+          {
+            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logPressed=" + nodeSetting->logPressed);
+            settingsFile.println((String)base + "logClicked=" + nodeSetting->logClicked);
+            settingsFile.println((String)base + "toggleLEDOnClick=" + nodeSetting->toggleLEDOnClick);
+            settingsFile.println((String)base + "ledBrightness=" + nodeSetting->ledBrightness);
+          }
+          break;
+        case DEVICE_BIO_SENSOR_HUB:
+          {
+            struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logHeartrate=" + nodeSetting->logHeartrate);
+            settingsFile.println((String)base + "logConfidence=" + nodeSetting->logConfidence);
+            settingsFile.println((String)base + "logOxygen=" + nodeSetting->logOxygen);
+            settingsFile.println((String)base + "logStatus=" + nodeSetting->logStatus);
           }
           break;
         default:
@@ -1330,6 +1354,40 @@ bool parseDeviceLine(char* str) {
             nodeSetting->fluidDensity = d;
           else if (strcmp(deviceSettingName, "conversion") == 0)
             nodeSetting->conversion = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_QWIIC_BUTTON:
+        {
+          struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logPressed") == 0)
+            nodeSetting->logPressed = d;
+          else if (strcmp(deviceSettingName, "logClicked") == 0)
+            nodeSetting->logClicked = d;
+          else if (strcmp(deviceSettingName, "toggleLEDOnClick") == 0)
+            nodeSetting->toggleLEDOnClick = d;
+          else if (strcmp(deviceSettingName, "ledBrightness") == 0)
+            nodeSetting->ledBrightness = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_BIO_SENSOR_HUB:
+        {
+          struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logHeartrate") == 0)
+            nodeSetting->logHeartrate = d;
+          else if (strcmp(deviceSettingName, "logConfidence") == 0)
+            nodeSetting->logConfidence = d;
+          else if (strcmp(deviceSettingName, "logOxygen") == 0)
+            nodeSetting->logOxygen = d;
+          else if (strcmp(deviceSettingName, "logStatus") == 0)
+            nodeSetting->logStatus = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
