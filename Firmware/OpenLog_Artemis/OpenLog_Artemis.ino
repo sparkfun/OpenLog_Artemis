@@ -13,7 +13,7 @@
 
   The Board should be set to SparkFun Apollo3 \ SparkFun RedBoard Artemis ATP.
 
-  Please note: this firmware currently only compiles on v1.2.1 of the Apollo3 boards.
+  Please note: this firmware currently only compiles on v1.2.2 of the Apollo3 boards.
   It does not yet work with the new Mbed version (v2.0) of the core.
 
   v1.0 Power Consumption:
@@ -93,10 +93,11 @@
   (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library. https://github.com/sparkfun/OpenLog_Artemis/issues/34
   (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
   (done) Add support for the Pulse Oximeter and Qwiic Button: https://github.com/sparkfun/OpenLog_Artemis/issues/81
+  (in progress) Update to Apollo3 v2.1.0 - FIRMWARE_VERSION_MAJOR = 2
 */
 
-const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 11;
+const int FIRMWARE_VERSION_MAJOR = 2;
+const int FIRMWARE_VERSION_MINOR = 0;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -106,7 +107,7 @@ const int FIRMWARE_VERSION_MINOR = 11;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x11B // Stored as 283 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x120 // Stored as 288 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -157,7 +158,7 @@ enum returnStatus {
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <Wire.h>
-TwoWire qwiic(1); //Will use pads 8/9
+TwoWire qwiic(9,8); //Will use pads 8/9 - changed from (1) for Apollo3 v2
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //EEPROM for storing settings
@@ -202,12 +203,13 @@ const int sdPowerDownDelay = 100; //Delay for this many ms before turning off th
 //Add RTC interface for Artemis
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "RTC.h" //Include RTC library included with the Aruino_Apollo3 core
-APM3_RTC myRTC; //Create instance of RTC class
+Apollo3RTC myRTC; //Create instance of RTC class
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Create UART instance for OpenLog style serial logging
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Uart SerialLog(1, 13, 12);  // Declares a Uart object called Serial1 using instance 1 of Apollo3 UART peripherals with RX on pin 13 and TX on pin 12 (note, you specify *pins* not Apollo3 pads. This uses the variant's pin map to determine the Apollo3 pad)
+//UART SerialLog(12, 13, 10, 17);  // Declares a Uart object called Serial1 with RX on pin 13 and TX on pin 12. Unused pins 10 and 17 are named for RTS and CTS to keep Apollo3 happy
+UART SerialLog(12, 13);  // Declares a Uart object called Serial1 with RX on pin 13 and TX on pin 12
 unsigned long lastSeriaLogSyncTime = 0;
 const int MAX_IDLE_TIME_MSEC = 500;
 bool newSerialData = false;
@@ -806,7 +808,7 @@ void beginQwiic()
   pinMode(PIN_QWIIC_POWER, OUTPUT);
   qwiicPowerOn();
   qwiic.begin();
-  qwiic.setPullups(settings.qwiicBusPullUps); //Just to make it really clear what pull-ups are being used, set pullups here.
+  //qwiic.setPullups(settings.qwiicBusPullUps); //Just to make it really clear what pull-ups are being used, set pullups here.
 }
 
 void beginSD()
@@ -870,15 +872,16 @@ void beginSD()
 void enableCIPOpullUp()
 {
   //Add CIPO pull-up
-  ap3_err_t retval = AP3_OK;
-  am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
+  uint32_t retval = AM_HAL_STATUS_SUCCESS;
+  am_hal_gpio_pincfg_t cipoPinCfg = {0,0,0,0,0,0,0,0,0,0,0,0}; // = AP3_GPIO_DEFAULT_PINCFG;
   cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
+  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
   cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
   cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
-  cipoPinCfg.uIOMnum = AP3_SPI_IOM;
-  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
-  padMode(MISO, cipoPinCfg, &retval);
-  if (retval != AP3_OK)
+  cipoPinCfg.uIOMnum = 1; // AP3_SPI_IOM; // IOM 1 is used for SPI. Redundant since pin is not a CE?
+  //padMode(MISO, cipoPinCfg, &retval);
+  retval = am_hal_gpio_pinconfig(MISO, cipoPinCfg);
+  if (retval != AM_HAL_STATUS_SUCCESS)
     printDebug(F("Setting CIPO padMode failed!"));
 }
 

@@ -322,7 +322,7 @@ struct struct_QWIIC_BUTTON {
   bool toggleLEDOnClick = true;
   bool ledState = false; // Do not store in NVM
   uint8_t ledBrightness = 255;
-  unsigned long powerOnDelayMillis = 3000; // Wait for at least this many millis before communicating with this device. Increase if required!
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
 struct struct_BIO_SENSOR_HUB {

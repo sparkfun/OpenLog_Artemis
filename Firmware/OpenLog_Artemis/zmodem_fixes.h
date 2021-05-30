@@ -6,7 +6,7 @@ From: http://stackoverflow.com/questions/2607853/why-prototype-is-used-header-fi
 #ifndef ZMODEM_FIXES_H
 #define ZMODEM_FIXES_H
 
-#define SERIAL_TX_BUFFER_SIZE AP3_UART_RINGBUFF_SIZE
+#define SERIAL_TX_BUFFER_SIZE SERIAL_BUFFER_SIZE // AP3_UART_RINGBUFF_SIZE
 
 ////////////////////////////////////////////////////////
 

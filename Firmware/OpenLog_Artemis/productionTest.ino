@@ -289,7 +289,7 @@ void productionTest()
         Serial.flush(); //Finish any prints
         qwiic.end(); //Power down I2C
         SPI.end(); //Power down SPI
-        power_adc_disable(); //Power down ADC. It it started by default before setup().
+        powerControlADC(false); // power_adc_disable(); //Power down ADC. It it started by default before setup().
         Serial.end(); //Power down UART
         SerialLog.end();
         //Force the peripherals off
@@ -532,11 +532,16 @@ void productionTest()
         //Disable pads
         for (int x = 0; x < 50; x++)
         {
-          if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-            //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
-            (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-            (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-            (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+//          if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
+//            //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
+//            (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
+//            (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
+//            (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+          if ((x != PIN_POWER_LOSS) &&
+            //(x != PIN_LOGIC_DEBUG) &&
+            (x != PIN_MICROSD_POWER) &&
+            (x != PIN_QWIIC_POWER) &&
+            (x != PIN_IMU_POWER))
           {
             am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
           }

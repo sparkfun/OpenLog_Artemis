@@ -33,9 +33,9 @@ bool detectQwiicDevices()
   printDebug(F("detectQwiicDevices started\r\n"));
   bool somethingDetected = false;
 
-  qwiic.setClock(100000); //During detection, go slow
+  qwiic.setClock(AM_HAL_IOM_100KHZ); //During detection, go slow
 
-  qwiic.setPullups(settings.qwiicBusPullUps); //Set pullups. (Redundant. beginQwiic has done this too.) If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+  //qwiic.setPullups(settings.qwiicBusPullUps); //Set pullups. (Redundant. beginQwiic has done this too.) If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   //24k causes a bunch of unknown devices to be falsely detected.
   //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
@@ -465,12 +465,10 @@ void menuConfigure_QwiicBus()
       settings.powerDownQwiicBusBetweenReads ^= 1;
     else if (incoming == '2')
     {
-      SerialPrint(F("Enter max frequency to run Qwiic bus: (100000 or 400000): "));
-      uint32_t amt = getNumber(menuTimeout);
-      if ((amt == 100000) || (amt == 400000))
-        settings.qwiicBusMaxSpeed = amt;
+      if (settings.qwiicBusMaxSpeed == 100000)
+        settings.qwiicBusMaxSpeed = 400000;
       else
-        SerialPrintln(F("Error: Out of range"));
+        settings.qwiicBusMaxSpeed = 100000;
     }
     else if (incoming == '3')
     {
@@ -1087,7 +1085,7 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
     {
       case DEVICE_GPS_UBLOX:
         {
-          qwiic.setPullups(0); //Disable pullups to minimize CRC issues
+          //qwiic.setPullups(0); //Disable pullups to minimize CRC issues
 
           SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
@@ -1104,7 +1102,7 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
           timeValid = nodeDevice->getTimeValid();
           millisecond = nodeDevice->getMillisecond();
 
-          qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
+          //qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
         }
     }
     temp = temp->next;

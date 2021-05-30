@@ -258,7 +258,7 @@ void gatherDeviceValues()
           break;
         case DEVICE_GPS_UBLOX:
           {
-            qwiic.setPullups(0); //Disable pullups to minimize CRC issues
+            //qwiic.setPullups(0); //Disable pullups to minimize CRC issues
 
             SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
             struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
@@ -333,7 +333,7 @@ void gatherDeviceValues()
               }
             }
 
-            qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
+            //qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
           }
           break;
         case DEVICE_PROXIMITY_VCNL4040:
@@ -1457,7 +1457,10 @@ void setMaxI2CSpeed()
   if (maxSpeed > settings.qwiicBusMaxSpeed)
     maxSpeed = settings.qwiicBusMaxSpeed;
 
-  qwiic.setClock(maxSpeed);
+  if (maxSpeed > 200000)
+    qwiic.setClock(AM_HAL_IOM_400KHZ);
+  else
+    qwiic.setClock(AM_HAL_IOM_100KHZ);
   for (int i = 0; i < 100; i++) //Allow time for the speed to change
   {
     checkBattery();
