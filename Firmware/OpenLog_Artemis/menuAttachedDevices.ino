@@ -336,9 +336,9 @@ void menuAttachedDevices()
           case DEVICE_PRESSURE_MS5837:
             SerialPrintf3("%s MS5837 (BAR30 / BAR02) Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
-          case DEVICE_QWIIC_BUTTON:
-            SerialPrintf3("%s Qwiic Button %s\r\n", strDeviceMenu, strAddress);
-            break;
+//          case DEVICE_QWIIC_BUTTON:
+//            SerialPrintf3("%s Qwiic Button %s\r\n", strDeviceMenu, strAddress);
+//            break;
           case DEVICE_BIO_SENSOR_HUB:
             SerialPrintf3("%s Bio Sensor Pulse Oximeter %s\r\n", strDeviceMenu, strAddress);
             break;
@@ -2446,73 +2446,73 @@ void menuConfigure_MS5837(void *configPtr)
   }
 }
 
-void menuConfigure_QWIIC_BUTTON(void *configPtr)
-{
-  struct_QWIIC_BUTTON *sensorSetting = (struct_QWIIC_BUTTON*)configPtr;
-
-  while (1)
-  {
-    SerialPrintln(F(""));
-    SerialPrintln(F("Menu: Configure Qwiic Button"));
-
-    SerialPrint(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
-    else SerialPrintln(F("Disabled"));
-
-    if (sensorSetting->log == true)
-    {
-      SerialPrint(F("2) Log Button Presses: "));
-      if (sensorSetting->logPressed == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("3) Log Button Clicks: "));
-      if (sensorSetting->logClicked == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("4) Toggle LED on each click (and log the LED state): "));
-      if (sensorSetting->toggleLEDOnClick == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-  
-      SerialPrintf2("5) LED Brightness: %d\r\n", sensorSetting->ledBrightness);
-    }
-    SerialPrintln(F("x) Exit"));
-
-    int incoming = getNumber(menuTimeout); //Timeout after x seconds
-
-    if (incoming == 1)
-      sensorSetting->log ^= 1;
-    else if (sensorSetting->log == true)
-    {
-      if (incoming == 2)
-        sensorSetting->logPressed ^= 1;
-      else if (incoming == 3)
-        sensorSetting->logClicked ^= 1;
-      else if (incoming == 4)
-        sensorSetting->toggleLEDOnClick ^= 1;
-      else if (incoming == 5)
-      {
-        SerialPrint(F("Enter the LED brightness (0 to 255): "));
-        int bright = getNumber(menuTimeout); //x second timeout
-        if (bright < 0 || bright > 255)
-          SerialPrintln(F("Error: Out of range"));
-        else
-          sensorSetting->ledBrightness = bright;
-      }        
-      else if (incoming == STATUS_PRESSED_X)
-        break;
-      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
-        break;
-      else
-        printUnknown(incoming);
-    }
-    else if (incoming == STATUS_PRESSED_X)
-      break;
-    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
-      break;
-    else
-      printUnknown(incoming);
-  }
-}
+//void menuConfigure_QWIIC_BUTTON(void *configPtr)
+//{
+//  struct_QWIIC_BUTTON *sensorSetting = (struct_QWIIC_BUTTON*)configPtr;
+//
+//  while (1)
+//  {
+//    SerialPrintln(F(""));
+//    SerialPrintln(F("Menu: Configure Qwiic Button"));
+//
+//    SerialPrint(F("1) Sensor Logging: "));
+//    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+//    else SerialPrintln(F("Disabled"));
+//
+//    if (sensorSetting->log == true)
+//    {
+//      SerialPrint(F("2) Log Button Presses: "));
+//      if (sensorSetting->logPressed == true) SerialPrintln(F("Enabled"));
+//      else SerialPrintln(F("Disabled"));
+//
+//      SerialPrint(F("3) Log Button Clicks: "));
+//      if (sensorSetting->logClicked == true) SerialPrintln(F("Enabled"));
+//      else SerialPrintln(F("Disabled"));
+//
+//      SerialPrint(F("4) Toggle LED on each click (and log the LED state): "));
+//      if (sensorSetting->toggleLEDOnClick == true) SerialPrintln(F("Enabled"));
+//      else SerialPrintln(F("Disabled"));
+//  
+//      SerialPrintf2("5) LED Brightness: %d\r\n", sensorSetting->ledBrightness);
+//    }
+//    SerialPrintln(F("x) Exit"));
+//
+//    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+//
+//    if (incoming == 1)
+//      sensorSetting->log ^= 1;
+//    else if (sensorSetting->log == true)
+//    {
+//      if (incoming == 2)
+//        sensorSetting->logPressed ^= 1;
+//      else if (incoming == 3)
+//        sensorSetting->logClicked ^= 1;
+//      else if (incoming == 4)
+//        sensorSetting->toggleLEDOnClick ^= 1;
+//      else if (incoming == 5)
+//      {
+//        SerialPrint(F("Enter the LED brightness (0 to 255): "));
+//        int bright = getNumber(menuTimeout); //x second timeout
+//        if (bright < 0 || bright > 255)
+//          SerialPrintln(F("Error: Out of range"));
+//        else
+//          sensorSetting->ledBrightness = bright;
+//      }        
+//      else if (incoming == STATUS_PRESSED_X)
+//        break;
+//      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+//        break;
+//      else
+//        printUnknown(incoming);
+//    }
+//    else if (incoming == STATUS_PRESSED_X)
+//      break;
+//    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+//      break;
+//    else
+//      printUnknown(incoming);
+//  }
+//}
 
 void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
 {
@@ -2544,6 +2544,14 @@ void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
       SerialPrint(F("5) Log Status: "));
       if (sensorSetting->logStatus == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("6) Log Extended Status: "));
+      if (sensorSetting->logExtendedStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("7) Log Oxygen R Value: "));
+      if (sensorSetting->logRValue == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2561,6 +2569,10 @@ void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
         sensorSetting->logOxygen ^= 1;
       else if (incoming == 5)
         sensorSetting->logStatus ^= 1;
+      else if (incoming == 6)
+        sensorSetting->logExtendedStatus ^= 1;
+      else if (incoming == 7)
+        sensorSetting->logRValue ^= 1;
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

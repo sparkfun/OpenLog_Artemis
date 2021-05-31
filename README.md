@@ -48,7 +48,6 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [VL53L1X LIDAR Distance Sensor](https://www.sparkfun.com/products/14722)
 * [ADS122C04 ADC PT100 Sensor](https://www.sparkfun.com/products/16770)
 * [Qwiic Mux](https://www.sparkfun.com/products/16784) allowing for the chaining of up to 64 unique buses!
-* [Qwiic Button](https://www.sparkfun.com/products/15932): buttons with addresses 0x68 to 0x6F are supported
 * [Pulse Oximeter and Heart Rate Sensor](https://www.sparkfun.com/products/15219) (requires exclusive use of pins 32 and 11)
 * More boards are being added all the time!
 

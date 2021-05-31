@@ -26,7 +26,7 @@ typedef enum
   DEVICE_VOC_SGP40,
   DEVICE_PRESSURE_SDP3X,
   DEVICE_PRESSURE_MS5837,
-  DEVICE_QWIIC_BUTTON,
+//  DEVICE_QWIIC_BUTTON,
   DEVICE_BIO_SENSOR_HUB,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
@@ -315,15 +315,15 @@ struct struct_MS5837 {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
-struct struct_QWIIC_BUTTON {
-  bool log = true;
-  bool logPressed = true;
-  bool logClicked = true;
-  bool toggleLEDOnClick = true;
-  bool ledState = false; // Do not store in NVM
-  uint8_t ledBrightness = 255;
-  unsigned long powerOnDelayMillis = 3000; // Wait for at least this many millis before communicating with this device. Increase if required!
-};
+//struct struct_QWIIC_BUTTON {
+//  bool log = true;
+//  bool logPressed = true;
+//  bool logClicked = true;
+//  bool toggleLEDOnClick = true;
+//  bool ledState = false; // Do not store in NVM
+//  uint8_t ledBrightness = 255;
+//  unsigned long powerOnDelayMillis = 3000; // Wait for at least this many millis before communicating with this device. Increase if required!
+//};
 
 struct struct_BIO_SENSOR_HUB {
   bool log = true;
@@ -331,6 +331,8 @@ struct struct_BIO_SENSOR_HUB {
   bool logConfidence = true;
   bool logOxygen = true;
   bool logStatus = true;
+  bool logExtendedStatus = true;
+  bool logRValue = true;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

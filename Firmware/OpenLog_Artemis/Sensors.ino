@@ -882,47 +882,47 @@ void gatherDeviceValues()
             }
           }
           break;
-        case DEVICE_QWIIC_BUTTON:
-          {
-            QwiicButton *nodeDevice = (QwiicButton *)temp->classPtr;
-            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
-            if (nodeSetting->log == true)
-            {
-              long pressedPopped = 0;
-              while (nodeDevice->isPressedQueueEmpty() == false)
-              {
-                pressedPopped = nodeDevice->popPressedQueue();
-              }
-              if (nodeSetting->logPressed)
-              {
-                sprintf(tempData, "%.03f,", ((float)pressedPopped) / 1000.0); // Record only the most recent press - that's the best we can do
-                strcat(outputData, tempData);
-              }
-              
-              long clickedPopped = 0;
-              while (nodeDevice->isClickedQueueEmpty() == false)
-              {
-                clickedPopped = nodeDevice->popClickedQueue();
-                nodeSetting->ledState ^= 1; // Toggle nodeSetting->ledState on _every_ click (not just the most recent)
-              }
-              if (nodeSetting->logClicked)
-              {
-                sprintf(tempData, "%.03f,", ((float)clickedPopped) / 1000.0); // Record only the most recent click - that's the best we can do
-                strcat(outputData, tempData);
-              }
-              
-              if (nodeSetting->toggleLEDOnClick)
-              {
-                if (nodeSetting->ledState)
-                  nodeDevice->LEDon(nodeSetting->ledBrightness);
-                else
-                  nodeDevice->LEDoff();
-                sprintf(tempData, "%d,", nodeSetting->ledState);
-                strcat(outputData, tempData);
-              }
-            }
-          }
-          break;
+//        case DEVICE_QWIIC_BUTTON:
+//          {
+//            QwiicButton *nodeDevice = (QwiicButton *)temp->classPtr;
+//            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+//            if (nodeSetting->log == true)
+//            {
+//              long pressedPopped = 0;
+//              while (nodeDevice->isPressedQueueEmpty() == false)
+//              {
+//                pressedPopped = nodeDevice->popPressedQueue();
+//              }
+//              if (nodeSetting->logPressed)
+//              {
+//                sprintf(tempData, "%.03f,", ((float)pressedPopped) / 1000.0); // Record only the most recent press - that's the best we can do
+//                strcat(outputData, tempData);
+//              }
+//              
+//              long clickedPopped = 0;
+//              while (nodeDevice->isClickedQueueEmpty() == false)
+//              {
+//                clickedPopped = nodeDevice->popClickedQueue();
+//                nodeSetting->ledState ^= 1; // Toggle nodeSetting->ledState on _every_ click (not just the most recent)
+//              }
+//              if (nodeSetting->logClicked)
+//              {
+//                sprintf(tempData, "%.03f,", ((float)clickedPopped) / 1000.0); // Record only the most recent click - that's the best we can do
+//                strcat(outputData, tempData);
+//              }
+//              
+//              if (nodeSetting->toggleLEDOnClick)
+//              {
+//                if (nodeSetting->ledState)
+//                  nodeDevice->LEDon(nodeSetting->ledBrightness);
+//                else
+//                  nodeDevice->LEDoff();
+//                sprintf(tempData, "%d,", nodeSetting->ledState);
+//                strcat(outputData, tempData);
+//              }
+//            }
+//          }
+//          break;
         case DEVICE_BIO_SENSOR_HUB:
           {
             SparkFun_Bio_Sensor_Hub *nodeDevice = (SparkFun_Bio_Sensor_Hub *)temp->classPtr;
@@ -930,7 +930,7 @@ void gatherDeviceValues()
             if (nodeSetting->log == true)
             {
               bioData body;
-              if ((nodeSetting->logHeartrate) || (nodeSetting->logConfidence) || (nodeSetting->logOxygen) || (nodeSetting->logStatus))
+              if ((nodeSetting->logHeartrate) || (nodeSetting->logConfidence) || (nodeSetting->logOxygen) || (nodeSetting->logStatus) || (nodeSetting->logExtendedStatus) || (nodeSetting->logRValue))
               {
                 body = nodeDevice->readBpm();
               }
@@ -952,6 +952,16 @@ void gatherDeviceValues()
               if (nodeSetting->logStatus)
               {
                 sprintf(tempData, "%d,", body.status);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logExtendedStatus)
+              {
+                sprintf(tempData, "%d,", body.extStatus);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logRValue)
+              {
+                sprintf(tempData, "%.01f,", body.rValue);
                 strcat(outputData, tempData);
               }
             }
@@ -1373,20 +1383,20 @@ void printHelperText(bool terminalOnly)
             }
           }
           break;
-        case DEVICE_QWIIC_BUTTON:
-          {
-            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
-            if (nodeSetting->log)
-            {
-              if (nodeSetting->logPressed)
-                strcat(helperText, "pressS,");
-              if (nodeSetting->logClicked)
-                strcat(helperText, "clickS,");
-              if (nodeSetting->toggleLEDOnClick)
-                strcat(helperText, "LED,");
-            }
-          }
-          break;
+//        case DEVICE_QWIIC_BUTTON:
+//          {
+//            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+//            if (nodeSetting->log)
+//            {
+//              if (nodeSetting->logPressed)
+//                strcat(helperText, "pressS,");
+//              if (nodeSetting->logClicked)
+//                strcat(helperText, "clickS,");
+//              if (nodeSetting->toggleLEDOnClick)
+//                strcat(helperText, "LED,");
+//            }
+//          }
+//          break;
         case DEVICE_BIO_SENSOR_HUB:
           {
             struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr;
@@ -1400,6 +1410,10 @@ void printHelperText(bool terminalOnly)
                 strcat(helperText, "O2%,");
               if (nodeSetting->logStatus)
                 strcat(helperText, "stat,");
+              if (nodeSetting->logExtendedStatus)
+                strcat(helperText, "eStat,");
+              if (nodeSetting->logRValue)
+                strcat(helperText, "O2R,");
             }
           }
           break;
