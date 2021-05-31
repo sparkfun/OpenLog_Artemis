@@ -1,6 +1,6 @@
 // Read the battery voltage
 // If it is low, increment lowBatteryReadings
-// If lowBatteryReadings exceeds lowBatteryReadingsLimit then powerDown
+// If lowBatteryReadings exceeds lowBatteryReadingsLimit then powerDownOLA
 void checkBattery(void)
 {
 #if(HARDWARE_VERSION_MAJOR >= 1)
@@ -12,9 +12,9 @@ void checkBattery(void)
       lowBatteryReadings++; // Increment the low battery count
       if (lowBatteryReadings > lowBatteryReadingsLimit) // Have we exceeded the low battery count limit?
       {
-        // Gracefully powerDown
+        // Gracefully powerDownOLA
 
-        //Save files before powerDown
+        //Save files before powerDownOLA
         if (online.dataLogging == true)
         {
           sensorDataFile.sync();
@@ -35,7 +35,7 @@ void checkBattery(void)
       
         SerialFlush(); //Finish any prints
 
-        powerDown(); // power down and wait for reset
+        powerDownOLA(); // power down and wait for reset
       }
     }
     else
@@ -50,22 +50,22 @@ void checkBattery(void)
 //This function takes 100us to run including GPIO setting
 //This puts the Apollo3 into 2.36uA to 2.6uA consumption mode
 //With leakage across the 3.3V protection diode, it's approx 3.00uA.
-void powerDown()
+void powerDownOLA(void) // This is an ISR and so needs void as a parameter
 {
   //Prevent voltage supervisor from waking us from sleep
-  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
+  detachInterrupt(PIN_POWER_LOSS);
 
   //Prevent stop logging button from waking us from sleep
   if (settings.useGPIO32ForStopLogging == true)
   {
-    detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+    detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
     pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
   }
 
   //Prevent trigger from waking us from sleep
   if (settings.useGPIO11ForTrigger == true)
   {
-    detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+    detachInterrupt(PIN_TRIGGER); // Disable the interrupt
     pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
   }
 
@@ -240,12 +240,12 @@ void goToSleep(uint32_t sysTicksToSleep)
   //printDebug("goToSleep: online.IMU = " + (String)online.IMU + "\r\n");
 
   //Prevent voltage supervisor from waking us from sleep
-  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS));
+  detachInterrupt(PIN_POWER_LOSS);
 
   //Prevent stop logging button from waking us from sleep
   if (settings.useGPIO32ForStopLogging == true)
   {
-    detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+    detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
     pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
   }
 
@@ -253,7 +253,7 @@ void goToSleep(uint32_t sysTicksToSleep)
   //(This should be redundant. We should not be going to sleep if triggering is enabled?)
   if (settings.useGPIO11ForTrigger == true)
   {
-    detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+    detachInterrupt(PIN_TRIGGER); // Disable the interrupt
     pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
   }
 
@@ -384,13 +384,14 @@ void wakeFromSleep()
   am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
 
   //Turn on ADC
-  uint32_t adcError = (uint32_t)ap3_adc_setup();
-  if (settings.logA11 == true) adcError += (uint32_t)ap3_set_pin_to_analog(11); // Set _pad_ 11 to analog if enabled for logging
-  if (settings.logA12 == true) adcError += (uint32_t)ap3_set_pin_to_analog(12); // Set _pad_ 12 to analog if enabled for logging
-  if (settings.logA13 == true) adcError += (uint32_t)ap3_set_pin_to_analog(13); // Set _pad_ 13 to analog if enabled for logging
-  if (settings.logA32 == true) adcError += (uint32_t)ap3_set_pin_to_analog(32); // Set _pad_ 32 to analog if enabled for logging
+  //uint32_t adcError = (uint32_t)ap3_adc_setup();
+  uint32_t adcError = powerControlADC(true);
+  //if (settings.logA11 == true) adcError += (uint32_t)ap3_set_pin_to_analog(11); // Set _pad_ 11 to analog if enabled for logging
+  //if (settings.logA12 == true) adcError += (uint32_t)ap3_set_pin_to_analog(12); // Set _pad_ 12 to analog if enabled for logging
+  //if (settings.logA13 == true) adcError += (uint32_t)ap3_set_pin_to_analog(13); // Set _pad_ 13 to analog if enabled for logging
+  //if (settings.logA32 == true) adcError += (uint32_t)ap3_set_pin_to_analog(32); // Set _pad_ 32 to analog if enabled for logging
 #if(HARDWARE_VERSION_MAJOR >= 1)
-  adcError += (uint32_t)ap3_set_pin_to_analog(PIN_VIN_MONITOR); // Set _pad_ PIN_VIN_MONITOR to analog
+  //adcError += (uint32_t)ap3_set_pin_to_analog(PIN_VIN_MONITOR); // Set _pad_ PIN_VIN_MONITOR to analog
 #endif
 
   //Run setup again
@@ -400,15 +401,15 @@ void wakeFromSleep()
 
   delay(1); // Let PIN_POWER_LOSS stabilize
 
-  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
+  attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING);
 
-  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDown(); //Check PIN_POWER_LOSS just in case we missed the falling edge
+  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
 
   if (settings.useGPIO32ForStopLogging == true)
   {
     pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
-    attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+    attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
     stopLoggingSeen = false; // Make sure the flag is clear
   }
 
@@ -417,9 +418,9 @@ void wakeFromSleep()
     pinMode(PIN_TRIGGER, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
     if (settings.fallingEdgeTrigger == true)
-      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+      attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
     else
-      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+      attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
     triggerEdgeSeen = false; // Make sure the flag is clear
   }
 
@@ -481,7 +482,7 @@ void wakeFromSleep()
 
 void stopLogging(void)
 {
-  detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+  detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
 
   //Save files before going to sleep
   if (online.dataLogging == true)
@@ -503,7 +504,7 @@ void stopLogging(void)
       SerialLog.print((String)settings.serialTerminalBaudRate);
   SerialPrintln(F("bps..."));
   delay(sdPowerDownDelay); // Give the SD card time to shut down
-  powerDown();
+  powerDownOLA();
 }
 
 void waitForQwiicBusPowerDelay() // Wait while the qwiic devices power up

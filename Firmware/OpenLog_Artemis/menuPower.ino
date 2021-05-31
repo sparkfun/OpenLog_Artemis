@@ -45,7 +45,7 @@ void menuPower()
         {
           // Disable stop logging
           settings.useGPIO32ForStopLogging = false;
-          detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+          detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
           stopLoggingSeen = false; // Make sure the flag is clear
         }
@@ -55,7 +55,7 @@ void menuPower()
           settings.useGPIO32ForStopLogging = true;
           pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
           delay(1); // Let the pin stabilize
-          attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+          attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
           stopLoggingSeen = false; // Make sure the flag is clear
           settings.logA32 = false; // Disable analog logging on pin 32
         }

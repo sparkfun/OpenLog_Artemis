@@ -54,7 +54,7 @@ void menuAnalogLogging()
           settings.logA11 = true;
           // Disable triggering
           settings.useGPIO11ForTrigger = false;
-          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
@@ -117,7 +117,7 @@ void menuAnalogLogging()
           settings.logA32 = true;
           // Disable stop logging
           settings.useGPIO32ForStopLogging = false;
-          detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+          detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
         }
         else

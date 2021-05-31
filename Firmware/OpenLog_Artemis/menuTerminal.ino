@@ -264,7 +264,7 @@ void menuLogRate()
         {
           // Disable triggering
           settings.useGPIO11ForTrigger = false;
-          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
@@ -275,9 +275,9 @@ void menuLogRate()
           pinMode(PIN_TRIGGER, INPUT_PULLUP);
           delay(1); // Let the pin stabilize
           if (settings.fallingEdgeTrigger == true)
-            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+            attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
           else
-            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+            attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
           triggerEdgeSeen = false; // Make sure the flag is clear
           settings.logA11 = false; // Disable analog logging on pin 11
           settings.logMaxRate = false; // Disable max rate logging
@@ -298,12 +298,12 @@ void menuLogRate()
       {
         if (settings.useGPIO11ForTrigger == true) // If interrupts are enabled, we need to disable and then re-enable
         {
-          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           settings.fallingEdgeTrigger ^= 1; // Invert the flag
           if (settings.fallingEdgeTrigger == true)
-            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+            attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
           else
-            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+            attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         else
@@ -368,7 +368,7 @@ void menuLogRate()
           // Disable triggering
           if (settings.useGPIO11ForTrigger == true)
           {
-            detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+            detachInterrupt(PIN_TRIGGER); // Disable the interrupt
             triggerEdgeSeen = false; // Make sure the flag is clear
           }
           settings.useGPIO11ForTrigger = false;
@@ -415,7 +415,7 @@ void menuLogRate()
         // Disable triggering
         if (settings.useGPIO11ForTrigger == true)
         {
-          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
           triggerEdgeSeen = false; // Make sure the flag is clear
         }

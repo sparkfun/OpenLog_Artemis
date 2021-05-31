@@ -143,7 +143,7 @@ void menuMain()
           SerialLog.print((String)settings.serialTerminalBaudRate);
         SerialPrintln(F("bps..."));
         delay(sdPowerDownDelay); // Give the SD card time to shut down
-        powerDown();
+        powerDownOLA();
       }
       else
         SerialPrintln(F("Quit aborted"));

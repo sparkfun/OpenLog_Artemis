@@ -406,7 +406,7 @@ void menuAttachedDevices()
           settings.logA32 = false;
           if (settings.useGPIO11ForTrigger == true) // If interrupts are enabled, we need to disable and then re-enable
           {
-            detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+            detachInterrupt(PIN_TRIGGER); // Disable the interrupt
             settings.useGPIO11ForTrigger = false;
           }
           settings.useGPIO11ForFastSlowLogging = false;
@@ -414,7 +414,7 @@ void menuAttachedDevices()
           {
             // Disable stop logging
             settings.useGPIO32ForStopLogging = false;
-            detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+            detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           }
         }
         else

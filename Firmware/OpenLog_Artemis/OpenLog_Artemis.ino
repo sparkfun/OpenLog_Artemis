@@ -11,10 +11,9 @@
   This firmware runs the OpenLog Artemis. A large variety of system settings can be
   adjusted by connecting at 115200bps.
 
-  The Board should be set to SparkFun Apollo3 \ SparkFun RedBoard Artemis ATP.
+  The Board should be set to SparkFun Apollo3 \ RedBoard Artemis ATP.
 
-  Please note: this firmware currently only compiles on v1.2.2 of the Apollo3 boards.
-  It does not yet work with the new Mbed version (v2.0) of the core.
+  Please note: this version of the firmware compiles on v2.1.0+ of the Apollo3 boards.
 
   v1.0 Power Consumption:
    Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
@@ -93,7 +92,7 @@
   (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library. https://github.com/sparkfun/OpenLog_Artemis/issues/34
   (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
   (done) Add support for the Pulse Oximeter and Qwiic Button: https://github.com/sparkfun/OpenLog_Artemis/issues/81
-  (in progress) Update to Apollo3 v2.1.0 - FIRMWARE_VERSION_MAJOR = 2
+  (on hold) Update to Apollo3 v2.1.0 - FIRMWARE_VERSION_MAJOR = 2. On hold until this issue is resolved (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -311,8 +310,9 @@ void setup() {
 
   delay(1); // Let PIN_POWER_LOSS stabilize
 
-  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDown(); //Check PIN_POWER_LOSS just in case we missed the falling edge
-  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
+  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
+  //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // TO DO: figure out why this no longer works on v2.1.0
+  attachInterrupt(PIN_POWER_LOSS, doNothingISR, FALLING);
 
   powerLEDOn(); // Turn the power LED on - if the hardware supports it
 
@@ -333,6 +333,8 @@ void setup() {
   // Use the worst case power on delay for the Qwiic bus for now as we don't yet know what sensors are connected
   // (worstCaseQwiicPowerOnDelay is defined in settings.h)
   qwiicPowerOnDelayMillis = worstCaseQwiicPowerOnDelay;
+
+  EEPROM.init();
   
   beginQwiic(); // Turn the qwiic power on as early as possible
 
@@ -361,7 +363,7 @@ void setup() {
     SerialPrintln(F("Stop Logging is enabled. Pull GPIO pin 32 to GND to stop logging."));
     pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
-    attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+    attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
     stopLoggingSeen = false; // Make sure the flag is clear
   }
 
@@ -372,12 +374,12 @@ void setup() {
     if (settings.fallingEdgeTrigger == true)
     {
       SerialPrintln(F("Falling-edge triggering is enabled. Sensor data will be logged on a falling edge on GPIO pin 11."));
-      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+      attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
     }
     else
     {
       SerialPrintln(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
-      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+      attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
     }
     triggerEdgeSeen = false; // Make sure the flag is clear
   }
@@ -1249,6 +1251,11 @@ void stopLoggingISR(void)
 void triggerPinISR(void)
 {
   triggerEdgeSeen = true;
+}
+
+//Do Nothing ISR
+void doNothingISR(void)
+{
 }
 
 void SerialFlush(void)

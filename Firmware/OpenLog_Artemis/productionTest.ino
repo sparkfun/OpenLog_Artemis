@@ -90,7 +90,7 @@ void productionTest()
 
   // OK. The breakout pins were held low and then released (pulled-up) within five seconds so let's go into production test mode!
 
-  //detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); // Disable power loss interrupt
+  //detachInterrupt(PIN_POWER_LOSS); // Disable power loss interrupt
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off
   powerLEDOff(); // Turn the power LED on - if the hardware supports it
 
@@ -324,7 +324,7 @@ void productionTest()
         am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
         am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
         //Turn on ADC
-        ap3_adc_setup();
+        powerControlADC(true); //ap3_adc_setup();
         Serial.begin(115200);
         SerialLog.begin(115200);
         SPI.begin();
@@ -517,7 +517,7 @@ void productionTest()
         break;
       case 0x55: // Deep sleep
       {
-        detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); // Disable power loss interrupt
+        detachInterrupt(PIN_POWER_LOSS); // Disable power loss interrupt
         Serial.end(); //Power down UART
         //Force the peripherals off
         am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
@@ -550,14 +550,15 @@ void productionTest()
         imuPowerOff();
         microSDPowerOff();
         qwiicPowerOff();
-        //Power down Flash, SRAM, cache
-        am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE);         //Turn off CACHE
-        am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K);    //Turn off everything but lower 512k
-        am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k
-        //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
-        //Keep the 32kHz clock running for RTC
+        
+        //Power down cache, flash, SRAM
+        am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); // Power down all flash and cache
+        am_hal_pwrctrl_memory_deepsleep_retain(AM_HAL_PWRCTRL_MEM_SRAM_384K); // Retain all SRAM
+      
+        //Use the lower power 32kHz clock. Use it to run CT6 as well.
         am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
-        am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ);
+        am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
+
         while (1) // Stay in deep sleep until we get reset
         {
           am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP); //Sleep

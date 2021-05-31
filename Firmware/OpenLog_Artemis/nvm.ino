@@ -145,13 +145,13 @@ void recordSystemSettingsToFile()
     settingsFile.println("enablePwrLedDuringSleep=" + (String)settings.enablePwrLedDuringSleep);
     settingsFile.println("logVIN=" + (String)settings.logVIN);
     settingsFile.println("openNewLogFilesAfter=" + (String)settings.openNewLogFilesAfter);
-    settingsFile.println("vinCorrectionFactor=" + (String)settings.vinCorrectionFactor);
+    settingsFile.print("vinCorrectionFactor="); settingsFile.println(settings.vinCorrectionFactor);
     settingsFile.println("useGPIO32ForStopLogging=" + (String)settings.useGPIO32ForStopLogging);
     settingsFile.println("qwiicBusPullUps=" + (String)settings.qwiicBusPullUps);
     settingsFile.println("outputSerial=" + (String)settings.outputSerial);
     settingsFile.println("zmodemStartDelay=" + (String)settings.zmodemStartDelay);
     settingsFile.println("enableLowBatteryDetection=" + (String)settings.enableLowBatteryDetection);
-    settingsFile.println("lowBatteryThreshold=" + (String)settings.lowBatteryThreshold);
+    settingsFile.print("lowBatteryThreshold="); settingsFile.println(settings.lowBatteryThreshold);
     settingsFile.println("frequentFileAccessTimestamps=" + (String)settings.frequentFileAccessTimestamps);
     settingsFile.println("useGPIO11ForTrigger=" + (String)settings.useGPIO11ForTrigger);
     settingsFile.println("fallingEdgeTrigger=" + (String)settings.fallingEdgeTrigger);
@@ -280,10 +280,11 @@ bool parseLine(char* str) {
 
   // Convert string to double.
   double d = strtod(str, &ptr);
-  if (str == ptr || *skipSpace(ptr)) return false;
 
   //SerialPrintf2("d = %lf\r\n", d);
   //SerialFlush();
+
+  if (str == ptr || *skipSpace(ptr)) return false;
 
   // Get setting name
   if (strcmp(settingName, "sizeOfSettings") == 0)
@@ -508,7 +509,7 @@ void recordDeviceSettingsToFile()
           {
             struct_NAU7802 *nodeSetting = (struct_NAU7802 *)temp->configPtr;
             settingsFile.println((String)base + "log=" + nodeSetting->log);
-            settingsFile.println((String)base + "calibrationFactor=" + nodeSetting->calibrationFactor);
+            settingsFile.print((String)base + "calibrationFactor="); settingsFile.println(nodeSetting->calibrationFactor);
             settingsFile.println((String)base + "zeroOffset=" + nodeSetting->zeroOffset);
             settingsFile.println((String)base + "decimalPlaces=" + nodeSetting->decimalPlaces);
             settingsFile.println((String)base + "averageAmount=" + nodeSetting->averageAmount);
@@ -724,8 +725,8 @@ void recordDeviceSettingsToFile()
             struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr;
             settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logVOC=" + nodeSetting->logVOC);
-            settingsFile.println((String)base + "RH=" + nodeSetting->RH);
-            settingsFile.println((String)base + "T=" + nodeSetting->T);
+            settingsFile.print((String)base + "RH="); settingsFile.println(nodeSetting->RH);
+            settingsFile.print((String)base + "T="); settingsFile.println(nodeSetting->T);
           }
           break;
         case DEVICE_PRESSURE_SDP3X:
@@ -747,8 +748,8 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logDepth=" + nodeSetting->logDepth);
             settingsFile.println((String)base + "logAltitude=" + nodeSetting->logAltitude);
             settingsFile.println((String)base + "model=" + nodeSetting->model);
-            settingsFile.println((String)base + "fluidDensity=" + nodeSetting->fluidDensity);
-            settingsFile.println((String)base + "conversion=" + nodeSetting->conversion);
+            settingsFile.print((String)base + "fluidDensity="); settingsFile.println(nodeSetting->fluidDensity);
+            settingsFile.print((String)base + "conversion="); settingsFile.println(nodeSetting->conversion);
           }
           break;
         case DEVICE_QWIIC_BUTTON:
