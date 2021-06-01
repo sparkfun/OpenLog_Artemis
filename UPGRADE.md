@@ -7,8 +7,8 @@ Which is handy if you want to quickly update the firmware in the field, or are n
 
 The firmware is customized for the different versions of the OLA hardware. You will find versions for the **X04 SparkX (Black) OLA** and **V10 SparkFun (Red) OLA** plus any subsequent revisions. The filename tells you which hardware the firmware is for and what version it is:
 
-* **OpenLog_Artemis-V10-v16.bin** - is the _stable_ version for the **V10 SparkFun (Red) OLA**
-* **OpenLog_Artemis-X04-v16.bin** - is the _stable_ version for the **X04 SparkX (Black) OLA**
+* **OpenLog_Artemis-V10-v111.bin** - is the _stable_ version for the **V10 SparkFun (Red) OLA**
+* **OpenLog_Artemis-X04-v111.bin** - is the _stable_ version for the **X04 SparkX (Black) OLA**
 
 <table class="table table-hover table-striped table-bordered">
   <tr align="center">
