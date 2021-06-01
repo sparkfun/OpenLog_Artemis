@@ -45,12 +45,28 @@
 */
 
 #include <SPI.h>
-#include <SD.h>
 
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_u-blox_GNSS
 SFE_UBLOX_GNSS myGNSS;
 
+#include <SdFat.h> //SdFat v2.0.6 by Bill Greiman. Click here to get the library: http://librarymanager/All#SdFat_exFAT
+
+#define SD_FAT_TYPE 3 // SD_FAT_TYPE = 0 for SdFat/File, 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
+#define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
+
+#if SD_FAT_TYPE == 1
+SdFat32 sd;
+File32 myFile; //File that all GNSS data is written to
+#elif SD_FAT_TYPE == 2
+SdExFat sd;
+ExFile myFile; //File that all GNSS data is written to
+#elif SD_FAT_TYPE == 3
+SdFs sd;
+FsFile myFile; //File that all GNSS data is written to
+#else // SD_FAT_TYPE == 0
+SdFat sd;
 File myFile; //File that all GNSS data is written to
+#endif  // SD_FAT_TYPE
 
 // OLA Specifics:
 
@@ -152,7 +168,7 @@ void setup()
   Serial.println("Initializing SD card...");
 
   // See if the card is present and can be initialized:
-  if (!SD.begin(PIN_MICROSD_CHIP_SELECT))
+  if (!sd.begin(SD_CONFIG))
   {
     Serial.println("Card failed, or not present. Freezing...");
     // don't do anything more:
@@ -162,7 +178,7 @@ void setup()
 
   // Create or open a file called "RXM_RAWX.ubx" on the SD card.
   // If the file already exists, the new data is appended to the end of the file.
-  myFile = SD.open("RXM_RAWX.ubx", FILE_WRITE);
+  myFile.open("RXM_RAWX.ubx", FILE_WRITE);
   if(!myFile)
   {
     Serial.println(F("Failed to create UBX data file! Freezing..."));
