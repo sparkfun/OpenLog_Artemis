@@ -93,7 +93,7 @@
   (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library. https://github.com/sparkfun/OpenLog_Artemis/issues/34
   (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
   (done) Add support for the Pulse Oximeter: https://github.com/sparkfun/OpenLog_Artemis/issues/81
-  (won't do) Add support for the Qwiic Button. The QB uses clock-stretching and the Artemis really doesn't enjoy that...
+  (won't do?) Add support for the Qwiic Button. The QB uses clock-stretching and the Artemis really doesn't enjoy that...
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;

@@ -416,6 +416,15 @@ void menuAttachedDevices()
             settings.useGPIO32ForStopLogging = false;
             detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
           }
+
+          recordSystemSettings(); //Record the new settings to EEPROM and config file now in case the user resets before exiting the menus
+                
+          if (detectQwiicDevices() == true) //Detect the oximeter
+          {
+            beginQwiicDevices(); //Begin() each device in the node list
+            configureQwiicDevices(); //Apply config settings to each device in the node list
+            recordDeviceSettingsToFile(); //Record the current devices settings to device config file now in case the user resets before exiting the menus
+          }
         }
         else
           SerialPrintln(F("\"Detect Bio Sensor Pulse Oximeter\"  aborted"));
