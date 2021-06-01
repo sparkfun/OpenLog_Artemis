@@ -55,7 +55,7 @@
   (done) Use the WDT to reset the Artemis when power is reconnected (previously the Artemis would have stayed in deep sleep)
   Add a callback function to the u-blox library so we can abort waiting for UBX data if the power goes low
   (done) Add support for the ADS122C04 ADC (Qwiic PT100)
-  Investigate why usBetweenReadings appears to be ~0.8s longer than expected
+  (done) Investigate why usBetweenReadings appears to be longer than expected. We needed to read millis _before_ enabling the lower power clock!
   (done) Correct u-blox pull-ups
   (done) Add an olaIdentifier to prevent problems when using two code variants that have the same sizeOfSettings
   (done) Add a fix for the IMU wake-up issue identified in https://github.com/sparkfun/OpenLog_Artemis/issues/18
@@ -88,10 +88,16 @@
   (done) Add support for the MS5837 - as used in the BlueRobotics BAR02 and BAR30 water pressure sensors
   (done) Correct an issue which was causing the OLA to crash when waking from sleep and outputting serial data https://github.com/sparkfun/OpenLog_Artemis/issues/79
   (done) Correct low-power code as per https://github.com/sparkfun/OpenLog_Artemis/issues/78
+  (done) Correct a bug in menuAttachedDevices when useTxRxPinsForTerminal is enabled https://github.com/sparkfun/OpenLog_Artemis/issues/82
+  (done) Add ICM-20948 DMP support. Requires v1.2.6 of the ICM-20948 library. DMP logging is limited to: Quat6 or Quat9, plus raw accel, gyro and compass. https://github.com/sparkfun/OpenLog_Artemis/issues/47
+  (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library. https://github.com/sparkfun/OpenLog_Artemis/issues/34
+  (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
+  (done) Add support for the Pulse Oximeter: https://github.com/sparkfun/OpenLog_Artemis/issues/81
+  (won't do?) Add support for the Qwiic Button. The QB uses clock-stretching and the Artemis really doesn't enjoy that...
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 10;
+const int FIRMWARE_VERSION_MINOR = 11;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -101,7 +107,7 @@ const int FIRMWARE_VERSION_MINOR = 10;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x11A // Stored as 282 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x11B // Stored as 283 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -163,10 +169,30 @@ TwoWire qwiic(1); //Will use pads 8/9
 //microSD Interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
-#include <SdFat.h> //SdFat (FAT32) by Bill Greiman: http://librarymanager/All#SdFat
+
+#include <SdFat.h> //SdFat v2.0.6 by Bill Greiman: http://librarymanager/All#SdFat_exFAT
+
+#define SD_FAT_TYPE 3 // SD_FAT_TYPE = 0 for SdFat/File, 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
+#define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
+
+#if SD_FAT_TYPE == 1
+SdFat32 sd;
+File32 sensorDataFile; //File that all sensor data is written to
+File32 serialDataFile; //File that all incoming serial data is written to
+#elif SD_FAT_TYPE == 2
+SdExFat sd;
+ExFile sensorDataFile; //File that all sensor data is written to
+ExFile serialDataFile; //File that all incoming serial data is written to
+#elif SD_FAT_TYPE == 3
+SdFs sd;
+FsFile sensorDataFile; //File that all sensor data is written to
+FsFile serialDataFile; //File that all incoming serial data is written to
+#else // SD_FAT_TYPE == 0
 SdFat sd;
-SdFile sensorDataFile; //File that all sensor data is written to
-SdFile serialDataFile; //File that all incoming serial data is written to
+File sensorDataFile; //File that all sensor data is written to
+File serialDataFile; //File that all incoming serial data is written to
+#endif  // SD_FAT_TYPE
+
 //#define PRINT_LAST_WRITE_TIME // Uncomment this line to enable the 'measure the time between writes' diagnostic
 
 char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
@@ -195,6 +221,7 @@ int charsReceived = 0; //Used for verifying/debugging serial reception
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 ICM_20948_SPI myICM;
+icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted from the FIFO
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Header files for all compatible Qwiic sensors
@@ -223,6 +250,8 @@ ICM_20948_SPI myICM;
 #include "SparkFun_SGP40_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_SGP40
 #include "SparkFun_SDP3x_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_SDP3x
 #include "MS5837.h" // Click here to download the library: https://github.com/sparkfunX/BlueRobotics_MS5837_Library
+//#include "SparkFun_Qwiic_Button.h" // Click here to get the library: http://librarymanager/All#SparkFun_Qwiic_Button_Switch
+#include "SparkFun_Bio_Sensor_Hub_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Bio_Sensor
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -237,6 +266,7 @@ unsigned long lastReadTime = 0; //Used to delay until user wants to record a new
 unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
 bool takeReading = true; //Goes true when enough time has passed between readings or we've woken from sleep
+bool sleepAfterRead = false; //Used to keep the code awake for at least minimumAwakeTimeMillis
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
 volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
@@ -639,11 +669,26 @@ void loop() {
 
     triggerEdgeSeen = false; // Clear the trigger seen flag here - just in case another trigger was received while we were logging data to SD card
 
-    // Code changes here are based on suggestions by @ryanneve in Issue #46 and PR #64
+    // Code changes here are based on suggestions by @ryanneve in Issue #46, PR #64 and Issue #83
     if (checkIfItIsTimeToSleep())
     {
-      goToSleep(howLongToSleepFor());
+      sleepAfterRead = true;
     }
+  }
+
+  if (sleepAfterRead == true)
+  {
+    // Check if we should stay awake because settings.minimumAwakeTimeMillis is non-zero
+    if ((settings.usBetweenReadings >= maxUsBeforeSleep) && (settings.minimumAwakeTimeMillis > 0))
+    {
+      // Check if we have been awake long enough (millis is reset to zero when waking from sleep)
+      // goToSleep will automatically compensate for how long we have been awake
+      if (millis() < settings.minimumAwakeTimeMillis)
+        return; // Too early to sleep - leave sleepAfterRead set true
+    }
+
+    sleepAfterRead = false;
+    goToSleep(howLongToSleepFor());
   }
 }
 
@@ -653,6 +698,8 @@ uint32_t howLongToSleepFor(void)
   //Calculate how many 32768Hz system ticks we need to sleep for:
   //sysTicksToSleep = msToSleep * 32768L / 1000
   //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
+
+  //goToSleep will automatically compensate for how long we have been awake
   
   uint32_t msToSleep;
 
@@ -680,7 +727,9 @@ uint32_t howLongToSleepFor(void)
       msToSleep = (secondsUntilStop + 1) * 1000UL; // Adjust msToSleep, adding one extra second to make sure the next wake is > slowLoggingStop
   }
   else // checkSleepOnUsBetweenReadings
-    msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL);
+  {
+    msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL); // Sleep for usBetweenReadings
+  }
   
   uint32_t sysTicksToSleep;
   if (msToSleep < 131000)
@@ -784,7 +833,7 @@ void beginSD()
       delay(1);
     }
 
-    if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
+    if (sd.begin(SD_CONFIG) == false) // Try to begin the SD card using the correct chip select
     {
       printDebug(F("SD init failed (first attempt). Trying again...\r\n"));
       for (int i = 0; i < 250; i++) //Give SD more time to power up, then try again
@@ -792,9 +841,10 @@ void beginSD()
         checkBattery();
         delay(1);
       }
-      if (sd.begin(PIN_MICROSD_CHIP_SELECT, SD_SCK_MHZ(24)) == false) //Standard SdFat
+      if (sd.begin(SD_CONFIG) == false) // Try to begin the SD card using the correct chip select
       {
         SerialPrintln(F("SD init failed (second attempt). Is card present? Formatted?"));
+        SerialPrintln(F("Please ensure the SD card is formatted correctly using https://www.sdcard.org/downloads/formatter/"));
         digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
         online.microSD = false;
         return;
@@ -896,35 +946,183 @@ void beginIMU()
       delay(1);
     }
 
-    //Update the full scale and DLPF settings
-    ICM_20948_Status_e retval = myICM.enableDLPF(ICM_20948_Internal_Acc, settings.imuAccDLPF);
-    if (retval != ICM_20948_Stat_Ok)
+    bool success = true;
+      
+    //Check if we are using the DMP
+    if (settings.imuUseDMP == false)
     {
-      SerialPrintln(F("Error: Could not configure the IMU Accelerometer DLPF!"));
-    }
-    retval = myICM.enableDLPF(ICM_20948_Internal_Gyr, settings.imuGyroDLPF);
-    if (retval != ICM_20948_Stat_Ok)
-    {
-      SerialPrintln(F("Error: Could not configure the IMU Gyro DLPF!"));
-    }
-    ICM_20948_dlpcfg_t dlpcfg;
-    dlpcfg.a = settings.imuAccDLPFBW;
-    dlpcfg.g = settings.imuGyroDLPFBW;
-    retval = myICM.setDLPFcfg((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), dlpcfg);
-    if (retval != ICM_20948_Stat_Ok)
-    {
+      //Perform a full startup (not minimal) for non-DMP mode
+      ICM_20948_Status_e retval = myICM.startupDefault(false);
+      if (retval != ICM_20948_Stat_Ok)
+      {
+        SerialPrintln(F("Error: Could not startup the IMU in non-DMP mode!"));
+        success = false;
+      }  
+      //Update the full scale and DLPF settings
+      retval = myICM.enableDLPF(ICM_20948_Internal_Acc, settings.imuAccDLPF);
+      if (retval != ICM_20948_Stat_Ok)
+      {
+        SerialPrintln(F("Error: Could not configure the IMU Accelerometer DLPF!"));
+        success = false;
+      }
+      retval = myICM.enableDLPF(ICM_20948_Internal_Gyr, settings.imuGyroDLPF);
+      if (retval != ICM_20948_Stat_Ok)
+      {
+        SerialPrintln(F("Error: Could not configure the IMU Gyro DLPF!"));
+        success = false;
+      }
+      ICM_20948_dlpcfg_t dlpcfg;
+      dlpcfg.a = settings.imuAccDLPFBW;
+      dlpcfg.g = settings.imuGyroDLPFBW;
+      retval = myICM.setDLPFcfg((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), dlpcfg);
+      if (retval != ICM_20948_Stat_Ok)
+      {
         SerialPrintln(F("Error: Could not configure the IMU DLPF BW!"));
+        success = false;
+      }
+      ICM_20948_fss_t FSS;
+      FSS.a = settings.imuAccFSS;
+      FSS.g = settings.imuGyroFSS;
+      retval = myICM.setFullScale((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), FSS);
+      if (retval != ICM_20948_Stat_Ok)
+      {
+        SerialPrintln(F("Error: Could not configure the IMU Full Scale!"));
+        success = false;
+      }
     }
-    ICM_20948_fss_t FSS;
-    FSS.a = settings.imuAccFSS;
-    FSS.g = settings.imuGyroFSS;
-    retval = myICM.setFullScale((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), FSS);
-    if (retval != ICM_20948_Stat_Ok)
+    else
     {
-      SerialPrintln(F("Error: Could not configure the IMU Full Scale!"));
+      // Initialize the DMP
+      ICM_20948_Status_e retval = myICM.initializeDMP();
+      if (retval != ICM_20948_Stat_Ok)
+      {
+        SerialPrintln(F("Error: Could not startup the IMU in DMP mode!"));
+        success = false;
+      }
+      if (settings.imuLogDMPQuat6)
+      {
+        retval = myICM.enableDMPSensor(INV_ICM20948_SENSOR_GAME_ROTATION_VECTOR);
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not enable the Game Rotation Vector (Quat6)!"));
+          success = false;
+        }
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat6, 0); // Set ODR to 55Hz
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not set the Quat6 ODR!"));
+          success = false;
+        }
+      }
+      if (settings.imuLogDMPQuat9)
+      {
+        retval = myICM.enableDMPSensor(INV_ICM20948_SENSOR_ROTATION_VECTOR);
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not enable the Rotation Vector (Quat9)!"));
+          success = false;
+        }
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat9, 0); // Set ODR to 55Hz
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not set the Quat9 ODR!"));
+          success = false;
+        }
+      }
+      if (settings.imuLogDMPAccel)
+      {
+        retval = myICM.enableDMPSensor(INV_ICM20948_SENSOR_RAW_ACCELEROMETER);
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not enable the DMP Accelerometer!"));
+          success = false;
+        }
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Accel, 0); // Set ODR to 55Hz
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not set the Accel ODR!"));
+          success = false;
+        }
+      }
+      if (settings.imuLogDMPGyro)
+      {
+        retval = myICM.enableDMPSensor(INV_ICM20948_SENSOR_RAW_GYROSCOPE);
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not enable the DMP Gyroscope!"));
+          success = false;
+        }
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro, 0); // Set ODR to 55Hz
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not set the Gyro ODR!"));
+          success = false;
+        }
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 0); // Set ODR to 55Hz
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not set the Gyro Calibr ODR!"));
+          success = false;
+        }
+      }
+      if (settings.imuLogDMPCpass)
+      {
+        retval = myICM.enableDMPSensor(INV_ICM20948_SENSOR_MAGNETIC_FIELD_UNCALIBRATED);
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not enable the DMP Compass!"));
+          success = false;
+        }
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass, 0); // Set ODR to 55Hz
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not set the Compass ODR!"));
+          success = false;
+        }
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, 0); // Set ODR to 55Hz
+        if (retval != ICM_20948_Stat_Ok)
+        {
+          SerialPrintln(F("Error: Could not set the Compass Calibr ODR!"));
+          success = false;
+        }
+      }
+      retval = myICM.enableFIFO(); // Enable the FIFO
+      if (retval != ICM_20948_Stat_Ok)
+      {
+        SerialPrintln(F("Error: Could not enable the FIFO!"));
+        success = false;
+      }
+      retval = myICM.enableDMP(); // Enable the DMP
+      if (retval != ICM_20948_Stat_Ok)
+      {
+        SerialPrintln(F("Error: Could not enable the DMP!"));
+        success = false;
+      }
+      retval = myICM.resetDMP(); // Reset the DMP
+      if (retval != ICM_20948_Stat_Ok)
+      {
+        SerialPrintln(F("Error: Could not reset the DMP!"));
+        success = false;
+      }
+      retval = myICM.resetFIFO(); // Reset the FIFO
+      if (retval != ICM_20948_Stat_Ok)
+      {
+        SerialPrintln(F("Error: Could not reset the FIFO!"));
+        success = false;
+      }
     }
 
-    online.IMU = true;
+    if (success)
+    {
+      online.IMU = true;
+      delay(50); // Give the IMU time to get its first measurement ready
+    }
+    else
+    {
+      //Power down IMU
+      imuPowerOff();
+      online.IMU = false;
+    }
   }
   else
   {
@@ -997,14 +1195,30 @@ void beginSerialOutput()
     online.serialOutput = false;
 }
 
-void updateDataFileCreate(SdFile *dataFile)
+#if SD_FAT_TYPE == 1
+void updateDataFileCreate(File32 *dataFile)
+#elif SD_FAT_TYPE == 2
+void updateDataFileCreate(ExFile *dataFile)
+#elif SD_FAT_TYPE == 3
+void updateDataFileCreate(FsFile *dataFile)
+#else // SD_FAT_TYPE == 0
+void updateDataFileCreate(File *dataFile)
+#endif  // SD_FAT_TYPE
 {
   myRTC.getTime(); //Get the RTC time so we can use it to update the create time
   //Update the file create time
   dataFile->timestamp(T_CREATE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
 }
 
-void updateDataFileAccess(SdFile *dataFile)
+#if SD_FAT_TYPE == 1
+void updateDataFileAccess(File32 *dataFile)
+#elif SD_FAT_TYPE == 2
+void updateDataFileAccess(ExFile *dataFile)
+#elif SD_FAT_TYPE == 3
+void updateDataFileAccess(FsFile *dataFile)
+#else // SD_FAT_TYPE == 0
+void updateDataFileAccess(File *dataFile)
+#endif  // SD_FAT_TYPE
 {
   myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
   //Update the file access time

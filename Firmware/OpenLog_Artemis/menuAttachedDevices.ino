@@ -336,6 +336,12 @@ void menuAttachedDevices()
           case DEVICE_PRESSURE_MS5837:
             SerialPrintf3("%s MS5837 (BAR30 / BAR02) Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
+//          case DEVICE_QWIIC_BUTTON:
+//            SerialPrintf3("%s Qwiic Button %s\r\n", strDeviceMenu, strAddress);
+//            break;
+          case DEVICE_BIO_SENSOR_HUB:
+            SerialPrintf3("%s Bio Sensor Pulse Oximeter %s\r\n", strDeviceMenu, strAddress);
+            break;
           default:
             SerialPrintf2("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
             break;
@@ -345,12 +351,22 @@ void menuAttachedDevices()
       temp = temp->next;
     }
 
-    SerialPrintf2("%d) Configure Qwiic Settings\r\n", availableDevices++ + 1);
+    availableDevices++;
+    SerialPrintf2("%d) Configure Qwiic Settings\r\n", availableDevices);
+    availableDevices++;
+    if (settings.identifyBioSensorHubs == true)
+    {
+      SerialPrintf2("%d) Detect Bio Sensor Pulse Oximeter: Enabled\r\n", availableDevices);
+    }
+    else
+    {
+      SerialPrintf2("%d) Detect Bio Sensor Pulse Oximeter: Disabled\r\n", availableDevices);
+    }
 
     SerialPrintln(F("x) Exit"));
 
     int nodeNumber = getNumber(menuTimeout); //Timeout after x seconds
-    if (nodeNumber > 0 && nodeNumber < availableDevices)
+    if (nodeNumber > 0 && nodeNumber < availableDevices - 1)
     {
       //Lookup the function we need to call based the node number
       FunctionPointer functionPointer = getConfigFunctionPtr(nodeNumber - 1);
@@ -361,9 +377,58 @@ void menuAttachedDevices()
 
       configureDevice(nodeNumber - 1); //Reconfigure this device with the new settings
     }
-    else if (nodeNumber == availableDevices)
+    else if (nodeNumber == availableDevices - 1)
     {
       menuConfigure_QwiicBus();
+    }
+    else if (nodeNumber == availableDevices)
+    {
+      if (settings.identifyBioSensorHubs)
+      {
+        SerialPrintln(F(""));
+        SerialPrintln(F("\"Detect Bio Sensor Pulse Oximeter\" can only be disabled by \"Reset all settings to default\""));
+        SerialPrintln(F(""));
+      }
+      else
+      {
+        SerialPrintln(F(""));
+        SerialPrintln(F("\"Detect Bio Sensor Pulse Oximeter\" requires exclusive use of pins 32 and 11"));
+        SerialPrintln(F("Once enabled, \"Detect Bio Sensor Pulse Oximeter\" can only be disabled by \"Reset all settings to default\""));
+        SerialPrintln(F("Pin 32 must be connected to the sensor RST pin"));
+        SerialPrintln(F("Pin 11 must be connected to the sensor MFIO pin"));
+        SerialPrintln(F("This means you cannot use pins 32 and 11 for: analog logging; triggering; fast/slow logging; stop logging; etc."));
+        SerialPrintln(F("Are you sure? Press 'y' to confirm: "));
+        byte bContinue = getByteChoice(menuTimeout);
+        if (bContinue == 'y')
+        {
+          settings.identifyBioSensorHubs = true;
+          settings.logA11 = false;
+          settings.logA32 = false;
+          if (settings.useGPIO11ForTrigger == true) // If interrupts are enabled, we need to disable and then re-enable
+          {
+            detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+            settings.useGPIO11ForTrigger = false;
+          }
+          settings.useGPIO11ForFastSlowLogging = false;
+          if (settings.useGPIO32ForStopLogging == true)
+          {
+            // Disable stop logging
+            settings.useGPIO32ForStopLogging = false;
+            detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+          }
+
+          recordSystemSettings(); //Record the new settings to EEPROM and config file now in case the user resets before exiting the menus
+                
+          if (detectQwiicDevices() == true) //Detect the oximeter
+          {
+            beginQwiicDevices(); //Begin() each device in the node list
+            configureQwiicDevices(); //Apply config settings to each device in the node list
+            recordDeviceSettingsToFile(); //Record the current devices settings to device config file now in case the user resets before exiting the menus
+          }
+        }
+        else
+          SerialPrintln(F("\"Detect Bio Sensor Pulse Oximeter\"  aborted"));
+      }
     }
     else if (nodeNumber == STATUS_PRESSED_X)
       break;
@@ -2374,6 +2439,149 @@ void menuConfigure_MS5837(void *configPtr)
         double PCF = getDouble(menuTimeout); //x second timeout
         sensorSetting->conversion = (float)PCF;
       }        
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+//void menuConfigure_QWIIC_BUTTON(void *configPtr)
+//{
+//  struct_QWIIC_BUTTON *sensorSetting = (struct_QWIIC_BUTTON*)configPtr;
+//
+//  while (1)
+//  {
+//    SerialPrintln(F(""));
+//    SerialPrintln(F("Menu: Configure Qwiic Button"));
+//
+//    SerialPrint(F("1) Sensor Logging: "));
+//    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+//    else SerialPrintln(F("Disabled"));
+//
+//    if (sensorSetting->log == true)
+//    {
+//      SerialPrint(F("2) Log Button Presses: "));
+//      if (sensorSetting->logPressed == true) SerialPrintln(F("Enabled"));
+//      else SerialPrintln(F("Disabled"));
+//
+//      SerialPrint(F("3) Log Button Clicks: "));
+//      if (sensorSetting->logClicked == true) SerialPrintln(F("Enabled"));
+//      else SerialPrintln(F("Disabled"));
+//
+//      SerialPrint(F("4) Toggle LED on each click (and log the LED state): "));
+//      if (sensorSetting->toggleLEDOnClick == true) SerialPrintln(F("Enabled"));
+//      else SerialPrintln(F("Disabled"));
+//  
+//      SerialPrintf2("5) LED Brightness: %d\r\n", sensorSetting->ledBrightness);
+//    }
+//    SerialPrintln(F("x) Exit"));
+//
+//    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+//
+//    if (incoming == 1)
+//      sensorSetting->log ^= 1;
+//    else if (sensorSetting->log == true)
+//    {
+//      if (incoming == 2)
+//        sensorSetting->logPressed ^= 1;
+//      else if (incoming == 3)
+//        sensorSetting->logClicked ^= 1;
+//      else if (incoming == 4)
+//        sensorSetting->toggleLEDOnClick ^= 1;
+//      else if (incoming == 5)
+//      {
+//        SerialPrint(F("Enter the LED brightness (0 to 255): "));
+//        int bright = getNumber(menuTimeout); //x second timeout
+//        if (bright < 0 || bright > 255)
+//          SerialPrintln(F("Error: Out of range"));
+//        else
+//          sensorSetting->ledBrightness = bright;
+//      }        
+//      else if (incoming == STATUS_PRESSED_X)
+//        break;
+//      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+//        break;
+//      else
+//        printUnknown(incoming);
+//    }
+//    else if (incoming == STATUS_PRESSED_X)
+//      break;
+//    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+//      break;
+//    else
+//      printUnknown(incoming);
+//  }
+//}
+
+void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
+{
+  struct_BIO_SENSOR_HUB *sensorSetting = (struct_BIO_SENSOR_HUB*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Bio Sensor Hub (Pulse Oximeter)"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Heart Rate: "));
+      if (sensorSetting->logHeartrate == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Confidence %: "));
+      if (sensorSetting->logConfidence == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Log Oxygen %: "));
+      if (sensorSetting->logOxygen == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+  
+      SerialPrint(F("5) Log Status: "));
+      if (sensorSetting->logStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("6) Log Extended Status: "));
+      if (sensorSetting->logExtendedStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("7) Log Oxygen R Value: "));
+      if (sensorSetting->logRValue == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logHeartrate ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logConfidence ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logOxygen ^= 1;
+      else if (incoming == 5)
+        sensorSetting->logStatus ^= 1;
+      else if (incoming == 6)
+        sensorSetting->logExtendedStatus ^= 1;
+      else if (incoming == 7)
+        sensorSetting->logRValue ^= 1;
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

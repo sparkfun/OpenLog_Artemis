@@ -318,6 +318,11 @@ void goToSleep(uint32_t sysTicksToSleep)
   //else
   //  powerLEDOff();
 
+  //Adjust sysTicks down by the amount we've be at 48MHz
+  //Read millis _before_ we switch to the lower power clock!
+  uint32_t msBeenAwake = millis();
+  uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
+
   //Power down cache, flash, SRAM
   am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); // Power down all flash and cache
   am_hal_pwrctrl_memory_deepsleep_retain(AM_HAL_PWRCTRL_MEM_SRAM_384K); // Retain all SRAM
@@ -325,10 +330,6 @@ void goToSleep(uint32_t sysTicksToSleep)
   //Use the lower power 32kHz clock. Use it to run CT6 as well.
   am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
   am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
-
-  //Adjust sysTicks down by the amount we've be at 48MHz
-  uint32_t msBeenAwake = millis();
-  uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
 
   //Check that sysTicksToSleep is >> sysTicksAwake
   if (sysTicksToSleep > (sysTicksAwake + 3277)) // Abort if we are trying to sleep for < 100ms

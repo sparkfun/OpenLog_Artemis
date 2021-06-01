@@ -56,6 +56,10 @@ This document summarizes the units used for each sensor measurement.
 
 - [Qwiic PT100 ADS122C04 platinum resistance sensor](#Qwiic-PT100-ADS122C04-platinum-resistance-sensor)
 
+### Biometric Sensors:
+
+- [Pulse Oximeter and Heart Rate Sensor](#Pulse-Oximeter)
+
 ---
 ## Sensor Units
 
@@ -277,7 +281,8 @@ Fan operational status:
 0: Normal status  
 1: Normal status (1,000rpm or more), with S/W correction  
 2: In initial calibration  
-3: Abnormal (below 1,000rpm), out of control  
+3: Abnormal (below 1,000rpm), out of control
+  
 
 ---
 ## VL53L1X laser ToF sensor
@@ -327,3 +332,31 @@ Fan operational status:
 | []() | | |
 |---|---|---|
 | Weight | weight(no unit) | none |
+
+---
+## Pulse Oximeter
+
+| []() | | |
+|---|---|---|
+| bpm | heart rate | beats per minute |
+| conf% | confidence | percent |
+| O2% | oxygen level | percent |
+| stat | sensor status | 0 to 3 |
+| eStat | extended status | -6 to 1 |
+| O2R | oxygen SpO2 R value | |
+
+Sensor status:  
+0: No object detected.
+1: Object detected.
+2: Object other than finger detected
+3: Finger detected
+
+Extended status:
+0: Success
++1: Not ready
+-1: Object detected
+-2: Excessive sensor device motion
+-3: No object detected
+-4: Pressing too hard
+-5: Object other than finger detected
+-6: Excessive finger motion

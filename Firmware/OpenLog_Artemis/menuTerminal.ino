@@ -132,6 +132,12 @@ void menuLogRate()
       SerialPrintf3("%02d:%02d\r\n", slowHour, slowMin);
     }
 
+    if ((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+    {
+      SerialPrint(F("21) Minimum awake time between sleeps: "));
+      SerialPrintf2("%dms\r\n", settings.minimumAwakeTimeMillis);
+    }
+
     SerialPrintln(F("x) Exit"));
 
     int incoming = getNumber(menuTimeout); //Timeout after x seconds
@@ -186,7 +192,16 @@ void menuLogRate()
         if (tempSeconds < 1 || tempSeconds > 129600)
           SerialPrintln(F("Error: logging interval out of range"));
         else
+        {
           settings.usBetweenReadings = 1000000ULL * ((uint64_t)tempSeconds);
+
+          if (settings.usBetweenReadings >= maxUsBeforeSleep) // Check if minimumAwakeTimeMillis needs to be reduced
+          {
+            // Limit minimumAwakeTimeMillis to usBetweenReadings minus one second
+            if (settings.minimumAwakeTimeMillis > ((settings.usBetweenReadings / 1000ULL) - 1000ULL))
+              settings.minimumAwakeTimeMillis = (unsigned long)((settings.usBetweenReadings / 1000ULL) - 1000ULL);
+          }
+        }
       }
     }
     else if (incoming == 6)
@@ -243,45 +258,63 @@ void menuLogRate()
       settings.frequentFileAccessTimestamps ^= 1;
     else if (incoming == 12)
     {
-      if (settings.useGPIO11ForTrigger == true)
+      if (settings.identifyBioSensorHubs == false)
       {
-        // Disable triggering
-        settings.useGPIO11ForTrigger = false;
-        detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
-        pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
-        triggerEdgeSeen = false; // Make sure the flag is clear
+        if (settings.useGPIO11ForTrigger == true)
+        {
+          // Disable triggering
+          settings.useGPIO11ForTrigger = false;
+          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          triggerEdgeSeen = false; // Make sure the flag is clear
+        }
+        else
+        {
+          // Enable triggering
+          settings.useGPIO11ForTrigger = true;
+          pinMode(PIN_TRIGGER, INPUT_PULLUP);
+          delay(1); // Let the pin stabilize
+          if (settings.fallingEdgeTrigger == true)
+            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+          else
+            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+          triggerEdgeSeen = false; // Make sure the flag is clear
+          settings.logA11 = false; // Disable analog logging on pin 11
+          settings.logMaxRate = false; // Disable max rate logging
+          settings.useGPIO11ForFastSlowLogging = false;
+          settings.useRTCForFastSlowLogging = false;
+        }
       }
       else
       {
-        // Enable triggering
-        settings.useGPIO11ForTrigger = true;
-        pinMode(PIN_TRIGGER, INPUT_PULLUP);
-        delay(1); // Let the pin stabilize
-        if (settings.fallingEdgeTrigger == true)
-          attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
-        else
-          attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
-        triggerEdgeSeen = false; // Make sure the flag is clear
-        settings.logA11 = false; // Disable analog logging on pin 11
-        settings.logMaxRate = false; // Disable max rate logging
-        settings.useGPIO11ForFastSlowLogging = false;
-        settings.useRTCForFastSlowLogging = false;
-      }
+        SerialPrintln(F(""));
+        SerialPrintln(F("Triggering on pin 11 is not possible. \"Detect Bio Sensor Pulse Oximeter\" is enabled."));
+        SerialPrintln(F(""));
+      }      
     }
     else if (incoming == 13)
     {
-      if (settings.useGPIO11ForTrigger == true) // If interrupts are enabled, we need to disable and then re-enable
+      if (settings.identifyBioSensorHubs == false)
       {
-        detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
-        settings.fallingEdgeTrigger ^= 1; // Invert the flag
-        if (settings.fallingEdgeTrigger == true)
-          attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+        if (settings.useGPIO11ForTrigger == true) // If interrupts are enabled, we need to disable and then re-enable
+        {
+          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          settings.fallingEdgeTrigger ^= 1; // Invert the flag
+          if (settings.fallingEdgeTrigger == true)
+            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+          else
+            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+          triggerEdgeSeen = false; // Make sure the flag is clear
+        }
         else
-          attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
-        triggerEdgeSeen = false; // Make sure the flag is clear
+          settings.fallingEdgeTrigger ^= 1; // Interrupt is not currently enabled so simply invert the flag
       }
       else
-        settings.fallingEdgeTrigger ^= 1; // Interrupt is not currently enabled so simply invert the flag
+      {
+        SerialPrintln(F(""));
+        SerialPrintln(F("Triggering on pin 11 is not possible. \"Detect Bio Sensor Pulse Oximeter\" is enabled."));
+        SerialPrintln(F(""));
+      }      
     }
     else if (incoming == 14)
     {
@@ -323,32 +356,49 @@ void menuLogRate()
     }
     else if (incoming == 15)
     {
-      if (settings.useGPIO11ForFastSlowLogging == false) // If the user is trying to enable Pin 11 fast / slow logging
+      if (settings.identifyBioSensorHubs == false)
       {
-        settings.useGPIO11ForFastSlowLogging = true;
-        settings.useRTCForFastSlowLogging = false;
-        settings.logA11 = false; // Disable analog logging on pin 11
-        pinMode(PIN_TRIGGER, INPUT_PULLUP);
-        delay(1); // Let the pin stabilize
-        // Disable triggering
-        if (settings.useGPIO11ForTrigger == true)
+        if (settings.useGPIO11ForFastSlowLogging == false) // If the user is trying to enable Pin 11 fast / slow logging
         {
-          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
-          triggerEdgeSeen = false; // Make sure the flag is clear
+          settings.useGPIO11ForFastSlowLogging = true;
+          settings.useRTCForFastSlowLogging = false;
+          settings.logA11 = false; // Disable analog logging on pin 11
+          pinMode(PIN_TRIGGER, INPUT_PULLUP);
+          delay(1); // Let the pin stabilize
+          // Disable triggering
+          if (settings.useGPIO11ForTrigger == true)
+          {
+            detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+            triggerEdgeSeen = false; // Make sure the flag is clear
+          }
+          settings.useGPIO11ForTrigger = false;
         }
-        settings.useGPIO11ForTrigger = false;
+        else // If the user is trying to disable Pin 11 fast / slow logging
+        {
+          settings.useGPIO11ForFastSlowLogging = false;        
+          pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+        }
+      }
+      else
+      {
+        SerialPrintln(F(""));
+        SerialPrintln(F("Fast / slow logging via pin 11 is not possible. \"Detect Bio Sensor Pulse Oximeter\" is enabled."));
+        SerialPrintln(F(""));
+      }              
+    }
+    else if (incoming == 16)
+    {
+      if (settings.identifyBioSensorHubs == false)
+      {
+        if (settings.useGPIO11ForFastSlowLogging == true)
+        {
+          settings.slowLoggingWhenPin11Is ^= 1;
+        }
       }
       else // If the user is trying to disable Pin 11 fast / slow logging
       {
         settings.useGPIO11ForFastSlowLogging = false;        
         pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
-      }
-    }
-    else if (incoming == 16)
-    {
-      if (settings.useGPIO11ForFastSlowLogging == true)
-      {
-        settings.slowLoggingWhenPin11Is ^= 1;
       }
     }
     else if (incoming == 17)
@@ -430,6 +480,27 @@ void menuLogRate()
             settings.slowLoggingStopMOD += (int)tempMOD;
         }
       }      
+    }
+    else if (incoming == 21)
+    {
+      if (settings.useGPIO11ForTrigger == false)
+      {
+        if (settings.usBetweenReadings >= maxUsBeforeSleep)
+        {
+          // Limit minimumAwakeTimeMillis to usBetweenReadings minus one second
+          unsigned long maxAwakeMillis = (unsigned long)((settings.usBetweenReadings / 1000ULL) - 1000ULL);
+          SerialPrintf2("Enter minimum awake time (ms: 0 to %d): : ", maxAwakeMillis);
+          int newAwake = getNumber(menuTimeout); //Timeout after x seconds
+          if (newAwake < 0 || newAwake > maxAwakeMillis)
+          {
+            SerialPrintln(F("Error: awake time out of range"));
+          }
+          else
+          {
+            settings.minimumAwakeTimeMillis = newAwake;
+          }
+        }
+      }
     }
     else if (incoming == STATUS_PRESSED_X)
       return;

@@ -86,37 +86,75 @@ void getData()
   {
     //printDebug("getData: online.IMU = " + (String)online.IMU + "\r\n");
 
-    if (myICM.dataReady())
+    if (settings.imuUseDMP == false)
     {
-      //printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
-      
-      myICM.getAGMT(); //Update values
-
-      if (settings.logIMUAccel)
+      if (myICM.dataReady())
       {
-        sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.accX(), myICM.accY(), myICM.accZ());
+        //printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+        
+        myICM.getAGMT(); //Update values
+  
+        if (settings.logIMUAccel)
+        {
+          sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.accX(), myICM.accY(), myICM.accZ());
+          strcat(outputData, tempData);
+        }
+        if (settings.logIMUGyro)
+        {
+          sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.gyrX(), myICM.gyrY(), myICM.gyrZ());
+          strcat(outputData, tempData);
+        }
+        if (settings.logIMUMag)
+        {
+          sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.magX(), myICM.magY(), myICM.magZ());
+          strcat(outputData, tempData);
+        }
+        if (settings.logIMUTemp)
+        {
+          sprintf(tempData, "%.2f,", myICM.temp());
+          strcat(outputData, tempData);
+        }
+      }
+      //else
+      //{
+      //  printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
+      //}
+    }
+    else
+    {
+      myICM.readDMPdataFromFIFO(&dmpData);
+      while (myICM.status == ICM_20948_Stat_FIFOMoreDataAvail)
+      {
+        myICM.readDMPdataFromFIFO(&dmpData); // Empty the FIFO - make sure data contains the most recent data
+      }
+      if (settings.imuLogDMPQuat6)
+      {
+        sprintf(tempData, "%.3f,%.3f,%.3f,", ((double)dmpData.Quat6.Data.Q1) / 1073741824.0,
+          ((double)dmpData.Quat6.Data.Q2) / 1073741824.0, ((double)dmpData.Quat6.Data.Q3) / 1073741824.0);
         strcat(outputData, tempData);
       }
-      if (settings.logIMUGyro)
+      if (settings.imuLogDMPQuat9)
       {
-        sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.gyrX(), myICM.gyrY(), myICM.gyrZ());
+        sprintf(tempData, "%.3f,%.3f,%.3f,%d,", ((double)dmpData.Quat9.Data.Q1) / 1073741824.0,
+          ((double)dmpData.Quat9.Data.Q2) / 1073741824.0, ((double)dmpData.Quat9.Data.Q3) / 1073741824.0, dmpData.Quat9.Data.Accuracy);
         strcat(outputData, tempData);
       }
-      if (settings.logIMUMag)
+      if (settings.imuLogDMPAccel)
       {
-        sprintf(tempData, "%.2f,%.2f,%.2f,", myICM.magX(), myICM.magY(), myICM.magZ());
+        sprintf(tempData, "%d,%d,%d,", dmpData.Raw_Accel.Data.X, dmpData.Raw_Accel.Data.Y, dmpData.Raw_Accel.Data.Z);
         strcat(outputData, tempData);
       }
-      if (settings.logIMUTemp)
+      if (settings.imuLogDMPGyro)
       {
-        sprintf(tempData, "%.2f,", myICM.temp());
+        sprintf(tempData, "%d,%d,%d,", dmpData.Raw_Gyro.Data.X, dmpData.Raw_Gyro.Data.Y, dmpData.Raw_Gyro.Data.Z);
+        strcat(outputData, tempData);
+      }
+      if (settings.imuLogDMPCpass)
+      {
+        sprintf(tempData, "%d,%d,%d,", dmpData.Compass.Data.X, dmpData.Compass.Data.Y, dmpData.Compass.Data.Z);
         strcat(outputData, tempData);
       }
     }
-    //else
-    //{
-    //  printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
-    //}
   }
 
   //Append all external sensor data on linked list to outputData
@@ -844,6 +882,91 @@ void gatherDeviceValues()
             }
           }
           break;
+//        case DEVICE_QWIIC_BUTTON:
+//          {
+//            QwiicButton *nodeDevice = (QwiicButton *)temp->classPtr;
+//            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+//            if (nodeSetting->log == true)
+//            {
+//              long pressedPopped = 0;
+//              while (nodeDevice->isPressedQueueEmpty() == false)
+//              {
+//                pressedPopped = nodeDevice->popPressedQueue();
+//              }
+//              if (nodeSetting->logPressed)
+//              {
+//                sprintf(tempData, "%.03f,", ((float)pressedPopped) / 1000.0); // Record only the most recent press - that's the best we can do
+//                strcat(outputData, tempData);
+//              }
+//              
+//              long clickedPopped = 0;
+//              while (nodeDevice->isClickedQueueEmpty() == false)
+//              {
+//                clickedPopped = nodeDevice->popClickedQueue();
+//                nodeSetting->ledState ^= 1; // Toggle nodeSetting->ledState on _every_ click (not just the most recent)
+//              }
+//              if (nodeSetting->logClicked)
+//              {
+//                sprintf(tempData, "%.03f,", ((float)clickedPopped) / 1000.0); // Record only the most recent click - that's the best we can do
+//                strcat(outputData, tempData);
+//              }
+//              
+//              if (nodeSetting->toggleLEDOnClick)
+//              {
+//                if (nodeSetting->ledState)
+//                  nodeDevice->LEDon(nodeSetting->ledBrightness);
+//                else
+//                  nodeDevice->LEDoff();
+//                sprintf(tempData, "%d,", nodeSetting->ledState);
+//                strcat(outputData, tempData);
+//              }
+//            }
+//          }
+//          break;
+        case DEVICE_BIO_SENSOR_HUB:
+          {
+            SparkFun_Bio_Sensor_Hub *nodeDevice = (SparkFun_Bio_Sensor_Hub *)temp->classPtr;
+            struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              bioData body;
+              if ((nodeSetting->logHeartrate) || (nodeSetting->logConfidence) || (nodeSetting->logOxygen) || (nodeSetting->logStatus) || (nodeSetting->logExtendedStatus) || (nodeSetting->logRValue))
+              {
+                body = nodeDevice->readBpm();
+              }
+              if (nodeSetting->logHeartrate)
+              {
+                sprintf(tempData, "%d,", body.heartRate);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logConfidence)
+              {
+                sprintf(tempData, "%d,", body.confidence);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logOxygen)
+              {
+                sprintf(tempData, "%d,", body.oxygen);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logStatus)
+              {
+                sprintf(tempData, "%d,", body.status);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logExtendedStatus)
+              {
+                sprintf(tempData, "%d,", body.extStatus);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logRValue)
+              {
+                sprintf(tempData, "%.01f,", body.rValue);
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
         default:
           SerialPrintf2("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
@@ -887,14 +1010,30 @@ void printHelperText(bool terminalOnly)
 
   if (online.IMU)
   {
-    if (settings.logIMUAccel)
-      strcat(helperText, "aX,aY,aZ,");
-    if (settings.logIMUGyro)
-      strcat(helperText, "gX,gY,gZ,");
-    if (settings.logIMUMag)
-      strcat(helperText, "mX,mY,mZ,");
-    if (settings.logIMUTemp)
-      strcat(helperText, "imu_degC,");
+    if (settings.imuUseDMP == false)
+    {
+      if (settings.logIMUAccel)
+        strcat(helperText, "aX,aY,aZ,");
+      if (settings.logIMUGyro)
+        strcat(helperText, "gX,gY,gZ,");
+      if (settings.logIMUMag)
+        strcat(helperText, "mX,mY,mZ,");
+      if (settings.logIMUTemp)
+        strcat(helperText, "imu_degC,");
+    }
+    else
+    {
+      if (settings.imuLogDMPQuat6)
+        strcat(helperText, "Q6_1,Q6_2,Q6_3,");
+      if (settings.imuLogDMPQuat9)
+        strcat(helperText, "Q9_1,Q9_2,Q9_3,HeadAcc,");
+      if (settings.imuLogDMPAccel)
+        strcat(helperText, "RawAX,RawAY,RawAZ,");
+      if (settings.imuLogDMPGyro)
+        strcat(helperText, "RawGX,RawGY,RawGZ,");
+      if (settings.imuLogDMPCpass)
+        strcat(helperText, "RawMX,RawMY,RawMZ,");
+    }
   }
 
   //Step through list, printing values as we go
@@ -1241,6 +1380,40 @@ void printHelperText(bool terminalOnly)
                 strcat(helperText, "depth_m,");
               if (nodeSetting->logAltitude)
                 strcat(helperText, "alt_m,");
+            }
+          }
+          break;
+//        case DEVICE_QWIIC_BUTTON:
+//          {
+//            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+//            if (nodeSetting->log)
+//            {
+//              if (nodeSetting->logPressed)
+//                strcat(helperText, "pressS,");
+//              if (nodeSetting->logClicked)
+//                strcat(helperText, "clickS,");
+//              if (nodeSetting->toggleLEDOnClick)
+//                strcat(helperText, "LED,");
+//            }
+//          }
+//          break;
+        case DEVICE_BIO_SENSOR_HUB:
+          {
+            struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logHeartrate)
+                strcat(helperText, "bpm,");
+              if (nodeSetting->logConfidence)
+                strcat(helperText, "conf%,");
+              if (nodeSetting->logOxygen)
+                strcat(helperText, "O2%,");
+              if (nodeSetting->logStatus)
+                strcat(helperText, "stat,");
+              if (nodeSetting->logExtendedStatus)
+                strcat(helperText, "eStat,");
+              if (nodeSetting->logRValue)
+                strcat(helperText, "O2R,");
             }
           }
           break;

@@ -57,7 +57,15 @@ void recordSystemSettingsToFile()
     if (sd.exists("OLA_settings.txt"))
       sd.remove("OLA_settings.txt");
 
-    SdFile settingsFile; //FAT32
+    #if SD_FAT_TYPE == 1
+    File32 settingsFile;
+    #elif SD_FAT_TYPE == 2
+    ExFile settingsFile;
+    #elif SD_FAT_TYPE == 3
+    FsFile settingsFile;
+    #else // SD_FAT_TYPE == 0
+    File settingsFile;
+    #endif  // SD_FAT_TYPE
     if (settingsFile.open("OLA_settings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       SerialPrintln(F("Failed to create settings file"));
@@ -164,6 +172,14 @@ void recordSystemSettingsToFile()
     settingsFile.println("slowLoggingStartMOD=" + (String)settings.slowLoggingStartMOD);
     settingsFile.println("slowLoggingStopMOD=" + (String)settings.slowLoggingStopMOD);
     settingsFile.println("resetOnZeroDeviceCount=" + (String)settings.resetOnZeroDeviceCount);
+    settingsFile.println("imuUseDMP=" + (String)settings.imuUseDMP);
+    settingsFile.println("imuLogDMPQuat6=" + (String)settings.imuLogDMPQuat6);
+    settingsFile.println("imuLogDMPQuat9=" + (String)settings.imuLogDMPQuat9);
+    settingsFile.println("imuLogDMPAccel=" + (String)settings.imuLogDMPAccel);
+    settingsFile.println("imuLogDMPGyro=" + (String)settings.imuLogDMPGyro);
+    settingsFile.println("imuLogDMPCpass=" + (String)settings.imuLogDMPCpass);
+    settingsFile.println("minimumAwakeTimeMillis=" + (String)settings.minimumAwakeTimeMillis);
+    settingsFile.println("identifyBioSensorHubs=" + (String)settings.identifyBioSensorHubs);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -424,6 +440,22 @@ bool parseLine(char* str) {
     settings.slowLoggingStopMOD = d;
   else if (strcmp(settingName, "resetOnZeroDeviceCount") == 0)
     settings.resetOnZeroDeviceCount = d;
+  else if (strcmp(settingName, "imuUseDMP") == 0)
+    settings.imuUseDMP = d;
+  else if (strcmp(settingName, "imuLogDMPQuat6") == 0)
+    settings.imuLogDMPQuat6 = d;
+  else if (strcmp(settingName, "imuLogDMPQuat9") == 0)
+    settings.imuLogDMPQuat9 = d;
+  else if (strcmp(settingName, "imuLogDMPAccel") == 0)
+    settings.imuLogDMPAccel = d;
+  else if (strcmp(settingName, "imuLogDMPGyro") == 0)
+    settings.imuLogDMPGyro = d;
+  else if (strcmp(settingName, "imuLogDMPCpass") == 0)
+    settings.imuLogDMPCpass = d;
+  else if (strcmp(settingName, "minimumAwakeTimeMillis") == 0)
+    settings.minimumAwakeTimeMillis = d;
+  else if (strcmp(settingName, "identifyBioSensorHubs") == 0)
+    settings.identifyBioSensorHubs = d;
   else
     {
       SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);
@@ -441,7 +473,15 @@ void recordDeviceSettingsToFile()
     if (sd.exists("OLA_deviceSettings.txt"))
       sd.remove("OLA_deviceSettings.txt");
 
-    SdFile settingsFile; //FAT32
+    #if SD_FAT_TYPE == 1
+    File32 settingsFile;
+    #elif SD_FAT_TYPE == 2
+    ExFile settingsFile;
+    #elif SD_FAT_TYPE == 3
+    FsFile settingsFile;
+    #else // SD_FAT_TYPE == 0
+    File settingsFile;
+    #endif  // SD_FAT_TYPE
     if (settingsFile.open("OLA_deviceSettings.txt", O_CREAT | O_APPEND | O_WRITE) == false)
     {
       SerialPrintln(F("Failed to create device settings file"));
@@ -691,6 +731,7 @@ void recordDeviceSettingsToFile()
         case DEVICE_PRESSURE_SDP3X:
           {
             struct_SDP3X *nodeSetting = (struct_SDP3X *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
             settingsFile.println((String)base + "massFlow=" + nodeSetting->massFlow);
@@ -708,6 +749,28 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "model=" + nodeSetting->model);
             settingsFile.println((String)base + "fluidDensity=" + nodeSetting->fluidDensity);
             settingsFile.println((String)base + "conversion=" + nodeSetting->conversion);
+          }
+          break;
+//        case DEVICE_QWIIC_BUTTON:
+//          {
+//            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+//            settingsFile.println((String)base + "log=" + nodeSetting->log);
+//            settingsFile.println((String)base + "logPressed=" + nodeSetting->logPressed);
+//            settingsFile.println((String)base + "logClicked=" + nodeSetting->logClicked);
+//            settingsFile.println((String)base + "toggleLEDOnClick=" + nodeSetting->toggleLEDOnClick);
+//            settingsFile.println((String)base + "ledBrightness=" + nodeSetting->ledBrightness);
+//          }
+//          break;
+        case DEVICE_BIO_SENSOR_HUB:
+          {
+            struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logHeartrate=" + nodeSetting->logHeartrate);
+            settingsFile.println((String)base + "logConfidence=" + nodeSetting->logConfidence);
+            settingsFile.println((String)base + "logOxygen=" + nodeSetting->logOxygen);
+            settingsFile.println((String)base + "logStatus=" + nodeSetting->logStatus);
+            settingsFile.println((String)base + "logExtendedStatus=" + nodeSetting->logExtendedStatus);
+            settingsFile.println((String)base + "logRValue=" + nodeSetting->logRValue);
           }
           break;
         default:
@@ -732,7 +795,16 @@ bool loadDeviceSettingsFromFile()
   {
     if (sd.exists("OLA_deviceSettings.txt"))
     {
-      SdFile settingsFile; //FAT32
+      #if SD_FAT_TYPE == 1
+      File32 settingsFile;
+      #elif SD_FAT_TYPE == 2
+      ExFile settingsFile;
+      #elif SD_FAT_TYPE == 3
+      FsFile settingsFile;
+      #else // SD_FAT_TYPE == 0
+      File settingsFile;
+      #endif  // SD_FAT_TYPE
+
       if (settingsFile.open("OLA_deviceSettings.txt", O_READ) == false)
       {
         SerialPrintln(F("Failed to open device settings file"));
@@ -1284,6 +1356,44 @@ bool parseDeviceLine(char* str) {
             nodeSetting->fluidDensity = d;
           else if (strcmp(deviceSettingName, "conversion") == 0)
             nodeSetting->conversion = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+//      case DEVICE_QWIIC_BUTTON:
+//        {
+//          struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+//          if (strcmp(deviceSettingName, "log") == 0)
+//            nodeSetting->log = d;
+//          else if (strcmp(deviceSettingName, "logPressed") == 0)
+//            nodeSetting->logPressed = d;
+//          else if (strcmp(deviceSettingName, "logClicked") == 0)
+//            nodeSetting->logClicked = d;
+//          else if (strcmp(deviceSettingName, "toggleLEDOnClick") == 0)
+//            nodeSetting->toggleLEDOnClick = d;
+//          else if (strcmp(deviceSettingName, "ledBrightness") == 0)
+//            nodeSetting->ledBrightness = d;
+//          else
+//            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+//        }
+//        break;
+      case DEVICE_BIO_SENSOR_HUB:
+        {
+          struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logHeartrate") == 0)
+            nodeSetting->logHeartrate = d;
+          else if (strcmp(deviceSettingName, "logConfidence") == 0)
+            nodeSetting->logConfidence = d;
+          else if (strcmp(deviceSettingName, "logOxygen") == 0)
+            nodeSetting->logOxygen = d;
+          else if (strcmp(deviceSettingName, "logStatus") == 0)
+            nodeSetting->logStatus = d;
+          else if (strcmp(deviceSettingName, "logExtendedStatus") == 0)
+            nodeSetting->logExtendedStatus = d;
+          else if (strcmp(deviceSettingName, "logRValue") == 0)
+            nodeSetting->logRValue = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
