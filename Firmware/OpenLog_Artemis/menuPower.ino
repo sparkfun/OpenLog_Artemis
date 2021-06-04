@@ -23,10 +23,13 @@ void menuPower()
     else SerialPrintln(F("Disabled"));
 
     SerialPrint(F("5) Low Battery Threshold (V): "));
-    SerialPrintf2("%.2f\r\n", settings.lowBatteryThreshold);
+    char tempStr[16];
+    olaftoa(settings.lowBatteryThreshold, tempStr, 2, sizeof(tempStr) / sizeof(char));
+    SerialPrintf2("%s\r\n", tempStr);
 
     SerialPrint(F("6) VIN measurement correction factor: "));
-    SerialPrintf2("%.3f\r\n", settings.vinCorrectionFactor);
+    olaftoa(settings.vinCorrectionFactor, tempStr, 3, sizeof(tempStr) / sizeof(char));
+    SerialPrintf2("%s\r\n", tempStr);
 #endif
 
     SerialPrintln(F("x) Exit"));

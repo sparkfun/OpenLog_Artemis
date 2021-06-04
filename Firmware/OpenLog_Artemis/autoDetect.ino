@@ -828,12 +828,13 @@ void configureDevice(node * temp)
         else
           sensor->LEDoff();
       }
+      break;
     case DEVICE_BIO_SENSOR_HUB:
       {
         SparkFun_Bio_Sensor_Hub *sensor = (SparkFun_Bio_Sensor_Hub *)temp->classPtr;
         struct_BIO_SENSOR_HUB *sensorSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr;
 
-        sensor->configBpm(MODE_ONE); // Configuring just the BPM settings. 
+        sensor->configBpm(MODE_TWO); // MODE_TWO provides the oxygen R value
       }
       break;
     default:

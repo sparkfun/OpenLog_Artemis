@@ -331,6 +331,8 @@ struct struct_BIO_SENSOR_HUB {
   bool logConfidence = true;
   bool logOxygen = true;
   bool logStatus = true;
+  bool logExtendedStatus = true;
+  bool logRValue = true;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

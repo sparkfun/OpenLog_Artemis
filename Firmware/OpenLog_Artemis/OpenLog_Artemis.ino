@@ -92,7 +92,12 @@
   (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library. https://github.com/sparkfun/OpenLog_Artemis/issues/34
   (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
   (done) Add support for the Pulse Oximeter and Qwiic Button: https://github.com/sparkfun/OpenLog_Artemis/issues/81
-  (on hold) Update to Apollo3 v2.1.0 - FIRMWARE_VERSION_MAJOR = 2. On hold until this issue is resolved (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
+  (in progress) Update to Apollo3 v2.1.0 - FIRMWARE_VERSION_MAJOR = 2.
+  (TO DO) Implement printf (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
+  (TO DO) Figure out why attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness
+  (TO DO) Add a qwiic.setPullups function
+  (TO DO) Check if we need ap3_set_pin_to_analog when coming out of sleep
+  (TO DO) Figure out why SerialLog RX does not work
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -207,8 +212,7 @@ Apollo3RTC myRTC; //Create instance of RTC class
 
 //Create UART instance for OpenLog style serial logging
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-//UART SerialLog(12, 13, 10, 17);  // Declares a Uart object called Serial1 with RX on pin 13 and TX on pin 12. Unused pins 10 and 17 are named for RTS and CTS to keep Apollo3 happy
-UART SerialLog(12, 13);  // Declares a Uart object called Serial1 with RX on pin 13 and TX on pin 12
+UART SerialLog(BREAKOUT_PIN_TX, BREAKOUT_PIN_RX);  // Declares a Uart object called Serial1 with TX on pin 12 and RX on pin 13
 unsigned long lastSeriaLogSyncTime = 0;
 const int MAX_IDLE_TIME_MSEC = 500;
 bool newSerialData = false;
@@ -287,9 +291,7 @@ void SerialPrintln(const char *);
 void SerialPrintln(const __FlashStringHelper *);
 void DoSerialPrint(char (*)(const char *), const char *, bool newLine = false);
 
-//unsigned long startTime = 0;
-
-#define DUMP( varname ) {Serial.printf("%s: %llu\r\n", #varname, varname); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf("%s: %llu\r\n", #varname, varname);}
+#define DUMP( varname ) {Serial.printf("%s: %d\r\n", #varname, varname); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf("%s: %d\r\n", #varname, varname);}
 #define SerialPrintf1( var ) {Serial.printf( var ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var );}
 #define SerialPrintf2( var1, var2 ) {Serial.printf( var1, var2 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2 );}
 #define SerialPrintf3( var1, var2, var3 ) {Serial.printf( var1, var2, var3 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2, var3 );}
@@ -320,6 +322,7 @@ void setup() {
   digitalWrite(PIN_STAT_LED, HIGH); // Turn the STAT LED on while we configure everything
 
   Serial.begin(115200); //Default for initial debug messages if necessary
+  pinMode(BREAKOUT_PIN_RX, INPUT);
   SerialLog.begin(115200); //Default for initial debug messages if necessary
   SerialPrintln(F(""));
 
@@ -447,8 +450,6 @@ void setup() {
     measurementStartTime = rtcMillis();
   else
     measurementStartTime = millis();
-
-  //SerialPrintf2("Setup time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
 
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
 

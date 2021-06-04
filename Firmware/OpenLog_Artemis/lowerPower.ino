@@ -474,8 +474,6 @@ void wakeFromSleep()
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
 
-  //SerialPrintf2("Wake up time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
-
   //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
   takeReading = true;
 }

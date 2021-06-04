@@ -109,6 +109,10 @@ void productionTest()
   unsigned long lastHelloSent = 0; // Use this to record the last time a Hello was sent
   bool echoUSB = false; // Flag to indicate if we should be echoing on USB (command 0x16/0x17)
 
+  char tempData1[16];
+  char tempData2[16];
+  char tempData3[16];
+  
   while (1) // Do this loop forever!
   {
     while (!SerialLog.available()) // Wait until we receive a command byte
@@ -139,7 +143,8 @@ void productionTest()
       {
         float vin = readVIN(); // Read VIN
 #ifdef verboseProdTest
-        Serial.printf("VIN is %fV\r\n", vin);
+        olaftoa(vin, tempData1, 2, sizeof(tempData1) / sizeof(char));
+        Serial.printf("VIN is %sV\r\n", tempData1);
 #endif
         if ((vin >= 4.75) && (vin <= 5.25)) // Success
         {
@@ -162,7 +167,8 @@ void productionTest()
           {
             myICM.getAGMT(); //Update values
 #ifdef verboseProdTest
-            Serial.printf("IMU Temp is: %.2fC\r\n", myICM.temp());
+            olaftoa(myICM.temp(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+            Serial.printf("IMU Temp is: %sC\r\n", tempData1);
 #endif
             if ((myICM.temp() >= 10.0) && (myICM.temp() <= 40.0))
             {
@@ -202,7 +208,10 @@ void productionTest()
           {
             myICM.getAGMT(); //Update values
 #ifdef verboseProdTest
-            Serial.printf("IMU Accel readings are: %.2f %.2f %.2f mg\r\n", myICM.accX(), myICM.accY(), myICM.accZ());
+            olaftoa(myICM.accX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+            olaftoa(myICM.accY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+            olaftoa(myICM.accZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+            Serial.printf("IMU Accel readings are: %s %s %s mg\r\n", tempData1, tempData2, tempData3);
 #endif
             if (((myICM.accX() > -100) && (myICM.accX() < 100)) && // Check the readings are in range
                 ((myICM.accY() > -100) && (myICM.accY() < 100)) &&
@@ -244,11 +253,15 @@ void productionTest()
           {
             myICM.getAGMT(); //Update values
 #ifdef verboseProdTest
-            Serial.printf("IMU Mag readings are: %.2f %.2f %.2f nT\r\n", myICM.magX(), myICM.magY(), myICM.magZ());
+            olaftoa(myICM.magX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+            olaftoa(myICM.magY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+            olaftoa(myICM.magZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+            Serial.printf("IMU Mag readings are: %s %s %s nT\r\n", tempData1, tempData2, tempData3);
 #endif
             float magVectorProduct = sqrt((myICM.magX() * myICM.magX()) + (myICM.magY() * myICM.magY())); // Calculate the vector product of magX and magY
 #ifdef verboseProdTest
-            Serial.printf("IMU Mag XY vector product is: %.2f nT\r\n", magVectorProduct);
+            olaftoa(magVectorProduct, tempData1, 2, sizeof(tempData1) / sizeof(char));
+            Serial.printf("IMU Mag XY vector product is: %s nT\r\n", tempData1);
 #endif
             if (((myICM.magZ() >= 20.0) && (myICM.magZ() <= 30.0)) && // Check the readings are in range
                 ((magVectorProduct >= 20.0) && (magVectorProduct <= 30.0)))
@@ -429,9 +442,30 @@ void productionTest()
       case 0x18:
         myRTC.getTime(); // Read the RTC
         SerialLog.write(0x18);
-        SerialLog.printf("%02d:%02d:%02d.%02d", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+        char rtcHour[3];
+        char rtcMin[3];
+        char rtcSec[3];
+        char rtcHundredths[3];
+        if (myRTC.hour < 10)
+          sprintf(rtcHour, "0%d", myRTC.hour);
+        else
+          sprintf(rtcHour, "%d", myRTC.hour);
+        if (myRTC.minute < 10)
+          sprintf(rtcMin, "0%d", myRTC.minute);
+        else
+          sprintf(rtcMin, "%d", myRTC.minute);
+        if (myRTC.seconds < 10)
+          sprintf(rtcSec, "0%d", myRTC.seconds);
+        else
+          sprintf(rtcSec, "%d", myRTC.seconds);
+        if (myRTC.hundredths < 10)
+          sprintf(rtcHundredths, "0%d", myRTC.hundredths);
+        else
+          sprintf(rtcHundredths, "%d", myRTC.hundredths);
+        
+        SerialLog.printf("%s:%s:%s.%s", rtcHour, rtcMin, rtcSec, rtcHundredths);
 #ifdef verboseProdTest
-        Serial.printf("RTC time is %02d:%02d:%02d.%02d\r\n", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+        Serial.printf("RTC time is %s:%s:%s.%s\r\n", rtcHour, rtcMin, rtcSec, rtcHundredths);
 #endif
         break;
       case 0x19: // SD Card Test

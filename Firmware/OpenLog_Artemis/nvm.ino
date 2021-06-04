@@ -770,6 +770,8 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logConfidence=" + nodeSetting->logConfidence);
             settingsFile.println((String)base + "logOxygen=" + nodeSetting->logOxygen);
             settingsFile.println((String)base + "logStatus=" + nodeSetting->logStatus);
+            settingsFile.println((String)base + "logExtendedStatus=" + nodeSetting->logExtendedStatus);
+            settingsFile.println((String)base + "logRValue=" + nodeSetting->logRValue);
           }
           break;
         default:
@@ -1389,6 +1391,10 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logOxygen = d;
           else if (strcmp(deviceSettingName, "logStatus") == 0)
             nodeSetting->logStatus = d;
+          else if (strcmp(deviceSettingName, "logExtendedStatus") == 0)
+            nodeSetting->logExtendedStatus = d;
+          else if (strcmp(deviceSettingName, "logRValue") == 0)
+            nodeSetting->logRValue = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }

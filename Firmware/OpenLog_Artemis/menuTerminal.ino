@@ -35,7 +35,9 @@ void menuLogRate()
         {
           //Display fractional Hertz
           uint32_t logRateSeconds = (uint32_t)(settings.usBetweenReadings / 1000000ULL);
-          SerialPrintf2("%.06lf\r\n", 1.0 / logRateSeconds);
+          char tempStr[16];
+          olaftoa(1.0 / logRateSeconds, tempStr, 6, sizeof(tempStr) / sizeof(char));
+          SerialPrintf2("%s\r\n", tempStr);
         }
       }
   
@@ -51,7 +53,9 @@ void menuLogRate()
         else
         {
           float rate = (float)(settings.usBetweenReadings / 1000000.0);
-          SerialPrintf2("%.06f\r\n", rate);
+          char tempStr[16];
+          olaftoa(rate, tempStr, 6, sizeof(tempStr) / sizeof(char));
+          SerialPrintf2("%s\r\n", tempStr);
         }
       }
   
@@ -124,12 +128,30 @@ void menuLogRate()
       SerialPrint(F("19) Slow logging starts at: "));
       int slowHour = settings.slowLoggingStartMOD / 60;
       int slowMin = settings.slowLoggingStartMOD % 60;
-      SerialPrintf3("%02d:%02d\r\n", slowHour, slowMin);
+      char hourStr[3];
+      char minStr[3];
+      if (slowHour < 10)
+        sprintf(hourStr, "0%d", slowHour);
+      else
+        sprintf(hourStr, "%d", slowHour);
+      if (slowMin < 10)
+        sprintf(minStr, "0%d", slowMin);
+      else
+        sprintf(minStr, "%d", slowMin);
+      SerialPrintf3("%s:%s\r\n", hourStr, minStr);
 
       SerialPrint(F("20) Slow logging ends at: "));
       slowHour = settings.slowLoggingStopMOD / 60;
       slowMin = settings.slowLoggingStopMOD % 60;
-      SerialPrintf3("%02d:%02d\r\n", slowHour, slowMin);
+      if (slowHour < 10)
+        sprintf(hourStr, "0%d", slowHour);
+      else
+        sprintf(hourStr, "%d", slowHour);
+      if (slowMin < 10)
+        sprintf(minStr, "0%d", slowMin);
+      else
+        sprintf(minStr, "%d", slowMin);
+      SerialPrintf3("%s:%s\r\n", hourStr, minStr);
     }
 
     if ((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))

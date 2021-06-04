@@ -416,6 +416,15 @@ void menuAttachedDevices()
             settings.useGPIO32ForStopLogging = false;
             detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           }
+          
+          recordSystemSettings(); //Record the new settings to EEPROM and config file now in case the user resets before exiting the menus
+                
+          if (detectQwiicDevices() == true) //Detect the oximeter
+          {
+            beginQwiicDevices(); //Begin() each device in the node list
+            configureQwiicDevices(); //Apply config settings to each device in the node list
+            recordDeviceSettingsToFile(); //Record the current devices settings to device config file now in case the user resets before exiting the menus
+          }
         }
         else
           SerialPrintln(F("\"Detect Bio Sensor Pulse Oximeter\"  aborted"));
@@ -835,9 +844,12 @@ void menuConfigure_NAU7802(void *configPtr)
     if (sensorConfig->log == true)
     {
       SerialPrintln(F("2) Calibrate Scale"));
-      SerialPrintf2("\tScale calibration factor: %f\r\n", sensorConfig->calibrationFactor);
+      char tempStr[16];
+      olaftoa(sensorConfig->calibrationFactor, tempStr, 6, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("\tScale calibration factor: %s\r\n", tempStr);
       SerialPrintf2("\tScale zero offset: %d\r\n", sensorConfig->zeroOffset);
-      SerialPrintf2("\tWeight currently on scale: %f\r\n", sensor->getWeight());
+      olaftoa(sensor->getWeight(), tempStr, sensorConfig->decimalPlaces, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("\tWeight currently on scale: %s\r\n", tempStr);
 
       SerialPrintf2("3) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
       SerialPrintf2("4) Average number of readings to take per weight read: %d\r\n", sensorConfig->averageAmount);
@@ -2542,6 +2554,14 @@ void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
       SerialPrint(F("5) Log Status: "));
       if (sensorSetting->logStatus == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("6) Log Extended Status: "));
+      if (sensorSetting->logExtendedStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("7) Log Oxygen R Value: "));
+      if (sensorSetting->logRValue == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2559,6 +2579,10 @@ void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
         sensorSetting->logOxygen ^= 1;
       else if (incoming == 5)
         sensorSetting->logStatus ^= 1;
+      else if (incoming == 6)
+        sensorSetting->logExtendedStatus ^= 1;
+      else if (incoming == 7)
+        sensorSetting->logRValue ^= 1;
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
