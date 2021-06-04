@@ -346,17 +346,17 @@ Fan operational status:
 | O2R | oxygen SpO2 R value | |
 
 Sensor status:  
-0: No object detected.
-1: Object detected.
-2: Object other than finger detected
-3: Finger detected
+0: No object detected  
+1: Object detected  
+2: Object other than finger detected  
+3: Finger detected  
 
-Extended status:
-0: Success
-+1: Not ready
--1: Object detected
--2: Excessive sensor device motion
--3: No object detected
--4: Pressing too hard
--5: Object other than finger detected
--6: Excessive finger motion
+Extended status:  
+0: Success  
++1: Not ready  
+-1: Object detected  
+-2: Excessive sensor device motion  
+-3: No object detected  
+-4: Pressing too hard  
+-5: Object other than finger detected  
+-6: Excessive finger motion  
