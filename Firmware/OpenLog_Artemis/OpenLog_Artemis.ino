@@ -872,8 +872,6 @@ void beginSD()
     //Max current is 200mA average across 1s, peak 300mA
     for (int i = 0; i < 10; i++) //Wait
     {
-printDebug(F("Still alive!\r\n")); SerialFlush();
-
       checkBattery();
       delay(1);
     }

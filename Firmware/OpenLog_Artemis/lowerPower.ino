@@ -45,9 +45,6 @@ void checkBattery(void)
   }
 #endif
 
-//printDebug(F(".")); SerialFlush();
-//if (millis() % 50 == 0) printDebug(F("\r\n")); SerialFlush();
-
   if (powerLossSeen)
     powerDownOLA(); // power down and wait for reset
 }
@@ -320,30 +317,30 @@ void goToSleep(uint32_t sysTicksToSleep)
 //    }
 //  }
 
-//  //Make sure PIN_POWER_LOSS is configured as an input for the WDT
-//  pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
-//
-//  //We can't leave these power control pins floating
-//  imuPowerOff();
-//  microSDPowerOff();
-//
-//  //Keep Qwiic bus powered on if user desires it
-//  if (settings.powerDownQwiicBusBetweenReads == true)
-//    qwiicPowerOff();
-//  else
-//    qwiicPowerOn(); //Make sure pins stays as output
-//
-//  //Leave the power LED on if the user desires it
-//  if (settings.enablePwrLedDuringSleep == true)
-//    powerLEDOn();
-//  else
-//    powerLEDOff();
+  //Make sure PIN_POWER_LOSS is configured as an input for the WDT
+  pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
 
-//  //Adjust sysTicks down by the amount we've be at 48MHz
-//  //Read millis _before_ we switch to the lower power clock!
-//  uint32_t msBeenAwake = millis();
-//  uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
-//
+  //We can't leave these power control pins floating
+  imuPowerOff();
+  microSDPowerOff();
+
+  //Keep Qwiic bus powered on if user desires it
+  if (settings.powerDownQwiicBusBetweenReads == true)
+    qwiicPowerOff();
+  else
+    qwiicPowerOn(); //Make sure pins stays as output
+
+  //Leave the power LED on if the user desires it
+  if (settings.enablePwrLedDuringSleep == true)
+    powerLEDOn();
+  else
+    powerLEDOff();
+
+  //Adjust sysTicks down by the amount we've be at 48MHz
+  //Read millis _before_ we switch to the lower power clock!
+  uint32_t msBeenAwake = millis();
+  uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
+
 //  //Power down cache, flash, SRAM
 //  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); // Power down all flash and cache
 //  am_hal_pwrctrl_memory_deepsleep_retain(AM_HAL_PWRCTRL_MEM_SRAM_384K); // Retain all SRAM
@@ -352,29 +349,29 @@ void goToSleep(uint32_t sysTicksToSleep)
 //  am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
 //  am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
 
-//  //Check that sysTicksToSleep is >> sysTicksAwake
-//  if (sysTicksToSleep > (sysTicksAwake + 3277)) // Abort if we are trying to sleep for < 100ms
-//  {
-//    sysTicksToSleep -= sysTicksAwake;
-//
-//    //Setup interrupt to trigger when the number of ms have elapsed
-//    am_hal_stimer_compare_delta_set(6, sysTicksToSleep);
-//
-//    //We use counter/timer 6 to cause us to wake up from sleep but 0 to 7 are available
-//    //CT 7 is used for Software Serial. All CTs are used for Servo.
-//    am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);  //Clear CT6
-//    am_hal_stimer_int_enable(AM_HAL_STIMER_INT_COMPAREG); //Enable C/T G=6
-//
-//    //Enable the timer interrupt in the NVIC.
-//    NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
-//
-//    //Deep Sleep
-//    am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
-//
-//    //Turn off interrupt
-//    NVIC_DisableIRQ(STIMER_CMPR6_IRQn);
-//    am_hal_stimer_int_disable(AM_HAL_STIMER_INT_COMPAREG); //Disable C/T G=6
-//  }
+  //Check that sysTicksToSleep is >> sysTicksAwake
+  if (sysTicksToSleep > (sysTicksAwake + 3277)) // Abort if we are trying to sleep for < 100ms
+  {
+    sysTicksToSleep -= sysTicksAwake;
+
+    //Setup interrupt to trigger when the number of ms have elapsed
+    am_hal_stimer_compare_delta_set(6, sysTicksToSleep);
+
+    //We use counter/timer 6 to cause us to wake up from sleep but 0 to 7 are available
+    //CT 7 is used for Software Serial. All CTs are used for Servo.
+    am_hal_stimer_int_clear(AM_HAL_STIMER_INT_COMPAREG);  //Clear CT6
+    am_hal_stimer_int_enable(AM_HAL_STIMER_INT_COMPAREG); //Enable C/T G=6
+
+    //Enable the timer interrupt in the NVIC.
+    NVIC_EnableIRQ(STIMER_CMPR6_IRQn);
+
+    //Deep Sleep
+    am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP);
+
+    //Turn off interrupt
+    NVIC_DisableIRQ(STIMER_CMPR6_IRQn);
+    am_hal_stimer_int_disable(AM_HAL_STIMER_INT_COMPAREG); //Disable C/T G=6
+  }
 
   //We're BACK!
   wakeFromSleep();
@@ -463,13 +460,13 @@ void wakeFromSleep()
   //  printDebug(F(" This indicates an error was returned by ap3_adc_setup or one of the calls to ap3_set_pin_to_analog."));
   //printDebug(F("\r\n"));
 
-//  beginQwiic(); //Power up Qwiic bus as early as possible
-//
-//  SPI.begin(); //Needed if SD is disabled
-//
-//  beginSD(); //285 - 293ms
-//
-//  enableCIPOpullUp(); // Enable CIPO pull-up _after_ beginSD
+  beginQwiic(); //Power up Qwiic bus as early as possible
+
+  SPI.begin(); //Needed if SD is disabled
+
+  beginSD(); //285 - 293ms
+
+  enableCIPOpullUp(); // Enable CIPO pull-up _after_ beginSD
 
   beginDataLogging(); //180ms
 
