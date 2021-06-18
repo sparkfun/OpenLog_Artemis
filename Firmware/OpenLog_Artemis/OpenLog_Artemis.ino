@@ -93,11 +93,12 @@
   (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
   (done) Add support for the Pulse Oximeter and Qwiic Button: https://github.com/sparkfun/OpenLog_Artemis/issues/81
   (in progress) Update to Apollo3 v2.1.0 - FIRMWARE_VERSION_MAJOR = 2.
-  (TO DO) Implement printf (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
-  (TO DO) Figure out why attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness
-  (TO DO) Add a qwiic.setPullups function
+  (done) Implement printf float (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
+  (worked around) Figure out why attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness
+  (done) Add a setQwiicPullups function
   (TO DO) Check if we need ap3_set_pin_to_analog when coming out of sleep
-  (TO DO) Figure out why SerialLog RX does not work
+  (TO DO) Figure out why SerialLog RX does not work: https://github.com/sparkfun/Arduino_Apollo3/issues/401
+  (TO DO) Investigate why code does not wake from deep sleep correctly
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -280,6 +281,7 @@ int lowBatteryReadings = 0; // Count how many times the battery voltage has read
 const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
 volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger interrupt has been seen
 char serialTimestamp[40]; //Buffer to store serial timestamp, if needed
+volatile static bool powerLossSeen = false; //Flag to indicate if a power loss event has been seen
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL = false); // Header
@@ -314,7 +316,8 @@ void setup() {
 
   if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
   //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // TO DO: figure out why this no longer works on v2.1.0
-  attachInterrupt(PIN_POWER_LOSS, doNothingISR, FALLING);
+  attachInterrupt(PIN_POWER_LOSS, powerLossISR, FALLING);
+  powerLossSeen = false; // Make sure the flag is clear
 
   powerLEDOn(); // Turn the power LED on - if the hardware supports it
 
@@ -343,7 +346,7 @@ void setup() {
 
   beginSD(); //285 - 293ms
 
-  enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
+  enableCIPOpullUp(); // Enable CIPO pull-up _after_ beginSD
 
   loadSettings(); //50 - 250ms
 
@@ -811,7 +814,43 @@ void beginQwiic()
   pinMode(PIN_QWIIC_POWER, OUTPUT);
   qwiicPowerOn();
   qwiic.begin();
-  //qwiic.setPullups(settings.qwiicBusPullUps); //Just to make it really clear what pull-ups are being used, set pullups here.
+  setQwiicPullups(settings.qwiicBusPullUps); //Just to make it really clear what pull-ups are being used, set pullups here.
+}
+
+void setQwiicPullups(uint32_t qwiicBusPullUps)
+{
+  //Change SCL and SDA pull-ups manually using pin_config
+  am_hal_gpio_pincfg_t sclPinCfg = g_AM_BSP_GPIO_IOM1_SCL;
+  am_hal_gpio_pincfg_t sdaPinCfg = g_AM_BSP_GPIO_IOM1_SDA;
+
+  if (qwiicBusPullUps == 0)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE; // No pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE;
+  }
+  else if (qwiicBusPullUps == 1)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K; // Use 1K5 pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  }
+  else if (qwiicBusPullUps == 6)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K; // Use 6K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K;
+  }
+  else if (qwiicBusPullUps == 12)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K; // Use 12K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K;
+  }
+  else
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K; // Use 24K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K;
+  }
+
+  pin_config(D8, sclPinCfg);
+  pin_config(D9, sdaPinCfg);
 }
 
 void beginSD()
@@ -825,7 +864,7 @@ void beginSD()
     // For reasons I don't understand, we seem to have to wait for at least 1ms after SPI.begin before we call microSDPowerOn.
     // If you comment the next line, the Artemis resets at microSDPowerOn when beginSD is called from wakeFromSleep...
     // But only on one of my V10 red boards. The second one I have doesn't seem to need the delay!?
-    delay(1);
+    delay(5);
 
     microSDPowerOn();
 
@@ -833,6 +872,8 @@ void beginSD()
     //Max current is 200mA average across 1s, peak 300mA
     for (int i = 0; i < 10; i++) //Wait
     {
+printDebug(F("Still alive!\r\n")); SerialFlush();
+
       checkBattery();
       delay(1);
     }
@@ -872,20 +913,12 @@ void beginSD()
   }
 }
 
-void enableCIPOpullUp()
+void enableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core
 {
-  //Add CIPO pull-up
-  uint32_t retval = AM_HAL_STATUS_SUCCESS;
-  am_hal_gpio_pincfg_t cipoPinCfg = {0,0,0,0,0,0,0,0,0,0,0,0}; // = AP3_GPIO_DEFAULT_PINCFG;
-  cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
+  //Add 1K5 pull-up on CIPO
+  am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
   cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
-  cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
-  cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
-  cipoPinCfg.uIOMnum = 1; // AP3_SPI_IOM; // IOM 1 is used for SPI. Redundant since pin is not a CE?
-  //padMode(MISO, cipoPinCfg, &retval);
-  retval = am_hal_gpio_pinconfig(MISO, cipoPinCfg);
-  if (retval != AM_HAL_STATUS_SUCCESS)
-    printDebug(F("Setting CIPO padMode failed!"));
+  pin_config(D6, cipoPinCfg);
 }
 
 void beginIMU()
@@ -1242,6 +1275,12 @@ extern "C" void am_stimer_cmpr6_isr(void)
   }
 }
 
+//Power Loss ISR
+void powerLossISR(void)
+{
+  powerLossSeen = true;
+}
+
 //Stop Logging ISR
 void stopLoggingISR(void)
 {
@@ -1252,11 +1291,6 @@ void stopLoggingISR(void)
 void triggerPinISR(void)
 {
   triggerEdgeSeen = true;
-}
-
-//Do Nothing ISR
-void doNothingISR(void)
-{
 }
 
 void SerialFlush(void)

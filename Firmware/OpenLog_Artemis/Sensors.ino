@@ -25,7 +25,8 @@ void getData()
     if (settings.logAnalogVoltages == true)
     {
       float voltage = analog11 * 2 / 16384.0;
-      olaftoa(voltage, tempData, 2, sizeof(tempData) / sizeof(char));
+      olaftoa(voltage, tempData1, 2, sizeof(tempData1) / sizeof(char));
+      sprintf(tempData, "%s,", tempData1);
     }
     else
       sprintf(tempData, "%d,", analog11);
@@ -40,7 +41,8 @@ void getData()
     if (settings.logAnalogVoltages == true)
     {
       float voltage = analog12 * 2 / 16384.0;
-      olaftoa(voltage, tempData, 2, sizeof(tempData) / sizeof(char));
+      olaftoa(voltage, tempData1, 2, sizeof(tempData1) / sizeof(char));
+      sprintf(tempData, "%s,", tempData1);
     }
     else
       sprintf(tempData, "%d,", analog12);
@@ -55,7 +57,8 @@ void getData()
     if (settings.logAnalogVoltages == true)
     {
       float voltage = analog13 * 2 / 16384.0;
-      olaftoa(voltage, tempData, 2, sizeof(tempData) / sizeof(char));
+      olaftoa(voltage, tempData1, 2, sizeof(tempData1) / sizeof(char));
+      sprintf(tempData, "%s,", tempData1);
     }
     else
       sprintf(tempData, "%d,", analog13);
@@ -70,7 +73,8 @@ void getData()
     if (settings.logAnalogVoltages == true)
     {
       float voltage = analog32 * 2 / 16384.0;
-      olaftoa(voltage, tempData, 2, sizeof(tempData) / sizeof(char));
+      olaftoa(voltage, tempData1, 2, sizeof(tempData1) / sizeof(char));
+      sprintf(tempData, "%s,", tempData1);
     }
     else
       sprintf(tempData, "%d,", analog32);
@@ -81,7 +85,8 @@ void getData()
   if (settings.logVIN)
   {
     float voltage = readVIN();
-    olaftoa(voltage, tempData, 2, sizeof(tempData) / sizeof(char));
+    olaftoa(voltage, tempData1, 2, sizeof(tempData1) / sizeof(char));
+    sprintf(tempData, "%s,", tempData1);
     strcat(outputData, tempData);
   }
 
@@ -275,7 +280,7 @@ void gatherDeviceValues()
           break;
         case DEVICE_GPS_UBLOX:
           {
-            //qwiic.setPullups(0); //Disable pullups to minimize CRC issues
+            setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
             SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
             struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
@@ -395,7 +400,7 @@ void gatherDeviceValues()
               }
             }
 
-            //qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
+            setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups
           }
           break;
         case DEVICE_PROXIMITY_VCNL4040:

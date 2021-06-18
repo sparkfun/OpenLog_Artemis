@@ -349,12 +349,12 @@ bool beginQwiicDevices()
         break;
       case DEVICE_GPS_UBLOX:
         {
-          //qwiic.setPullups(0); //Disable pullups for u-blox comms.
+          setQwiicPullups(0); //Disable pullups for u-blox comms.
           SFE_UBLOX_GNSS *tempDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
-          //qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups.
+          setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups.
         }
         break;
       case DEVICE_PROXIMITY_VCNL4040:
@@ -657,7 +657,7 @@ void configureDevice(node * temp)
       break;
     case DEVICE_GPS_UBLOX:
       {
-        //qwiic.setPullups(0); //Disable pullups for u-blox comms.
+        setQwiicPullups(0); //Disable pullups for u-blox comms.
 
         SFE_UBLOX_GNSS *sensor = (SFE_UBLOX_GNSS *)temp->classPtr;
         struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
@@ -678,7 +678,7 @@ void configureDevice(node * temp)
         else
           sensor->setNavigationFrequency(10); //Set nav freq to 10Hz. Max output depends on the module used.
 
-        //qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups.
+        setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups.
       }
       break;
     case DEVICE_PROXIMITY_VCNL4040:
@@ -1204,15 +1204,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     case 0x42:
       {
         //Confidence: High - Sends/receives CRC checked data response
-        //qwiic.setPullups(0); //Disable pullups to minimize CRC issues
+        setQwiicPullups(0); //Disable pullups to minimize CRC issues
         SFE_UBLOX_GNSS sensor;
         if(settings.printDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
         {
-          //qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups to prevent ghosts at 0x43 onwards
+          setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups to prevent ghosts at 0x43 onwards
           return (DEVICE_GPS_UBLOX);
         }
-        //qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups for normal discovery
+        setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups for normal discovery
       }
       break;
     case 0x44:
