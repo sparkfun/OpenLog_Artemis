@@ -344,10 +344,10 @@ void goToSleep(uint32_t sysTicksToSleep)
 //  //Power down cache, flash, SRAM
 //  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); // Power down all flash and cache
 //  am_hal_pwrctrl_memory_deepsleep_retain(AM_HAL_PWRCTRL_MEM_SRAM_384K); // Retain all SRAM
-//
-//  //Use the lower power 32kHz clock. Use it to run CT6 as well.
-//  am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
-//  am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
+
+  //Use the lower power 32kHz clock. Use it to run CT6 as well.
+  am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
+  am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
 
   //Check that sysTicksToSleep is >> sysTicksAwake
   if (sysTicksToSleep > (sysTicksAwake + 3277)) // Abort if we are trying to sleep for < 100ms
@@ -380,12 +380,12 @@ void goToSleep(uint32_t sysTicksToSleep)
 //Power everything up gracefully
 void wakeFromSleep()
 {
-//  //Go back to using the main clock
-//  //am_hal_stimer_int_enable(AM_HAL_STIMER_INT_OVERFLOW);
-//  //NVIC_EnableIRQ(STIMER_IRQn);
-//  am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
-//  am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
-//
+  //Go back to using the main clock
+  //am_hal_stimer_int_enable(AM_HAL_STIMER_INT_OVERFLOW);
+  //NVIC_EnableIRQ(STIMER_IRQn);
+  am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
+  am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
+
 //  // Power up SRAM, turn on entire Flash
 //  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_MAX);
 //
