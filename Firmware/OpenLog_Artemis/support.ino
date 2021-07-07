@@ -1,3 +1,18 @@
+bool useRTCmillis(void)
+{
+  return (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
+  || (settings.useGPIO11ForFastSlowLogging == true)
+  || (settings.useRTCForFastSlowLogging == true));
+}
+
+uint64_t bestMillis(void)
+{
+  if (useRTCmillis())
+    return(rtcMillis());
+  else
+    return(millis());
+}
+
 void printDebug(String thingToPrint)
 {
   if(settings.printDebugMessages == true)

@@ -204,11 +204,6 @@ void resetArtemis(void)
   //Disable pads
   for (int x = 0; x < 50; x++)
   {
-//    if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-//        //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
-//        (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-//        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-//        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
     if ((x != PIN_POWER_LOSS) &&
         //(x != PIN_LOGIC_DEBUG) &&
         (x != PIN_MICROSD_POWER) &&
@@ -239,9 +234,7 @@ void resetArtemis(void)
 void goToSleep(uint32_t sysTicksToSleep)
 {
   printDebug("goToSleep: sysTicksToSleep = " + (String)sysTicksToSleep + "\r\n");
-
-  //printDebug("goToSleep: online.IMU = " + (String)online.IMU + "\r\n");
-
+  
   //Prevent voltage supervisor from waking us from sleep
   detachInterrupt(PIN_POWER_LOSS);
 
@@ -276,37 +269,45 @@ void goToSleep(uint32_t sysTicksToSleep)
 
   delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
 
+  //qwiic.end(); //DO NOT Power down I2C - causes badness with v2.1 of the core: https://github.com/sparkfun/Arduino_Apollo3/issues/412
+
+  SPI.end(); //Power down SPI
+
+  powerControlADC(false); //Power down ADC
+
+  //Adjust sysTicks down by the amount we've be at 48MHz
+  //Read millis _before_ we switch to the lower power clock!
+  uint64_t msBeenAwake = rtcMillis() - lastAwakeTimeMillis;
+  uint64_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
+  if (sysTicksAwake < sysTicksToSleep)
+    sysTicksToSleep -= sysTicksAwake;
+  else
+    sysTicksToSleep = 0;
+  printDebug("goToSleep: sysTicksToSleep (adjusted) = " + (String)sysTicksToSleep + "\r\n\r\n");
+  
   SerialFlush(); //Finish any prints
+  Serial.end();
+  SerialLog.end();
 
-//  //  Wire.end(); //Power down I2C
-//  qwiic.end(); //Power down I2C
-//
-//  SPI.end(); //Power down SPI
-//
-//  powerControlADC(false); // power_adc_disable(); //Power down ADC. It it started by default before setup().
-//
-//  Serial.end(); //Power down UART
-//  SerialLog.end();
+  //Force the peripherals off
 
-//  //Force the peripherals off
-//  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
-//  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
-//  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
-//  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
-//  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
-//  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
-//  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
-//  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
-//  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
-//
-//  //Disable pads
+  //With v2.1 of the core, very bad things happen if the IOMs are disabled.
+  //We must leave them enabled.
+  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
+  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
+  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
+  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
+  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
+  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
+
+  //The UARTs are more forgiving. We can disable those.
+  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
+  if (settings.useTxRxPinsForTerminal == true)
+    am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
+
+//  //DO NOT Disable all pads
 //  for (int x = 0; x < 50; x++)
 //  {
-////    if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-////        //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
-////        (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-////        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-////        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
 //    if ((x != PIN_POWER_LOSS) &&
 //        //(x != PIN_LOGIC_DEBUG) &&
 //        (x != PIN_MICROSD_POWER) &&
@@ -316,6 +317,13 @@ void goToSleep(uint32_t sysTicksToSleep)
 //      am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
 //    }
 //  }
+
+  //Do disable pins 48 and 49 (UART0) to stop them back-feeding the CH340
+  am_hal_gpio_pinconfig(48 , g_AM_HAL_GPIO_DISABLE); //TX0
+  am_hal_gpio_pinconfig(49 , g_AM_HAL_GPIO_DISABLE); //RX0
+
+  //Disable the CIPO pull-up
+  disableCIPOpullUp();
 
   //Make sure PIN_POWER_LOSS is configured as an input for the WDT
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
@@ -336,24 +344,17 @@ void goToSleep(uint32_t sysTicksToSleep)
   else
     powerLEDOff();
 
-  //Adjust sysTicks down by the amount we've be at 48MHz
-  //Read millis _before_ we switch to the lower power clock!
-  uint32_t msBeenAwake = millis();
-  uint32_t sysTicksAwake = msBeenAwake * 32768L / 1000L; //Convert to 32kHz systicks
-
-//  //Power down cache, flash, SRAM
-//  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); // Power down all flash and cache
-//  am_hal_pwrctrl_memory_deepsleep_retain(AM_HAL_PWRCTRL_MEM_SRAM_384K); // Retain all SRAM
+  //Power down cache, flash, SRAM
+  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); // Power down all flash and cache
+  am_hal_pwrctrl_memory_deepsleep_retain(AM_HAL_PWRCTRL_MEM_SRAM_384K); // Retain all SRAM
 
   //Use the lower power 32kHz clock. Use it to run CT6 as well.
   am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
   am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
 
   //Check that sysTicksToSleep is >> sysTicksAwake
-  if (sysTicksToSleep > (sysTicksAwake + 3277)) // Abort if we are trying to sleep for < 100ms
+  if (sysTicksToSleep > 3277) // Abort if we are trying to sleep for < 100ms
   {
-    sysTicksToSleep -= sysTicksAwake;
-
     //Setup interrupt to trigger when the number of ms have elapsed
     am_hal_stimer_compare_delta_set(6, sysTicksToSleep);
 
@@ -386,17 +387,16 @@ void wakeFromSleep()
   am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
   am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
 
-//  // Power up SRAM, turn on entire Flash
-//  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_MAX);
-//
-//  // Go back to using the main clock
-//  am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
-//  am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
+  // Power up SRAM, turn on entire Flash
+  am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_MAX);
+
+  // Update lastAwakeTimeMillis
+  lastAwakeTimeMillis = rtcMillis();
 
   //Turn on ADC
-//  initializeADC();
-  //uint32_t adcError = (uint32_t)ap3_adc_setup();
-  //uint32_t adcError = powerControlADC(true);
+  powerControlADC(true);
+
+  //Re-enable analog inputs
   //if (settings.logA11 == true) adcError += (uint32_t)ap3_set_pin_to_analog(11); // Set _pad_ 11 to analog if enabled for logging
   //if (settings.logA12 == true) adcError += (uint32_t)ap3_set_pin_to_analog(12); // Set _pad_ 12 to analog if enabled for logging
   //if (settings.logA13 == true) adcError += (uint32_t)ap3_set_pin_to_analog(13); // Set _pad_ 13 to analog if enabled for logging
@@ -447,19 +447,21 @@ void wakeFromSleep()
 
   powerLEDOn();
 
-//  Serial.begin(settings.serialTerminalBaudRate);
-//
-//  if (settings.useTxRxPinsForTerminal == true)
-//  {
-//    SerialLog.begin(settings.serialTerminalBaudRate); // Start the serial port
-//  }
+  //Re-enable pins 48 and 49 (UART0)
+  am_hal_gpio_pincfg_t txPinCfg = g_AM_BSP_GPIO_COM_UART_TX;
+  pin_config(PinName(48), txPinCfg);    
+  am_hal_gpio_pincfg_t rxPinCfg = g_AM_BSP_GPIO_COM_UART_RX;
+  pin_config(PinName(49), rxPinCfg);    
 
-  printDebug(F("wakeFromSleep: I'm awake!\r\n")); Serial.flush();
-  //printDebug("wakeFromSleep: adcError is " + (String)adcError + ".");
-  //if (adcError > 0)
-  //  printDebug(F(" This indicates an error was returned by ap3_adc_setup or one of the calls to ap3_set_pin_to_analog."));
-  //printDebug(F("\r\n"));
+  Serial.begin(settings.serialTerminalBaudRate);
 
+  if (settings.useTxRxPinsForTerminal == true)
+  {
+    SerialLog.begin(settings.serialTerminalBaudRate); // Start the serial port
+  }
+
+  printDebug(F("wakeFromSleep: I'm awake!\r\n")); SerialFlush();
+  
   beginQwiic(); //Power up Qwiic bus as early as possible
 
   SPI.begin(); //Needed if SD is disabled
@@ -523,7 +525,7 @@ void waitForQwiicBusPowerDelay() // Wait while the qwiic devices power up
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
   // If we're not using the SD card, everything will have happened much quicker than usual.
-  unsigned long qwiicPowerHasBeenOnFor = millis() - qwiicPowerOnTime;
+  uint64_t qwiicPowerHasBeenOnFor = bestMillis() - qwiicPowerOnTime;
   if (qwiicPowerHasBeenOnFor < qwiicPowerOnDelayMillis)
   {
     unsigned long delayFor = qwiicPowerOnDelayMillis - qwiicPowerHasBeenOnFor;
@@ -544,7 +546,7 @@ void qwiicPowerOn()
   digitalWrite(PIN_QWIIC_POWER, HIGH);
 #endif
 
-  qwiicPowerOnTime = millis(); //Record this time so we wait enough time before detecting certain sensors
+  qwiicPowerOnTime = bestMillis(); //Record this time so we wait enough time before detecting certain sensors
 }
 void qwiicPowerOff()
 {

@@ -96,9 +96,9 @@
   (done) Implement printf float (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
   (worked around) Figure out why attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness
   (done) Add a setQwiicPullups function
-  (TO DO) Check if we need ap3_set_pin_to_analog when coming out of sleep
-  (TO DO) Figure out why SerialLog RX does not work: https://github.com/sparkfun/Arduino_Apollo3/issues/401
-  (TO DO) Investigate why code does not wake from deep sleep correctly
+  (done) Check if we need ap3_set_pin_to_analog when coming out of sleep
+  (TO DO) Correct SerialLog RX: https://github.com/sparkfun/Arduino_Apollo3/issues/401
+  (done) Investigate why code does not wake from deep sleep correctly
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -214,7 +214,8 @@ Apollo3RTC myRTC; //Create instance of RTC class
 //Create UART instance for OpenLog style serial logging
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 UART SerialLog(BREAKOUT_PIN_TX, BREAKOUT_PIN_RX);  // Declares a Uart object called Serial1 with TX on pin 12 and RX on pin 13
-unsigned long lastSeriaLogSyncTime = 0;
+uint64_t lastSeriaLogSyncTime = 0;
+uint64_t lastAwakeTimeMillis;
 const int MAX_IDLE_TIME_MSEC = 500;
 bool newSerialData = false;
 char incomingBuffer[256 * 2]; //This size of this buffer is sensitive. Do not change without analysis using OpenLog_Serial.
@@ -275,7 +276,7 @@ bool sleepAfterRead = false; //Used to keep the code awake for at least minimumA
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
 volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
-unsigned long qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allow sensors to power on, then answer autodetect
+uint64_t qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allow sensors to power on, then answer autodetect
 unsigned long qwiicPowerOnDelayMillis; //Wait for this many milliseconds after turning on the Qwiic power before attempting to communicate with Qwiic devices
 int lowBatteryReadings = 0; // Count how many times the battery voltage has read low
 const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
@@ -447,14 +448,11 @@ void setup() {
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
-  if (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
-  || (settings.useGPIO11ForFastSlowLogging == true)
-  || (settings.useRTCForFastSlowLogging == true))
-    measurementStartTime = rtcMillis();
-  else
-    measurementStartTime = millis();
+  measurementStartTime = bestMillis();
 
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
+
+  lastAwakeTimeMillis = rtcMillis();
 
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something
@@ -515,12 +513,14 @@ void loop() {
         checkBattery();
       }
 
-      lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
+      //If we are sleeping between readings then we cannot rely on millis() as it is powered down
+      //Use RTC instead
+      lastSeriaLogSyncTime = bestMillis(); //Reset the last sync time to now
       newSerialData = true;
     }
     else if (newSerialData == true)
     {
-      if ((millis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
+      if ((bestMillis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
       {
         if (incomingBufferSpot > 0)
         {
@@ -536,13 +536,13 @@ void loop() {
         }
 
         newSerialData = false;
-        lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
+        lastSeriaLogSyncTime = bestMillis(); //Reset the last sync time to now
         printDebug("Total chars received: " + (String)charsReceived + "\r\n");
       }
     }
   }
 
-  //micros() resets to 0 during sleep so only test if we are not sleeping
+  //In v2.1 of the core micros() becomes corrupted during deep sleep so only test if we are not sleeping
   if (settings.usBetweenReadings < maxUsBeforeSleep)
   {
     if ((micros() - lastReadTime) >= settings.usBetweenReadings)
@@ -630,9 +630,9 @@ void loop() {
         }
 
         //Force sync every 500ms
-        if (millis() - lastDataLogSyncTime > 500)
+        if (bestMillis() - lastDataLogSyncTime > 500)
         {
-          lastDataLogSyncTime = millis();
+          lastDataLogSyncTime = bestMillis();
           sensorDataFile.sync();
           if (settings.frequentFileAccessTimestamps == true)
             updateDataFileAccess(&sensorDataFile); // Update the file access time & date
@@ -690,7 +690,7 @@ void loop() {
     {
       // Check if we have been awake long enough (millis is reset to zero when waking from sleep)
       // goToSleep will automatically compensate for how long we have been awake
-      if (millis() < settings.minimumAwakeTimeMillis)
+      if ((bestMillis() - lastAwakeTimeMillis) < settings.minimumAwakeTimeMillis)
         return; // Too early to sleep - leave sleepAfterRead set true
     }
 
@@ -916,6 +916,12 @@ void enableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core
   //Add 1K5 pull-up on CIPO
   am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
   cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  pin_config(D6, cipoPinCfg);
+}
+
+void disableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core
+{
+  am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
   pin_config(D6, cipoPinCfg);
 }
 
