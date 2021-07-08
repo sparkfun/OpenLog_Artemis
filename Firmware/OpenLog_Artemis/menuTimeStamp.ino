@@ -101,7 +101,7 @@ void menuTimeStamp()
       SerialPrint(F("9) Local offset from UTC: "));
       Serial.println(settings.localUTCOffset);
       if (settings.useTxRxPinsForTerminal == true)
-        SerialLog.println(settings.localUTCOffset);
+        Serial1.println(settings.localUTCOffset);
     }
 
     SerialPrint(F("10) Log Microseconds: "));

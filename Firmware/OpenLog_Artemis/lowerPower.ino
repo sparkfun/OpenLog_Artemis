@@ -95,9 +95,10 @@ void powerDownOLA(void)
   powerControlADC(false); // power_adc_disable(); //Power down ADC. It it started by default before setup().
 
   Serial.end(); //Power down UART
-  SerialLog.end();
+  Serial1.end();
 
   //Force the peripherals off
+  //This will cause badness with v2.1 of the core but we don't care as we are waiting for a reset
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
@@ -108,14 +109,9 @@ void powerDownOLA(void)
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
-  //Disable pads
+  //Disable pads (this disables the LEDs too)
   for (int x = 0; x < 50; x++)
   {
-//    if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-//        //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
-//        (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-//        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-//        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
     if ((x != PIN_POWER_LOSS) &&
         //(x != PIN_LOGIC_DEBUG) &&
         (x != PIN_MICROSD_POWER) &&
@@ -125,8 +121,6 @@ void powerDownOLA(void)
       am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
     }
   }
-
-  //powerLEDOff();
 
   //Make sure PIN_POWER_LOSS is configured as an input for the WDT
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
@@ -188,9 +182,10 @@ void resetArtemis(void)
   powerControlADC(false); // power_adc_disable(); //Power down ADC. It it started by default before setup().
 
   Serial.end(); //Power down UART
-  SerialLog.end();
+  Serial1.end();
 
   //Force the peripherals off
+  //This will cause badness with v2.1 of the core but we don't care as we are going to force a WDT reset
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
   am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
@@ -287,14 +282,14 @@ void goToSleep(uint32_t sysTicksToSleep)
   
   SerialFlush(); //Finish any prints
   Serial.end();
-  SerialLog.end();
+  Serial1.end();
 
   //Force the peripherals off
 
   //With v2.1 of the core, very bad things happen if the IOMs are disabled.
-  //We must leave them enabled.
-  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
-  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
+  //We must leave them enabled: https://github.com/sparkfun/Arduino_Apollo3/issues/412
+  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0); // SPI
+  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1); // qwiic I2C
   //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
   //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
   //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
@@ -305,25 +300,21 @@ void goToSleep(uint32_t sysTicksToSleep)
   if (settings.useTxRxPinsForTerminal == true)
     am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
-//  //DO NOT Disable all pads
-//  for (int x = 0; x < 50; x++)
-//  {
-//    if ((x != PIN_POWER_LOSS) &&
-//        //(x != PIN_LOGIC_DEBUG) &&
-//        (x != PIN_MICROSD_POWER) &&
-//        (x != PIN_QWIIC_POWER) &&
-//        (x != PIN_IMU_POWER))
-//    {
-//      am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
-//    }
-//  }
+  //Disable as many pins as we can
+  const int pinsToDisable[] = {0,1,2,10,14,17,12,24,25,28,36,38,39,40,41,42,43,45,21,22,16,31,35,-1};
+  for (int x = 0; pinsToDisable[x] >= 0; x++)
+  {
+    am_hal_gpio_pinconfig(PinName(pinsToDisable[x]), g_AM_HAL_GPIO_DISABLE);
+  }
+
+  //Do disable the ICM pins to minimise the current draw during deep sleep
+  am_hal_gpio_pinconfig(D6 , g_AM_HAL_GPIO_DISABLE); //ICM / microSD CIPO
+  am_hal_gpio_pinconfig(D44 , g_AM_HAL_GPIO_DISABLE); //ICM CS
+  am_hal_gpio_pinconfig(D37 , g_AM_HAL_GPIO_DISABLE); //ICM INT
 
   //Do disable pins 48 and 49 (UART0) to stop them back-feeding the CH340
   am_hal_gpio_pinconfig(48 , g_AM_HAL_GPIO_DISABLE); //TX0
   am_hal_gpio_pinconfig(49 , g_AM_HAL_GPIO_DISABLE); //RX0
-
-  //Disable the CIPO pull-up
-  disableCIPOpullUp();
 
   //Make sure PIN_POWER_LOSS is configured as an input for the WDT
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
@@ -409,10 +400,11 @@ void wakeFromSleep()
 
   //If 3.3V rail drops below 3V, system will enter low power mode and maintain RTC
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
+  pin_config(PinName(PIN_POWER_LOSS), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
 
   delay(1); // Let PIN_POWER_LOSS stabilize
 
-  //if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
+  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
 
   //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // TO DO: figure out why this no longer works on v2.1.0
   attachInterrupt(PIN_POWER_LOSS, powerLossISR, FALLING);
@@ -421,6 +413,7 @@ void wakeFromSleep()
   if (settings.useGPIO32ForStopLogging == true)
   {
     pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
+    pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured after being disabled
     delay(1); // Let the pin stabilize
     attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
     stopLoggingSeen = false; // Make sure the flag is clear
@@ -429,6 +422,7 @@ void wakeFromSleep()
   if (settings.useGPIO11ForTrigger == true) //(This should be redundant. We should not be going to sleep if triggering is enabled?)
   {
     pinMode(PIN_TRIGGER, INPUT_PULLUP);
+    pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured after being disabled
     delay(1); // Let the pin stabilize
     if (settings.fallingEdgeTrigger == true)
       attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
@@ -440,24 +434,36 @@ void wakeFromSleep()
   if (settings.useGPIO11ForFastSlowLogging == true)
   {
     pinMode(PIN_TRIGGER, INPUT_PULLUP);
+    pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured after being disabled
   }
 
   pinMode(PIN_STAT_LED, OUTPUT);
+  pin_config(PinName(PIN_STAT_LED), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
   digitalWrite(PIN_STAT_LED, LOW);
 
   powerLEDOn();
 
   //Re-enable pins 48 and 49 (UART0)
-  am_hal_gpio_pincfg_t txPinCfg = g_AM_BSP_GPIO_COM_UART_TX;
-  pin_config(PinName(48), txPinCfg);    
-  am_hal_gpio_pincfg_t rxPinCfg = g_AM_BSP_GPIO_COM_UART_RX;
-  pin_config(PinName(49), rxPinCfg);    
+  pin_config(PinName(48), g_AM_BSP_GPIO_COM_UART_TX);    
+  pin_config(PinName(49), g_AM_BSP_GPIO_COM_UART_RX);
+
+  //Re-enable CIPO and ICM_CS but may as well leave ICM_INT disabled
+  pin_config(D6, g_AM_BSP_GPIO_IOM0_MISO);
+  pin_config(D44, g_AM_HAL_GPIO_OUTPUT);
 
   Serial.begin(settings.serialTerminalBaudRate);
 
   if (settings.useTxRxPinsForTerminal == true)
   {
-    SerialLog.begin(settings.serialTerminalBaudRate); // Start the serial port
+    //We may need to manually restore the Serial1 TX and RX pins?
+    am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
+    pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
+    pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
+    am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
+    pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
+    pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+
+    Serial1.begin(settings.serialTerminalBaudRate); // Start the serial port
   }
 
   printDebug(F("wakeFromSleep: I'm awake!\r\n")); SerialFlush();
@@ -514,7 +520,7 @@ void stopLogging(void)
   SerialPrint(F("Logging is stopped. Please reset OpenLog Artemis and open a terminal at "));
   Serial.print((String)settings.serialTerminalBaudRate);
   if (settings.useTxRxPinsForTerminal == true)
-      SerialLog.print((String)settings.serialTerminalBaudRate);
+      Serial1.print((String)settings.serialTerminalBaudRate);
   SerialPrintln(F("bps..."));
   delay(sdPowerDownDelay); // Give the SD card time to shut down
   powerDownOLA();
@@ -540,6 +546,7 @@ void waitForQwiicBusPowerDelay() // Wait while the qwiic devices power up
 void qwiicPowerOn()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
+  pin_config(PinName(PIN_QWIIC_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
 #if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, LOW);
 #else
@@ -551,6 +558,7 @@ void qwiicPowerOn()
 void qwiicPowerOff()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
+  pin_config(PinName(PIN_QWIIC_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
 #if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, HIGH);
 #else
@@ -561,22 +569,26 @@ void qwiicPowerOff()
 void microSDPowerOn()
 {
   pinMode(PIN_MICROSD_POWER, OUTPUT);
+  pin_config(PinName(PIN_MICROSD_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
   digitalWrite(PIN_MICROSD_POWER, LOW);
 }
 void microSDPowerOff()
 {
   pinMode(PIN_MICROSD_POWER, OUTPUT);
+  pin_config(PinName(PIN_MICROSD_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
   digitalWrite(PIN_MICROSD_POWER, HIGH);
 }
 
 void imuPowerOn()
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
+  pin_config(PinName(PIN_IMU_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
   digitalWrite(PIN_IMU_POWER, HIGH);
 }
 void imuPowerOff()
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
+  pin_config(PinName(PIN_IMU_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
   digitalWrite(PIN_IMU_POWER, LOW);
 }
 
@@ -584,6 +596,7 @@ void powerLEDOn()
 {
 #if(HARDWARE_VERSION_MAJOR >= 1)
   pinMode(PIN_PWR_LED, OUTPUT);
+  pin_config(PinName(PIN_PWR_LED), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
   digitalWrite(PIN_PWR_LED, HIGH); // Turn the Power LED on
 #endif
 }
@@ -591,6 +604,7 @@ void powerLEDOff()
 {
 #if(HARDWARE_VERSION_MAJOR >= 1)
   pinMode(PIN_PWR_LED, OUTPUT);
+  pin_config(PinName(PIN_PWR_LED), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
   digitalWrite(PIN_PWR_LED, LOW); // Turn the Power LED off
 #endif
 }

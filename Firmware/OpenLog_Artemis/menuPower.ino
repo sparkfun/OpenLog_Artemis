@@ -50,6 +50,7 @@ void menuPower()
           settings.useGPIO32ForStopLogging = false;
           detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
           stopLoggingSeen = false; // Make sure the flag is clear
         }
         else
@@ -57,6 +58,7 @@ void menuPower()
           // Enable stop logging
           settings.useGPIO32ForStopLogging = true;
           pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
+          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured after being disabled
           delay(1); // Let the pin stabilize
           attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
           stopLoggingSeen = false; // Make sure the flag is clear

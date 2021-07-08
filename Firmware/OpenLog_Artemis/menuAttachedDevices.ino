@@ -878,7 +878,7 @@ void menuConfigure_NAU7802(void *configPtr)
         SerialPrint(F("New zero offset: "));
         Serial.println(sensor->getZeroOffset());
         if (settings.useTxRxPinsForTerminal == true)
-          SerialLog.println(sensor->getZeroOffset());
+          Serial1.println(sensor->getZeroOffset());
 
         SerialPrintln(F("Place known weight on scale. Press a key when weight is in place and stable."));
         waitForInput();
@@ -1574,7 +1574,7 @@ void menuConfigure_SCD30(void *configPtr)
         SerialPrint(F("The current temperature offset read from the sensor is: "));
         Serial.print(sensor->getTemperatureOffset(), 2);
         if (settings.useTxRxPinsForTerminal == true)
-          SerialLog.print(sensor->getTemperatureOffset(), 2);
+          Serial1.print(sensor->getTemperatureOffset(), 2);
         SerialPrintln(F("C"));
         SerialPrint(F("Enter new temperature offset in C (-50 to 50): "));
         int amt = getNumber(menuTimeout); //x second timeout

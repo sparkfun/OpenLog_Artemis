@@ -189,9 +189,12 @@ void getData()
     //If we are sleeping between readings then we cannot rely on millis() as it is powered down
     //Use RTC instead
     currentMillis = bestMillis();
-
-    float actualRate = measurementCount * 1000.0 / (currentMillis - measurementStartTime);
-    olaftoa(actualRate, tempData1, 2, sizeof(tempData) / sizeof(char));
+    float actualRate;
+    if ((currentMillis - measurementStartTime) < 1) // Avoid divide by zero
+      actualRate = 0.0;
+    else
+      actualRate = measurementCount * 1000.0 / (currentMillis - measurementStartTime);
+    olaftoa(actualRate, tempData1, 3, sizeof(tempData) / sizeof(char));
     sprintf(tempData, "%s,", tempData1);
     strcat(outputData, tempData);
   }

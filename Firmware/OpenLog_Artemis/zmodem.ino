@@ -267,7 +267,7 @@ void sdCardMenu(void)
       if (DSERIAL == &Serial)
         sd.ls("/", LS_DATE | LS_SIZE); // Do a non-recursive LS of the root directory showing file modification dates and sizes
       else
-        sd.ls(&SerialLog, "/", LS_DATE | LS_SIZE);
+        sd.ls(&Serial1, "/", LS_DATE | LS_SIZE);
   
       DSERIALprintln(F("End of Directory\r\n"));
     }
@@ -412,7 +412,17 @@ void sdCardMenu(void)
       {
         settings.logA12 = false; //Disable analog readings on TX pin
         if (settings.useTxRxPinsForTerminal == false)
-          SerialLog.begin(settings.serialLogBaudRate); // (Re)start the serial port
+        {
+          //We need to manually restore the Serial1 TX and RX pins
+          am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
+          pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
+          pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
+          am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
+          pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
+          pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+
+          Serial1.begin(settings.serialLogBaudRate); // (Re)start the serial port
+        }
 
         DSERIALprint(F("\r\nSending ")); DSERIAL->print(param); DSERIALprint(F(" to the TX pin at ")); DSERIAL->print(settings.serialLogBaudRate); DSERIALprintln(F(" baud"));
 
@@ -420,7 +430,7 @@ void sdCardMenu(void)
         {
           char ch;
           if (fout.read(&ch, 1) == 1) // Read a single char
-            SerialLog.write(ch); // Send it via SerialLog (TX pin)
+            Serial1.write(ch); // Send it via SerialLog (TX pin)
         }
         
         fout.close();

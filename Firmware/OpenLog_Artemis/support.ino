@@ -19,7 +19,7 @@ void printDebug(String thingToPrint)
   {
     Serial.print(thingToPrint);
     if (settings.useTxRxPinsForTerminal == true)
-      SerialLog.print(thingToPrint);
+      Serial1.print(thingToPrint);
   }
 }
 
@@ -29,7 +29,7 @@ void printUnknown(uint8_t unknownChoice)
   SerialPrint(F("Unknown choice: "));
   Serial.write(unknownChoice);
   if (settings.useTxRxPinsForTerminal == true)
-      SerialLog.write(unknownChoice);
+      Serial1.write(unknownChoice);
   SerialPrintln(F(""));
 }
 void printUnknown(int unknownValue)
@@ -37,7 +37,7 @@ void printUnknown(int unknownValue)
   SerialPrint(F("Unknown value: "));
   Serial.write(unknownValue);
   if (settings.useTxRxPinsForTerminal == true)
-      SerialLog.write(unknownValue);
+      Serial1.write(unknownValue);
   SerialPrintln(F(""));
 }
 
@@ -53,7 +53,7 @@ void waitForInput()
   while (Serial.available() > 0) Serial.read(); //Clear buffer
   
   if (settings.useTxRxPinsForTerminal == true)
-    while (SerialLog.available() > 0) SerialLog.read(); //Clear buffer
+    while (Serial1.available() > 0) Serial1.read(); //Clear buffer
 
   bool keepChecking = true;    
   while (keepChecking)
@@ -63,7 +63,7 @@ void waitForInput()
       
     if (settings.useTxRxPinsForTerminal == true)
     {
-      if (SerialLog.available())
+      if (Serial1.available())
         keepChecking = false;
     }
     
@@ -88,7 +88,7 @@ uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL)
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   if (settings.useTxRxPinsForTerminal == true)
-    while (SerialLog.available() > 0) SerialLog.read(); //Clear buffer
+    while (Serial1.available() > 0) Serial1.read(); //Clear buffer
 
   long startTime = millis();
   byte incoming;
@@ -105,24 +105,24 @@ uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL)
 //      SerialPrint(F("byte: 0x"));
 //      Serial.println(incoming, HEX);
 //      if (settings.useTxRxPinsForTerminal == true)
-//        SerialLog.println(incoming, HEX);
+//        Serial1.println(incoming, HEX);
       if (incoming >= 'a' && incoming <= 'z') break;
       if (incoming >= 'A' && incoming <= 'Z') break;
       if (incoming >= '0' && incoming <= '9') break;
     }
 
-    if ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available() > 0))
+    if ((settings.useTxRxPinsForTerminal == true) && (Serial1.available() > 0))
     {
-      incoming = SerialLog.read();
+      incoming = Serial1.read();
       if (updateDZSERIAL)
       {
-        DSERIAL = &SerialLog;
-        ZSERIAL = &SerialLog;
+        DSERIAL = &Serial1;
+        ZSERIAL = &Serial1;
       }
 //      SerialPrint(F("byte: 0x"));
 //      Serial.println(incoming, HEX);
 //      if (settings.useTxRxPinsForTerminal == true)
-//        SerialLog.println(incoming, HEX);
+//        Serial1.println(incoming, HEX);
       if (incoming >= 'a' && incoming <= 'z') break;
       if (incoming >= 'A' && incoming <= 'Z') break;
       if (incoming >= '0' && incoming <= '9') break;
@@ -155,7 +155,7 @@ int64_t getNumber(int numberOfSeconds)
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   if (settings.useTxRxPinsForTerminal == true)
-    while (SerialLog.available() > 0) SerialLog.read(); //Clear buffer
+    while (Serial1.available() > 0) Serial1.read(); //Clear buffer
 
   //Get input from user
   char cleansed[20]; //Good for very large numbers: 123,456,789,012,345,678\0
@@ -170,7 +170,7 @@ int64_t getNumber(int numberOfSeconds)
       if (Serial.available())
         serialAvailable = true;
 
-      if ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available()))
+      if ((settings.useTxRxPinsForTerminal == true) && (Serial1.available()))
         serialAvailable = true;
         
       checkBattery();
@@ -202,7 +202,7 @@ int64_t getNumber(int numberOfSeconds)
       incoming = Serial.read();
     
     else
-      incoming = SerialLog.read();
+      incoming = Serial1.read();
 
     if (incoming == '\n' || incoming == '\r')
     {
@@ -215,7 +215,7 @@ int64_t getNumber(int numberOfSeconds)
       Serial.write(incoming); //Echo user's typing
 
       if (settings.useTxRxPinsForTerminal == true)
-        SerialLog.write(incoming); //Echo user's typing
+        Serial1.write(incoming); //Echo user's typing
       
       cleansed[spot++] = (char)incoming;
     }
@@ -260,7 +260,7 @@ double getDouble(int numberOfSeconds)
   while (Serial.available() > 0) Serial.read(); //Clear buffer
 
   if (settings.useTxRxPinsForTerminal == true)
-    while (SerialLog.available() > 0) SerialLog.read(); //Clear buffer
+    while (Serial1.available() > 0) Serial1.read(); //Clear buffer
 
   //Get input from user
   char cleansed[20]; //Good for very large numbers: 123,456,789,012,345,678\0
@@ -276,7 +276,7 @@ double getDouble(int numberOfSeconds)
       if (Serial.available())
         serialAvailable = true;
 
-      if ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available()))
+      if ((settings.useTxRxPinsForTerminal == true) && (Serial1.available()))
         serialAvailable = true;
 
       checkBattery();
@@ -308,7 +308,7 @@ double getDouble(int numberOfSeconds)
       incoming = Serial.read();
     
     else
-      incoming = SerialLog.read();
+      incoming = Serial1.read();
 
     if (incoming == '\n' || incoming == '\r')
     {
@@ -321,7 +321,7 @@ double getDouble(int numberOfSeconds)
       Serial.write(incoming); //Echo user's typing
       
       if (settings.useTxRxPinsForTerminal == true)
-        SerialLog.write(incoming); //Echo user's typing
+        Serial1.write(incoming); //Echo user's typing
       
       cleansed[spot++] = (char)incoming;
     }

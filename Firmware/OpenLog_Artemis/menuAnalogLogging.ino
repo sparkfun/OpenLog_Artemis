@@ -56,6 +56,7 @@ void menuAnalogLogging()
           settings.useGPIO11ForTrigger = false;
           detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         else
@@ -119,6 +120,7 @@ void menuAnalogLogging()
           settings.useGPIO32ForStopLogging = false;
           detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
         }
         else
           settings.logA32 = false;

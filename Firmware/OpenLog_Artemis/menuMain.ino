@@ -111,7 +111,7 @@ void menuMain()
         SerialPrint(F("Settings erased. Please reset OpenLog Artemis and open a terminal at "));
         Serial.print((String)settings.serialTerminalBaudRate);
         if (settings.useTxRxPinsForTerminal == true)
-          SerialLog.print((String)settings.serialTerminalBaudRate);
+          Serial1.print((String)settings.serialTerminalBaudRate);
         SerialPrintln(F("bps..."));
         while (1);
       }
@@ -140,7 +140,7 @@ void menuMain()
         SerialPrint(F("Log files are closed. Please reset OpenLog Artemis and open a terminal at "));
         Serial.print((String)settings.serialTerminalBaudRate);
         if (settings.useTxRxPinsForTerminal == true)
-          SerialLog.print((String)settings.serialTerminalBaudRate);
+          Serial1.print((String)settings.serialTerminalBaudRate);
         SerialPrintln(F("bps..."));
         delay(sdPowerDownDelay); // Give the SD card time to shut down
         powerDownOLA();
@@ -168,7 +168,7 @@ void menuMain()
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 
   if (settings.useTxRxPinsForTerminal == true)
-    while (SerialLog.available()) SerialLog.read(); //Empty buffer of any newline chars
+    while (Serial1.available()) Serial1.read(); //Empty buffer of any newline chars
 
   //Reset measurements
   measurementCount = 0;

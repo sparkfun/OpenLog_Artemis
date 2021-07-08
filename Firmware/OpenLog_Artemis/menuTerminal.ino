@@ -16,7 +16,7 @@ void menuLogRate()
     SerialPrint(F("3) Set Serial Terminal Baud Rate: "));
     Serial.print(settings.serialTerminalBaudRate);
     if (settings.useTxRxPinsForTerminal == true)
-      SerialLog.print(settings.serialTerminalBaudRate);
+      Serial1.print(settings.serialTerminalBaudRate);
     SerialPrintln(F(" bps"));
 
     if (settings.useGPIO11ForTrigger == false)
@@ -288,6 +288,7 @@ void menuLogRate()
           settings.useGPIO11ForTrigger = false;
           detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         else
@@ -295,6 +296,7 @@ void menuLogRate()
           // Enable triggering
           settings.useGPIO11ForTrigger = true;
           pinMode(PIN_TRIGGER, INPUT_PULLUP);
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured after being disabled
           delay(1); // Let the pin stabilize
           if (settings.fallingEdgeTrigger == true)
             attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
@@ -363,7 +365,16 @@ void menuLogRate()
           online.serialOutput = false;
           settings.logA12 = false;
           settings.logA13 = false;
-          SerialLog.begin(settings.serialTerminalBaudRate); // (Re)Start the serial port
+
+          //We need to manually restore the Serial1 TX and RX pins before we can use Serial1
+          am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
+          pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
+          pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
+          am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
+          pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
+          pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+
+          Serial1.begin(settings.serialTerminalBaudRate); // (Re)Start the serial port using the terminal baud rate
         }
         else
           SerialPrintln(F("\"Use TX and RX pins for terminal\"  aborted"));
@@ -386,6 +397,7 @@ void menuLogRate()
           settings.useRTCForFastSlowLogging = false;
           settings.logA11 = false; // Disable analog logging on pin 11
           pinMode(PIN_TRIGGER, INPUT_PULLUP);
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured after being disabled
           delay(1); // Let the pin stabilize
           // Disable triggering
           if (settings.useGPIO11ForTrigger == true)
@@ -399,6 +411,7 @@ void menuLogRate()
         {
           settings.useGPIO11ForFastSlowLogging = false;        
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
         }
       }
       else
@@ -421,6 +434,7 @@ void menuLogRate()
       {
         settings.useGPIO11ForFastSlowLogging = false;        
         pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+        pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
       }
     }
     else if (incoming == 17)
@@ -430,7 +444,8 @@ void menuLogRate()
         settings.useRTCForFastSlowLogging = true;
         if (settings.useGPIO11ForFastSlowLogging == true)
         {
-          pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up          
+          pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
         }
         settings.useGPIO11ForFastSlowLogging = false;
         settings.logA11 = false; // Disable analog logging on pin 11
@@ -439,6 +454,7 @@ void menuLogRate()
         {
           detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         settings.useGPIO11ForTrigger = false;
