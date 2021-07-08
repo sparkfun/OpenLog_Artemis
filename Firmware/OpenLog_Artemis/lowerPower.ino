@@ -294,23 +294,28 @@ void goToSleep(uint32_t sysTicksToSleep)
   //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
   //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
   //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
-
-  //The UARTs are more forgiving. We can disable those.
-  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
-  if (settings.useTxRxPinsForTerminal == true)
-    am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
+  //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
+  //if (settings.useTxRxPinsForTerminal == true)
+  //  am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
 
   //Disable as many pins as we can
   const int pinsToDisable[] = {0,1,2,10,14,17,12,24,25,28,36,38,39,40,41,42,43,45,21,22,16,31,35,-1};
   for (int x = 0; pinsToDisable[x] >= 0; x++)
   {
-    am_hal_gpio_pinconfig(PinName(pinsToDisable[x]), g_AM_HAL_GPIO_DISABLE);
+    am_hal_gpio_pinconfig(pinsToDisable[x], g_AM_HAL_GPIO_DISABLE);
   }
 
-  //Do disable the ICM pins to minimise the current draw during deep sleep
-  am_hal_gpio_pinconfig(D6 , g_AM_HAL_GPIO_DISABLE); //ICM / microSD CIPO
-  am_hal_gpio_pinconfig(D44 , g_AM_HAL_GPIO_DISABLE); //ICM CS
-  am_hal_gpio_pinconfig(D37 , g_AM_HAL_GPIO_DISABLE); //ICM INT
+  //Do disable CIPO, COPI, SCLK and chip selects to minimise the current draw during deep sleep
+  am_hal_gpio_pinconfig(PIN_SPI_CIPO , g_AM_HAL_GPIO_DISABLE); //ICM / microSD CIPO
+  am_hal_gpio_pinconfig(PIN_SPI_COPI , g_AM_HAL_GPIO_DISABLE); //ICM / microSD COPI
+  am_hal_gpio_pinconfig(PIN_SPI_SCK , g_AM_HAL_GPIO_DISABLE); //ICM / microSD SCK
+  am_hal_gpio_pinconfig(PIN_IMU_CHIP_SELECT , g_AM_HAL_GPIO_DISABLE); //ICM CS
+  am_hal_gpio_pinconfig(PIN_IMU_INT , g_AM_HAL_GPIO_DISABLE); //ICM INT
+  am_hal_gpio_pinconfig(PIN_MICROSD_CHIP_SELECT , g_AM_HAL_GPIO_DISABLE); //microSD CS
+
+  //Do disable qwiic SDA and SCL to minimise the current draw during deep sleep
+  am_hal_gpio_pinconfig(PIN_QWIIC_SDA , g_AM_HAL_GPIO_DISABLE);
+  am_hal_gpio_pinconfig(PIN_QWIIC_SCL , g_AM_HAL_GPIO_DISABLE);
 
   //Do disable pins 48 and 49 (UART0) to stop them back-feeding the CH340
   am_hal_gpio_pinconfig(48 , g_AM_HAL_GPIO_DISABLE); //TX0
@@ -447,21 +452,23 @@ void wakeFromSleep()
   pin_config(PinName(48), g_AM_BSP_GPIO_COM_UART_TX);    
   pin_config(PinName(49), g_AM_BSP_GPIO_COM_UART_RX);
 
-  //Re-enable CIPO and ICM_CS but may as well leave ICM_INT disabled
-  pin_config(D6, g_AM_BSP_GPIO_IOM0_MISO);
-  pin_config(D44, g_AM_HAL_GPIO_OUTPUT);
+  //Re-enable CIPO, COPI, SCK and the chip selects but may as well leave ICM_INT disabled
+  pin_config(PinName(PIN_SPI_CIPO), g_AM_BSP_GPIO_IOM0_MISO);
+  pin_config(PinName(PIN_SPI_COPI), g_AM_BSP_GPIO_IOM0_MOSI);
+  pin_config(PinName(PIN_SPI_SCK), g_AM_BSP_GPIO_IOM0_SCK);
+  pin_config(PinName(PIN_IMU_CHIP_SELECT), g_AM_HAL_GPIO_OUTPUT);
+  pin_config(PinName(PIN_MICROSD_CHIP_SELECT) , g_AM_HAL_GPIO_OUTPUT);
+
+  //Re-enable the SDA and SCL pins
+  pin_config(PinName(PIN_QWIIC_SCL), g_AM_BSP_GPIO_IOM1_SCL);
+  pin_config(PinName(PIN_QWIIC_SDA), g_AM_BSP_GPIO_IOM1_SDA);
 
   Serial.begin(settings.serialTerminalBaudRate);
 
   if (settings.useTxRxPinsForTerminal == true)
   {
     //We may need to manually restore the Serial1 TX and RX pins?
-    am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
-    pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
-    pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
-    am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
-    pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
-    pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+    configureSerial1TxRx();
 
     Serial1.begin(settings.serialTerminalBaudRate); // Start the serial port
   }

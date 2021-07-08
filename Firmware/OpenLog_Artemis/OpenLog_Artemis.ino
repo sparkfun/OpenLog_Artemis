@@ -93,20 +93,17 @@
   (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
   (done) Add support for the Pulse Oximeter and Qwiic Button: https://github.com/sparkfun/OpenLog_Artemis/issues/81
   
-  (in progress) Update to Apollo3 v2.1.0 - FIRMWARE_VERSION_MAJOR = 2.
+  (in progress) Update to Apollo3 v2.1.1 - FIRMWARE_VERSION_MAJOR = 2.
   (done) Implement printf float (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
   (worked around) Figure out why attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness
   (done) Add a setQwiicPullups function
   (done) Check if we need ap3_set_pin_to_analog when coming out of sleep
   (done?) Investigate why code does not wake from deep sleep correctly
   (worked around) Correct SerialLog RX: https://github.com/sparkfun/Arduino_Apollo3/issues/401
-    The work-around is to manually edit the PinNames.h for the SFE_ARTEMIS_ATP and change the pins for Serial1
-    If you are using Windows, you will find PinNames.h in:
-    C:\Users\<your user>\AppData\Local\Arduino15\packages\SparkFun\hardware\apollo3\2.1.0\cores\mbed-os\targets\TARGET_Ambiq_Micro\TARGET_Apollo3\TARGET_SFE_ARTEMIS_ATP
-    Change lines 123 and 124 to:
-      SERIAL1_TX = D12, // Fix for OLA - was D24,
-      SERIAL1_RX = D13, // Fix for OLA - was D25,    
-  (in progress) Reduce sleep current as much as possible. v1.2.1 achieved ~110uA. With v2.1 the draw is more like 500uA...
+    The work-around is to use Serial1 in place of serialLog and then to manually force UART1 to use pins 12 and 13
+    We need a work-around anyway because if pins 12 or 13 have been used as analog inputs, Serial1.begin does not re-configure them for UART TX and RX
+  (TO DO) Figure out why we actually need something connected to the RX pin on start up when using the Tx and Rx pins for the terminal
+  (in progress) Reduce sleep current as much as possible. v1.2.1 achieved ~110uA. With v2.1.1 the draw is more like 280uA...
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -158,6 +155,10 @@ const byte PIN_TRIGGER = 11;
 const byte PIN_QWIIC_SCL = 8;
 const byte PIN_QWIIC_SDA = 9;
 
+const byte PIN_SPI_SCK = 5;
+const byte PIN_SPI_CIPO = 6;
+const byte PIN_SPI_COPI = 7;
+
 // Include this many extra bytes when starting a mux - to try and avoid the slippery mux bug
 // This should be 0 but 3 or 7 seem to work better depending on which way the wind is blowing.
 const byte EXTRA_MUX_STARTUP_BYTES = 3;
@@ -171,7 +172,7 @@ enum returnStatus {
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <Wire.h>
-TwoWire qwiic(9,8); //Will use pads 8/9 - changed from (1) for Apollo3 v2
+TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9 - changed from (1) for Apollo3 v2
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //EEPROM for storing settings
@@ -343,16 +344,11 @@ void setup() {
   productionTest(); //Check if we need to go into production test mode
 
   //We need to manually restore the Serial1 TX and RX pins after they were changed by productionTest()
-  am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
-  pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
-  pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
-  am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
-  pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
-  pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+  configureSerial1TxRx();
 
   Serial.begin(115200); //Default for initial debug messages if necessary
   Serial1.begin(115200); //Default for initial debug messages if necessary
-  
+
   //pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
   //digitalWrite(PIN_LOGIC_DEBUG, HIGH);
 
@@ -871,8 +867,8 @@ void setQwiicPullups(uint32_t qwiicBusPullUps)
     sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K;
   }
 
-  pin_config(D8, sclPinCfg);
-  pin_config(D9, sdaPinCfg);
+  pin_config(PinName(PIN_QWIIC_SCL), sclPinCfg);
+  pin_config(PinName(PIN_QWIIC_SDA), sdaPinCfg);
 }
 
 void beginSD()
@@ -940,15 +936,25 @@ void enableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core
   //Add 1K5 pull-up on CIPO
   am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
   cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
-  pin_config(D6, cipoPinCfg);
+  pin_config(PinName(PIN_SPI_CIPO), cipoPinCfg);
 }
 
 void disableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core
 {
   am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
-  pin_config(D6, cipoPinCfg);
+  pin_config(PinName(PIN_SPI_CIPO), cipoPinCfg);
 }
 
+void configureSerial1TxRx(void) // Configure pins 12 and 13 for UART1 TX and RX
+{
+  am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
+  pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
+  pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
+  am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
+  pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
+  pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+}
+  
 void beginIMU()
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
@@ -1245,12 +1251,7 @@ void beginSerialLogging()
     updateDataFileCreate(&serialDataFile); // Update the file create time & date
 
     //We need to manually restore the Serial1 TX and RX pins
-    am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
-    pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
-    pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
-    am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
-    pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
-    pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+    configureSerial1TxRx();
 
     Serial1.begin(settings.serialLogBaudRate);
 
@@ -1265,12 +1266,7 @@ void beginSerialOutput()
   if (settings.outputSerial == true)
   {
     //We need to manually restore the Serial1 TX and RX pins
-    am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
-    pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
-    pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
-    am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
-    pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
-    pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+    configureSerial1TxRx();
 
     Serial1.begin(settings.serialLogBaudRate); // (Re)start the serial port
     online.serialOutput = true;

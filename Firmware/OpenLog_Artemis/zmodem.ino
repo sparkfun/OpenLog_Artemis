@@ -414,12 +414,7 @@ void sdCardMenu(void)
         if (settings.useTxRxPinsForTerminal == false)
         {
           //We need to manually restore the Serial1 TX and RX pins
-          am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
-          pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
-          pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
-          am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
-          pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
-          pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+          configureSerial1TxRx();
 
           Serial1.begin(settings.serialLogBaudRate); // (Re)start the serial port
         }

@@ -91,12 +91,7 @@ void productionTest()
   // OK. The breakout pins were held low and then released (pulled-up) within five seconds so let's go into production test mode!
 
   //We need to manually restore the Serial1 TX and RX pins before we can use Serial1
-  am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
-  pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
-  pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
-  am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
-  pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
-  pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
+  configureSerial1TxRx();
 
   Serial.begin(115200); //Default for initial debug messages if necessary
 

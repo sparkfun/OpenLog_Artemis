@@ -130,6 +130,7 @@ void menuSerialLogging()
         }
         else
         {
+          configureSerial1TxRx();
           settings.serialLogBaudRate = newBaud;
           Serial1.begin(settings.serialLogBaudRate);
         }
