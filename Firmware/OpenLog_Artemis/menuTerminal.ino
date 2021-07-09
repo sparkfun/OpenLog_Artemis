@@ -288,7 +288,7 @@ void menuLogRate()
           settings.useGPIO11ForTrigger = false;
           detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
-          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         else
@@ -296,12 +296,13 @@ void menuLogRate()
           // Enable triggering
           settings.useGPIO11ForTrigger = true;
           pinMode(PIN_TRIGGER, INPUT_PULLUP);
-          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured after being disabled
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
           delay(1); // Let the pin stabilize
           if (settings.fallingEdgeTrigger == true)
             attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
           else
             attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
           triggerEdgeSeen = false; // Make sure the flag is clear
           settings.logA11 = false; // Disable analog logging on pin 11
           settings.logMaxRate = false; // Disable max rate logging
@@ -328,6 +329,7 @@ void menuLogRate()
             attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
           else
             attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         else
@@ -392,7 +394,7 @@ void menuLogRate()
           settings.useRTCForFastSlowLogging = false;
           settings.logA11 = false; // Disable analog logging on pin 11
           pinMode(PIN_TRIGGER, INPUT_PULLUP);
-          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured after being disabled
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
           delay(1); // Let the pin stabilize
           // Disable triggering
           if (settings.useGPIO11ForTrigger == true)
@@ -406,7 +408,7 @@ void menuLogRate()
         {
           settings.useGPIO11ForFastSlowLogging = false;        
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
-          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
         }
       }
       else
@@ -429,7 +431,7 @@ void menuLogRate()
       {
         settings.useGPIO11ForFastSlowLogging = false;        
         pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
-        pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
+        pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
       }
     }
     else if (incoming == 17)
@@ -440,7 +442,7 @@ void menuLogRate()
         if (settings.useGPIO11ForFastSlowLogging == true)
         {
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
-          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
         }
         settings.useGPIO11ForFastSlowLogging = false;
         settings.logA11 = false; // Disable analog logging on pin 11
@@ -449,7 +451,7 @@ void menuLogRate()
         {
           detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
-          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         settings.useGPIO11ForTrigger = false;

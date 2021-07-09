@@ -32,6 +32,10 @@ void menuPower()
     SerialPrintf2("%s\r\n", tempStr);
 #endif
 
+    SerialPrint(F("7) Serial Tx and Rx pins during sleep are: "));
+    if (settings.serialTxRxDuringSleep == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
     SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -50,7 +54,7 @@ void menuPower()
           settings.useGPIO32ForStopLogging = false;
           detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
-          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured after being disabled
+          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
           stopLoggingSeen = false; // Make sure the flag is clear
         }
         else
@@ -58,9 +62,10 @@ void menuPower()
           // Enable stop logging
           settings.useGPIO32ForStopLogging = true;
           pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
-          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured after being disabled
+          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
           delay(1); // Let the pin stabilize
           attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
+          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
           stopLoggingSeen = false; // Make sure the flag is clear
           settings.logA32 = false; // Disable analog logging on pin 32
         }
@@ -103,6 +108,10 @@ void menuPower()
         settings.vinCorrectionFactor = tempCF;
     }
 #endif
+    else if (incoming == '7')
+    {
+      settings.serialTxRxDuringSleep ^= 1;
+    }
     else if (incoming == 'x')
       break;
     else if (incoming == STATUS_GETBYTE_TIMEOUT)

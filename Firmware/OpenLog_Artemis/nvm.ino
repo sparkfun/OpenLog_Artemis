@@ -180,6 +180,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("imuLogDMPCpass=" + (String)settings.imuLogDMPCpass);
     settingsFile.println("minimumAwakeTimeMillis=" + (String)settings.minimumAwakeTimeMillis);
     settingsFile.println("identifyBioSensorHubs=" + (String)settings.identifyBioSensorHubs);
+    settingsFile.println("serialTxRxDuringSleep=" + (String)settings.serialTxRxDuringSleep);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -457,6 +458,8 @@ bool parseLine(char* str) {
     settings.minimumAwakeTimeMillis = d;
   else if (strcmp(settingName, "identifyBioSensorHubs") == 0)
     settings.identifyBioSensorHubs = d;
+  else if (strcmp(settingName, "serialTxRxDuringSleep") == 0)
+    settings.serialTxRxDuringSleep = d;
   else
     {
       SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);

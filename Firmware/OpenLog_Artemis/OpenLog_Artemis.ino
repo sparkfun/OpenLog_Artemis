@@ -98,11 +98,10 @@
   (worked around) Figure out why attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness
   (done) Add a setQwiicPullups function
   (done) Check if we need ap3_set_pin_to_analog when coming out of sleep
-  (done?) Investigate why code does not wake from deep sleep correctly
+  (done) Investigate why code does not wake from deep sleep correctly
   (worked around) Correct SerialLog RX: https://github.com/sparkfun/Arduino_Apollo3/issues/401
     The work-around is to use Serial1 in place of serialLog and then to manually force UART1 to use pins 12 and 13
     We need a work-around anyway because if pins 12 or 13 have been used as analog inputs, Serial1.begin does not re-configure them for UART TX and RX
-  (TO DO) Figure out why we actually need something connected to the RX pin on start up when using the Tx and Rx pins for the terminal
   (in progress) Reduce sleep current as much as possible. v1.2.1 achieved ~110uA. With v2.1.1 the draw is more like 280uA...
 */
 
@@ -388,6 +387,7 @@ void setup() {
     pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
     attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
+    pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
     stopLoggingSeen = false; // Make sure the flag is clear
   }
 
@@ -405,6 +405,7 @@ void setup() {
       SerialPrintln(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
       attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
     }
+    pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
     triggerEdgeSeen = false; // Make sure the flag is clear
   }
 
@@ -829,7 +830,7 @@ bool checkSleepOnRTCTime(void)
 void beginQwiic()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
-  pin_config(PinName(PIN_QWIIC_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
+  pin_config(PinName(PIN_QWIIC_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   qwiicPowerOn();
   qwiic.begin();
   setQwiicPullups(settings.qwiicBusPullUps); //Just to make it really clear what pull-ups are being used, set pullups here.
@@ -874,9 +875,9 @@ void setQwiicPullups(uint32_t qwiicBusPullUps)
 void beginSD()
 {
   pinMode(PIN_MICROSD_POWER, OUTPUT);
-  pin_config(PinName(PIN_MICROSD_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
+  pin_config(PinName(PIN_MICROSD_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   pinMode(PIN_MICROSD_CHIP_SELECT, OUTPUT);
-  pin_config(PinName(PIN_MICROSD_CHIP_SELECT), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
+  pin_config(PinName(PIN_MICROSD_CHIP_SELECT), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
 
   if (settings.enableSD == true)
@@ -952,15 +953,16 @@ void configureSerial1TxRx(void) // Configure pins 12 and 13 for UART1 TX and RX
   pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
   am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
   pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
+  pinConfigRx.ePullup = AM_HAL_GPIO_PIN_PULLUP_WEAK; // Put a weak pull-up on the Rx pin
   pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
 }
   
 void beginIMU()
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
-  pin_config(PinName(PIN_IMU_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
+  pin_config(PinName(PIN_IMU_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   pinMode(PIN_IMU_CHIP_SELECT, OUTPUT);
-  pin_config(PinName(PIN_IMU_CHIP_SELECT), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured after being disabled
+  pin_config(PinName(PIN_IMU_CHIP_SELECT), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
 
   if (settings.enableIMU == true && settings.logMaxRate == false)
