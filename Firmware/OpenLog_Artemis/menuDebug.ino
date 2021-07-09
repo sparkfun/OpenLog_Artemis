@@ -13,6 +13,10 @@ void menuDebug()
     if (settings.resetOnZeroDeviceCount == true) SerialPrintln(F("Enabled"));
     else SerialPrintln(F("Disabled"));
 
+    SerialPrint(F("3) GNSS Debug Messages: "));
+    if (settings.printGNSSDebugMessages == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
     SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -41,6 +45,10 @@ void menuDebug()
       {
         settings.resetOnZeroDeviceCount ^= 1;
       }
+    }
+   else if (incoming == '3')
+    {
+      settings.printGNSSDebugMessages ^= 1;
     }
     else if (incoming == 'x')
       break;

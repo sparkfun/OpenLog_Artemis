@@ -181,6 +181,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("minimumAwakeTimeMillis=" + (String)settings.minimumAwakeTimeMillis);
     settingsFile.println("identifyBioSensorHubs=" + (String)settings.identifyBioSensorHubs);
     settingsFile.println("serialTxRxDuringSleep=" + (String)settings.serialTxRxDuringSleep);
+    settingsFile.println("printGNSSDebugMessages=" + (String)settings.printGNSSDebugMessages);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -460,6 +461,8 @@ bool parseLine(char* str) {
     settings.identifyBioSensorHubs = d;
   else if (strcmp(settingName, "serialTxRxDuringSleep") == 0)
     settings.serialTxRxDuringSleep = d;
+  else if (strcmp(settingName, "printGNSSDebugMessages") == 0)
+    settings.printGNSSDebugMessages = d;
   else
     {
       SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);

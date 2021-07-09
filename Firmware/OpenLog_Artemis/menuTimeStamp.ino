@@ -57,7 +57,7 @@ void menuTimeStamp()
       sprintf(rtcHundredths, "0%d", myRTC.hundredths);
     else
       sprintf(rtcHundredths, "%d", myRTC.hundredths);
-    sprintf(rtcTime, "%s:%s:%s.%s,", rtcHour, rtcMin, rtcSec, rtcHundredths);
+    sprintf(rtcTime, "%s:%s:%s.%s", rtcHour, rtcMin, rtcSec, rtcHundredths);
 
     SerialPrintln(rtcTime);
 
@@ -174,6 +174,8 @@ void menuTimeStamp()
         SerialPrint(F("Enter current day (1 to 31): "));
         dd = getNumber(menuTimeout); //Timeout after x seconds
 
+        myRTC.getTime();
+        h = myRTC.hour; m = myRTC.minute; s = myRTC.seconds;
         myRTC.setTime(0, s, m, h, dd, mm, yy); //Manually set RTC
         lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
       }

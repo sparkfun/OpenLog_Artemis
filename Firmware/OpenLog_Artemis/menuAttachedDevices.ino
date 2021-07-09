@@ -1006,6 +1006,8 @@ void menuConfigure_uBlox(void *configPtr)
       if (sensorSetting->useAutoPVT == true) SerialPrintln(F("Yes"));
       else SerialPrintln(F("No"));
 
+      SerialPrintln(F("16) Reset GNSS to factory defaults"));
+
       SerialFlush();
     }
     SerialPrintln(F("x) Exit"));
@@ -1051,6 +1053,18 @@ void menuConfigure_uBlox(void *configPtr)
       }
       else if (incoming == 15)
         sensorSetting->useAutoPVT ^= 1;
+      else if (incoming == 16)
+      {
+        SerialPrintln(F("Reset GNSS module to factory defaults. This will take 5 seconds to complete."));
+        SerialPrintln(F("Are you sure? Press 'y' to confirm: "));
+        byte bContinue = getByteChoice(menuTimeout);
+        if (bContinue == 'y')
+        {
+          gnssFactoryDefault();
+        }
+        else
+          SerialPrintln(F("Reset GNSS aborted"));
+      } 
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -1065,7 +1079,6 @@ void menuConfigure_uBlox(void *configPtr)
     else
       printUnknown(incoming);
   }
-
 }
 
 bool isUbloxAttached()
@@ -1102,6 +1115,9 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
           SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
 
+          //If autoPVT is enabled, flush the data to make sure we get fresh date and time
+          if (nodeSetting->useAutoPVT) nodeDevice->flushPVT();
+
           //Get latested date/time from GPS
           //These will be extracted from a single PVT packet
           year = nodeDevice->getYear();
@@ -1113,6 +1129,37 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
           dateValid = nodeDevice->getDateValid();
           timeValid = nodeDevice->getTimeValid();
           millisecond = nodeDevice->getMillisecond();
+
+          setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups
+        }
+    }
+    temp = temp->next;
+  }
+}
+
+void gnssFactoryDefault(void)
+{
+  //Step through node list
+  node *temp = head;
+
+  while (temp != NULL)
+  {
+    switch (temp->deviceType)
+    {
+      case DEVICE_GPS_UBLOX:
+        {
+          setQwiicPullups(0); //Disable pullups to minimize CRC issues
+
+          SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
+          struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+
+          //Reset the module to the factory defaults
+          nodeDevice->factoryDefault();
+          
+          delay(5000); //Blocking delay to allow module to reset
+
+          nodeDevice->setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+          nodeDevice->saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the current ioPortsettings to flash and BBR
 
           setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups
         }

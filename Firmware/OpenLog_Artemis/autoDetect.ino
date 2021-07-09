@@ -353,6 +353,7 @@ bool beginQwiicDevices()
           SFE_UBLOX_GNSS *tempDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if(settings.printGNSSDebugMessages == true) tempDevice->enableDebugging(); // Enable debug messages if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
           setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups.
         }
@@ -1206,7 +1207,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Confidence: High - Sends/receives CRC checked data response
         setQwiicPullups(0); //Disable pullups to minimize CRC issues
         SFE_UBLOX_GNSS sensor;
-        if(settings.printDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
+        if(settings.printGNSSDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
         {
           setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups to prevent ghosts at 0x43 onwards
