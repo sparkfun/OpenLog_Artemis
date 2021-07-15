@@ -129,13 +129,13 @@ void getData()
       }
       if (settings.imuLogDMPQuat6)
       {
-        sprintf(tempData, "%.3f,%.3f,%.3f,", ((double)dmpData.Quat6.Data.Q1) / 1073741824.0,
+        sprintf(tempData, "%.5f,%.5f,%.5f,", ((double)dmpData.Quat6.Data.Q1) / 1073741824.0,
           ((double)dmpData.Quat6.Data.Q2) / 1073741824.0, ((double)dmpData.Quat6.Data.Q3) / 1073741824.0);
         strcat(outputData, tempData);
       }
       if (settings.imuLogDMPQuat9)
       {
-        sprintf(tempData, "%.3f,%.3f,%.3f,%d,", ((double)dmpData.Quat9.Data.Q1) / 1073741824.0,
+        sprintf(tempData, "%.5f,%.5f,%.5f,%d,", ((double)dmpData.Quat9.Data.Q1) / 1073741824.0,
           ((double)dmpData.Quat9.Data.Q2) / 1073741824.0, ((double)dmpData.Quat9.Data.Q3) / 1073741824.0, dmpData.Quat9.Data.Accuracy);
         strcat(outputData, tempData);
       }

@@ -94,10 +94,11 @@
   (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
   (done) Add support for the Pulse Oximeter: https://github.com/sparkfun/OpenLog_Artemis/issues/81
   (won't do?) Add support for the Qwiic Button. The QB uses clock-stretching and the Artemis really doesn't enjoy that...
+  (done) Increase DMP data resolution to five decimal places https://github.com/sparkfun/OpenLog_Artemis/issues/90
 */
 
 const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 11;
+const int FIRMWARE_VERSION_MINOR = 12;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
