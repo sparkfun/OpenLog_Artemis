@@ -255,12 +255,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_MS5837;
       }
       break;
-//    case DEVICE_QWIIC_BUTTON:
-//      {
-//        temp->classPtr = new QwiicButton;
-//        temp->configPtr = new struct_QWIIC_BUTTON;
-//      }
-//      break;
+    case DEVICE_QWIIC_BUTTON:
+      {
+        temp->classPtr = new QwiicButton;
+        temp->configPtr = new struct_QWIIC_BUTTON;
+      }
+      break;
     case DEVICE_BIO_SENSOR_HUB:
       {
         temp->classPtr = new SparkFun_Bio_Sensor_Hub(32, 11, address); // Reset pin is 32, MFIO pin is 11
@@ -528,15 +528,15 @@ bool beginQwiicDevices()
             temp->online = true;
         }
         break;
-//      case DEVICE_QWIIC_BUTTON:
-//        {
-//          QwiicButton *tempDevice = (QwiicButton *)temp->classPtr;
-//          struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr; //Create a local pointer that points to same spot as node does
-//          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
-//          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
-//            temp->online = true;
-//        }
-//        break;
+      case DEVICE_QWIIC_BUTTON:
+        {
+          QwiicButton *tempDevice = (QwiicButton *)temp->classPtr;
+          struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
       case DEVICE_BIO_SENSOR_HUB:
         {
           SparkFun_Bio_Sensor_Hub *tempDevice = (SparkFun_Bio_Sensor_Hub *)temp->classPtr;
@@ -941,9 +941,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
     case DEVICE_PRESSURE_MS5837:
       ptr = (FunctionPointer)menuConfigure_MS5837;
       break;
-//    case DEVICE_QWIIC_BUTTON:
-//      ptr = (FunctionPointer)menuConfigure_QWIIC_BUTTON;
-//      break;
+    case DEVICE_QWIIC_BUTTON:
+      ptr = (FunctionPointer)menuConfigure_QWIIC_BUTTON;
+      break;
     case DEVICE_BIO_SENSOR_HUB:
       ptr = (FunctionPointer)menuConfigure_BIO_SENSOR_HUB;
       break;
@@ -1093,7 +1093,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_VCNL4040 0x60
 #define ADR_SCD30 0x61
 #define ADR_MCP9600 0x60 //0x60 to 0x67
-//#define ADR_QWIIC_BUTTON 0x6F //But can be any address... Limit the range to 0x68-0x6F
+#define ADR_QWIIC_BUTTON 0x6F //But can be any address... Limit the range to 0x68-0x6F
 #define ADR_MULTIPLEXER 0x70 //0x70 to 0x77
 #define ADR_SHTC3 0x70
 #define ADR_MS5637 0x76
@@ -1385,20 +1385,20 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
           return (DEVICE_TEMPERATURE_MCP9600);
       }
       break;
-//    case 0x68:
-//    case 0x69:
-//    case 0x6A:
-//    case 0x6B:
-//    case 0x6C:
-//    case 0x6D:
-//    case 0x6E:
-//    case 0x6F:
-//      {
-//        QwiicButton sensor;
-//        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-//          return (DEVICE_QWIIC_BUTTON);
-//      }
-//      break;
+    case 0x68:
+    case 0x69:
+    case 0x6A:
+    case 0x6B:
+    case 0x6C:
+    case 0x6D:
+    case 0x6E:
+    case 0x6F:
+      {
+        QwiicButton sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_QWIIC_BUTTON);
+      }
+      break;
     case 0x70:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
@@ -1711,9 +1711,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
     case DEVICE_PRESSURE_MS5837:
       return "Pressure-MS5837";
       break;
-//    case DEVICE_QWIIC_BUTTON:
-//      return "Qwiic_Button";
-//      break;
+    case DEVICE_QWIIC_BUTTON:
+      return "Qwiic_Button";
+      break;
     case DEVICE_BIO_SENSOR_HUB:
       return "Bio-Sensor-Oximeter";
       break;

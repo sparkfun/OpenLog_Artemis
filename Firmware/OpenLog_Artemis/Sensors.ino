@@ -1490,20 +1490,20 @@ void printHelperText(bool terminalOnly)
             }
           }
           break;
-//        case DEVICE_QWIIC_BUTTON:
-//          {
-//            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
-//            if (nodeSetting->log)
-//            {
-//              if (nodeSetting->logPressed)
-//                strcat(helperText, "pressS,");
-//              if (nodeSetting->logClicked)
-//                strcat(helperText, "clickS,");
-//              if (nodeSetting->toggleLEDOnClick)
-//                strcat(helperText, "LED,");
-//            }
-//          }
-//          break;
+        case DEVICE_QWIIC_BUTTON:
+          {
+            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressed)
+                strcat(helperText, "pressS,");
+              if (nodeSetting->logClicked)
+                strcat(helperText, "clickS,");
+              if (nodeSetting->toggleLEDOnClick)
+                strcat(helperText, "LED,");
+            }
+          }
+          break;
         case DEVICE_BIO_SENSOR_HUB:
           {
             struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr;
