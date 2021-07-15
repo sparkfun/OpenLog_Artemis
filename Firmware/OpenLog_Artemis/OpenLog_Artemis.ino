@@ -13,7 +13,9 @@
 
   The Board should be set to SparkFun Apollo3 \ RedBoard Artemis ATP.
 
-  Please note: this version of the firmware compiles on v2.1.0+ of the Apollo3 boards.
+  Please note: this version of the firmware compiles on v2.1.0 of the Apollo3 boards.
+  
+  (At the time of writing, data logging with the the u-blox ZED-F9P is problematic when using v2.1.1 of the core.)
 
   v1.0 Power Consumption:
    Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
@@ -95,7 +97,7 @@
   
   (in progress) Update to Apollo3 v2.1.1 - FIRMWARE_VERSION_MAJOR = 2.
   (done) Implement printf float (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
-  (worked around) Figure out why attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness
+  (worked around) attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness - https://github.com/sparkfun/Arduino_Apollo3/issues/416
   (done) Add a setQwiicPullups function
   (done) Check if we need ap3_set_pin_to_analog when coming out of sleep
   (done) Investigate why code does not wake from deep sleep correctly
@@ -326,7 +328,7 @@ void setup() {
   delay(1); // Let PIN_POWER_LOSS stabilize
 
   if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
-  //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // TO DO: figure out why this no longer works on v2.1.0
+  //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // We can't do this with v2.1.0 as attachInterrupt causes a spontaneous interrupt
   attachInterrupt(PIN_POWER_LOSS, powerLossISR, FALLING);
   powerLossSeen = false; // Make sure the flag is clear
 
@@ -387,7 +389,9 @@ void setup() {
     pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
     attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
-    pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
+    am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
+    intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+    pin_config(PinName(PIN_STOP_LOGGING), intPinConfig); // Make sure the pull-up does actually stay enabled
     stopLoggingSeen = false; // Make sure the flag is clear
   }
 
@@ -395,17 +399,20 @@ void setup() {
   {
     pinMode(PIN_TRIGGER, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
+    am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
     if (settings.fallingEdgeTrigger == true)
     {
       SerialPrintln(F("Falling-edge triggering is enabled. Sensor data will be logged on a falling edge on GPIO pin 11."));
       attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
+      intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
     }
     else
     {
       SerialPrintln(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
       attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
+      intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_LO2HI;
     }
-    pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
+    pin_config(PinName(PIN_TRIGGER), intPinConfig); // Make sure the pull-up does actually stay enabled
     triggerEdgeSeen = false; // Make sure the flag is clear
   }
 

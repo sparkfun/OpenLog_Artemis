@@ -855,6 +855,10 @@ void configureQwiicDevices()
     configureDevice(temp);
     temp = temp->next;
   }
+
+  //Now that the settings are loaded and the devices are configured,
+  //try for 400kHz but reduce to 100kHz if certain devices are attached
+  setMaxI2CSpeed();
 }
 
 //Returns a pointer to the menu function that configures this particular device type

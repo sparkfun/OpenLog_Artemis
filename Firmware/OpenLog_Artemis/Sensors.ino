@@ -1568,7 +1568,10 @@ void setMaxI2CSpeed()
       //Check if i2cSpeed is lowered
       struct_uBlox *sensor = (struct_uBlox*)temp->configPtr;
       if (sensor->i2cSpeed == 100000)
+      {
+        //printDebug("setMaxI2CSpeed: sensor->i2cSpeed is 100000. Reducing maxSpeed to 100kHz\r\n");
         maxSpeed = 100000;
+      }
     }
 
     temp = temp->next;
@@ -1576,12 +1579,21 @@ void setMaxI2CSpeed()
 
   //If user wants to limit the I2C bus speed, do it here
   if (maxSpeed > settings.qwiicBusMaxSpeed)
+  {
+    //printDebug("setMaxI2CSpeed: maxSpeed is > settings.qwiicBusMaxSpeed. Reducing maxSpeed to " + (String)settings.qwiicBusMaxSpeed + "Hz\r\n");
     maxSpeed = settings.qwiicBusMaxSpeed;
+  }
 
   if (maxSpeed > 200000)
+  {
+    printDebug("setMaxI2CSpeed: setting qwiic clock speed to " + (String)AM_HAL_IOM_400KHZ + "Hz\r\n");
     qwiic.setClock(AM_HAL_IOM_400KHZ);
+  }
   else
+  {
+    printDebug("setMaxI2CSpeed: setting qwiic clock speed to " + (String)AM_HAL_IOM_100KHZ + "Hz\r\n");
     qwiic.setClock(AM_HAL_IOM_100KHZ);
+  }
   for (int i = 0; i < 100; i++) //Allow time for the speed to change
   {
     checkBattery();

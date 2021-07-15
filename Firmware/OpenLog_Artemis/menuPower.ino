@@ -65,7 +65,9 @@ void menuPower()
           pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
           delay(1); // Let the pin stabilize
           attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
-          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
+          am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
+          intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+          pin_config(PinName(PIN_STOP_LOGGING), intPinConfig); // Make sure the pull-up does actually stay enabled
           stopLoggingSeen = false; // Make sure the flag is clear
           settings.logA32 = false; // Disable analog logging on pin 32
         }

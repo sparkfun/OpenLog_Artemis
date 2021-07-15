@@ -414,7 +414,7 @@ void wakeFromSleep()
 
   if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
 
-  //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // TO DO: figure out why this no longer works on v2.1.0
+  //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // We can't do this with v2.1.0 as attachInterrupt causes a spontaneous interrupt
   attachInterrupt(PIN_POWER_LOSS, powerLossISR, FALLING);
   powerLossSeen = false; // Make sure the flag is clear
   
@@ -424,7 +424,9 @@ void wakeFromSleep()
     pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
     delay(1); // Let the pin stabilize
     attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
-    pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
+    am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
+    intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+    pin_config(PinName(PIN_STOP_LOGGING), intPinConfig); // Make sure the pull-up does actually stay enabled
     stopLoggingSeen = false; // Make sure the flag is clear
   }
 
@@ -433,11 +435,20 @@ void wakeFromSleep()
     pinMode(PIN_TRIGGER, INPUT_PULLUP);
     pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
     delay(1); // Let the pin stabilize
+    am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
     if (settings.fallingEdgeTrigger == true)
+    {
+      SerialPrintln(F("Falling-edge triggering is enabled. Sensor data will be logged on a falling edge on GPIO pin 11."));
       attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
+      intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+    }
     else
+    {
+      SerialPrintln(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
       attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
-    pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
+      intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_LO2HI;
+    }
+    pin_config(PinName(PIN_TRIGGER), intPinConfig); // Make sure the pull-up does actually stay enabled
     triggerEdgeSeen = false; // Make sure the flag is clear
   }
 

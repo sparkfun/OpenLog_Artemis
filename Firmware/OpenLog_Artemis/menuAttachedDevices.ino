@@ -229,7 +229,8 @@ bool detectQwiicDevices()
   //*** Let's leave pull-ups set to 1k and only disable them when taking to a u-blox device ***
   //setQwiicPullups(0); //We've detected something on the bus so disable pullups.
 
-  setMaxI2CSpeed(); //Try for 400kHz but reduce to 100kHz or low if certain devices are attached
+  //We need to call setMaxI2CSpeed in configureQwiicDevices
+  //We cannot do it here as the device settings have not been loaded
 
   SerialPrintln(F("Autodetect complete"));
 

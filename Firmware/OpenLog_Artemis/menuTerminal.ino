@@ -298,11 +298,18 @@ void menuLogRate()
           pinMode(PIN_TRIGGER, INPUT_PULLUP);
           pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
           delay(1); // Let the pin stabilize
+          am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
           if (settings.fallingEdgeTrigger == true)
+          {
             attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
+            intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+          }
           else
+          {
             attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
-          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
+            intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_LO2HI;
+          }
+          pin_config(PinName(PIN_TRIGGER), intPinConfig); // Make sure the pull-up does actually stay enabled
           triggerEdgeSeen = false; // Make sure the flag is clear
           settings.logA11 = false; // Disable analog logging on pin 11
           settings.logMaxRate = false; // Disable max rate logging
@@ -325,11 +332,18 @@ void menuLogRate()
         {
           detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           settings.fallingEdgeTrigger ^= 1; // Invert the flag
+          am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
           if (settings.fallingEdgeTrigger == true)
+          {
             attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
+            intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+          }
           else
+          {
             attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
-          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pull-up does actually stay enabled
+            intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_LO2HI;
+          }
+          pin_config(PinName(PIN_TRIGGER), intPinConfig); // Make sure the pull-up does actually stay enabled
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         else
