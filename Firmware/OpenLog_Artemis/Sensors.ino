@@ -99,9 +99,9 @@ void getData()
       if (myICM.dataReady())
       {
         //printDebug("getData: myICM.dataReady = " + (String)myICM.dataReady() + "\r\n");
-        
+
         myICM.getAGMT(); //Update values
-  
+
         if (settings.logIMUAccel)
         {
           olaftoa(myICM.accX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
@@ -312,7 +312,7 @@ void gatherDeviceValues()
                 int adjustedHour = nodeDevice->getHour();
                 if (settings.hour24Style == false)
                   if (adjustedHour > 12) adjustedHour -= 12;
-                  
+
                 char gnssHourStr[3];
                 char gnssMinStr[3];
                 char gnssSecStr[3];
@@ -320,7 +320,7 @@ void gatherDeviceValues()
                 int gnssMin = nodeDevice->getMinute();
                 int gnssSec = nodeDevice->getSecond();
                 int gnssMillis = nodeDevice->getMillisecond();
-                
+
                 if (adjustedHour < 10)
                   sprintf(gnssHourStr, "0%d", adjustedHour);
                 else
@@ -339,7 +339,7 @@ void gatherDeviceValues()
                   sprintf(gnssMillisStr, "0%d", gnssMillis);
                 else
                   sprintf(gnssMillisStr, "%d", gnssMillis);
-                  
+
                 sprintf(tempData, "%s:%s:%s.%s,", gnssHourStr, gnssMinStr, gnssSecStr, gnssMillisStr);
                 strcat(outputData, tempData);
               }
@@ -752,7 +752,7 @@ void gatherDeviceValues()
               }
               else
                 nodeDevice->setDataRate(ADS122C04_DATA_RATE_20SPS); // Default to 20Hz
-              
+
               if (nodeSetting->logCentigrade)
               {
                 olaftoa(nodeDevice->readPT100Centigrade(), tempData1, 3, sizeof(tempData) / sizeof(char));
@@ -1003,7 +1003,7 @@ void gatherDeviceValues()
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
               }
-              
+
               long clickedPopped = 0;
               while (nodeDevice->isClickedQueueEmpty() == false)
               {
@@ -1016,7 +1016,7 @@ void gatherDeviceValues()
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
               }
-              
+
               if (nodeSetting->toggleLEDOnClick)
               {
                 if (nodeSetting->ledState)
@@ -1490,20 +1490,20 @@ void printHelperText(bool terminalOnly)
             }
           }
           break;
-        case DEVICE_QWIIC_BUTTON:
-          {
-            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
-            if (nodeSetting->log)
-            {
-              if (nodeSetting->logPressed)
-                strcat(helperText, "pressS,");
-              if (nodeSetting->logClicked)
-                strcat(helperText, "clickS,");
-              if (nodeSetting->toggleLEDOnClick)
-                strcat(helperText, "LED,");
-            }
-          }
-          break;
+//        case DEVICE_QWIIC_BUTTON:
+//          {
+//            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+//            if (nodeSetting->log)
+//            {
+//              if (nodeSetting->logPressed)
+//                strcat(helperText, "pressS,");
+//              if (nodeSetting->logClicked)
+//                strcat(helperText, "clickS,");
+//              if (nodeSetting->toggleLEDOnClick)
+//                strcat(helperText, "LED,");
+//            }
+//          }
+//          break;
         case DEVICE_BIO_SENSOR_HUB:
           {
             struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr;
@@ -1598,7 +1598,7 @@ void setMaxI2CSpeed()
   {
     checkBattery();
     delay(1);
-  }  
+  }
 }
 
 //Read the VIN voltage

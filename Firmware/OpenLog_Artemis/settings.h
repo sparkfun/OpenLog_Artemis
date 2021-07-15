@@ -26,7 +26,7 @@ typedef enum
   DEVICE_VOC_SGP40,
   DEVICE_PRESSURE_SDP3X,
   DEVICE_PRESSURE_MS5837,
-  DEVICE_QWIIC_BUTTON,
+//  DEVICE_QWIIC_BUTTON,
   DEVICE_BIO_SENSOR_HUB,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
@@ -403,7 +403,7 @@ struct struct_settings {
   int imuAccFSS = 0; // IMU accelerometer full scale - default to gpm2 (ICM_20948_ACCEL_CONFIG_FS_SEL_e)
   int imuAccDLPFBW = 7; // IMU accelerometer DLPF bandwidth - default to acc_d473bw_n499bw (ICM_20948_ACCEL_CONFIG_DLPCFG_e)
   int imuGyroFSS = 0; // IMU gyro full scale - default to 250 degrees per second (ICM_20948_GYRO_CONFIG_1_FS_SEL_e)
-  int imuGyroDLPFBW = 7; // IMU gyro DLPF bandwidth - default to gyr_d361bw4_n376bw5 (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)  
+  int imuGyroDLPFBW = 7; // IMU gyro DLPF bandwidth - default to gyr_d361bw4_n376bw5 (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)
   bool logMicroseconds = false; // Log micros()
   bool useTxRxPinsForTerminal = false; // If true, the terminal is echo'd to the Tx and Rx pins. Note: setting this to true will _permanently_ disable serial logging and analog input on those pins!
   bool timestampSerial = false; // If true, the RTC time will be added to the serial log file when timeStampToken is received

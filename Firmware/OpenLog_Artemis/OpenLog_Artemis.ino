@@ -14,7 +14,7 @@
   The Board should be set to SparkFun Apollo3 \ RedBoard Artemis ATP.
 
   Please note: this version of the firmware compiles on v2.1.0 of the Apollo3 boards.
-  
+
   (At the time of writing, data logging with the the u-blox ZED-F9P is problematic when using v2.1.1 of the core.)
 
   v1.0 Power Consumption:
@@ -93,8 +93,10 @@
   (done) Add ICM-20948 DMP support. Requires v1.2.6 of the ICM-20948 library. DMP logging is limited to: Quat6 or Quat9, plus raw accel, gyro and compass. https://github.com/sparkfun/OpenLog_Artemis/issues/47
   (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library. https://github.com/sparkfun/OpenLog_Artemis/issues/34
   (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
-  (done) Add support for the Pulse Oximeter and Qwiic Button: https://github.com/sparkfun/OpenLog_Artemis/issues/81
-  
+  (done) Add support for the Pulse Oximeter: https://github.com/sparkfun/OpenLog_Artemis/issues/81
+  (done - but does not work) Add support for the Qwiic Button. The QB uses clock-stretching and the Artemis really doesn't enjoy that...
+  (done) Increase DMP data resolution to five decimal places https://github.com/sparkfun/OpenLog_Artemis/issues/90
+
   (in progress) Update to Apollo3 v2.1.1 - FIRMWARE_VERSION_MAJOR = 2.
   (done) Implement printf float (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
   (worked around) attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness - https://github.com/sparkfun/Arduino_Apollo3/issues/416
@@ -268,7 +270,7 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFun_SGP40_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_SGP40
 #include "SparkFun_SDP3x_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_SDP3x
 #include "MS5837.h" // Click here to download the library: https://github.com/sparkfunX/BlueRobotics_MS5837_Library
-#include "SparkFun_Qwiic_Button.h" // Click here to get the library: http://librarymanager/All#SparkFun_Qwiic_Button_Switch
+//#include "SparkFun_Qwiic_Button.h" // Click here to get the library: http://librarymanager/All#SparkFun_Qwiic_Button_Switch
 #include "SparkFun_Bio_Sensor_Hub_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Bio_Sensor
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -358,7 +360,7 @@ void setup() {
   qwiicPowerOnDelayMillis = worstCaseQwiicPowerOnDelay;
 
   EEPROM.init();
-  
+
   beginQwiic(); // Turn the qwiic power on as early as possible
 
   beginSD(); //285 - 293ms
@@ -453,7 +455,7 @@ void setup() {
     loadDeviceSettingsFromFile(); //Load config settings into node list
     configureQwiicDevices(); //Apply config settings to each device in the node list
     int deviceCount = printOnlineDevice(); // Pretty-print the online devices
-    
+
     if ((deviceCount == 0) && (settings.resetOnZeroDeviceCount == true)) // Check for resetOnZeroDeviceCount
     {
       if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (Serial1.available())))
@@ -486,7 +488,7 @@ void setup() {
 }
 
 void loop() {
-  
+
   checkBattery(); // Check for low battery
 
   if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (Serial1.available())))
@@ -497,7 +499,7 @@ void loop() {
     size_t timestampCharsLeftToWrite = strlen(serialTimestamp);
     //SerialPrintf2("timestampCharsLeftToWrite is %d\r\n", timestampCharsLeftToWrite);
     //SerialFlush();
-    
+
     if (Serial1.available() || (timestampCharsLeftToWrite > 0))
     {
       while (Serial1.available() || (timestampCharsLeftToWrite > 0))
@@ -505,7 +507,7 @@ void loop() {
         if (timestampCharsLeftToWrite > 0) // Based on code written by @DennisMelamed in PR #70
         {
           incomingBuffer[incomingBufferSpot++] = serialTimestamp[0]; // Add a timestamp character to incomingBuffer
-          
+
           for (size_t i = 0; i < timestampCharsLeftToWrite; i++)
           {
             serialTimestamp[i] = serialTimestamp[i+1]; // Shuffle the remaining chars along by one
@@ -526,7 +528,7 @@ void loop() {
             serialTimestamp[strlen(serialTimestamp) - 1] = 0x0A; // Change the final comma of the timestamp to a Line Feed
           }
         }
-        
+
         if (incomingBufferSpot == sizeof(incomingBuffer))
         {
           digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
@@ -732,7 +734,7 @@ uint32_t howLongToSleepFor(void)
   //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
 
   //goToSleep will automatically compensate for how long we have been awake
-  
+
   uint32_t msToSleep;
 
   if (checkSleepOnFastSlowPin())
@@ -762,7 +764,7 @@ uint32_t howLongToSleepFor(void)
   {
     msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL); // Sleep for usBetweenReadings
   }
-  
+
   uint32_t sysTicksToSleep;
   if (msToSleep < 131000)
   {
@@ -818,7 +820,7 @@ bool checkSleepOnRTCTime(void)
     {
       myRTC.getTime(); // Get the RTC time
       int minutesOfDay = (myRTC.hour * 60) + myRTC.minute;
-      
+
       if (settings.slowLoggingStartMOD > settings.slowLoggingStopMOD) // If slow logging starts later than the stop time (i.e. slow over midnight)
       {
         if ((minutesOfDay >= settings.slowLoggingStartMOD) || (minutesOfDay < settings.slowLoggingStopMOD))
@@ -963,7 +965,7 @@ void configureSerial1TxRx(void) // Configure pins 12 and 13 for UART1 TX and RX
   pinConfigRx.ePullup = AM_HAL_GPIO_PIN_PULLUP_WEAK; // Put a weak pull-up on the Rx pin
   pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
 }
-  
+
 void beginIMU()
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
@@ -1030,7 +1032,7 @@ void beginIMU()
     }
 
     bool success = true;
-      
+
     //Check if we are using the DMP
     if (settings.imuUseDMP == false)
     {
@@ -1040,7 +1042,7 @@ void beginIMU()
       {
         SerialPrintln(F("Error: Could not startup the IMU in non-DMP mode!"));
         success = false;
-      }  
+      }
       //Update the full scale and DLPF settings
       retval = myICM.enableDLPF(ICM_20948_Internal_Acc, settings.imuAccDLPF);
       if (retval != ICM_20948_Stat_Ok)

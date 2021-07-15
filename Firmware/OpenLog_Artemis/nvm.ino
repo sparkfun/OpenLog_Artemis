@@ -758,16 +758,16 @@ void recordDeviceSettingsToFile()
             settingsFile.print((String)base + "conversion="); settingsFile.println(nodeSetting->conversion);
           }
           break;
-        case DEVICE_QWIIC_BUTTON:
-          {
-            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
-            settingsFile.println((String)base + "log=" + nodeSetting->log);
-            settingsFile.println((String)base + "logPressed=" + nodeSetting->logPressed);
-            settingsFile.println((String)base + "logClicked=" + nodeSetting->logClicked);
-            settingsFile.println((String)base + "toggleLEDOnClick=" + nodeSetting->toggleLEDOnClick);
-            settingsFile.println((String)base + "ledBrightness=" + nodeSetting->ledBrightness);
-          }
-          break;
+//        case DEVICE_QWIIC_BUTTON:
+//          {
+//            struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+//            settingsFile.println((String)base + "log=" + nodeSetting->log);
+//            settingsFile.println((String)base + "logPressed=" + nodeSetting->logPressed);
+//            settingsFile.println((String)base + "logClicked=" + nodeSetting->logClicked);
+//            settingsFile.println((String)base + "toggleLEDOnClick=" + nodeSetting->toggleLEDOnClick);
+//            settingsFile.println((String)base + "ledBrightness=" + nodeSetting->ledBrightness);
+//          }
+//          break;
         case DEVICE_BIO_SENSOR_HUB:
           {
             struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr;
@@ -1367,23 +1367,23 @@ bool parseDeviceLine(char* str) {
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
-      case DEVICE_QWIIC_BUTTON:
-        {
-          struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
-          if (strcmp(deviceSettingName, "log") == 0)
-            nodeSetting->log = d;
-          else if (strcmp(deviceSettingName, "logPressed") == 0)
-            nodeSetting->logPressed = d;
-          else if (strcmp(deviceSettingName, "logClicked") == 0)
-            nodeSetting->logClicked = d;
-          else if (strcmp(deviceSettingName, "toggleLEDOnClick") == 0)
-            nodeSetting->toggleLEDOnClick = d;
-          else if (strcmp(deviceSettingName, "ledBrightness") == 0)
-            nodeSetting->ledBrightness = d;
-          else
-            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
-        }
-        break;
+//      case DEVICE_QWIIC_BUTTON:
+//        {
+//          struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+//          if (strcmp(deviceSettingName, "log") == 0)
+//            nodeSetting->log = d;
+//          else if (strcmp(deviceSettingName, "logPressed") == 0)
+//            nodeSetting->logPressed = d;
+//          else if (strcmp(deviceSettingName, "logClicked") == 0)
+//            nodeSetting->logClicked = d;
+//          else if (strcmp(deviceSettingName, "toggleLEDOnClick") == 0)
+//            nodeSetting->toggleLEDOnClick = d;
+//          else if (strcmp(deviceSettingName, "ledBrightness") == 0)
+//            nodeSetting->ledBrightness = d;
+//          else
+//            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+//        }
+//        break;
       case DEVICE_BIO_SENSOR_HUB:
         {
           struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
