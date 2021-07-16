@@ -97,16 +97,16 @@
   (done - but does not work) Add support for the Qwiic Button. The QB uses clock-stretching and the Artemis really doesn't enjoy that...
   (done) Increase DMP data resolution to five decimal places https://github.com/sparkfun/OpenLog_Artemis/issues/90
 
-  (in progress) Update to Apollo3 v2.1.1 - FIRMWARE_VERSION_MAJOR = 2.
+  (in progress) Update to Apollo3 v2.1.0 - FIRMWARE_VERSION_MAJOR = 2.
   (done) Implement printf float (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
-  (worked around) attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); causes badness - https://github.com/sparkfun/Arduino_Apollo3/issues/416
+  (worked around) attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); triggers an immediate interrupt - https://github.com/sparkfun/Arduino_Apollo3/issues/416
   (done) Add a setQwiicPullups function
   (done) Check if we need ap3_set_pin_to_analog when coming out of sleep
   (done) Investigate why code does not wake from deep sleep correctly
   (worked around) Correct SerialLog RX: https://github.com/sparkfun/Arduino_Apollo3/issues/401
     The work-around is to use Serial1 in place of serialLog and then to manually force UART1 to use pins 12 and 13
     We need a work-around anyway because if pins 12 or 13 have been used as analog inputs, Serial1.begin does not re-configure them for UART TX and RX
-  (in progress) Reduce sleep current as much as possible. v1.2.1 achieved ~110uA. With v2.1.1 the draw is more like 280uA...
+  (in progress) Reduce sleep current as much as possible. v1.2.1 achieved ~110uA. With v2.1.0 the draw is more like 260uA...
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -175,7 +175,7 @@ enum returnStatus {
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <Wire.h>
-TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9 - changed from (1) for Apollo3 v2
+TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //EEPROM for storing settings
@@ -187,7 +187,7 @@ TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9 - changed from (
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
 
-#include <SdFat.h> //SdFat v2.0.6 by Bill Greiman: http://librarymanager/All#SdFat_exFAT
+#include <SdFat.h> //SdFat v2.0.7 by Bill Greiman: http://librarymanager/All#SdFat_exFAT
 
 #define SD_FAT_TYPE 3 // SD_FAT_TYPE = 0 for SdFat/File, 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
