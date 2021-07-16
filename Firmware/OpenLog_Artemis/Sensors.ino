@@ -1,3 +1,65 @@
+void updateBLECharacteristic(int *theBLECharacteristic, char *theString)
+{
+  int bleCharacteristic = *theBLECharacteristic;
+  if (usingBLE)
+  {
+    if (bleCharacteristic < numBLECharacteristics)
+    {
+      if (bleCharacteristic == 0) bleCharacteristic00.setValue(theString);
+      if (bleCharacteristic == 1) bleCharacteristic01.setValue(theString);
+      if (bleCharacteristic == 2) bleCharacteristic02.setValue(theString);
+      if (bleCharacteristic == 3) bleCharacteristic03.setValue(theString);
+      if (bleCharacteristic == 4) bleCharacteristic04.setValue(theString);
+      if (bleCharacteristic == 5) bleCharacteristic05.setValue(theString);
+      if (bleCharacteristic == 6) bleCharacteristic06.setValue(theString);
+      if (bleCharacteristic == 7) bleCharacteristic07.setValue(theString);
+      if (bleCharacteristic == 8) bleCharacteristic08.setValue(theString);
+      if (bleCharacteristic == 9) bleCharacteristic09.setValue(theString);
+      if (bleCharacteristic == 10) bleCharacteristic10.setValue(theString);
+      if (bleCharacteristic == 11) bleCharacteristic11.setValue(theString);
+      if (bleCharacteristic == 12) bleCharacteristic12.setValue(theString);
+      if (bleCharacteristic == 13) bleCharacteristic13.setValue(theString);
+      if (bleCharacteristic == 14) bleCharacteristic14.setValue(theString);
+      if (bleCharacteristic == 15) bleCharacteristic15.setValue(theString);
+      if (bleCharacteristic == 16) bleCharacteristic16.setValue(theString);
+      if (bleCharacteristic == 17) bleCharacteristic17.setValue(theString);
+      if (bleCharacteristic == 18) bleCharacteristic18.setValue(theString);
+      if (bleCharacteristic == 19) bleCharacteristic19.setValue(theString);
+      if (bleCharacteristic == 20) bleCharacteristic20.setValue(theString);
+      if (bleCharacteristic == 21) bleCharacteristic21.setValue(theString);
+      if (bleCharacteristic == 22) bleCharacteristic22.setValue(theString);
+      if (bleCharacteristic == 23) bleCharacteristic23.setValue(theString);
+      if (bleCharacteristic == 24) bleCharacteristic24.setValue(theString);
+      if (bleCharacteristic == 25) bleCharacteristic25.setValue(theString);
+      if (bleCharacteristic == 26) bleCharacteristic26.setValue(theString);
+      if (bleCharacteristic == 27) bleCharacteristic27.setValue(theString);
+      if (bleCharacteristic == 28) bleCharacteristic28.setValue(theString);
+      if (bleCharacteristic == 29) bleCharacteristic29.setValue(theString);
+      if (bleCharacteristic == 30) bleCharacteristic30.setValue(theString);
+      if (bleCharacteristic == 31) bleCharacteristic31.setValue(theString);
+      if (bleCharacteristic == 32) bleCharacteristic32.setValue(theString);
+      if (bleCharacteristic == 33) bleCharacteristic33.setValue(theString);
+      if (bleCharacteristic == 34) bleCharacteristic34.setValue(theString);
+      if (bleCharacteristic == 35) bleCharacteristic35.setValue(theString);
+      if (bleCharacteristic == 36) bleCharacteristic36.setValue(theString);
+      if (bleCharacteristic == 37) bleCharacteristic37.setValue(theString);
+      if (bleCharacteristic == 38) bleCharacteristic38.setValue(theString);
+      if (bleCharacteristic == 39) bleCharacteristic39.setValue(theString);
+      if (bleCharacteristic == 40) bleCharacteristic40.setValue(theString);
+      if (bleCharacteristic == 41) bleCharacteristic41.setValue(theString);
+      if (bleCharacteristic == 42) bleCharacteristic42.setValue(theString);
+      if (bleCharacteristic == 43) bleCharacteristic43.setValue(theString);
+      if (bleCharacteristic == 44) bleCharacteristic44.setValue(theString);
+      if (bleCharacteristic == 45) bleCharacteristic45.setValue(theString);
+      if (bleCharacteristic == 46) bleCharacteristic46.setValue(theString);
+      if (bleCharacteristic == 47) bleCharacteristic47.setValue(theString);
+      if (bleCharacteristic == 48) bleCharacteristic48.setValue(theString);
+      if (bleCharacteristic == 49) bleCharacteristic49.setValue(theString);
+      *theBLECharacteristic = bleCharacteristic + 1;
+    }
+  }
+}
+
 //Query each enabled sensor for its most recent data
 void getData()
 {
@@ -9,6 +71,7 @@ void getData()
   char tempData2[16];
   char tempData3[16];
   outputData[0] = '\0'; //Clear string contents
+  int bleCharacteristic = 0;
 
   if (settings.logRTC)
   {
@@ -16,6 +79,7 @@ void getData()
     char timeString[37];
     getTimeString(timeString); // getTimeString is in timeStamp.ino
     strcat(outputData, timeString);
+    updateBLECharacteristic(&bleCharacteristic, timeString);
   }
 
   if (settings.logA11)
@@ -32,6 +96,7 @@ void getData()
       sprintf(tempData, "%d,", analog11);
 
     strcat(outputData, tempData);
+    updateBLECharacteristic(&bleCharacteristic, tempData);
   }
 
   if (settings.logA12)
@@ -48,6 +113,7 @@ void getData()
       sprintf(tempData, "%d,", analog12);
 
     strcat(outputData, tempData);
+    updateBLECharacteristic(&bleCharacteristic, tempData);
   }
 
   if (settings.logA13)
@@ -64,6 +130,7 @@ void getData()
       sprintf(tempData, "%d,", analog13);
 
     strcat(outputData, tempData);
+    updateBLECharacteristic(&bleCharacteristic, tempData);
   }
 
   if (settings.logA32)
@@ -80,6 +147,7 @@ void getData()
       sprintf(tempData, "%d,", analog32);
 
     strcat(outputData, tempData);
+    updateBLECharacteristic(&bleCharacteristic, tempData);
   }
 
   if (settings.logVIN)
@@ -88,6 +156,7 @@ void getData()
     olaftoa(voltage, tempData1, 2, sizeof(tempData1) / sizeof(char));
     sprintf(tempData, "%s,", tempData1);
     strcat(outputData, tempData);
+    updateBLECharacteristic(&bleCharacteristic, tempData);
   }
 
   if (online.IMU)
@@ -109,6 +178,9 @@ void getData()
           olaftoa(myICM.accZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
           sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
           strcat(outputData, tempData);
+          sprintf(tempData, "%s,", tempData1); updateBLECharacteristic(&bleCharacteristic, tempData);
+          sprintf(tempData, "%s,", tempData2); updateBLECharacteristic(&bleCharacteristic, tempData);
+          sprintf(tempData, "%s,", tempData3); updateBLECharacteristic(&bleCharacteristic, tempData);
         }
         if (settings.logIMUGyro)
         {
@@ -117,6 +189,9 @@ void getData()
           olaftoa(myICM.gyrZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
           sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
           strcat(outputData, tempData);
+          sprintf(tempData, "%s,", tempData1); updateBLECharacteristic(&bleCharacteristic, tempData);
+          sprintf(tempData, "%s,", tempData2); updateBLECharacteristic(&bleCharacteristic, tempData);
+          sprintf(tempData, "%s,", tempData3); updateBLECharacteristic(&bleCharacteristic, tempData);
         }
         if (settings.logIMUMag)
         {
@@ -125,12 +200,16 @@ void getData()
           olaftoa(myICM.magZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
           sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
           strcat(outputData, tempData);
+          sprintf(tempData, "%s,", tempData1); updateBLECharacteristic(&bleCharacteristic, tempData);
+          sprintf(tempData, "%s,", tempData2); updateBLECharacteristic(&bleCharacteristic, tempData);
+          sprintf(tempData, "%s,", tempData3); updateBLECharacteristic(&bleCharacteristic, tempData);
         }
         if (settings.logIMUTemp)
         {
           olaftoa(myICM.temp(), tempData1, 2, sizeof(tempData1) / sizeof(char));
           sprintf(tempData, "%s,", tempData1);
           strcat(outputData, tempData);
+          updateBLECharacteristic(&bleCharacteristic, tempData);
         }
       }
       //else
@@ -152,6 +231,9 @@ void getData()
         olaftoa(((double)dmpData.Quat6.Data.Q3) / 1073741824.0, tempData3, 5, sizeof(tempData3) / sizeof(char));
         sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
         strcat(outputData, tempData);
+        sprintf(tempData, "%s,", tempData1); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%s,", tempData2); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%s,", tempData3); updateBLECharacteristic(&bleCharacteristic, tempData);
       }
       if (settings.imuLogDMPQuat9)
       {
@@ -160,27 +242,40 @@ void getData()
         olaftoa(((double)dmpData.Quat9.Data.Q3) / 1073741824.0, tempData3, 5, sizeof(tempData3) / sizeof(char));
         sprintf(tempData, "%s,%s,%s,%d,", tempData1, tempData2, tempData3, dmpData.Quat9.Data.Accuracy);
         strcat(outputData, tempData);
+        sprintf(tempData, "%s,", tempData1); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%s,", tempData2); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%s,", tempData3); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%d,", dmpData.Quat9.Data.Accuracy); updateBLECharacteristic(&bleCharacteristic, tempData);
       }
       if (settings.imuLogDMPAccel)
       {
         sprintf(tempData, "%d,%d,%d,", dmpData.Raw_Accel.Data.X, dmpData.Raw_Accel.Data.Y, dmpData.Raw_Accel.Data.Z);
         strcat(outputData, tempData);
+        sprintf(tempData, "%d,", dmpData.Raw_Accel.Data.X); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%d,", dmpData.Raw_Accel.Data.Y); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%d,", dmpData.Raw_Accel.Data.Z); updateBLECharacteristic(&bleCharacteristic, tempData);
       }
       if (settings.imuLogDMPGyro)
       {
         sprintf(tempData, "%d,%d,%d,", dmpData.Raw_Gyro.Data.X, dmpData.Raw_Gyro.Data.Y, dmpData.Raw_Gyro.Data.Z);
         strcat(outputData, tempData);
+        sprintf(tempData, "%d,", dmpData.Raw_Gyro.Data.X); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%d,", dmpData.Raw_Gyro.Data.Y); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%d,", dmpData.Raw_Gyro.Data.Z); updateBLECharacteristic(&bleCharacteristic, tempData);
       }
       if (settings.imuLogDMPCpass)
       {
         sprintf(tempData, "%d,%d,%d,", dmpData.Compass.Data.X, dmpData.Compass.Data.Y, dmpData.Compass.Data.Z);
         strcat(outputData, tempData);
+        sprintf(tempData, "%d,", dmpData.Compass.Data.X); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%d,", dmpData.Compass.Data.Y); updateBLECharacteristic(&bleCharacteristic, tempData);
+        sprintf(tempData, "%d,", dmpData.Compass.Data.Z); updateBLECharacteristic(&bleCharacteristic, tempData);
       }
     }
   }
 
   //Append all external sensor data on linked list to outputData
-  gatherDeviceValues();
+  gatherDeviceValues(&bleCharacteristic);
 
   if (settings.logHertz)
   {
@@ -197,12 +292,14 @@ void getData()
     olaftoa(actualRate, tempData1, 3, sizeof(tempData) / sizeof(char));
     sprintf(tempData, "%s,", tempData1);
     strcat(outputData, tempData);
+    updateBLECharacteristic(&bleCharacteristic, tempData);
   }
 
   if (settings.printMeasurementCount)
   {
     sprintf(tempData, "%d,", measurementTotal);
     strcat(outputData, tempData);
+    updateBLECharacteristic(&bleCharacteristic, tempData);
   }
 
   strcat(outputData, "\r\n");
@@ -212,7 +309,7 @@ void getData()
 
 //Read values from the devices on the node list
 //Append values to outputData
-void gatherDeviceValues()
+void gatherDeviceValues(int *bleCharacteristic)
 {
   char tempData[100];
   char tempData1[20];
@@ -245,6 +342,7 @@ void gatherDeviceValues()
               olaftoa(currentWeight, tempData1, nodeSetting->decimalPlaces, sizeof(tempData) / sizeof(char));
               sprintf(tempData, "%s,", tempData1);
               strcat(outputData, tempData);
+              updateBLECharacteristic(bleCharacteristic, tempData);
             }
           }
           break;
@@ -259,16 +357,19 @@ void gatherDeviceValues()
               {
                 sprintf(tempData, "%d,", nodeDevice->getDistance());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logRangeStatus)
               {
                 sprintf(tempData, "%d,", nodeDevice->getRangeStatus());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logSignalRate)
               {
                 sprintf(tempData, "%d,", nodeDevice->getSignalRate());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -306,6 +407,7 @@ void gatherDeviceValues()
                 else
                   sprintf(tempData, "%s/%s/%s,", gnssDayStr, gnssMonthStr, gnssYearStr);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTime)
               {
@@ -342,56 +444,67 @@ void gatherDeviceValues()
 
                 sprintf(tempData, "%s:%s:%s.%s,", gnssHourStr, gnssMinStr, gnssSecStr, gnssMillisStr);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPosition)
               {
                 sprintf(tempData, "%d,%d,", nodeDevice->getLatitude(), nodeDevice->getLongitude());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logAltitude)
               {
                 sprintf(tempData, "%d,", nodeDevice->getAltitude());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logAltitudeMSL)
               {
                 sprintf(tempData, "%d,", nodeDevice->getAltitudeMSL());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logSIV)
               {
                 sprintf(tempData, "%d,", nodeDevice->getSIV());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logFixType)
               {
                 sprintf(tempData, "%d,", nodeDevice->getFixType());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logCarrierSolution)
               {
                 sprintf(tempData, "%d,", nodeDevice->getCarrierSolutionType());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logGroundSpeed)
               {
                 sprintf(tempData, "%d,", nodeDevice->getGroundSpeed());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logHeadingOfMotion)
               {
                 sprintf(tempData, "%d,", nodeDevice->getHeading());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logpDOP)
               {
                 sprintf(tempData, "%d,", nodeDevice->getPDOP());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logiTOW)
               {
                 sprintf(tempData, "%d,", nodeDevice->getTimeOfWeek());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
 
@@ -410,11 +523,13 @@ void gatherDeviceValues()
               {
                 sprintf(tempData, "%d,", nodeDevice->getProximity());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logAmbientLight)
               {
                 sprintf(tempData, "%d,", nodeDevice->getAmbient());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -431,6 +546,7 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->readTempC(), tempData1, 4, sizeof(tempData) / sizeof(char)); //Resolution to 0.0078°C, accuracy of 0.1°C
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -447,12 +563,14 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->getPressure(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTemperature)
               {
                 olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -468,12 +586,14 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->getPressure_hPa(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTemperature)
               {
                 olaftoa(nodeDevice->getTemperature_degC(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -489,24 +609,28 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->readFloatPressure(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logHumidity)
               {
                 olaftoa(nodeDevice->readFloatHumidity(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logAltitude)
               {
                 olaftoa(nodeDevice->readFloatAltitudeMeters(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTemperature)
               {
                 olaftoa(nodeDevice->readTempC(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -522,18 +646,21 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->uva(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logUVB)
               {
                 olaftoa(nodeDevice->uvb(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logUVIndex)
               {
                 olaftoa(nodeDevice->index(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -550,11 +677,13 @@ void gatherDeviceValues()
               {
                 sprintf(tempData, "%d,", nodeDevice->getTVOC());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logCO2)
               {
                 sprintf(tempData, "%d,", nodeDevice->getCO2());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -572,21 +701,25 @@ void gatherDeviceValues()
               {
                 sprintf(tempData, "%d,", nodeDevice->TVOC);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logCO2)
               {
                 sprintf(tempData, "%d,", nodeDevice->CO2);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logH2)
               {
                 sprintf(tempData, "%d,", nodeDevice->H2);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logEthanol)
               {
                 sprintf(tempData, "%d,", nodeDevice->ethanol);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -601,18 +734,21 @@ void gatherDeviceValues()
               {
                 sprintf(tempData, "%d,", nodeDevice->getCO2());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logHumidity)
               {
                 olaftoa(nodeDevice->getHumidity(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTemperature)
               {
                 olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -628,18 +764,21 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->getHumidity(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPressure)
               {
                 olaftoa(nodeDevice->getPressure(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTemperature)
               {
                 olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -655,12 +794,14 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->getThermocoupleTemp(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logAmbientTemperature)
               {
                 olaftoa(nodeDevice->getAmbientTemp(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -676,12 +817,14 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->getHumidity(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTemperature)
               {
                 olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -698,12 +841,14 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->toPercent(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTemperature)
               {
                 olaftoa(nodeDevice->toDegC(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -758,23 +903,27 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->readPT100Centigrade(), tempData1, 3, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logFahrenheit)
               {
                 olaftoa(nodeDevice->readPT100Fahrenheit(), tempData1, 3, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logInternalTemperature)
               {
                 olaftoa(nodeDevice->readInternalTemperature(), tempData1, 3, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logRawVoltage)
               {
                 sprintf(tempData, "%d,", nodeDevice->readRawVoltage());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -790,42 +939,49 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->readPressure(), tempData1, 4, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->usePA)
               {
                 olaftoa(nodeDevice->readPressure(PA), tempData1, 1, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->useKPA)
               {
                 olaftoa(nodeDevice->readPressure(KPA), tempData1, 4, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->useTORR)
               {
                 olaftoa(nodeDevice->readPressure(TORR), tempData1, 3, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->useINHG)
               {
                 olaftoa(nodeDevice->readPressure(INHG), tempData1, 4, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->useATM)
               {
                 olaftoa(nodeDevice->readPressure(ATM), tempData1, 6, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->useBAR)
               {
                 olaftoa(nodeDevice->readPressure(BAR), tempData1, 6, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -841,68 +997,81 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->getPM1_0(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPM25)
               {
                 olaftoa(nodeDevice->getPM2_5(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPM10)
               {
                 olaftoa(nodeDevice->getPM10(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPC05)
               {
                 sprintf(tempData, "%d,", nodeDevice->getPC0_5());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPC1)
               {
                 sprintf(tempData, "%d,", nodeDevice->getPC1_0());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPC25)
               {
                 sprintf(tempData, "%d,", nodeDevice->getPC2_5());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPC50)
               {
                 sprintf(tempData, "%d,", nodeDevice->getPC5_0());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPC75)
               {
                 sprintf(tempData, "%d,", nodeDevice->getPC7_5());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPC10)
               {
                 sprintf(tempData, "%d,", nodeDevice->getPC10());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logSensorStatus)
               {
                 sprintf(tempData, "%d,", nodeDevice->getStatusSensors());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logPDStatus)
               {
                 sprintf(tempData, "%d,", nodeDevice->getStatusPD());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logLDStatus)
               {
                 sprintf(tempData, "%d,", nodeDevice->getStatusLD());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logFanStatus)
               {
                 sprintf(tempData, "%d,", nodeDevice->getStatusFan());
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -917,6 +1086,7 @@ void gatherDeviceValues()
               {
                 sprintf(tempData, "%d,", nodeDevice->getVOCindex(nodeSetting->RH, nodeSetting->T));
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -939,12 +1109,14 @@ void gatherDeviceValues()
                 olaftoa(pressure, tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTemperature)
               {
                 olaftoa(temperature, tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -964,24 +1136,28 @@ void gatherDeviceValues()
                 olaftoa(nodeDevice->pressure(nodeSetting->conversion), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logTemperature)
               {
                 olaftoa(nodeDevice->temperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logDepth)
               {
                 olaftoa(nodeDevice->depth(), tempData1, 3, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logAltitude)
               {
                 olaftoa(nodeDevice->altitude(), tempData1, 2, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -1002,6 +1178,7 @@ void gatherDeviceValues()
                 olaftoa(((float)pressedPopped) / 1000.0, tempData1, 3, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
 
               long clickedPopped = 0;
@@ -1015,6 +1192,7 @@ void gatherDeviceValues()
                 olaftoa(((float)clickedPopped) / 1000.0, tempData1, 3, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
 
               if (nodeSetting->toggleLEDOnClick)
@@ -1025,6 +1203,7 @@ void gatherDeviceValues()
                   nodeDevice->LEDoff();
                 sprintf(tempData, "%d,", nodeSetting->ledState);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -1044,32 +1223,38 @@ void gatherDeviceValues()
               {
                 sprintf(tempData, "%d,", body.heartRate);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logConfidence)
               {
                 sprintf(tempData, "%d,", body.confidence);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logOxygen)
               {
                 sprintf(tempData, "%d,", body.oxygen);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logStatus)
               {
                 sprintf(tempData, "%d,", body.status);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logExtendedStatus)
               {
                 sprintf(tempData, "%d,", body.extStatus);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
               if (nodeSetting->logRValue)
               {
                 olaftoa(body.rValue, tempData1, 1, sizeof(tempData) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
+                updateBLECharacteristic(bleCharacteristic, tempData);
               }
             }
           }
@@ -1085,7 +1270,7 @@ void gatherDeviceValues()
 }
 
 //Step through the node list and print helper text for the enabled readings
-void printHelperText(bool terminalOnly)
+void printHelperText(bool terminalPrint, bool filePrint)
 {
   char helperText[1000];
   helperText[0] = '\0';
@@ -1093,53 +1278,104 @@ void printHelperText(bool terminalOnly)
   if (settings.logRTC)
   {
     if (settings.logDate)
+    {
       strcat(helperText, "rtcDate,");
+      if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+    }
     if (settings.logTime)
+    {
       strcat(helperText, "rtcTime,");
+      if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+    }
     if (settings.logMicroseconds)
+    {
       strcat(helperText, "micros,");
+      if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+    }
   }
 
   if (settings.logA11)
+  {
     strcat(helperText, "analog_11,");
+    if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+  }
 
   if (settings.logA12)
+  {
     strcat(helperText, "analog_12,");
+    if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+  }
 
   if (settings.logA13)
+  {
     strcat(helperText, "analog_13,");
+    if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+  }
 
   if (settings.logA32)
+  {
     strcat(helperText, "analog_32,");
+    if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+  }
 
   if (settings.logVIN)
+  {
     strcat(helperText, "VIN,");
+    if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+  }
 
   if (online.IMU)
   {
     if (settings.imuUseDMP == false)
     {
       if (settings.logIMUAccel)
+      {
         strcat(helperText, "aX,aY,aZ,");
+        if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics+=3;
+      }
       if (settings.logIMUGyro)
+      {
         strcat(helperText, "gX,gY,gZ,");
+        if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics+=3;
+      }
       if (settings.logIMUMag)
+      {
         strcat(helperText, "mX,mY,mZ,");
+        if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics+=3;
+      }
       if (settings.logIMUTemp)
+      {
         strcat(helperText, "imu_degC,");
+        if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+      }
     }
     else
     {
       if (settings.imuLogDMPQuat6)
+      {
         strcat(helperText, "Q6_1,Q6_2,Q6_3,");
+        if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics+=3;
+      }
       if (settings.imuLogDMPQuat9)
+      {
         strcat(helperText, "Q9_1,Q9_2,Q9_3,HeadAcc,");
+        if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics+=4;
+      }
       if (settings.imuLogDMPAccel)
+      {
         strcat(helperText, "RawAX,RawAY,RawAZ,");
+        if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics+=3;
+      }
       if (settings.imuLogDMPGyro)
+      {
         strcat(helperText, "RawGX,RawGY,RawGZ,");
+        if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics+=3;
+      }
       if (settings.imuLogDMPCpass)
+      {
         strcat(helperText, "RawMX,RawMY,RawMZ,");
+        if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics+=3;
+      }
     }
   }
 
@@ -1163,7 +1399,10 @@ void printHelperText(bool terminalOnly)
           {
             struct_NAU7802 *nodeSetting = (struct_NAU7802 *)temp->configPtr;
             if (nodeSetting->log)
+            {
               strcat(helperText, "weight(no unit),");
+              if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+            }
           }
           break;
         case DEVICE_DISTANCE_VL53L1X:
@@ -1172,11 +1411,20 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logDistance)
+              {
                 strcat(helperText, "distance_mm,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logRangeStatus)
+              {
                 strcat(helperText, "distance_rangeStatus(0=good),");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logSignalRate)
+              {
                 strcat(helperText, "distance_signalRate,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1186,29 +1434,65 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logDate)
+              {
                 strcat(helperText, "gps_Date,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTime)
+              {
                 strcat(helperText, "gps_Time,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPosition)
+              {
                 strcat(helperText, "gps_Lat,gps_Long,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logAltitude)
+              {
                 strcat(helperText, "gps_Alt,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logAltitudeMSL)
+              {
                 strcat(helperText, "gps_AltMSL,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logSIV)
+              {
                 strcat(helperText, "gps_SIV,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logFixType)
+              {
                 strcat(helperText, "gps_FixType,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logCarrierSolution)
+              {
                 strcat(helperText, "gps_CarrierSolution,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logGroundSpeed)
+              {
                 strcat(helperText, "gps_GroundSpeed,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logHeadingOfMotion)
+              {
                 strcat(helperText, "gps_Heading,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logpDOP)
+              {
                 strcat(helperText, "gps_pDOP,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logiTOW)
+              {
                 strcat(helperText, "gps_iTOW,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1218,9 +1502,15 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logProximity)
+              {
                 strcat(helperText, "prox(no unit),");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logAmbientLight)
+              {
                 strcat(helperText, "ambient_lux,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1230,7 +1520,10 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1240,9 +1533,15 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logPressure)
+              {
                 strcat(helperText, "pressure_hPa,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "temperature_degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1252,9 +1551,15 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logPressure)
+              {
                 strcat(helperText, "pressure_hPa,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "pressure_degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1264,13 +1569,25 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logPressure)
+              {
                 strcat(helperText, "pressure_Pa,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logHumidity)
+              {
                 strcat(helperText, "humidity_%,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logAltitude)
+              {
                 strcat(helperText, "altitude_m,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "temp_degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1280,11 +1597,20 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logUVA)
+              {
                 strcat(helperText, "uva,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logUVB)
+              {
                 strcat(helperText, "uvb,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logUVIndex)
+              {
                 strcat(helperText, "uvIndex,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1294,9 +1620,15 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logTVOC)
+              {
                 strcat(helperText, "tvoc_ppb,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logCO2)
+              {
                 strcat(helperText, "co2_ppm,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1306,13 +1638,25 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logTVOC)
+              {
                 strcat(helperText, "tvoc_ppb,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logCO2)
+              {
                 strcat(helperText, "co2_ppm,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logH2)
+              {
                 strcat(helperText, "H2,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logEthanol)
+              {
                 strcat(helperText, "ethanol,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1322,11 +1666,20 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logCO2)
+              {
                 strcat(helperText, "co2_ppm,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logHumidity)
+              {
                 strcat(helperText, "humidity_%,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1336,11 +1689,21 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logHumidity)
+              {
                 strcat(helperText, "humidity_%,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPressure)
+              {
                 strcat(helperText, "hPa,");
+                
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1350,9 +1713,15 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "thermo_degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logAmbientTemperature)
+              {
                 strcat(helperText, "thermo_ambientDegC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1362,9 +1731,15 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logHumidity)
+              {
                 strcat(helperText, "humidity_%,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1374,9 +1749,15 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logHumidity)
+              {
                 strcat(helperText, "humidity_%,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1386,13 +1767,25 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logCentigrade)
+              {
                 strcat(helperText, "degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logFahrenheit)
+              {
                 strcat(helperText, "degF,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logInternalTemperature)
+              {
                 strcat(helperText, "degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logRawVoltage)
+              {
                 strcat(helperText, "V*2.048/2^23,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1402,19 +1795,40 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->usePSI)
+              {
                 strcat(helperText, "PSI,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->usePA)
+              {
                 strcat(helperText, "Pa,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->useKPA)
+              {
                 strcat(helperText, "kPa,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->useTORR)
+              {
                 strcat(helperText, "torr,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->useINHG)
+              {
                 strcat(helperText, "inHg,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->useATM)
+              {
                 strcat(helperText, "atm,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->useBAR)
+              {
                 strcat(helperText, "bar,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1424,31 +1838,70 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logPM1)
+              {
                 strcat(helperText, "PM1_0,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPM25)
+              {
                 strcat(helperText, "PM2_5,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPM10)
+              {
                 strcat(helperText, "PM10,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPC05)
+              {
                 strcat(helperText, "PC0_5,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPC1)
+              {
                 strcat(helperText, "PC1_0,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPC25)
+              {
                 strcat(helperText, "PC2_5,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPC50)
+              {
                 strcat(helperText, "PC5_0,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPC75)
+              {
                 strcat(helperText, "PC7_5,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPC10)
+              {
                 strcat(helperText, "PC10,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logSensorStatus)
+              {
                 strcat(helperText, "Sensors,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logPDStatus)
+              {
                 strcat(helperText, "PD,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logLDStatus)
+              {
                 strcat(helperText, "LD,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logFanStatus)
+              {
                 strcat(helperText, "Fan,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1458,7 +1911,10 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logVOC)
+              {
                 strcat(helperText, "VOCindex,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1468,9 +1924,15 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logPressure)
+              {
                 strcat(helperText, "Pa,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1480,13 +1942,25 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logPressure)
+              {
                 strcat(helperText, "mbar,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logTemperature)
+              {
                 strcat(helperText, "degC,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logDepth)
+              {
                 strcat(helperText, "depth_m,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logAltitude)
+              {
                 strcat(helperText, "alt_m,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1496,11 +1970,20 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logPressed)
+              {
                 strcat(helperText, "pressS,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logClicked)
+              {
                 strcat(helperText, "clickS,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->toggleLEDOnClick)
+              {
                 strcat(helperText, "LED,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1510,17 +1993,35 @@ void printHelperText(bool terminalOnly)
             if (nodeSetting->log)
             {
               if (nodeSetting->logHeartrate)
+              {
                 strcat(helperText, "bpm,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logConfidence)
+              {
                 strcat(helperText, "conf%,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logOxygen)
+              {
                 strcat(helperText, "O2%,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logStatus)
+              {
                 strcat(helperText, "stat,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logExtendedStatus)
+              {
                 strcat(helperText, "eStat,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
               if (nodeSetting->logRValue)
+              {
                 strcat(helperText, "O2R,");
+                if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+              }
             }
           }
           break;
@@ -1533,15 +2034,22 @@ void printHelperText(bool terminalOnly)
   }
 
   if (settings.logHertz)
+  {
     strcat(helperText, "output_Hz,");
+    if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+  }
 
   if (settings.printMeasurementCount)
+  {
     strcat(helperText, "count,");
+    if (numBLECharacteristics < kMaxCharacteristics) numBLECharacteristics++;
+  }
 
   strcat(helperText, "\r\n");
 
-  SerialPrint(helperText);
-  if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
+  if (terminalPrint)
+    SerialPrint(helperText);
+  if ((filePrint) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
     sensorDataFile.print(helperText);
 }
 

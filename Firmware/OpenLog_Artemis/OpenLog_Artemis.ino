@@ -107,10 +107,13 @@
     The work-around is to use Serial1 in place of serialLog and then to manually force UART1 to use pins 12 and 13
     We need a work-around anyway because if pins 12 or 13 have been used as analog inputs, Serial1.begin does not re-configure them for UART TX and RX
   (in progress) Reduce sleep current as much as possible. v1.2.1 achieved ~110uA. With v2.1.0 the draw is more like 260uA...
+
+  v2.1:
+  (in progress) Add BLE service and characteristics
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 0;
+const int FIRMWARE_VERSION_MINOR = 1;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -297,6 +300,7 @@ const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low
 volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger interrupt has been seen
 char serialTimestamp[40]; //Buffer to store serial timestamp, if needed
 volatile static bool powerLossSeen = false; //Flag to indicate if a power loss event has been seen
+bool usingBLE = false; //Flag to indicate if BLE is in use
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL = false); // Header
@@ -322,6 +326,129 @@ Stream *ZSERIAL;
 
 // Serial output for debugging info for Zmodem
 Stream *DSERIAL;
+
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+//BLE Support
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#include <ArduinoBLE.h>
+
+// See the following for generating UUIDs:
+// https://www.uuidgenerator.net/
+
+#define kTargetServiceUUID    "2488bd28-b1df-4fe0-8611-22fda7c645f0"
+#define kTargetServiceName    "OpenLog Artemis"
+
+#define kMaxCharacteristics   50
+
+#define kCharacteristicUUID00 "19829bd6-5ec8-4623-90c1-2e7094653cc9"
+#define kCharacteristicUUID01 "1e182bb7-f3fd-4240-bc91-aabb9436c0b7"
+#define kCharacteristicUUID02 "3198a4f7-e0da-4ec0-aafe-d978201bdcaa"
+#define kCharacteristicUUID03 "4a3c7e31-deae-43ed-90a3-01a71c7ad28b"
+#define kCharacteristicUUID04 "5c697a4f-7590-47cb-9b90-90d7732a7529"
+#define kCharacteristicUUID05 "21680407-7051-434a-8fb5-362ea1c01916"
+#define kCharacteristicUUID06 "53acd7ae-09f2-4015-9bfc-092342c68b1d"
+#define kCharacteristicUUID07 "7838e6fa-b9da-4221-985b-12116226cacf"
+#define kCharacteristicUUID08 "5b7e835d-fe02-48c3-9ba5-748ce472091e"
+#define kCharacteristicUUID09 "1934c672-d676-4b6f-92f8-1a144bc22155"
+#define kCharacteristicUUID10 "4a00713a-5a15-445f-9c8e-24b80ca99a64"
+#define kCharacteristicUUID11 "ff943f44-547d-4533-9368-e8b3ef077a78"
+#define kCharacteristicUUID12 "1bb82b3c-3d26-46f7-b897-edd5cc58d67d"
+#define kCharacteristicUUID13 "a09f1db3-6031-427a-a72b-37f352591f88"
+#define kCharacteristicUUID14 "492ff514-066a-467b-b104-83138aa66a9c"
+#define kCharacteristicUUID15 "b03e30a0-f6af-47fd-b393-29e64a814f54"
+#define kCharacteristicUUID16 "2a286649-ba85-46eb-9305-1e6e23b0dd55"
+#define kCharacteristicUUID17 "ca16dc92-3818-466c-a3da-145d8be3b321"
+#define kCharacteristicUUID18 "cc4d8218-e374-40d4-a898-5c23ffe5902e"
+#define kCharacteristicUUID19 "313e22de-f2cf-4c34-9f40-f52c98c48336"
+#define kCharacteristicUUID20 "ede60308-c96e-4215-8fc5-dce0b8b8b927"
+#define kCharacteristicUUID21 "e318dbfd-ca5e-4aef-a57c-00d2481b597b"
+#define kCharacteristicUUID22 "8ec7604b-c40e-452e-a529-1a2d63dc3b5d"
+#define kCharacteristicUUID23 "7c4baad4-b9a7-411d-af6d-15cbbc9141ec"
+#define kCharacteristicUUID24 "79259096-16f4-4fc3-892f-ee49f157e006"
+#define kCharacteristicUUID25 "6fe3cbaf-76fa-4156-b8ef-577f6800e37a"
+#define kCharacteristicUUID26 "e8c2eb69-90e3-472f-ad99-a83ff56314dc"
+#define kCharacteristicUUID27 "c7b2940c-b79a-4dff-bc19-bb2f5def8c0f"
+#define kCharacteristicUUID28 "ba5325ae-ac70-4183-b68a-a182dc3a8274"
+#define kCharacteristicUUID29 "a2806d24-1084-4c9f-b411-a5b98225d74f"
+#define kCharacteristicUUID30 "883ff678-a5a6-4f4f-84e7-0d73c650b16b"
+#define kCharacteristicUUID31 "ac06c415-824a-49e4-9010-7bfecdd4a46f"
+#define kCharacteristicUUID32 "02b6989e-0e98-476e-90fa-f5b6b75c2bc8"
+#define kCharacteristicUUID33 "252994d6-c986-4088-81e1-fef9b4838cf4"
+#define kCharacteristicUUID34 "3bc99052-d8b3-49a7-9fae-5e1355e90ff6"
+#define kCharacteristicUUID35 "8ac2d6cf-4a1a-430b-9114-4c3471e079ac"
+#define kCharacteristicUUID36 "a0ba08b1-597c-41d7-8fac-036376cb5831"
+#define kCharacteristicUUID37 "f8bc6eb3-3537-45ce-ad3e-0934039b60ac"
+#define kCharacteristicUUID38 "5f417941-784d-4c6e-aeb0-7d7879f1cc24"
+#define kCharacteristicUUID39 "84203f2e-242d-4e2e-9161-13404b4caed4"
+#define kCharacteristicUUID40 "e2f40654-85da-4bba-83cd-5542e8cc7684"
+#define kCharacteristicUUID41 "312aa6b1-fd93-4915-b8aa-6164c513b2cd"
+#define kCharacteristicUUID42 "fa0f1903-a681-46e9-b0d4-7ca41fcd5105"
+#define kCharacteristicUUID43 "3b6aba88-dc1f-4181-8419-074a2435a6da"
+#define kCharacteristicUUID44 "49d41d09-2e3e-4527-825e-204fa5bace4c"
+#define kCharacteristicUUID45 "8b2298e6-d49b-4461-883d-c35943838726"
+#define kCharacteristicUUID46 "0728e304-2f04-406d-bb76-35a7cf377233"
+#define kCharacteristicUUID47 "0a4ede58-7a90-4961-ad0e-4ca642030810"
+#define kCharacteristicUUID48 "8a3e3003-dd0f-4ea4-916e-871cc3a213a0"
+#define kCharacteristicUUID49 "508a72cd-6598-4468-9b76-69840a842c4f"
+
+// helper for message limits
+#define kMessageMax 50
+
+BLEService bleService(kTargetServiceUUID);
+BLEStringCharacteristic bleCharacteristic00(kCharacteristicUUID00, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic01(kCharacteristicUUID01, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic02(kCharacteristicUUID02, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic03(kCharacteristicUUID03, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic04(kCharacteristicUUID04, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic05(kCharacteristicUUID05, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic06(kCharacteristicUUID06, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic07(kCharacteristicUUID07, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic08(kCharacteristicUUID08, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic09(kCharacteristicUUID09, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic10(kCharacteristicUUID10, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic11(kCharacteristicUUID11, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic12(kCharacteristicUUID12, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic13(kCharacteristicUUID13, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic14(kCharacteristicUUID14, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic15(kCharacteristicUUID15, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic16(kCharacteristicUUID16, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic17(kCharacteristicUUID17, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic18(kCharacteristicUUID18, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic19(kCharacteristicUUID19, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic20(kCharacteristicUUID20, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic21(kCharacteristicUUID21, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic22(kCharacteristicUUID22, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic23(kCharacteristicUUID23, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic24(kCharacteristicUUID24, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic25(kCharacteristicUUID25, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic26(kCharacteristicUUID26, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic27(kCharacteristicUUID27, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic28(kCharacteristicUUID28, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic29(kCharacteristicUUID29, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic30(kCharacteristicUUID30, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic31(kCharacteristicUUID31, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic32(kCharacteristicUUID32, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic33(kCharacteristicUUID33, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic34(kCharacteristicUUID34, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic35(kCharacteristicUUID35, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic36(kCharacteristicUUID36, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic37(kCharacteristicUUID37, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic38(kCharacteristicUUID38, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic39(kCharacteristicUUID39, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic40(kCharacteristicUUID40, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic41(kCharacteristicUUID41, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic42(kCharacteristicUUID42, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic43(kCharacteristicUUID43, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic44(kCharacteristicUUID44, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic45(kCharacteristicUUID45, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic46(kCharacteristicUUID46, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic47(kCharacteristicUUID47, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic48(kCharacteristicUUID48, BLERead | BLENotify, kMessageMax);
+BLEStringCharacteristic bleCharacteristic49(kCharacteristicUUID49, BLERead | BLENotify, kMessageMax);
+
+int numBLECharacteristics = 0;
+char bleCharacteristicsValues[kMaxCharacteristics][kMessageMax];
 
 void setup() {
   //If 3.3V rail drops below 3V, system will power down and maintain RTC
@@ -420,6 +547,12 @@ void setup() {
 
   analogReadResolution(14); //Increase from default of 10
 
+  if (settings.useBLE)
+  {
+    for (int i = 0; i < kMaxCharacteristics; i++)
+      bleCharacteristicsValues[i][0] = 0; //Clear the BLE characteristics values
+  }
+
   beginDataLogging(); //180ms
   lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
 
@@ -471,7 +604,139 @@ void setup() {
   else
     SerialPrintln(F("No Qwiic devices detected"));
 
-  if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+  if (settings.showHelperText == true)
+    printHelperText(true, true); //printHelperText to terminal and file
+  else
+    printHelperText(false, false); //call printHelperText to generate the number of characteristics
+
+  if (settings.useBLE)
+  {
+    SerialPrintln(F("Starting BLE..."));
+
+    if (!BLE.begin())
+    {
+      SerialPrintln(F("BLE.begin failed!"));
+    }
+    else
+    {
+      BLE.setLocalName(kTargetServiceName);
+      BLE.setDeviceName(kTargetServiceName);
+      BLE.setAdvertisedService(bleService); //Add the service UUID
+      
+      printDebug("Adding " + (String)numBLECharacteristics + " BLE Characteristics\r\n");
+      for (int i = 0; i < numBLECharacteristics; i++) //Add the characteristics
+      {
+        if (i == 0) bleService.addCharacteristic(bleCharacteristic00);
+        if (i == 1) bleService.addCharacteristic(bleCharacteristic01);
+        if (i == 2) bleService.addCharacteristic(bleCharacteristic02);
+        if (i == 3) bleService.addCharacteristic(bleCharacteristic03);
+        if (i == 4) bleService.addCharacteristic(bleCharacteristic04);
+        if (i == 5) bleService.addCharacteristic(bleCharacteristic05);
+        if (i == 6) bleService.addCharacteristic(bleCharacteristic06);
+        if (i == 7) bleService.addCharacteristic(bleCharacteristic07);
+        if (i == 8) bleService.addCharacteristic(bleCharacteristic08);
+        if (i == 9) bleService.addCharacteristic(bleCharacteristic09);
+        if (i == 10) bleService.addCharacteristic(bleCharacteristic10);
+        if (i == 11) bleService.addCharacteristic(bleCharacteristic11);
+        if (i == 12) bleService.addCharacteristic(bleCharacteristic12);
+        if (i == 13) bleService.addCharacteristic(bleCharacteristic13);
+        if (i == 14) bleService.addCharacteristic(bleCharacteristic14);
+        if (i == 15) bleService.addCharacteristic(bleCharacteristic15);
+        if (i == 16) bleService.addCharacteristic(bleCharacteristic16);
+        if (i == 17) bleService.addCharacteristic(bleCharacteristic17);
+        if (i == 18) bleService.addCharacteristic(bleCharacteristic18);
+        if (i == 19) bleService.addCharacteristic(bleCharacteristic19);
+        if (i == 20) bleService.addCharacteristic(bleCharacteristic20);
+        if (i == 21) bleService.addCharacteristic(bleCharacteristic21);
+        if (i == 22) bleService.addCharacteristic(bleCharacteristic22);
+        if (i == 23) bleService.addCharacteristic(bleCharacteristic23);
+        if (i == 24) bleService.addCharacteristic(bleCharacteristic24);
+        if (i == 25) bleService.addCharacteristic(bleCharacteristic25);
+        if (i == 26) bleService.addCharacteristic(bleCharacteristic26);
+        if (i == 27) bleService.addCharacteristic(bleCharacteristic27);
+        if (i == 28) bleService.addCharacteristic(bleCharacteristic28);
+        if (i == 29) bleService.addCharacteristic(bleCharacteristic29);
+        if (i == 30) bleService.addCharacteristic(bleCharacteristic30);
+        if (i == 31) bleService.addCharacteristic(bleCharacteristic31);
+        if (i == 32) bleService.addCharacteristic(bleCharacteristic32);
+        if (i == 33) bleService.addCharacteristic(bleCharacteristic33);
+        if (i == 34) bleService.addCharacteristic(bleCharacteristic34);
+        if (i == 35) bleService.addCharacteristic(bleCharacteristic35);
+        if (i == 36) bleService.addCharacteristic(bleCharacteristic36);
+        if (i == 37) bleService.addCharacteristic(bleCharacteristic37);
+        if (i == 38) bleService.addCharacteristic(bleCharacteristic38);
+        if (i == 39) bleService.addCharacteristic(bleCharacteristic39);
+        if (i == 40) bleService.addCharacteristic(bleCharacteristic40);
+        if (i == 41) bleService.addCharacteristic(bleCharacteristic41);
+        if (i == 42) bleService.addCharacteristic(bleCharacteristic42);
+        if (i == 43) bleService.addCharacteristic(bleCharacteristic43);
+        if (i == 44) bleService.addCharacteristic(bleCharacteristic44);
+        if (i == 45) bleService.addCharacteristic(bleCharacteristic45);
+        if (i == 46) bleService.addCharacteristic(bleCharacteristic46);
+        if (i == 47) bleService.addCharacteristic(bleCharacteristic47);
+        if (i == 48) bleService.addCharacteristic(bleCharacteristic48);
+        if (i == 49) bleService.addCharacteristic(bleCharacteristic49);
+      }
+      
+      BLE.addService(bleService); //Add the service
+      
+      for (int i = 0; i < numBLECharacteristics; i++) //Set the initial values to "NULL"
+      {
+        if (i == 0) bleCharacteristic00.setValue("NULL");
+        if (i == 1) bleCharacteristic01.setValue("NULL");
+        if (i == 2) bleCharacteristic02.setValue("NULL");
+        if (i == 3) bleCharacteristic03.setValue("NULL");
+        if (i == 4) bleCharacteristic04.setValue("NULL");
+        if (i == 5) bleCharacteristic05.setValue("NULL");
+        if (i == 6) bleCharacteristic06.setValue("NULL");
+        if (i == 7) bleCharacteristic07.setValue("NULL");
+        if (i == 8) bleCharacteristic08.setValue("NULL");
+        if (i == 9) bleCharacteristic09.setValue("NULL");
+        if (i == 10) bleCharacteristic10.setValue("NULL");
+        if (i == 11) bleCharacteristic11.setValue("NULL");
+        if (i == 12) bleCharacteristic12.setValue("NULL");
+        if (i == 13) bleCharacteristic13.setValue("NULL");
+        if (i == 14) bleCharacteristic14.setValue("NULL");
+        if (i == 15) bleCharacteristic15.setValue("NULL");
+        if (i == 16) bleCharacteristic16.setValue("NULL");
+        if (i == 17) bleCharacteristic17.setValue("NULL");
+        if (i == 18) bleCharacteristic18.setValue("NULL");
+        if (i == 19) bleCharacteristic19.setValue("NULL");
+        if (i == 20) bleCharacteristic20.setValue("NULL");
+        if (i == 21) bleCharacteristic21.setValue("NULL");
+        if (i == 22) bleCharacteristic22.setValue("NULL");
+        if (i == 23) bleCharacteristic23.setValue("NULL");
+        if (i == 24) bleCharacteristic24.setValue("NULL");
+        if (i == 25) bleCharacteristic25.setValue("NULL");
+        if (i == 26) bleCharacteristic26.setValue("NULL");
+        if (i == 27) bleCharacteristic27.setValue("NULL");
+        if (i == 28) bleCharacteristic28.setValue("NULL");
+        if (i == 29) bleCharacteristic29.setValue("NULL");
+        if (i == 30) bleCharacteristic30.setValue("NULL");
+        if (i == 31) bleCharacteristic31.setValue("NULL");
+        if (i == 32) bleCharacteristic32.setValue("NULL");
+        if (i == 33) bleCharacteristic33.setValue("NULL");
+        if (i == 34) bleCharacteristic34.setValue("NULL");
+        if (i == 35) bleCharacteristic35.setValue("NULL");
+        if (i == 36) bleCharacteristic36.setValue("NULL");
+        if (i == 37) bleCharacteristic37.setValue("NULL");
+        if (i == 38) bleCharacteristic38.setValue("NULL");
+        if (i == 39) bleCharacteristic39.setValue("NULL");
+        if (i == 40) bleCharacteristic40.setValue("NULL");
+        if (i == 41) bleCharacteristic41.setValue("NULL");
+        if (i == 42) bleCharacteristic42.setValue("NULL");
+        if (i == 43) bleCharacteristic43.setValue("NULL");
+        if (i == 44) bleCharacteristic44.setValue("NULL");
+        if (i == 45) bleCharacteristic45.setValue("NULL");
+        if (i == 46) bleCharacteristic46.setValue("NULL");
+        if (i == 47) bleCharacteristic47.setValue("NULL");
+        if (i == 48) bleCharacteristic48.setValue("NULL");
+        if (i == 49) bleCharacteristic49.setValue("NULL");
+      }
+      BLE.advertise(); //Start advertising
+      usingBLE = true;
+    }
+  }
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
@@ -490,6 +755,9 @@ void setup() {
 void loop() {
 
   checkBattery(); // Check for low battery
+
+  if (usingBLE)
+    BLEDevice central = BLE.central();
 
   if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (Serial1.available())))
     menuMain(); //Present user menu
@@ -678,7 +946,7 @@ void loop() {
             sensorDataFile.close();
             strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
             beginDataLogging(); //180ms
-            if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+            if (settings.showHelperText == true) printHelperText(false, true); //printHelperText to sensor file
           }
           if (online.serialLogging == true)
           {

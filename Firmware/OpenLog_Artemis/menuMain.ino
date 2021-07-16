@@ -23,6 +23,12 @@ void menuMain()
 
     SerialPrintln(F("7) Configure Power Options"));
 
+    SerialPrint(F("b) BLE: "));
+    if (settings.useBLE)
+      SerialPrintln(F("Enabled"));
+    else
+      SerialPrintln(F("Disabled"));
+
     SerialPrintln(F("h) Print Sensor Helper Text (and return to logging)"));
 
     if (settings.enableSD && online.microSD)
@@ -52,9 +58,19 @@ void menuMain()
       menuAttachedDevices();
     else if (incoming == '7')
       menuPower();
+    else if (incoming == 'b')
+    {
+      settings.useBLE ^= 1;
+      SerialPrintln(F(""));
+      if (settings.useBLE)
+        SerialPrintln(F("BLE is enabled. This will take effect when the OLA is reset."));
+      else
+        SerialPrintln(F("BLE is disabled. This will take effect when the OLA is reset."));
+      SerialPrintln(F(""));
+    }
     else if (incoming == 'h')
     {
-      printHelperText(true); //printHelperText to terminal only
+      printHelperText(true, false); //printHelperText to terminal only
       break; //return to logging
     }
     else if (incoming == 'd')
@@ -87,7 +103,7 @@ void menuMain()
         {
           strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
           beginDataLogging(); //180ms
-          if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+          if (settings.showHelperText == true) printHelperText(false, true); //printHelperText to sensor file
         }
         if (online.serialLogging == true)
         {

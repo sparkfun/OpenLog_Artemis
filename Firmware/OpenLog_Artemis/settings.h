@@ -425,6 +425,7 @@ struct struct_settings {
   bool identifyBioSensorHubs = false; // If true, Bio Sensor Hubs (Pulse Oximeters) will be included in autoDetect (requires exclusive use of pins 32 and 11)
   bool serialTxRxDuringSleep = false; // If true, the Serial Tx and Rx pins are left enabled during sleep - to prevent the COM port reinitializing
   bool printGNSSDebugMessages = false;
+  bool useBLE = false;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

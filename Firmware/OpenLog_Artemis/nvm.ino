@@ -182,6 +182,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("identifyBioSensorHubs=" + (String)settings.identifyBioSensorHubs);
     settingsFile.println("serialTxRxDuringSleep=" + (String)settings.serialTxRxDuringSleep);
     settingsFile.println("printGNSSDebugMessages=" + (String)settings.printGNSSDebugMessages);
+    settingsFile.println("useBLE=" + (String)settings.useBLE);
     updateDataFileAccess(&settingsFile); // Update the file access time & date
     settingsFile.close();
   }
@@ -463,6 +464,8 @@ bool parseLine(char* str) {
     settings.serialTxRxDuringSleep = d;
   else if (strcmp(settingName, "printGNSSDebugMessages") == 0)
     settings.printGNSSDebugMessages = d;
+  else if (strcmp(settingName, "useBLE") == 0)
+    settings.useBLE = d;
   else
     {
       SerialPrintf2("Unknown setting %s. Ignoring...\r\n", settingName);
