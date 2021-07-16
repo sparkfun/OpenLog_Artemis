@@ -11,10 +11,11 @@
   This firmware runs the OpenLog Artemis. A large variety of system settings can be
   adjusted by connecting at 115200bps.
 
-  The Board should be set to SparkFun Apollo3 \ SparkFun RedBoard Artemis ATP.
+  The Board should be set to SparkFun Apollo3 \ RedBoard Artemis ATP.
 
-  Please note: this firmware currently only compiles on v1.2.1 of the Apollo3 boards.
-  It does not yet work with the new Mbed version (v2.0) of the core.
+  Please note: this version of the firmware compiles on v2.1.0 of the Apollo3 boards.
+
+  (At the time of writing, data logging with the the u-blox ZED-F9P is problematic when using v2.1.1 of the core.)
 
   v1.0 Power Consumption:
    Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
@@ -93,12 +94,23 @@
   (done) Add support for exFAT. Requires v2.0.6 of Bill Greiman's SdFat library. https://github.com/sparkfun/OpenLog_Artemis/issues/34
   (done) Add minimum awake time: https://github.com/sparkfun/OpenLog_Artemis/issues/83
   (done) Add support for the Pulse Oximeter: https://github.com/sparkfun/OpenLog_Artemis/issues/81
-  (won't do?) Add support for the Qwiic Button. The QB uses clock-stretching and the Artemis really doesn't enjoy that...
+  (done - but does not work) Add support for the Qwiic Button. The QB uses clock-stretching and the Artemis really doesn't enjoy that...
   (done) Increase DMP data resolution to five decimal places https://github.com/sparkfun/OpenLog_Artemis/issues/90
+
+  (in progress) Update to Apollo3 v2.1.0 - FIRMWARE_VERSION_MAJOR = 2.
+  (done) Implement printf float (OLA uses printf float in _so_ many places...): https://github.com/sparkfun/Arduino_Apollo3/issues/278
+  (worked around) attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); triggers an immediate interrupt - https://github.com/sparkfun/Arduino_Apollo3/issues/416
+  (done) Add a setQwiicPullups function
+  (done) Check if we need ap3_set_pin_to_analog when coming out of sleep
+  (done) Investigate why code does not wake from deep sleep correctly
+  (worked around) Correct SerialLog RX: https://github.com/sparkfun/Arduino_Apollo3/issues/401
+    The work-around is to use Serial1 in place of serialLog and then to manually force UART1 to use pins 12 and 13
+    We need a work-around anyway because if pins 12 or 13 have been used as analog inputs, Serial1.begin does not re-configure them for UART TX and RX
+  (in progress) Reduce sleep current as much as possible. v1.2.1 achieved ~110uA. With v2.1.0 the draw is more like 260uA...
 */
 
-const int FIRMWARE_VERSION_MAJOR = 1;
-const int FIRMWARE_VERSION_MINOR = 12;
+const int FIRMWARE_VERSION_MAJOR = 2;
+const int FIRMWARE_VERSION_MINOR = 0;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -108,7 +120,7 @@ const int FIRMWARE_VERSION_MINOR = 12;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x11B // Stored as 283 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x120 // Stored as 288 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -146,6 +158,10 @@ const byte PIN_TRIGGER = 11;
 const byte PIN_QWIIC_SCL = 8;
 const byte PIN_QWIIC_SDA = 9;
 
+const byte PIN_SPI_SCK = 5;
+const byte PIN_SPI_CIPO = 6;
+const byte PIN_SPI_COPI = 7;
+
 // Include this many extra bytes when starting a mux - to try and avoid the slippery mux bug
 // This should be 0 but 3 or 7 seem to work better depending on which way the wind is blowing.
 const byte EXTRA_MUX_STARTUP_BYTES = 3;
@@ -159,7 +175,7 @@ enum returnStatus {
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <Wire.h>
-TwoWire qwiic(1); //Will use pads 8/9
+TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //EEPROM for storing settings
@@ -171,7 +187,7 @@ TwoWire qwiic(1); //Will use pads 8/9
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
 
-#include <SdFat.h> //SdFat v2.0.6 by Bill Greiman: http://librarymanager/All#SdFat_exFAT
+#include <SdFat.h> //SdFat v2.0.7 by Bill Greiman: http://librarymanager/All#SdFat_exFAT
 
 #define SD_FAT_TYPE 3 // SD_FAT_TYPE = 0 for SdFat/File, 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
@@ -204,13 +220,16 @@ const int sdPowerDownDelay = 100; //Delay for this many ms before turning off th
 //Add RTC interface for Artemis
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include "RTC.h" //Include RTC library included with the Aruino_Apollo3 core
-APM3_RTC myRTC; //Create instance of RTC class
+Apollo3RTC myRTC; //Create instance of RTC class
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Create UART instance for OpenLog style serial logging
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Uart SerialLog(1, 13, 12);  // Declares a Uart object called Serial1 using instance 1 of Apollo3 UART peripherals with RX on pin 13 and TX on pin 12 (note, you specify *pins* not Apollo3 pads. This uses the variant's pin map to determine the Apollo3 pad)
-unsigned long lastSeriaLogSyncTime = 0;
+
+//UART SerialLog(BREAKOUT_PIN_TX, BREAKOUT_PIN_RX);  // Declares a Uart object called SerialLog with TX on pin 12 and RX on pin 13
+
+uint64_t lastSeriaLogSyncTime = 0;
+uint64_t lastAwakeTimeMillis;
 const int MAX_IDLE_TIME_MSEC = 500;
 bool newSerialData = false;
 char incomingBuffer[256 * 2]; //This size of this buffer is sensitive. Do not change without analysis using OpenLog_Serial.
@@ -251,7 +270,7 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFun_SGP40_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_SGP40
 #include "SparkFun_SDP3x_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_SDP3x
 #include "MS5837.h" // Click here to download the library: https://github.com/sparkfunX/BlueRobotics_MS5837_Library
-//#include "SparkFun_Qwiic_Button.h" // Click here to get the library: http://librarymanager/All#SparkFun_Qwiic_Button_Switch
+#include "SparkFun_Qwiic_Button.h" // Click here to get the library: http://librarymanager/All#SparkFun_Qwiic_Button_Switch
 #include "SparkFun_Bio_Sensor_Hub_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Bio_Sensor
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -271,12 +290,13 @@ bool sleepAfterRead = false; //Used to keep the code awake for at least minimumA
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
 volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
-unsigned long qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allow sensors to power on, then answer autodetect
+uint64_t qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allow sensors to power on, then answer autodetect
 unsigned long qwiicPowerOnDelayMillis; //Wait for this many milliseconds after turning on the Qwiic power before attempting to communicate with Qwiic devices
 int lowBatteryReadings = 0; // Count how many times the battery voltage has read low
 const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
 volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger interrupt has been seen
 char serialTimestamp[40]; //Buffer to store serial timestamp, if needed
+volatile static bool powerLossSeen = false; //Flag to indicate if a power loss event has been seen
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL = false); // Header
@@ -288,14 +308,12 @@ void SerialPrintln(const char *);
 void SerialPrintln(const __FlashStringHelper *);
 void DoSerialPrint(char (*)(const char *), const char *, bool newLine = false);
 
-//unsigned long startTime = 0;
-
-#define DUMP( varname ) {Serial.printf("%s: %llu\r\n", #varname, varname); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf("%s: %llu\r\n", #varname, varname);}
-#define SerialPrintf1( var ) {Serial.printf( var ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var );}
-#define SerialPrintf2( var1, var2 ) {Serial.printf( var1, var2 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2 );}
-#define SerialPrintf3( var1, var2, var3 ) {Serial.printf( var1, var2, var3 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2, var3 );}
-#define SerialPrintf4( var1, var2, var3, var4 ) {Serial.printf( var1, var2, var3, var4 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2, var3, var4 );}
-#define SerialPrintf5( var1, var2, var3, var4, var5 ) {Serial.printf( var1, var2, var3, var4, var5 ); if (settings.useTxRxPinsForTerminal == true) SerialLog.printf( var1, var2, var3, var4, var5 );}
+#define DUMP( varname ) {Serial.printf("%s: %d\r\n", #varname, varname); if (settings.useTxRxPinsForTerminal == true) Serial1.printf("%s: %d\r\n", #varname, varname);}
+#define SerialPrintf1( var ) {Serial.printf( var ); if (settings.useTxRxPinsForTerminal == true) Serial1.printf( var );}
+#define SerialPrintf2( var1, var2 ) {Serial.printf( var1, var2 ); if (settings.useTxRxPinsForTerminal == true) Serial1.printf( var1, var2 );}
+#define SerialPrintf3( var1, var2, var3 ) {Serial.printf( var1, var2, var3 ); if (settings.useTxRxPinsForTerminal == true) Serial1.printf( var1, var2, var3 );}
+#define SerialPrintf4( var1, var2, var3, var4 ) {Serial.printf( var1, var2, var3, var4 ); if (settings.useTxRxPinsForTerminal == true) Serial1.printf( var1, var2, var3, var4 );}
+#define SerialPrintf5( var1, var2, var3, var4, var5 ) {Serial.printf( var1, var2, var3, var4, var5 ); if (settings.useTxRxPinsForTerminal == true) Serial1.printf( var1, var2, var3, var4, var5 );}
 
 // The Serial port for the Zmodem connection
 // must not be the same as DSERIAL unless all
@@ -311,21 +329,28 @@ void setup() {
 
   delay(1); // Let PIN_POWER_LOSS stabilize
 
-  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDown(); //Check PIN_POWER_LOSS just in case we missed the falling edge
-  attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerDown, FALLING);
+  if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
+  //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // We can't do this with v2.1.0 as attachInterrupt causes a spontaneous interrupt
+  attachInterrupt(PIN_POWER_LOSS, powerLossISR, FALLING);
+  powerLossSeen = false; // Make sure the flag is clear
 
   powerLEDOn(); // Turn the power LED on - if the hardware supports it
 
   pinMode(PIN_STAT_LED, OUTPUT);
   digitalWrite(PIN_STAT_LED, HIGH); // Turn the STAT LED on while we configure everything
 
-  Serial.begin(115200); //Default for initial debug messages if necessary
-  SerialLog.begin(115200); //Default for initial debug messages if necessary
-  SerialPrintln(F(""));
-
   SPI.begin(); //Needed if SD is disabled
 
+  //Do not start Serial1 before productionTest() otherwise the pin configuration gets overwritten
+  //and subsequent Serial1.begin's don't restore the pins to UART mode...
+
   productionTest(); //Check if we need to go into production test mode
+
+  //We need to manually restore the Serial1 TX and RX pins after they were changed by productionTest()
+  configureSerial1TxRx();
+
+  Serial.begin(115200); //Default for initial debug messages if necessary
+  Serial1.begin(115200); //Default for initial debug messages if necessary
 
   //pinMode(PIN_LOGIC_DEBUG, OUTPUT); // Debug pin to assist tracking down slippery mux bugs
   //digitalWrite(PIN_LOGIC_DEBUG, HIGH);
@@ -333,27 +358,31 @@ void setup() {
   // Use the worst case power on delay for the Qwiic bus for now as we don't yet know what sensors are connected
   // (worstCaseQwiicPowerOnDelay is defined in settings.h)
   qwiicPowerOnDelayMillis = worstCaseQwiicPowerOnDelay;
-  
+
+  EEPROM.init();
+
   beginQwiic(); // Turn the qwiic power on as early as possible
 
   beginSD(); //285 - 293ms
 
-  enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
+  enableCIPOpullUp(); // Enable CIPO pull-up _after_ beginSD
 
   loadSettings(); //50 - 250ms
 
   if (settings.useTxRxPinsForTerminal == true)
   {
-    SerialLog.begin(settings.serialTerminalBaudRate); // Restart the serial port
+    Serial1.flush(); //Complete any previous prints at the previous baud rate
+    Serial1.begin(settings.serialTerminalBaudRate); // Restart the serial port
   }
   else
   {
-    SerialLog.end(); // Stop the SerialLog port
+    Serial1.flush(); //Complete any previous prints
+    Serial1.end(); // Stop the SerialLog port
   }
 
   Serial.flush(); //Complete any previous prints
   Serial.begin(settings.serialTerminalBaudRate);
-  
+
   SerialPrintf3("Artemis OpenLog v%d.%d\r\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
 
   if (settings.useGPIO32ForStopLogging == true)
@@ -361,7 +390,10 @@ void setup() {
     SerialPrintln(F("Stop Logging is enabled. Pull GPIO pin 32 to GND to stop logging."));
     pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
-    attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+    attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
+    am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
+    intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+    pin_config(PinName(PIN_STOP_LOGGING), intPinConfig); // Make sure the pull-up does actually stay enabled
     stopLoggingSeen = false; // Make sure the flag is clear
   }
 
@@ -369,16 +401,20 @@ void setup() {
   {
     pinMode(PIN_TRIGGER, INPUT_PULLUP);
     delay(1); // Let the pin stabilize
+    am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
     if (settings.fallingEdgeTrigger == true)
     {
       SerialPrintln(F("Falling-edge triggering is enabled. Sensor data will be logged on a falling edge on GPIO pin 11."));
-      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+      attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
+      intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
     }
     else
     {
       SerialPrintln(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
-      attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+      attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
+      intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_LO2HI;
     }
+    pin_config(PinName(PIN_TRIGGER), intPinConfig); // Make sure the pull-up does actually stay enabled
     triggerEdgeSeen = false; // Make sure the flag is clear
   }
 
@@ -419,10 +455,10 @@ void setup() {
     loadDeviceSettingsFromFile(); //Load config settings into node list
     configureQwiicDevices(); //Apply config settings to each device in the node list
     int deviceCount = printOnlineDevice(); // Pretty-print the online devices
-    
+
     if ((deviceCount == 0) && (settings.resetOnZeroDeviceCount == true)) // Check for resetOnZeroDeviceCount
     {
-      if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available())))
+      if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (Serial1.available())))
         menuMain(); //Present user menu - in case the user wants to disable resetOnZeroDeviceCount
       else
       {
@@ -439,16 +475,11 @@ void setup() {
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
-  if (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
-  || (settings.useGPIO11ForFastSlowLogging == true)
-  || (settings.useRTCForFastSlowLogging == true))
-    measurementStartTime = rtcMillis();
-  else
-    measurementStartTime = millis();
-
-  //SerialPrintf2("Setup time: %.02f ms\r\n", (micros() - startTime) / 1000.0);
+  measurementStartTime = bestMillis();
 
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
+
+  lastAwakeTimeMillis = rtcMillis();
 
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something
@@ -457,10 +488,10 @@ void setup() {
 }
 
 void loop() {
-  
+
   checkBattery(); // Check for low battery
 
-  if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (SerialLog.available())))
+  if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (Serial1.available())))
     menuMain(); //Present user menu
 
   if (settings.logSerial == true && online.serialLogging == true && settings.useTxRxPinsForTerminal == false)
@@ -468,15 +499,15 @@ void loop() {
     size_t timestampCharsLeftToWrite = strlen(serialTimestamp);
     //SerialPrintf2("timestampCharsLeftToWrite is %d\r\n", timestampCharsLeftToWrite);
     //SerialFlush();
-    
-    if (SerialLog.available() || (timestampCharsLeftToWrite > 0))
+
+    if (Serial1.available() || (timestampCharsLeftToWrite > 0))
     {
-      while (SerialLog.available() || (timestampCharsLeftToWrite > 0))
+      while (Serial1.available() || (timestampCharsLeftToWrite > 0))
       {
         if (timestampCharsLeftToWrite > 0) // Based on code written by @DennisMelamed in PR #70
         {
           incomingBuffer[incomingBufferSpot++] = serialTimestamp[0]; // Add a timestamp character to incomingBuffer
-          
+
           for (size_t i = 0; i < timestampCharsLeftToWrite; i++)
           {
             serialTimestamp[i] = serialTimestamp[i+1]; // Shuffle the remaining chars along by one
@@ -486,7 +517,7 @@ void loop() {
         }
         else
         {
-          incomingBuffer[incomingBufferSpot++] = SerialLog.read();
+          incomingBuffer[incomingBufferSpot++] = Serial1.read();
 
           //Get the RTC timestamp if we just received the timestamp token
           if (settings.timestampSerial && (incomingBuffer[incomingBufferSpot-1] == settings.timeStampToken))
@@ -497,7 +528,7 @@ void loop() {
             serialTimestamp[strlen(serialTimestamp) - 1] = 0x0A; // Change the final comma of the timestamp to a Line Feed
           }
         }
-        
+
         if (incomingBufferSpot == sizeof(incomingBuffer))
         {
           digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
@@ -509,12 +540,14 @@ void loop() {
         checkBattery();
       }
 
-      lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
+      //If we are sleeping between readings then we cannot rely on millis() as it is powered down
+      //Use RTC instead
+      lastSeriaLogSyncTime = bestMillis(); //Reset the last sync time to now
       newSerialData = true;
     }
     else if (newSerialData == true)
     {
-      if ((millis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
+      if ((bestMillis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
       {
         if (incomingBufferSpot > 0)
         {
@@ -530,13 +563,13 @@ void loop() {
         }
 
         newSerialData = false;
-        lastSeriaLogSyncTime = millis(); //Reset the last sync time to now
+        lastSeriaLogSyncTime = bestMillis(); //Reset the last sync time to now
         printDebug("Total chars received: " + (String)charsReceived + "\r\n");
       }
     }
   }
 
-  //micros() resets to 0 during sleep so only test if we are not sleeping
+  //In v2.1 of the core micros() becomes corrupted during deep sleep so only test if we are not sleeping
   if (settings.usBetweenReadings < maxUsBeforeSleep)
   {
     if ((micros() - lastReadTime) >= settings.usBetweenReadings)
@@ -606,7 +639,7 @@ void loop() {
 
     //Output to TX pin
     if ((settings.outputSerial == true) && (online.serialOutput == true))
-      SerialLog.print(outputData); //Print to TX pin
+      Serial1.print(outputData); //Print to TX pin
 
     //Record to SD
     if (settings.logData == true)
@@ -624,9 +657,9 @@ void loop() {
         }
 
         //Force sync every 500ms
-        if (millis() - lastDataLogSyncTime > 500)
+        if (bestMillis() - lastDataLogSyncTime > 500)
         {
-          lastDataLogSyncTime = millis();
+          lastDataLogSyncTime = bestMillis();
           sensorDataFile.sync();
           if (settings.frequentFileAccessTimestamps == true)
             updateDataFileAccess(&sensorDataFile); // Update the file access time & date
@@ -684,7 +717,7 @@ void loop() {
     {
       // Check if we have been awake long enough (millis is reset to zero when waking from sleep)
       // goToSleep will automatically compensate for how long we have been awake
-      if (millis() < settings.minimumAwakeTimeMillis)
+      if ((bestMillis() - lastAwakeTimeMillis) < settings.minimumAwakeTimeMillis)
         return; // Too early to sleep - leave sleepAfterRead set true
     }
 
@@ -701,7 +734,7 @@ uint32_t howLongToSleepFor(void)
   //We need to be careful with the multiply as we will overflow uint32_t if msToSleep is > 131072
 
   //goToSleep will automatically compensate for how long we have been awake
-  
+
   uint32_t msToSleep;
 
   if (checkSleepOnFastSlowPin())
@@ -731,7 +764,7 @@ uint32_t howLongToSleepFor(void)
   {
     msToSleep = (uint32_t)(settings.usBetweenReadings / 1000ULL); // Sleep for usBetweenReadings
   }
-  
+
   uint32_t sysTicksToSleep;
   if (msToSleep < 131000)
   {
@@ -787,7 +820,7 @@ bool checkSleepOnRTCTime(void)
     {
       myRTC.getTime(); // Get the RTC time
       int minutesOfDay = (myRTC.hour * 60) + myRTC.minute;
-      
+
       if (settings.slowLoggingStartMOD > settings.slowLoggingStopMOD) // If slow logging starts later than the stop time (i.e. slow over midnight)
       {
         if ((minutesOfDay >= settings.slowLoggingStartMOD) || (minutesOfDay < settings.slowLoggingStopMOD))
@@ -806,15 +839,54 @@ bool checkSleepOnRTCTime(void)
 void beginQwiic()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
+  pin_config(PinName(PIN_QWIIC_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   qwiicPowerOn();
   qwiic.begin();
-  qwiic.setPullups(settings.qwiicBusPullUps); //Just to make it really clear what pull-ups are being used, set pullups here.
+  setQwiicPullups(settings.qwiicBusPullUps); //Just to make it really clear what pull-ups are being used, set pullups here.
+}
+
+void setQwiicPullups(uint32_t qwiicBusPullUps)
+{
+  //Change SCL and SDA pull-ups manually using pin_config
+  am_hal_gpio_pincfg_t sclPinCfg = g_AM_BSP_GPIO_IOM1_SCL;
+  am_hal_gpio_pincfg_t sdaPinCfg = g_AM_BSP_GPIO_IOM1_SDA;
+
+  if (qwiicBusPullUps == 0)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE; // No pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE;
+  }
+  else if (qwiicBusPullUps == 1)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K; // Use 1K5 pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  }
+  else if (qwiicBusPullUps == 6)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K; // Use 6K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K;
+  }
+  else if (qwiicBusPullUps == 12)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K; // Use 12K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K;
+  }
+  else
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K; // Use 24K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K;
+  }
+
+  pin_config(PinName(PIN_QWIIC_SCL), sclPinCfg);
+  pin_config(PinName(PIN_QWIIC_SDA), sdaPinCfg);
 }
 
 void beginSD()
 {
   pinMode(PIN_MICROSD_POWER, OUTPUT);
+  pin_config(PinName(PIN_MICROSD_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   pinMode(PIN_MICROSD_CHIP_SELECT, OUTPUT);
+  pin_config(PinName(PIN_MICROSD_CHIP_SELECT), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
 
   if (settings.enableSD == true)
@@ -822,7 +894,7 @@ void beginSD()
     // For reasons I don't understand, we seem to have to wait for at least 1ms after SPI.begin before we call microSDPowerOn.
     // If you comment the next line, the Artemis resets at microSDPowerOn when beginSD is called from wakeFromSleep...
     // But only on one of my V10 red boards. The second one I have doesn't seem to need the delay!?
-    delay(1);
+    delay(5);
 
     microSDPowerOn();
 
@@ -869,25 +941,37 @@ void beginSD()
   }
 }
 
-void enableCIPOpullUp()
+void enableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core
 {
-  //Add CIPO pull-up
-  ap3_err_t retval = AP3_OK;
-  am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
-  cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
-  cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
-  cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
-  cipoPinCfg.uIOMnum = AP3_SPI_IOM;
+  //Add 1K5 pull-up on CIPO
+  am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
   cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
-  padMode(MISO, cipoPinCfg, &retval);
-  if (retval != AP3_OK)
-    printDebug(F("Setting CIPO padMode failed!"));
+  pin_config(PinName(PIN_SPI_CIPO), cipoPinCfg);
+}
+
+void disableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core
+{
+  am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
+  pin_config(PinName(PIN_SPI_CIPO), cipoPinCfg);
+}
+
+void configureSerial1TxRx(void) // Configure pins 12 and 13 for UART1 TX and RX
+{
+  am_hal_gpio_pincfg_t pinConfigTx = g_AM_BSP_GPIO_COM_UART_TX;
+  pinConfigTx.uFuncSel = AM_HAL_PIN_12_UART1TX;
+  pin_config(PinName(BREAKOUT_PIN_TX), pinConfigTx);
+  am_hal_gpio_pincfg_t pinConfigRx = g_AM_BSP_GPIO_COM_UART_RX;
+  pinConfigRx.uFuncSel = AM_HAL_PIN_13_UART1RX;
+  pinConfigRx.ePullup = AM_HAL_GPIO_PIN_PULLUP_WEAK; // Put a weak pull-up on the Rx pin
+  pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
 }
 
 void beginIMU()
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
+  pin_config(PinName(PIN_IMU_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   pinMode(PIN_IMU_CHIP_SELECT, OUTPUT);
+  pin_config(PinName(PIN_IMU_CHIP_SELECT), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
 
   if (settings.enableIMU == true && settings.logMaxRate == false)
@@ -948,7 +1032,7 @@ void beginIMU()
     }
 
     bool success = true;
-      
+
     //Check if we are using the DMP
     if (settings.imuUseDMP == false)
     {
@@ -958,7 +1042,7 @@ void beginIMU()
       {
         SerialPrintln(F("Error: Could not startup the IMU in non-DMP mode!"));
         success = false;
-      }  
+      }
       //Update the full scale and DLPF settings
       retval = myICM.enableDLPF(ICM_20948_Internal_Acc, settings.imuAccDLPF);
       if (retval != ICM_20948_Stat_Ok)
@@ -1177,7 +1261,10 @@ void beginSerialLogging()
 
     updateDataFileCreate(&serialDataFile); // Update the file create time & date
 
-    SerialLog.begin(settings.serialLogBaudRate);
+    //We need to manually restore the Serial1 TX and RX pins
+    configureSerial1TxRx();
+
+    Serial1.begin(settings.serialLogBaudRate);
 
     online.serialLogging = true;
   }
@@ -1189,7 +1276,10 @@ void beginSerialOutput()
 {
   if (settings.outputSerial == true)
   {
-    SerialLog.begin(settings.serialLogBaudRate); // (Re)start the serial port
+    //We need to manually restore the Serial1 TX and RX pins
+    configureSerial1TxRx();
+
+    Serial1.begin(settings.serialLogBaudRate); // (Re)start the serial port
     online.serialOutput = true;
   }
   else
@@ -1238,6 +1328,12 @@ extern "C" void am_stimer_cmpr6_isr(void)
   }
 }
 
+//Power Loss ISR
+void powerLossISR(void)
+{
+  powerLossSeen = true;
+}
+
 //Stop Logging ISR
 void stopLoggingISR(void)
 {
@@ -1255,7 +1351,7 @@ void SerialFlush(void)
   Serial.flush();
   if (settings.useTxRxPinsForTerminal == true)
   {
-    SerialLog.flush();
+    Serial1.flush();
   }
 }
 
@@ -1268,8 +1364,7 @@ void SerialPrint(const char *line)
 
 void SerialPrint(const __FlashStringHelper *line)
 {
-  DoSerialPrint([](const char *ptr) {return (char) pgm_read_byte_near(ptr);},
-      (const char*) line);
+  DoSerialPrint([](const char *ptr) {return (char) pgm_read_byte_near(ptr);}, (const char*) line);
 }
 
 void SerialPrintln(const char *line)
@@ -1279,8 +1374,7 @@ void SerialPrintln(const char *line)
 
 void SerialPrintln(const __FlashStringHelper *line)
 {
-  DoSerialPrint([](const char *ptr) {return (char) pgm_read_byte_near(ptr);},
-      (const char*) line, true);
+  DoSerialPrint([](const char *ptr) {return (char) pgm_read_byte_near(ptr);}, (const char*) line, true);
 }
 
 void DoSerialPrint(char (*funct)(const char *), const char *string, bool newLine)
@@ -1291,13 +1385,13 @@ void DoSerialPrint(char (*funct)(const char *), const char *string, bool newLine
   {
     Serial.print(ch);
     if (settings.useTxRxPinsForTerminal == true)
-      SerialLog.print(ch);
+      Serial1.print(ch);
   }
 
   if (newLine)
   {
     Serial.println();
     if (settings.useTxRxPinsForTerminal == true)
-      SerialLog.println();
+      Serial1.println();
   }
 }

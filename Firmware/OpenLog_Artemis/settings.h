@@ -26,7 +26,7 @@ typedef enum
   DEVICE_VOC_SGP40,
   DEVICE_PRESSURE_SDP3X,
   DEVICE_PRESSURE_MS5837,
-//  DEVICE_QWIIC_BUTTON,
+  DEVICE_QWIIC_BUTTON,
   DEVICE_BIO_SENSOR_HUB,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
@@ -315,15 +315,15 @@ struct struct_MS5837 {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
-//struct struct_QWIIC_BUTTON {
-//  bool log = true;
-//  bool logPressed = true;
-//  bool logClicked = true;
-//  bool toggleLEDOnClick = true;
-//  bool ledState = false; // Do not store in NVM
-//  uint8_t ledBrightness = 255;
-//  unsigned long powerOnDelayMillis = 3000; // Wait for at least this many millis before communicating with this device. Increase if required!
-//};
+struct struct_QWIIC_BUTTON {
+  bool log = true;
+  bool logPressed = true;
+  bool logClicked = true;
+  bool toggleLEDOnClick = true;
+  bool ledState = false; // Do not store in NVM
+  uint8_t ledBrightness = 255;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
 
 struct struct_BIO_SENSOR_HUB {
   bool log = true;
@@ -403,7 +403,7 @@ struct struct_settings {
   int imuAccFSS = 0; // IMU accelerometer full scale - default to gpm2 (ICM_20948_ACCEL_CONFIG_FS_SEL_e)
   int imuAccDLPFBW = 7; // IMU accelerometer DLPF bandwidth - default to acc_d473bw_n499bw (ICM_20948_ACCEL_CONFIG_DLPCFG_e)
   int imuGyroFSS = 0; // IMU gyro full scale - default to 250 degrees per second (ICM_20948_GYRO_CONFIG_1_FS_SEL_e)
-  int imuGyroDLPFBW = 7; // IMU gyro DLPF bandwidth - default to gyr_d361bw4_n376bw5 (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)  
+  int imuGyroDLPFBW = 7; // IMU gyro DLPF bandwidth - default to gyr_d361bw4_n376bw5 (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)
   bool logMicroseconds = false; // Log micros()
   bool useTxRxPinsForTerminal = false; // If true, the terminal is echo'd to the Tx and Rx pins. Note: setting this to true will _permanently_ disable serial logging and analog input on those pins!
   bool timestampSerial = false; // If true, the RTC time will be added to the serial log file when timeStampToken is received
@@ -423,6 +423,8 @@ struct struct_settings {
   bool imuLogDMPCpass = false; // If true, log INV_ICM20948_SENSOR_MAGNETIC_FIELD_UNCALIBRATED
   unsigned long minimumAwakeTimeMillis = 0; // Set to greater than zero to keep the Artemis awake for this long between sleeps
   bool identifyBioSensorHubs = false; // If true, Bio Sensor Hubs (Pulse Oximeters) will be included in autoDetect (requires exclusive use of pins 32 and 11)
+  bool serialTxRxDuringSleep = false; // If true, the Serial Tx and Rx pins are left enabled during sleep - to prevent the COM port reinitializing
+  bool printGNSSDebugMessages = false;
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

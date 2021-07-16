@@ -54,8 +54,9 @@ void menuAnalogLogging()
           settings.logA11 = true;
           // Disable triggering
           settings.useGPIO11ForTrigger = false;
-          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         else
@@ -117,8 +118,9 @@ void menuAnalogLogging()
           settings.logA32 = true;
           // Disable stop logging
           settings.useGPIO32ForStopLogging = false;
-          detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+          detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
         }
         else
           settings.logA32 = false;

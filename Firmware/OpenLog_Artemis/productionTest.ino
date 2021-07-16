@@ -90,7 +90,12 @@ void productionTest()
 
   // OK. The breakout pins were held low and then released (pulled-up) within five seconds so let's go into production test mode!
 
-  //detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); // Disable power loss interrupt
+  //We need to manually restore the Serial1 TX and RX pins before we can use Serial1
+  configureSerial1TxRx();
+
+  Serial.begin(115200); //Default for initial debug messages if necessary
+
+  //detachInterrupt(PIN_POWER_LOSS); // Disable power loss interrupt
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off
   powerLEDOff(); // Turn the power LED on - if the hardware supports it
 
@@ -98,7 +103,7 @@ void productionTest()
 
   readVIN(); // Read VIN now to initialise the analog pin
 
-  SerialLog.begin(115200); // Begin the serial port using the TX and RX breakout pins
+  Serial1.begin(115200); // Begin the serial port using the TX and RX breakout pins
 
 #ifdef verboseProdTest
   Serial.println(F("OLA Production Test initiated!"));
@@ -109,9 +114,13 @@ void productionTest()
   unsigned long lastHelloSent = 0; // Use this to record the last time a Hello was sent
   bool echoUSB = false; // Flag to indicate if we should be echoing on USB (command 0x16/0x17)
 
+  char tempData1[16];
+  char tempData2[16];
+  char tempData3[16];
+  
   while (1) // Do this loop forever!
   {
-    while (!SerialLog.available()) // Wait until we receive a command byte
+    while (!Serial1.available()) // Wait until we receive a command byte
     {
       if ((sendHellos == true) && (millis() > lastHelloSent)) // Is it time to send a Hello? (5 x 10 / 115200 = 0.434ms)
       {
@@ -128,7 +137,7 @@ void productionTest()
     }
 
     // Command byte received! Let's process it.
-    uint8_t commandByte = SerialLog.read();
+    uint8_t commandByte = Serial1.read();
 #ifdef verboseProdTest
     Serial.printf("Processing command byte: 0x%02X\r\n", commandByte);
 #endif
@@ -139,15 +148,16 @@ void productionTest()
       {
         float vin = readVIN(); // Read VIN
 #ifdef verboseProdTest
-        Serial.printf("VIN is %fV\r\n", vin);
+        olaftoa(vin, tempData1, 2, sizeof(tempData1) / sizeof(char));
+        Serial.printf("VIN is %sV\r\n", tempData1);
 #endif
         if ((vin >= 4.75) && (vin <= 5.25)) // Success
         {
-          SerialLog.write(0x01);
+          Serial1.write(0x01);
         }
         else
         {
-          SerialLog.write(0x81);         
+          Serial1.write(0x81);         
         }
       } // / 0x01: VIN/3
         break;
@@ -162,20 +172,21 @@ void productionTest()
           {
             myICM.getAGMT(); //Update values
 #ifdef verboseProdTest
-            Serial.printf("IMU Temp is: %.2fC\r\n", myICM.temp());
+            olaftoa(myICM.temp(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+            Serial.printf("IMU Temp is: %sC\r\n", tempData1);
 #endif
             if ((myICM.temp() >= 10.0) && (myICM.temp() <= 40.0))
             {
-              SerialLog.write(0x02); // Test passed
+              Serial1.write(0x02); // Test passed
             }
             else
             {
-              SerialLog.write(0x82); // Test failed - readings are out of range
+              Serial1.write(0x82); // Test failed - readings are out of range
             }
           }
           else
           {
-            SerialLog.write(0x82); // Test failed - IMU data is not ready
+            Serial1.write(0x82); // Test failed - IMU data is not ready
 #ifdef verboseProdTest
             Serial.println(F("IMU data not ready!"));
 #endif
@@ -183,7 +194,7 @@ void productionTest()
         }
         else
         {
-          SerialLog.write(0x82); // Test failed - IMU is not online
+          Serial1.write(0x82); // Test failed - IMU is not online
 #ifdef verboseProdTest
           Serial.println(F("IMU is not online!"));
 #endif
@@ -202,22 +213,25 @@ void productionTest()
           {
             myICM.getAGMT(); //Update values
 #ifdef verboseProdTest
-            Serial.printf("IMU Accel readings are: %.2f %.2f %.2f mg\r\n", myICM.accX(), myICM.accY(), myICM.accZ());
+            olaftoa(myICM.accX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+            olaftoa(myICM.accY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+            olaftoa(myICM.accZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+            Serial.printf("IMU Accel readings are: %s %s %s mg\r\n", tempData1, tempData2, tempData3);
 #endif
             if (((myICM.accX() > -100) && (myICM.accX() < 100)) && // Check the readings are in range
                 ((myICM.accY() > -100) && (myICM.accY() < 100)) &&
                 ((myICM.accZ() > -1100) && (myICM.accZ() < -900)))
             {
-              SerialLog.write(0x03); // Test passed
+              Serial1.write(0x03); // Test passed
             }
             else
             {
-              SerialLog.write(0x83); // Test failed - readings are out of range
+              Serial1.write(0x83); // Test failed - readings are out of range
             }
           }
           else
           {
-            SerialLog.write(0x83); // Test failed - IMU data is not ready
+            Serial1.write(0x83); // Test failed - IMU data is not ready
 #ifdef verboseProdTest
             Serial.println(F("IMU data not ready!"));
 #endif
@@ -225,7 +239,7 @@ void productionTest()
         }
         else
         {
-          SerialLog.write(0x83); // Test failed - IMU is not online
+          Serial1.write(0x83); // Test failed - IMU is not online
 #ifdef verboseProdTest
           Serial.println(F("IMU is not online!"));
 #endif
@@ -244,25 +258,29 @@ void productionTest()
           {
             myICM.getAGMT(); //Update values
 #ifdef verboseProdTest
-            Serial.printf("IMU Mag readings are: %.2f %.2f %.2f nT\r\n", myICM.magX(), myICM.magY(), myICM.magZ());
+            olaftoa(myICM.magX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+            olaftoa(myICM.magY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+            olaftoa(myICM.magZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+            Serial.printf("IMU Mag readings are: %s %s %s nT\r\n", tempData1, tempData2, tempData3);
 #endif
             float magVectorProduct = sqrt((myICM.magX() * myICM.magX()) + (myICM.magY() * myICM.magY())); // Calculate the vector product of magX and magY
 #ifdef verboseProdTest
-            Serial.printf("IMU Mag XY vector product is: %.2f nT\r\n", magVectorProduct);
+            olaftoa(magVectorProduct, tempData1, 2, sizeof(tempData1) / sizeof(char));
+            Serial.printf("IMU Mag XY vector product is: %s nT\r\n", tempData1);
 #endif
             if (((myICM.magZ() >= 20.0) && (myICM.magZ() <= 30.0)) && // Check the readings are in range
                 ((magVectorProduct >= 20.0) && (magVectorProduct <= 30.0)))
             {
-              SerialLog.write(0x04); // Test passed
+              Serial1.write(0x04); // Test passed
             }
             else
             {
-              SerialLog.write(0x84); // Test failed - readings are out of range
+              Serial1.write(0x84); // Test failed - readings are out of range
             }
           }
           else
           {
-            SerialLog.write(0x84); // Test failed - IMU data is not ready
+            Serial1.write(0x84); // Test failed - IMU data is not ready
 #ifdef verboseProdTest
             Serial.println(F("IMU data not ready!"));
 #endif
@@ -270,7 +288,7 @@ void productionTest()
         }
         else
         {
-          SerialLog.write(0x84); // Test failed - IMU is not online
+          Serial1.write(0x84); // Test failed - IMU is not online
 #ifdef verboseProdTest
           Serial.println(F("IMU is not online!"));
 #endif
@@ -287,21 +305,21 @@ void productionTest()
         Serial.println(F("Going into deep sleep for 5 seconds..."));
 #endif
         Serial.flush(); //Finish any prints
-        qwiic.end(); //Power down I2C
+        //qwiic.end(); //Power down I2C
         SPI.end(); //Power down SPI
-        power_adc_disable(); //Power down ADC. It it started by default before setup().
+        powerControlADC(false); //Power down ADC. It it started by default before setup().
         Serial.end(); //Power down UART
-        SerialLog.end();
+        Serial1.end();
         //Force the peripherals off
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);
         //Use the lower power 32kHz clock. Use it to run CT6 as well.
         am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
         am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
@@ -324,9 +342,9 @@ void productionTest()
         am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
         am_hal_stimer_config(AM_HAL_STIMER_HFRC_3MHZ);
         //Turn on ADC
-        ap3_adc_setup();
+        powerControlADC(true); //ap3_adc_setup();
         Serial.begin(115200);
-        SerialLog.begin(115200);
+        Serial1.begin(115200);
         SPI.begin();
         myRTC.getTime(); // Read the RTC
         unsigned long hundredthsAfterSleep = (myRTC.hour * 360000) +  (myRTC.minute * 6000) + (myRTC.seconds * 100) + myRTC.hundredths;
@@ -338,100 +356,121 @@ void productionTest()
 #endif
         if ((elapsedHundredths > 490) && (elapsedHundredths < 510))
         {
-          SerialLog.write(0x05); // Test passed
+          Serial1.write(0x05); // Test passed
         }
         else
         {
-          SerialLog.write(0x85); // Test failed
+          Serial1.write(0x85); // Test failed
         }
       } // /0x05: RTC Crystal
         break;
       case 0x06:
         qwiicPowerOn();
-        SerialLog.write(0x06);
+        Serial1.write(0x06);
         break;
       case 0x07:
         qwiicPowerOff();
-        SerialLog.write(0x07);
+        Serial1.write(0x07);
         break;
       case 0x08:
         powerLEDOn();
-        SerialLog.write(0x08);
+        Serial1.write(0x08);
         break;
       case 0x09:
         powerLEDOff();
-        SerialLog.write(0x09);
+        Serial1.write(0x09);
         break;
       case 0x0A:
         digitalWrite(PIN_STAT_LED, HIGH);
-        SerialLog.write(0x0A);
+        Serial1.write(0x0A);
         break;
       case 0x0B:
         digitalWrite(PIN_STAT_LED, LOW);
-        SerialLog.write(0x0B);
+        Serial1.write(0x0B);
         break;
       case 0x0C:
         pinMode(BREAKOUT_PIN_32, OUTPUT);
         digitalWrite(BREAKOUT_PIN_32, HIGH);
-        SerialLog.write(0x0C);
+        Serial1.write(0x0C);
         break;
       case 0x0D:
         pinMode(BREAKOUT_PIN_32, OUTPUT);
         digitalWrite(BREAKOUT_PIN_32, LOW);
-        SerialLog.write(0x0D);
+        Serial1.write(0x0D);
         break;
       case 0x0E:
         pinMode(PIN_QWIIC_SCL, OUTPUT);
         digitalWrite(PIN_QWIIC_SCL, HIGH);
-        SerialLog.write(0x0E);
+        Serial1.write(0x0E);
         break;
       case 0x0F:
         pinMode(PIN_QWIIC_SCL, OUTPUT);
         digitalWrite(PIN_QWIIC_SCL, LOW);
-        SerialLog.write(0x0F);
+        Serial1.write(0x0F);
         break;
       case 0x10:
         pinMode(PIN_QWIIC_SDA, OUTPUT);
         digitalWrite(PIN_QWIIC_SDA, HIGH);
-        SerialLog.write(0x10);
+        Serial1.write(0x10);
         break;
       case 0x11:
         pinMode(PIN_QWIIC_SDA, OUTPUT);
         digitalWrite(PIN_QWIIC_SDA, LOW);
-        SerialLog.write(0x11);
+        Serial1.write(0x11);
         break;
       case 0x12:
         pinMode(BREAKOUT_PIN_11, OUTPUT);
         digitalWrite(BREAKOUT_PIN_11, HIGH);
-        SerialLog.write(0x12);
+        Serial1.write(0x12);
         break;
       case 0x13:
         pinMode(BREAKOUT_PIN_11, OUTPUT);
         digitalWrite(BREAKOUT_PIN_11, LOW);
-        SerialLog.write(0x13);
+        Serial1.write(0x13);
         break;
       case 0x14:
         sendHellos = true;
-        SerialLog.write(0x14);
+        Serial1.write(0x14);
         break;
       case 0x15:
         sendHellos = false;
-        SerialLog.write(0x15);
+        Serial1.write(0x15);
         break;
       case 0x16:
         echoUSB = true;
-        SerialLog.write(0x16);
+        Serial1.write(0x16);
         break;
       case 0x17:
         echoUSB = false;
-        SerialLog.write(0x17);
+        Serial1.write(0x17);
         break;
       case 0x18:
         myRTC.getTime(); // Read the RTC
-        SerialLog.write(0x18);
-        SerialLog.printf("%02d:%02d:%02d.%02d", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+        Serial1.write(0x18);
+        char rtcHour[3];
+        char rtcMin[3];
+        char rtcSec[3];
+        char rtcHundredths[3];
+        if (myRTC.hour < 10)
+          sprintf(rtcHour, "0%d", myRTC.hour);
+        else
+          sprintf(rtcHour, "%d", myRTC.hour);
+        if (myRTC.minute < 10)
+          sprintf(rtcMin, "0%d", myRTC.minute);
+        else
+          sprintf(rtcMin, "%d", myRTC.minute);
+        if (myRTC.seconds < 10)
+          sprintf(rtcSec, "0%d", myRTC.seconds);
+        else
+          sprintf(rtcSec, "%d", myRTC.seconds);
+        if (myRTC.hundredths < 10)
+          sprintf(rtcHundredths, "0%d", myRTC.hundredths);
+        else
+          sprintf(rtcHundredths, "%d", myRTC.hundredths);
+        
+        Serial1.printf("%s:%s:%s.%s", rtcHour, rtcMin, rtcSec, rtcHundredths);
 #ifdef verboseProdTest
-        Serial.printf("RTC time is %02d:%02d:%02d.%02d\r\n", myRTC.hour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+        Serial.printf("RTC time is %s:%s:%s.%s\r\n", rtcHour, rtcMin, rtcSec, rtcHundredths);
 #endif
         break;
       case 0x19: // SD Card Test
@@ -463,7 +502,7 @@ void productionTest()
                 if (strcmp(line, "112358132134\n") == 0) // Look for the correct sequence
                 {
                   testFile.close(); // Close the file
-                  SerialLog.write(0x19); // Test passed
+                  Serial1.write(0x19); // Test passed
 #ifdef verboseProdTest
                   Serial.println(F("SD card test passed - file contents are correct"));
 #endif                              
@@ -471,7 +510,7 @@ void productionTest()
                 else
                 {
                   testFile.close(); // Close the file
-                  SerialLog.write(0x99); // Test failed - data did not compare
+                  Serial1.write(0x99); // Test failed - data did not compare
 #ifdef verboseProdTest
                   Serial.println(F("Test file contents incorrect!"));
                   for (int l = 0; l < 13; l++)
@@ -483,7 +522,7 @@ void productionTest()
               else
               {
                 testFile.close(); // Close the file
-                SerialLog.write(0x99); // Test failed - test file contents are not the correct length
+                Serial1.write(0x99); // Test failed - test file contents are not the correct length
 #ifdef verboseProdTest
                 Serial.printf("Test file contents incorrect length (%d)!\r\n", n);
 #endif                              
@@ -491,7 +530,7 @@ void productionTest()
             }
             else
             {
-              SerialLog.write(0x99); // Test failed - could not reopen the test file
+              Serial1.write(0x99); // Test failed - could not reopen the test file
 #ifdef verboseProdTest
               Serial.println(F("Failed to reopen test file"));
 #endif              
@@ -499,7 +538,7 @@ void productionTest()
           }
           else
           {
-            SerialLog.write(0x99); // Test failed - could not create the test file
+            Serial1.write(0x99); // Test failed - could not create the test file
 #ifdef verboseProdTest
             Serial.println(F("Failed to create test file"));
 #endif
@@ -507,7 +546,7 @@ void productionTest()
         }
         else
         {
-          SerialLog.write(0x99); // Test failed - SD is not online
+          Serial1.write(0x99); // Test failed - SD is not online
 #ifdef verboseProdTest
           Serial.println(F("SD card is not online!"));
 #endif          
@@ -517,26 +556,26 @@ void productionTest()
         break;
       case 0x55: // Deep sleep
       {
-        detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); // Disable power loss interrupt
+        detachInterrupt(PIN_POWER_LOSS); // Disable power loss interrupt
         Serial.end(); //Power down UART
         //Force the peripherals off
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
-        am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);      
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM1);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM2);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM3);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM4);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM5);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_ADC);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART0);
+        //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_UART1);      
         //Disable pads
         for (int x = 0; x < 50; x++)
         {
-          if ((x != ap3_gpio_pin2pad(PIN_POWER_LOSS)) &&
-            //(x != ap3_gpio_pin2pad(PIN_LOGIC_DEBUG)) &&
-            (x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-            (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-            (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+          if ((x != PIN_POWER_LOSS) &&
+            //(x != PIN_LOGIC_DEBUG) &&
+            (x != PIN_MICROSD_POWER) &&
+            (x != PIN_QWIIC_POWER) &&
+            (x != PIN_IMU_POWER))
           {
             am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
           }
@@ -545,14 +584,15 @@ void productionTest()
         imuPowerOff();
         microSDPowerOff();
         qwiicPowerOff();
-        //Power down Flash, SRAM, cache
-        am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_CACHE);         //Turn off CACHE
-        am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_FLASH_512K);    //Turn off everything but lower 512k
-        am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_SRAM_64K_DTCM); //Turn off everything but lower 64k
-        //am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); //Turn off all memory (doesn't recover)
-        //Keep the 32kHz clock running for RTC
+        
+        //Power down cache, flash, SRAM
+        am_hal_pwrctrl_memory_deepsleep_powerdown(AM_HAL_PWRCTRL_MEM_ALL); // Power down all flash and cache
+        am_hal_pwrctrl_memory_deepsleep_retain(AM_HAL_PWRCTRL_MEM_SRAM_384K); // Retain all SRAM
+      
+        //Use the lower power 32kHz clock. Use it to run CT6 as well.
         am_hal_stimer_config(AM_HAL_STIMER_CFG_CLEAR | AM_HAL_STIMER_CFG_FREEZE);
-        am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ);
+        am_hal_stimer_config(AM_HAL_STIMER_XTAL_32KHZ | AM_HAL_STIMER_CFG_COMPARE_G_ENABLE);
+
         while (1) // Stay in deep sleep until we get reset
         {
           am_hal_sysctrl_sleep(AM_HAL_SYSCTRL_SLEEP_DEEP); //Sleep

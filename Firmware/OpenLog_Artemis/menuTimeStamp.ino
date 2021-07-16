@@ -7,22 +7,58 @@ void menuTimeStamp()
     SerialPrint(F("Current date/time: "));
     myRTC.getTime();
 
-    char rtcDate[11]; //10/12/2019
-    if (settings.americanDateStyle == true)
-      sprintf(rtcDate, "%02d/%02d/20%02d", myRTC.month, myRTC.dayOfMonth, myRTC.year);
+    char rtcDate[11]; // 10/12/2019
+    char rtcDay[3];
+    char rtcMonth[3];
+    char rtcYear[5];
+    if (myRTC.dayOfMonth < 10)
+      sprintf(rtcDay, "0%d", myRTC.dayOfMonth);
     else
-      sprintf(rtcDate, "%02d/%02d/20%02d", myRTC.dayOfMonth, myRTC.month, myRTC.year);
+      sprintf(rtcDay, "%d", myRTC.dayOfMonth);
+    if (myRTC.month < 10)
+      sprintf(rtcMonth, "0%d", myRTC.month);
+    else
+      sprintf(rtcMonth, "%d", myRTC.month);
+    if (myRTC.year < 10)
+      sprintf(rtcYear, "200%d", myRTC.year);
+    else
+      sprintf(rtcYear, "20%d", myRTC.year);
+    if (settings.americanDateStyle == true)
+      sprintf(rtcDate, "%s/%s/%s,", rtcMonth, rtcDay, rtcYear);
+    else
+      sprintf(rtcDate, "%s/%s/%s,", rtcDay, rtcMonth, rtcYear);
 
     SerialPrint(rtcDate);
     SerialPrint(F(" "));
 
-    char rtcTime[12]; //09:14:37.41
+    char rtcTime[13]; //09:14:37.41,
     int adjustedHour = myRTC.hour;
     if (settings.hour24Style == false)
     {
       if (adjustedHour > 12) adjustedHour -= 12;
     }
-    sprintf(rtcTime, "%02d:%02d:%02d.%02d", adjustedHour, myRTC.minute, myRTC.seconds, myRTC.hundredths);
+    char rtcHour[3];
+    char rtcMin[3];
+    char rtcSec[3];
+    char rtcHundredths[3];
+    if (adjustedHour < 10)
+      sprintf(rtcHour, "0%d", adjustedHour);
+    else
+      sprintf(rtcHour, "%d", adjustedHour);
+    if (myRTC.minute < 10)
+      sprintf(rtcMin, "0%d", myRTC.minute);
+    else
+      sprintf(rtcMin, "%d", myRTC.minute);
+    if (myRTC.seconds < 10)
+      sprintf(rtcSec, "0%d", myRTC.seconds);
+    else
+      sprintf(rtcSec, "%d", myRTC.seconds);
+    if (myRTC.hundredths < 10)
+      sprintf(rtcHundredths, "0%d", myRTC.hundredths);
+    else
+      sprintf(rtcHundredths, "%d", myRTC.hundredths);
+    sprintf(rtcTime, "%s:%s:%s.%s", rtcHour, rtcMin, rtcSec, rtcHundredths);
+
     SerialPrintln(rtcTime);
 
     SerialPrint(F("1) Log Date: "));
@@ -65,7 +101,7 @@ void menuTimeStamp()
       SerialPrint(F("9) Local offset from UTC: "));
       Serial.println(settings.localUTCOffset);
       if (settings.useTxRxPinsForTerminal == true)
-        SerialLog.println(settings.localUTCOffset);
+        Serial1.println(settings.localUTCOffset);
     }
 
     SerialPrint(F("10) Log Microseconds: "));
@@ -101,7 +137,7 @@ void menuTimeStamp()
         int dd = myRTC.dayOfMonth, mm = myRTC.month, yy = myRTC.year, h = myRTC.hour, m = myRTC.minute, s = myRTC.seconds, ms = (myRTC.hundredths * 10);
         bool dateValid, timeValid;
         getGPSDateTime(yy, mm, dd, h, m, s, ms, dateValid, timeValid); // Get the GPS date and time, corrected for localUTCOffset
-        myRTC.setTime(h, m, s, (ms / 10), dd, mm, (yy - 2000)); //Manually set RTC
+        myRTC.setTime((ms / 10), s, m, h, dd, mm, (yy - 2000)); //Manually set RTC
         lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
         SerialPrintln(F("RTC set to GPS (UTC) time"));
         if ((dateValid == false) || (timeValid == false))
@@ -138,7 +174,9 @@ void menuTimeStamp()
         SerialPrint(F("Enter current day (1 to 31): "));
         dd = getNumber(menuTimeout); //Timeout after x seconds
 
-        myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
+        myRTC.getTime();
+        h = myRTC.hour; m = myRTC.minute; s = myRTC.seconds;
+        myRTC.setTime(0, s, m, h, dd, mm, yy); //Manually set RTC
         lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
       }
       else if (incoming == 5)
@@ -164,7 +202,7 @@ void menuTimeStamp()
         SerialPrint(F("Enter current second (0 to 59): "));
         s = getNumber(menuTimeout); //Timeout after x seconds
 
-        myRTC.setTime(h, m, s, 0, dd, mm, yy); //Manually set RTC
+        myRTC.setTime(0, s, m, h, dd, mm, yy); //Manually set RTC
         lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
       }
       else if (incoming == 7)

@@ -23,11 +23,18 @@ void menuPower()
     else SerialPrintln(F("Disabled"));
 
     SerialPrint(F("5) Low Battery Threshold (V): "));
-    SerialPrintf2("%.2f\r\n", settings.lowBatteryThreshold);
+    char tempStr[16];
+    olaftoa(settings.lowBatteryThreshold, tempStr, 2, sizeof(tempStr) / sizeof(char));
+    SerialPrintf2("%s\r\n", tempStr);
 
     SerialPrint(F("6) VIN measurement correction factor: "));
-    SerialPrintf2("%.3f\r\n", settings.vinCorrectionFactor);
+    olaftoa(settings.vinCorrectionFactor, tempStr, 3, sizeof(tempStr) / sizeof(char));
+    SerialPrintf2("%s\r\n", tempStr);
 #endif
+
+    SerialPrint(F("7) Serial Tx and Rx pins during sleep are: "));
+    if (settings.serialTxRxDuringSleep == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
 
     SerialPrintln(F("x) Exit"));
 
@@ -45,8 +52,9 @@ void menuPower()
         {
           // Disable stop logging
           settings.useGPIO32ForStopLogging = false;
-          detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+          detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           pinMode(PIN_STOP_LOGGING, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
           stopLoggingSeen = false; // Make sure the flag is clear
         }
         else
@@ -54,8 +62,12 @@ void menuPower()
           // Enable stop logging
           settings.useGPIO32ForStopLogging = true;
           pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
+          pin_config(PinName(PIN_STOP_LOGGING), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
           delay(1); // Let the pin stabilize
-          attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the interrupt
+          attachInterrupt(PIN_STOP_LOGGING, stopLoggingISR, FALLING); // Enable the interrupt
+          am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
+          intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+          pin_config(PinName(PIN_STOP_LOGGING), intPinConfig); // Make sure the pull-up does actually stay enabled
           stopLoggingSeen = false; // Make sure the flag is clear
           settings.logA32 = false; // Disable analog logging on pin 32
         }
@@ -98,6 +110,10 @@ void menuPower()
         settings.vinCorrectionFactor = tempCF;
     }
 #endif
+    else if (incoming == '7')
+    {
+      settings.serialTxRxDuringSleep ^= 1;
+    }
     else if (incoming == 'x')
       break;
     else if (incoming == STATUS_GETBYTE_TIMEOUT)

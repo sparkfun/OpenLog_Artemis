@@ -255,12 +255,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_MS5837;
       }
       break;
-//    case DEVICE_QWIIC_BUTTON:
-//      {
-//        temp->classPtr = new QwiicButton;
-//        temp->configPtr = new struct_QWIIC_BUTTON;
-//      }
-//      break;
+    case DEVICE_QWIIC_BUTTON:
+      {
+        temp->classPtr = new QwiicButton;
+        temp->configPtr = new struct_QWIIC_BUTTON;
+      }
+      break;
     case DEVICE_BIO_SENSOR_HUB:
       {
         temp->classPtr = new SparkFun_Bio_Sensor_Hub(32, 11, address); // Reset pin is 32, MFIO pin is 11
@@ -295,7 +295,7 @@ bool beginQwiicDevices()
   bool everythingStarted = true;
 
   waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up - if required
-  
+
   qwiicPowerOnDelayMillis = settings.qwiicBusPowerUpDelayMs; // Set qwiicPowerOnDelayMillis to the _minimum_ defined by settings.qwiicBusPowerUpDelayMs. It will be increased if required.
 
   int numberOfSCD30s = 0; // Keep track of how many SCD30s we begin so we can delay before starting the second and subsequent ones
@@ -312,13 +312,13 @@ bool beginQwiicDevices()
   while (temp != NULL)
   {
     openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
-    
+
     if (settings.printDebugMessages == true)
     {
       SerialPrintf2("beginQwiicDevices: attempting to begin deviceType %s", getDeviceName(temp->deviceType));
       SerialPrintf4(" at address 0x%02X using mux address 0x%02X and port number %d\r\n", temp->address, temp->muxAddress, temp->portNumber);
     }
-    
+
     //Attempt to begin the device
     switch (temp->deviceType)
     {
@@ -349,12 +349,13 @@ bool beginQwiicDevices()
         break;
       case DEVICE_GPS_UBLOX:
         {
-          qwiic.setPullups(0); //Disable pullups for u-blox comms.
+          setQwiicPullups(0); //Disable pullups for u-blox comms.
           SFE_UBLOX_GNSS *tempDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if(settings.printGNSSDebugMessages == true) tempDevice->enableDebugging(); // Enable debug messages if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
-          qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups.
+          setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups.
         }
         break;
       case DEVICE_PROXIMITY_VCNL4040:
@@ -527,15 +528,15 @@ bool beginQwiicDevices()
             temp->online = true;
         }
         break;
-//      case DEVICE_QWIIC_BUTTON:
-//        {
-//          QwiicButton *tempDevice = (QwiicButton *)temp->classPtr;
-//          struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr; //Create a local pointer that points to same spot as node does
-//          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
-//          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
-//            temp->online = true;
-//        }
-//        break;
+      case DEVICE_QWIIC_BUTTON:
+        {
+          QwiicButton *tempDevice = (QwiicButton *)temp->classPtr;
+          struct_QWIIC_BUTTON *nodeSetting = (struct_QWIIC_BUTTON *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
       case DEVICE_BIO_SENSOR_HUB:
         {
           SparkFun_Bio_Sensor_Hub *tempDevice = (SparkFun_Bio_Sensor_Hub *)temp->classPtr;
@@ -657,7 +658,7 @@ void configureDevice(node * temp)
       break;
     case DEVICE_GPS_UBLOX:
       {
-        qwiic.setPullups(0); //Disable pullups for u-blox comms.
+        setQwiicPullups(0); //Disable pullups for u-blox comms.
 
         SFE_UBLOX_GNSS *sensor = (SFE_UBLOX_GNSS *)temp->classPtr;
         struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
@@ -667,7 +668,7 @@ void configureDevice(node * temp)
         sensor->saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the current ioPortsettings to flash and BBR
 
         sensor->setAutoPVT(nodeSetting->useAutoPVT); // Use autoPVT as required
-        
+
         if (1000000ULL / settings.usBetweenReadings <= 1) //If we are slower than 1Hz logging rate
           // setNavigationFrequency expects a uint8_t to define the number of updates per second
           // So the slowest rate we can set with setNavigationFrequency is 1Hz
@@ -678,7 +679,7 @@ void configureDevice(node * temp)
         else
           sensor->setNavigationFrequency(10); //Set nav freq to 10Hz. Max output depends on the module used.
 
-        qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups.
+        setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups.
       }
       break;
     case DEVICE_PROXIMITY_VCNL4040:
@@ -818,17 +819,17 @@ void configureDevice(node * temp)
         sensor->setFluidDensity(sensorSetting->fluidDensity);
       }
       break;
-//    case DEVICE_QWIIC_BUTTON:
-//      {
-//        QwiicButton *sensor = (QwiicButton *)temp->classPtr;
-//        struct_QWIIC_BUTTON *sensorSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
-//
-//        if (sensorSetting->ledState)
-//          sensor->LEDon(sensorSetting->ledBrightness);
-//        else
-//          sensor->LEDoff();
-//      }
-//      break
+    case DEVICE_QWIIC_BUTTON:
+      {
+        QwiicButton *sensor = (QwiicButton *)temp->classPtr;
+        struct_QWIIC_BUTTON *sensorSetting = (struct_QWIIC_BUTTON *)temp->configPtr;
+
+        if (sensorSetting->ledState)
+          sensor->LEDon(sensorSetting->ledBrightness);
+        else
+          sensor->LEDoff();
+      }
+      break;
     case DEVICE_BIO_SENSOR_HUB:
       {
         SparkFun_Bio_Sensor_Hub *sensor = (SparkFun_Bio_Sensor_Hub *)temp->classPtr;
@@ -854,6 +855,10 @@ void configureQwiicDevices()
     configureDevice(temp);
     temp = temp->next;
   }
+
+  //Now that the settings are loaded and the devices are configured,
+  //try for 400kHz but reduce to 100kHz if certain devices are attached
+  setMaxI2CSpeed();
 }
 
 //Returns a pointer to the menu function that configures this particular device type
@@ -936,9 +941,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
     case DEVICE_PRESSURE_MS5837:
       ptr = (FunctionPointer)menuConfigure_MS5837;
       break;
-//    case DEVICE_QWIIC_BUTTON:
-//      ptr = (FunctionPointer)menuConfigure_QWIIC_BUTTON;
-//      break;
+    case DEVICE_QWIIC_BUTTON:
+      ptr = (FunctionPointer)menuConfigure_QWIIC_BUTTON;
+      break;
     case DEVICE_BIO_SENSOR_HUB:
       ptr = (FunctionPointer)menuConfigure_BIO_SENSOR_HUB;
       break;
@@ -1088,7 +1093,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_VCNL4040 0x60
 #define ADR_SCD30 0x61
 #define ADR_MCP9600 0x60 //0x60 to 0x67
-//#define ADR_QWIIC_BUTTON 0x6F //But can be any address... Limit the range to 0x68-0x6F
+#define ADR_QWIIC_BUTTON 0x6F //But can be any address... Limit the range to 0x68-0x6F
 #define ADR_MULTIPLEXER 0x70 //0x70 to 0x77
 #define ADR_SHTC3 0x70
 #define ADR_MS5637 0x76
@@ -1204,15 +1209,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     case 0x42:
       {
         //Confidence: High - Sends/receives CRC checked data response
-        qwiic.setPullups(0); //Disable pullups to minimize CRC issues
+        setQwiicPullups(0); //Disable pullups to minimize CRC issues
         SFE_UBLOX_GNSS sensor;
-        if(settings.printDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
+        if(settings.printGNSSDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
         {
-          qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups to prevent ghosts at 0x43 onwards
+          setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups to prevent ghosts at 0x43 onwards
           return (DEVICE_GPS_UBLOX);
         }
-        qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups for normal discovery
+        setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups for normal discovery
       }
       break;
     case 0x44:
@@ -1380,20 +1385,20 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
           return (DEVICE_TEMPERATURE_MCP9600);
       }
       break;
-//    case 0x68:
-//    case 0x69:
-//    case 0x6A:
-//    case 0x6B:
-//    case 0x6C:
-//    case 0x6D:
-//    case 0x6E:
-//    case 0x6F:
-//      {
-//        QwiicButton sensor;
-//        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-//          return (DEVICE_QWIIC_BUTTON);
-//      }
-//      break;
+    case 0x68:
+    case 0x69:
+    case 0x6A:
+    case 0x6B:
+    case 0x6C:
+    case 0x6D:
+    case 0x6E:
+    case 0x6F:
+      {
+        QwiicButton sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_QWIIC_BUTTON);
+      }
+      break;
     case 0x70:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
@@ -1445,7 +1450,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor2.begin(qwiic) == true) //Wire port
         {
           if (sensor2.getModel() <= 1) // Check that getModel returns 0 or 1. It will (hopefully) return 255 if an MS5637 is attached.
-            return (DEVICE_PRESSURE_MS5837);          
+            return (DEVICE_PRESSURE_MS5837);
         }
 
         //Confidence: High - does CRC on internal EEPROM read - but do this second as a MS5837 will appear as a MS5637
@@ -1469,7 +1474,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-        
+
         BME280 sensor;
         sensor.setI2CAddress(i2cAddress);
         if (sensor.beginI2C(qwiic) == true) //Wire port
@@ -1510,7 +1515,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-        
+
         //Confidence: Medium - Write/Read/Clear to 0x00
         if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1521,7 +1526,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
 
-        // If an MS8607 is connected, multiplexerBegin causes the MS8607 to 'crash' and lock up the I2C bus... So we need to check if an MS8607 is connected first. 
+        // If an MS8607 is connected, multiplexerBegin causes the MS8607 to 'crash' and lock up the I2C bus... So we need to check if an MS8607 is connected first.
         // We will use the MS5637 as this will test for itself, the MS5837 and the pressure sensor of the MS8607
         // Just to make life even more complicated, a mux with address 0x76 will also appear as an MS5637 due to the way the MS5637 eeprom crc check is calculated.
         // So, we can't use .begin as the test for a MS5637 / MS5837 / MS8607. We need to be more creative!
@@ -1530,7 +1535,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
         //  An MS5637 / MS5837 / MS8607 will return the value stored in its eeprom which _hopefully_ is not 0xA0A0!
 
         // Let's hope this doesn't cause problems for the BME280...! We should be OK as the default address for the BME280 is 0x77.
-        
+
         qwiic.beginTransmission((uint8_t)i2cAddress);
         qwiic.write((uint8_t)0xA0);
         uint8_t i2c_status = qwiic.endTransmission();
@@ -1558,7 +1563,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-        
+
         //Confidence: Medium - Write/Read/Clear to 0x00
         if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
@@ -1614,7 +1619,7 @@ bool setMuxPortState(uint8_t portBits, uint8_t deviceAddress, TwoWire &wirePort,
   wirePort.beginTransmission(deviceAddress);
   for (int i = 0; i < extraBytes; i++)
   {
-    wirePort.write(0x00); // Writing these extra bytes seems key to avoiding the slippery mux problem
+    wirePort.write((uint8_t)0x00); // Writing these extra bytes seems key to avoiding the slippery mux problem
   }
   wirePort.write(portBits);
   if (wirePort.endTransmission() != 0)
@@ -1706,9 +1711,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
     case DEVICE_PRESSURE_MS5837:
       return "Pressure-MS5837";
       break;
-//    case DEVICE_QWIIC_BUTTON:
-//      return "Qwiic_Button";
-//      break;
+    case DEVICE_QWIIC_BUTTON:
+      return "Qwiic_Button";
+      break;
     case DEVICE_BIO_SENSOR_HUB:
       return "Bio-Sensor-Oximeter";
       break;

@@ -53,6 +53,15 @@ void setup() {
   digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
   pinMode(PIN_IMU_INT, INPUT_PULLUP);
 
+  //There is a quirk in v2.1 of the Apollo3 mbed core which means that the first SPI transaction will
+  //disable the pull-up on CIPO. We need to do a fake transaction and then re-enable the pull-up
+  //to work around this...
+#if defined(ARDUINO_ARCH_MBED)
+  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0)); // Do a fake transaction
+  SPI.endTransaction();
+  enableCIPOpullUp(); // Re-enable the CIPO pull-up
+#endif
+
   //Reset ICM by power cycling it
   imuPowerOff();
 
@@ -86,7 +95,7 @@ void setup() {
 
     // Initialize the ICM-20948
     // If the DMP is enabled, .begin performs a minimal startup. We need to configure the sample mode etc. manually.
-    myICM.begin( CS_PIN, SPI_PORT );
+    myICM.begin( CS_PIN, SPI_PORT, 4000000); //Set IMU SPI rate to 4MHz
 
 #ifndef QUAT_ANIMATION
     SERIAL_PORT.print( F("Initialization of the sensor returned: ") );
@@ -279,16 +288,27 @@ void imuPowerOff()
   digitalWrite(PIN_IMU_POWER, LOW);
 }
 
+#if defined(ARDUINO_ARCH_MBED) // updated for v2.1.0 of the Apollo3 core
+bool enableCIPOpullUp()
+{
+  //Add 1K5 pull-up on CIPO
+  am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
+  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  pin_config(D6, cipoPinCfg);
+  return (true);
+}
+#else
 bool enableCIPOpullUp()
 {
   //Add CIPO pull-up
   ap3_err_t retval = AP3_OK;
   am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
   cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
+  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
   cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
   cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
   cipoPinCfg.uIOMnum = AP3_SPI_IOM;
-  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
   padMode(MISO, cipoPinCfg, &retval);
   return (retval == AP3_OK);
 }
+#endif

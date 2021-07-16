@@ -18,7 +18,7 @@ void menuSerialLogging()
     SerialPrint(F("3) zmodem start delay: "));
     Serial.print(settings.zmodemStartDelay);
     if (settings.useTxRxPinsForTerminal == true)
-      SerialLog.print(settings.zmodemStartDelay);
+      Serial1.print(settings.zmodemStartDelay);
     SerialPrintln(F(" seconds"));
 
     if ((settings.logSerial == true) || (settings.outputSerial == true))
@@ -26,7 +26,7 @@ void menuSerialLogging()
       SerialPrint(F("4) Set serial baud rate: "));
       Serial.print(settings.serialLogBaudRate);
       if (settings.useTxRxPinsForTerminal == true)
-        SerialLog.print(settings.zmodemStartDelay);
+        Serial1.print(settings.zmodemStartDelay);
       SerialPrintln(F(" bps"));
     }
 
@@ -39,7 +39,7 @@ void menuSerialLogging()
       SerialPrint(F("6) Timestamp token: "));
       Serial.print(settings.timeStampToken);
       if (settings.useTxRxPinsForTerminal == true)
-        SerialLog.print(settings.timeStampToken);
+        Serial1.print(settings.timeStampToken);
       SerialPrint(F(" (Decimal)"));
       switch (settings.timeStampToken)
       {
@@ -130,8 +130,9 @@ void menuSerialLogging()
         }
         else
         {
+          configureSerial1TxRx();
           settings.serialLogBaudRate = newBaud;
-          SerialLog.begin(settings.serialLogBaudRate);
+          Serial1.begin(settings.serialLogBaudRate);
         }
       }
       else if (incoming == '5')

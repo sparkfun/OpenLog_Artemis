@@ -33,12 +33,12 @@ bool detectQwiicDevices()
   printDebug(F("detectQwiicDevices started\r\n"));
   bool somethingDetected = false;
 
-  qwiic.setClock(100000); //During detection, go slow
+  qwiic.setClock(AM_HAL_IOM_100KHZ); //During detection, go slow
 
-  qwiic.setPullups(settings.qwiicBusPullUps); //Set pullups. (Redundant. beginQwiic has done this too.) If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+  setQwiicPullups(settings.qwiicBusPullUps); //Set pullups. (Redundant. beginQwiic has done this too.) If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   //24k causes a bunch of unknown devices to be falsely detected.
-  //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+  //setQwiicPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up
   
@@ -227,9 +227,10 @@ bool detectQwiicDevices()
   bubbleSortDevices(head); //This may destroy mux alignment to node 0.
 
   //*** Let's leave pull-ups set to 1k and only disable them when taking to a u-blox device ***
-  //qwiic.setPullups(0); //We've detected something on the bus so disable pullups.
+  //setQwiicPullups(0); //We've detected something on the bus so disable pullups.
 
-  setMaxI2CSpeed(); //Try for 400kHz but reduce to 100kHz or low if certain devices are attached
+  //We need to call setMaxI2CSpeed in configureQwiicDevices
+  //We cannot do it here as the device settings have not been loaded
 
   SerialPrintln(F("Autodetect complete"));
 
@@ -336,9 +337,9 @@ void menuAttachedDevices()
           case DEVICE_PRESSURE_MS5837:
             SerialPrintf3("%s MS5837 (BAR30 / BAR02) Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
-//          case DEVICE_QWIIC_BUTTON:
-//            SerialPrintf3("%s Qwiic Button %s\r\n", strDeviceMenu, strAddress);
-//            break;
+          case DEVICE_QWIIC_BUTTON:
+            SerialPrintf3("%s Qwiic Button %s\r\n", strDeviceMenu, strAddress);
+            break;
           case DEVICE_BIO_SENSOR_HUB:
             SerialPrintf3("%s Bio Sensor Pulse Oximeter %s\r\n", strDeviceMenu, strAddress);
             break;
@@ -406,7 +407,7 @@ void menuAttachedDevices()
           settings.logA32 = false;
           if (settings.useGPIO11ForTrigger == true) // If interrupts are enabled, we need to disable and then re-enable
           {
-            detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+            detachInterrupt(PIN_TRIGGER); // Disable the interrupt
             settings.useGPIO11ForTrigger = false;
           }
           settings.useGPIO11ForFastSlowLogging = false;
@@ -414,7 +415,16 @@ void menuAttachedDevices()
           {
             // Disable stop logging
             settings.useGPIO32ForStopLogging = false;
-            detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); // Disable the interrupt
+            detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
+          }
+          
+          recordSystemSettings(); //Record the new settings to EEPROM and config file now in case the user resets before exiting the menus
+                
+          if (detectQwiicDevices() == true) //Detect the oximeter
+          {
+            beginQwiicDevices(); //Begin() each device in the node list
+            configureQwiicDevices(); //Apply config settings to each device in the node list
+            recordDeviceSettingsToFile(); //Record the current devices settings to device config file now in case the user resets before exiting the menus
           }
 
           recordSystemSettings(); //Record the new settings to EEPROM and config file now in case the user resets before exiting the menus
@@ -474,12 +484,10 @@ void menuConfigure_QwiicBus()
       settings.powerDownQwiicBusBetweenReads ^= 1;
     else if (incoming == '2')
     {
-      SerialPrint(F("Enter max frequency to run Qwiic bus: (100000 or 400000): "));
-      uint32_t amt = getNumber(menuTimeout);
-      if ((amt == 100000) || (amt == 400000))
-        settings.qwiicBusMaxSpeed = amt;
+      if (settings.qwiicBusMaxSpeed == 100000)
+        settings.qwiicBusMaxSpeed = 400000;
       else
-        SerialPrintln(F("Error: Out of range"));
+        settings.qwiicBusMaxSpeed = 100000;
     }
     else if (incoming == '3')
     {
@@ -846,9 +854,12 @@ void menuConfigure_NAU7802(void *configPtr)
     if (sensorConfig->log == true)
     {
       SerialPrintln(F("2) Calibrate Scale"));
-      SerialPrintf2("\tScale calibration factor: %f\r\n", sensorConfig->calibrationFactor);
+      char tempStr[16];
+      olaftoa(sensorConfig->calibrationFactor, tempStr, 6, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("\tScale calibration factor: %s\r\n", tempStr);
       SerialPrintf2("\tScale zero offset: %d\r\n", sensorConfig->zeroOffset);
-      SerialPrintf2("\tWeight currently on scale: %f\r\n", sensor->getWeight());
+      olaftoa(sensor->getWeight(), tempStr, sensorConfig->decimalPlaces, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("\tWeight currently on scale: %s\r\n", tempStr);
 
       SerialPrintf2("3) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
       SerialPrintf2("4) Average number of readings to take per weight read: %d\r\n", sensorConfig->averageAmount);
@@ -877,7 +888,7 @@ void menuConfigure_NAU7802(void *configPtr)
         SerialPrint(F("New zero offset: "));
         Serial.println(sensor->getZeroOffset());
         if (settings.useTxRxPinsForTerminal == true)
-          SerialLog.println(sensor->getZeroOffset());
+          Serial1.println(sensor->getZeroOffset());
 
         SerialPrintln(F("Place known weight on scale. Press a key when weight is in place and stable."));
         waitForInput();
@@ -1005,6 +1016,8 @@ void menuConfigure_uBlox(void *configPtr)
       if (sensorSetting->useAutoPVT == true) SerialPrintln(F("Yes"));
       else SerialPrintln(F("No"));
 
+      SerialPrintln(F("16) Reset GNSS to factory defaults"));
+
       SerialFlush();
     }
     SerialPrintln(F("x) Exit"));
@@ -1050,6 +1063,18 @@ void menuConfigure_uBlox(void *configPtr)
       }
       else if (incoming == 15)
         sensorSetting->useAutoPVT ^= 1;
+      else if (incoming == 16)
+      {
+        SerialPrintln(F("Reset GNSS module to factory defaults. This will take 5 seconds to complete."));
+        SerialPrintln(F("Are you sure? Press 'y' to confirm: "));
+        byte bContinue = getByteChoice(menuTimeout);
+        if (bContinue == 'y')
+        {
+          gnssFactoryDefault();
+        }
+        else
+          SerialPrintln(F("Reset GNSS aborted"));
+      } 
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -1064,7 +1089,6 @@ void menuConfigure_uBlox(void *configPtr)
     else
       printUnknown(incoming);
   }
-
 }
 
 bool isUbloxAttached()
@@ -1096,10 +1120,13 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
     {
       case DEVICE_GPS_UBLOX:
         {
-          qwiic.setPullups(0); //Disable pullups to minimize CRC issues
+          setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
           SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
           struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+
+          //If autoPVT is enabled, flush the data to make sure we get fresh date and time
+          if (nodeSetting->useAutoPVT) nodeDevice->flushPVT();
 
           //Get latested date/time from GPS
           //These will be extracted from a single PVT packet
@@ -1113,7 +1140,38 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
           timeValid = nodeDevice->getTimeValid();
           millisecond = nodeDevice->getMillisecond();
 
-          qwiic.setPullups(settings.qwiicBusPullUps); //Re-enable pullups
+          setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups
+        }
+    }
+    temp = temp->next;
+  }
+}
+
+void gnssFactoryDefault(void)
+{
+  //Step through node list
+  node *temp = head;
+
+  while (temp != NULL)
+  {
+    switch (temp->deviceType)
+    {
+      case DEVICE_GPS_UBLOX:
+        {
+          setQwiicPullups(0); //Disable pullups to minimize CRC issues
+
+          SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
+          struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+
+          //Reset the module to the factory defaults
+          nodeDevice->factoryDefault();
+          
+          delay(5000); //Blocking delay to allow module to reset
+
+          nodeDevice->setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+          nodeDevice->saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the current ioPortsettings to flash and BBR
+
+          setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups
         }
     }
     temp = temp->next;
@@ -1573,7 +1631,7 @@ void menuConfigure_SCD30(void *configPtr)
         SerialPrint(F("The current temperature offset read from the sensor is: "));
         Serial.print(sensor->getTemperatureOffset(), 2);
         if (settings.useTxRxPinsForTerminal == true)
-          SerialLog.print(sensor->getTemperatureOffset(), 2);
+          Serial1.print(sensor->getTemperatureOffset(), 2);
         SerialPrintln(F("C"));
         SerialPrint(F("Enter new temperature offset in C (-50 to 50): "));
         int amt = getNumber(menuTimeout); //x second timeout
@@ -2455,73 +2513,73 @@ void menuConfigure_MS5837(void *configPtr)
   }
 }
 
-//void menuConfigure_QWIIC_BUTTON(void *configPtr)
-//{
-//  struct_QWIIC_BUTTON *sensorSetting = (struct_QWIIC_BUTTON*)configPtr;
-//
-//  while (1)
-//  {
-//    SerialPrintln(F(""));
-//    SerialPrintln(F("Menu: Configure Qwiic Button"));
-//
-//    SerialPrint(F("1) Sensor Logging: "));
-//    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
-//    else SerialPrintln(F("Disabled"));
-//
-//    if (sensorSetting->log == true)
-//    {
-//      SerialPrint(F("2) Log Button Presses: "));
-//      if (sensorSetting->logPressed == true) SerialPrintln(F("Enabled"));
-//      else SerialPrintln(F("Disabled"));
-//
-//      SerialPrint(F("3) Log Button Clicks: "));
-//      if (sensorSetting->logClicked == true) SerialPrintln(F("Enabled"));
-//      else SerialPrintln(F("Disabled"));
-//
-//      SerialPrint(F("4) Toggle LED on each click (and log the LED state): "));
-//      if (sensorSetting->toggleLEDOnClick == true) SerialPrintln(F("Enabled"));
-//      else SerialPrintln(F("Disabled"));
-//  
-//      SerialPrintf2("5) LED Brightness: %d\r\n", sensorSetting->ledBrightness);
-//    }
-//    SerialPrintln(F("x) Exit"));
-//
-//    int incoming = getNumber(menuTimeout); //Timeout after x seconds
-//
-//    if (incoming == 1)
-//      sensorSetting->log ^= 1;
-//    else if (sensorSetting->log == true)
-//    {
-//      if (incoming == 2)
-//        sensorSetting->logPressed ^= 1;
-//      else if (incoming == 3)
-//        sensorSetting->logClicked ^= 1;
-//      else if (incoming == 4)
-//        sensorSetting->toggleLEDOnClick ^= 1;
-//      else if (incoming == 5)
-//      {
-//        SerialPrint(F("Enter the LED brightness (0 to 255): "));
-//        int bright = getNumber(menuTimeout); //x second timeout
-//        if (bright < 0 || bright > 255)
-//          SerialPrintln(F("Error: Out of range"));
-//        else
-//          sensorSetting->ledBrightness = bright;
-//      }        
-//      else if (incoming == STATUS_PRESSED_X)
-//        break;
-//      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
-//        break;
-//      else
-//        printUnknown(incoming);
-//    }
-//    else if (incoming == STATUS_PRESSED_X)
-//      break;
-//    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
-//      break;
-//    else
-//      printUnknown(incoming);
-//  }
-//}
+void menuConfigure_QWIIC_BUTTON(void *configPtr)
+{
+  struct_QWIIC_BUTTON *sensorSetting = (struct_QWIIC_BUTTON*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure Qwiic Button"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Button Presses: "));
+      if (sensorSetting->logPressed == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Button Clicks: "));
+      if (sensorSetting->logClicked == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Toggle LED on each click (and log the LED state): "));
+      if (sensorSetting->toggleLEDOnClick == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+  
+      SerialPrintf2("5) LED Brightness: %d\r\n", sensorSetting->ledBrightness);
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logPressed ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logClicked ^= 1;
+      else if (incoming == 4)
+        sensorSetting->toggleLEDOnClick ^= 1;
+      else if (incoming == 5)
+      {
+        SerialPrint(F("Enter the LED brightness (0 to 255): "));
+        int bright = getNumber(menuTimeout); //x second timeout
+        if (bright < 0 || bright > 255)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->ledBrightness = bright;
+      }        
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
 
 void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
 {

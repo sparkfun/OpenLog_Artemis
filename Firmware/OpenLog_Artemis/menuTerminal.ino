@@ -16,7 +16,7 @@ void menuLogRate()
     SerialPrint(F("3) Set Serial Terminal Baud Rate: "));
     Serial.print(settings.serialTerminalBaudRate);
     if (settings.useTxRxPinsForTerminal == true)
-      SerialLog.print(settings.serialTerminalBaudRate);
+      Serial1.print(settings.serialTerminalBaudRate);
     SerialPrintln(F(" bps"));
 
     if (settings.useGPIO11ForTrigger == false)
@@ -35,7 +35,9 @@ void menuLogRate()
         {
           //Display fractional Hertz
           uint32_t logRateSeconds = (uint32_t)(settings.usBetweenReadings / 1000000ULL);
-          SerialPrintf2("%.06lf\r\n", 1.0 / logRateSeconds);
+          char tempStr[16];
+          olaftoa(1.0 / logRateSeconds, tempStr, 6, sizeof(tempStr) / sizeof(char));
+          SerialPrintf2("%s\r\n", tempStr);
         }
       }
   
@@ -51,7 +53,9 @@ void menuLogRate()
         else
         {
           float rate = (float)(settings.usBetweenReadings / 1000000.0);
-          SerialPrintf2("%.06f\r\n", rate);
+          char tempStr[16];
+          olaftoa(rate, tempStr, 6, sizeof(tempStr) / sizeof(char));
+          SerialPrintf2("%s\r\n", tempStr);
         }
       }
   
@@ -124,12 +128,30 @@ void menuLogRate()
       SerialPrint(F("19) Slow logging starts at: "));
       int slowHour = settings.slowLoggingStartMOD / 60;
       int slowMin = settings.slowLoggingStartMOD % 60;
-      SerialPrintf3("%02d:%02d\r\n", slowHour, slowMin);
+      char hourStr[3];
+      char minStr[3];
+      if (slowHour < 10)
+        sprintf(hourStr, "0%d", slowHour);
+      else
+        sprintf(hourStr, "%d", slowHour);
+      if (slowMin < 10)
+        sprintf(minStr, "0%d", slowMin);
+      else
+        sprintf(minStr, "%d", slowMin);
+      SerialPrintf3("%s:%s\r\n", hourStr, minStr);
 
       SerialPrint(F("20) Slow logging ends at: "));
       slowHour = settings.slowLoggingStopMOD / 60;
       slowMin = settings.slowLoggingStopMOD % 60;
-      SerialPrintf3("%02d:%02d\r\n", slowHour, slowMin);
+      if (slowHour < 10)
+        sprintf(hourStr, "0%d", slowHour);
+      else
+        sprintf(hourStr, "%d", slowHour);
+      if (slowMin < 10)
+        sprintf(minStr, "0%d", slowMin);
+      else
+        sprintf(minStr, "%d", slowMin);
+      SerialPrintf3("%s:%s\r\n", hourStr, minStr);
     }
 
     if ((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
@@ -264,8 +286,9 @@ void menuLogRate()
         {
           // Disable triggering
           settings.useGPIO11ForTrigger = false;
-          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         else
@@ -273,11 +296,20 @@ void menuLogRate()
           // Enable triggering
           settings.useGPIO11ForTrigger = true;
           pinMode(PIN_TRIGGER, INPUT_PULLUP);
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
           delay(1); // Let the pin stabilize
+          am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
           if (settings.fallingEdgeTrigger == true)
-            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+          {
+            attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
+            intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+          }
           else
-            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+          {
+            attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
+            intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_LO2HI;
+          }
+          pin_config(PinName(PIN_TRIGGER), intPinConfig); // Make sure the pull-up does actually stay enabled
           triggerEdgeSeen = false; // Make sure the flag is clear
           settings.logA11 = false; // Disable analog logging on pin 11
           settings.logMaxRate = false; // Disable max rate logging
@@ -298,12 +330,20 @@ void menuLogRate()
       {
         if (settings.useGPIO11ForTrigger == true) // If interrupts are enabled, we need to disable and then re-enable
         {
-          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           settings.fallingEdgeTrigger ^= 1; // Invert the flag
+          am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
           if (settings.fallingEdgeTrigger == true)
-            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, FALLING); // Enable the interrupt
+          {
+            attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
+            intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
+          }
           else
-            attachInterrupt(digitalPinToInterrupt(PIN_TRIGGER), triggerPinISR, RISING); // Enable the interrupt
+          {
+            attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
+            intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_LO2HI;
+          }
+          pin_config(PinName(PIN_TRIGGER), intPinConfig); // Make sure the pull-up does actually stay enabled
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         else
@@ -341,7 +381,11 @@ void menuLogRate()
           online.serialOutput = false;
           settings.logA12 = false;
           settings.logA13 = false;
-          SerialLog.begin(settings.serialTerminalBaudRate); // (Re)Start the serial port
+
+          //We need to manually restore the Serial1 TX and RX pins before we can use Serial1
+          configureSerial1TxRx();
+
+          Serial1.begin(settings.serialTerminalBaudRate); // (Re)Start the serial port using the terminal baud rate
         }
         else
           SerialPrintln(F("\"Use TX and RX pins for terminal\"  aborted"));
@@ -364,11 +408,12 @@ void menuLogRate()
           settings.useRTCForFastSlowLogging = false;
           settings.logA11 = false; // Disable analog logging on pin 11
           pinMode(PIN_TRIGGER, INPUT_PULLUP);
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT_PULLUP); // Make sure the pin does actually get re-configured
           delay(1); // Let the pin stabilize
           // Disable triggering
           if (settings.useGPIO11ForTrigger == true)
           {
-            detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+            detachInterrupt(PIN_TRIGGER); // Disable the interrupt
             triggerEdgeSeen = false; // Make sure the flag is clear
           }
           settings.useGPIO11ForTrigger = false;
@@ -377,6 +422,7 @@ void menuLogRate()
         {
           settings.useGPIO11ForFastSlowLogging = false;        
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
         }
       }
       else
@@ -399,6 +445,7 @@ void menuLogRate()
       {
         settings.useGPIO11ForFastSlowLogging = false;        
         pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+        pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
       }
     }
     else if (incoming == 17)
@@ -408,15 +455,17 @@ void menuLogRate()
         settings.useRTCForFastSlowLogging = true;
         if (settings.useGPIO11ForFastSlowLogging == true)
         {
-          pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up          
+          pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
         }
         settings.useGPIO11ForFastSlowLogging = false;
         settings.logA11 = false; // Disable analog logging on pin 11
         // Disable triggering
         if (settings.useGPIO11ForTrigger == true)
         {
-          detachInterrupt(digitalPinToInterrupt(PIN_TRIGGER)); // Disable the interrupt
+          detachInterrupt(PIN_TRIGGER); // Disable the interrupt
           pinMode(PIN_TRIGGER, INPUT); // Remove the pull-up
+          pin_config(PinName(PIN_TRIGGER), g_AM_HAL_GPIO_INPUT); // Make sure the pin does actually get re-configured
           triggerEdgeSeen = false; // Make sure the flag is clear
         }
         settings.useGPIO11ForTrigger = false;

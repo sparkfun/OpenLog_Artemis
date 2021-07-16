@@ -111,7 +111,7 @@ void menuMain()
         SerialPrint(F("Settings erased. Please reset OpenLog Artemis and open a terminal at "));
         Serial.print((String)settings.serialTerminalBaudRate);
         if (settings.useTxRxPinsForTerminal == true)
-          SerialLog.print((String)settings.serialTerminalBaudRate);
+          Serial1.print((String)settings.serialTerminalBaudRate);
         SerialPrintln(F("bps..."));
         while (1);
       }
@@ -140,10 +140,10 @@ void menuMain()
         SerialPrint(F("Log files are closed. Please reset OpenLog Artemis and open a terminal at "));
         Serial.print((String)settings.serialTerminalBaudRate);
         if (settings.useTxRxPinsForTerminal == true)
-          SerialLog.print((String)settings.serialTerminalBaudRate);
+          Serial1.print((String)settings.serialTerminalBaudRate);
         SerialPrintln(F("bps..."));
         delay(sdPowerDownDelay); // Give the SD card time to shut down
-        powerDown();
+        powerDownOLA();
       }
       else
         SerialPrintln(F("Quit aborted"));
@@ -168,19 +168,14 @@ void menuMain()
   while (Serial.available()) Serial.read(); //Empty buffer of any newline chars
 
   if (settings.useTxRxPinsForTerminal == true)
-    while (SerialLog.available()) SerialLog.read(); //Empty buffer of any newline chars
+    while (Serial1.available()) Serial1.read(); //Empty buffer of any newline chars
 
   //Reset measurements
   measurementCount = 0;
   totalCharactersPrinted = 0;
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
-  if (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
-  || (settings.useGPIO11ForFastSlowLogging == true)
-  || (settings.useRTCForFastSlowLogging == true))
-    measurementStartTime = rtcMillis();
-  else
-    measurementStartTime = millis();
+  measurementStartTime = bestMillis();
 
   //Edge case: after 10Hz reading, user sets the log rate above 2s mark. We never go to sleep because 
   //takeReading is not true. And since we don't wake up, takeReading never gets set to true.
