@@ -57,7 +57,7 @@ New features are constantly being added so we’ve released an easy to use firmw
 
 The OLA can be tailored to many different applications and we will be releasing custom versions of the firmware for those too:
 
-* [Latest OLA firmware](https://github.com/sparkfun/OpenLog_Artemis/tree/master/Binaries)
+* [Latest OLA firmware](https://github.com/sparkfun/OpenLog_Artemis/tree/main/Binaries)
 * [Geophone Logger firmware](https://github.com/sparkfun/OpenLog_Artemis_Geophone_Logger) for logging seismic activity
 * [GNSS Logger](https://github.com/sparkfun/OpenLog_Artemis_GNSS_Logger) for advanced data logging with the uBlox F9 and M9 GNSS modules including support for RAWX and RELPOSNED
 
