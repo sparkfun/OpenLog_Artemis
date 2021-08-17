@@ -5,7 +5,7 @@
   -Setting file record/lookup
   -Configuration menu
 
-   For this sketch, only CCS811, BME280, VL53L1X and Mux's are auto identified.
+   For this sketch, only ICM20948, CCS811, BME280, VL53L1X and Mux's are auto identified.
 
   Autodetect theory of operation:
 
@@ -43,39 +43,71 @@
 #include "settings.h"
 
 #include <Wire.h>
-TwoWire qwiic(1); //Will use pads 8/9
+const byte PIN_QWIIC_SCL = 8;
+const byte PIN_QWIIC_SDA = 9;
+TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9
 
+//Define the pin functions
+//Depends on hardware version. This can be found as a marking on the PCB.
+//x04 was the SparkX 'black' version.
+//v10 was the first red version.
+#define HARDWARE_VERSION_MAJOR 1
+#define HARDWARE_VERSION_MINOR 0
+
+#if(HARDWARE_VERSION_MAJOR == 0 && HARDWARE_VERSION_MINOR == 4)
+const byte PIN_MICROSD_CHIP_SELECT = 10;
+const byte PIN_IMU_POWER = 22;
+#elif(HARDWARE_VERSION_MAJOR == 1 && HARDWARE_VERSION_MINOR == 0)
+const byte PIN_MICROSD_CHIP_SELECT = 23;
+const byte PIN_IMU_POWER = 27;
+const byte PIN_PWR_LED = 29;
+const byte PIN_VREG_ENABLE = 25;
+const byte PIN_VIN_MONITOR = 34; // VIN/3 (1M/2M - will require a correction factor)
+#endif
+
+const byte PIN_POWER_LOSS = 3;
+const byte PIN_MICROSD_POWER = 15;
+const byte PIN_QWIIC_POWER = 18;
+const byte PIN_STAT_LED = 19;
+const byte PIN_IMU_INT = 37;
+const byte PIN_IMU_CHIP_SELECT = 44;
+const byte PIN_STOP_LOGGING = 32;
+const byte BREAKOUT_PIN_32 = 32;
+const byte BREAKOUT_PIN_TX = 12;
+const byte BREAKOUT_PIN_RX = 13;
+const byte BREAKOUT_PIN_11 = 11;
+
+#include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 #include "SparkFun_I2C_Mux_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_I2C_Mux
 #include "SparkFunCCS811.h" //Click here to get the library: http://librarymanager/All#SparkFun_CCS811
 #include "SparkFun_VL53L1X.h" //Click here to get the library: http://librarymanager/All#SparkFun_VL53L1X
 #include "SparkFunBME280.h" //Click here to get the library: http://librarymanager/All#SparkFun_BME280
 
-const byte PIN_QWIIC_POWER = 18;
-
 //microSD Interface
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
-#include <SdFat.h> //We use SdFat-Beta from Bill Greiman for increased read/write speed: https://github.com/greiman/SdFat-beta
+#include <SdFat.h> //SdFat v2.0.7 by Bill Greiman. Click here to get the library: http://librarymanager/All#SdFat_exFAT
 
-const byte PIN_MICROSD_CHIP_SELECT = 10;
-const byte PIN_MICROSD_POWER = 15; //x04
+#define SD_FAT_TYPE 3 // SD_FAT_TYPE = 0 for SdFat/File, 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
+#define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
 
-#define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
-#define SD_CONFIG_MAX_SPEED SdSpiConfig(PIN_MICROSD_CHIP_SELECT, DEDICATED_SPI, SD_SCK_MHZ(24)) //Max of 24MHz
-
-//#define USE_EXFAT 1
-
-#ifdef USE_EXFAT
-//ExFat
+#if SD_FAT_TYPE == 1
+SdFat32 sd;
+File32 sensorDataFile; //File that all sensor data is written to
+File32 serialDataFile; //File that all incoming serial data is written to
+#elif SD_FAT_TYPE == 2
+SdExFat sd;
+ExFile sensorDataFile; //File that all sensor data is written to
+ExFile serialDataFile; //File that all incoming serial data is written to
+#elif SD_FAT_TYPE == 3
 SdFs sd;
 FsFile sensorDataFile; //File that all sensor data is written to
 FsFile serialDataFile; //File that all incoming serial data is written to
-#else
-//Fat16/32
+#else // SD_FAT_TYPE == 0
 SdFat sd;
 File sensorDataFile; //File that all sensor data is written to
 File serialDataFile; //File that all incoming serial data is written to
-#endif
+#endif  // SD_FAT_TYPE
 
 char sensorDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
 char serialDataFileName[30] = ""; //We keep a record of this file name so that we can re-open it upon wakeup from sleep
@@ -102,7 +134,7 @@ void setup()
 
   detectQwiicDevices();
 
-  loadDeviceSettingsFromFile();
+  //loadDeviceSettingsFromFile();
 
   bubbleSortDevices(head);
 
@@ -126,7 +158,7 @@ void loop()
     while (Serial.available()) Serial.read();
     menuAttachedDevices();
 
-    recordDeviceSettingsToFile();
+    //recordDeviceSettingsToFile();
 
     delay(10);
     while (Serial.available()) Serial.read();
@@ -221,6 +253,19 @@ void printHelperText()
             //No data to print for a mux
           }
           break;
+        case DEVICE_IMU_ICM20948:
+          {
+            struct_ICM20948 *nodeSetting = (struct_ICM20948 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+            if (nodeSetting->logAccel)
+              strcat(helperText, "accelX_mg,accelY_mg,accelZ_mg,");
+            if (nodeSetting->logGyro)
+              strcat(helperText, "gyroX_dps,gyroY_dps,gyroZ_dps,");
+            if (nodeSetting->logMag)
+              strcat(helperText, "magX_uT,magY_uT,magZ_uT,");
+            if (nodeSetting->logTemp)
+              strcat(helperText, "temp_degC,");
+          }
+          break;
         case DEVICE_DISTANCE_VL53L1X:
           {
             struct_VL53L1X *nodeSetting = (struct_VL53L1X *)temp->configPtr; //Create a local pointer that points to same spot as node does
@@ -268,12 +313,20 @@ void printHelperText()
 void qwiicPowerOn()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
+#if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, LOW);
+#else
+  digitalWrite(PIN_QWIIC_POWER, HIGH);
+#endif
 }
 void qwiicPowerOff()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
+#if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, HIGH);
+#else
+  digitalWrite(PIN_QWIIC_POWER, LOW);
+#endif
 }
 
 void microSDPowerOn()
@@ -285,4 +338,40 @@ void microSDPowerOff()
 {
   pinMode(PIN_MICROSD_POWER, OUTPUT);
   digitalWrite(PIN_MICROSD_POWER, HIGH);
+}
+
+void setQwiicPullups(uint32_t i2cBusPullUps)
+{
+  //Change SCL and SDA pull-ups manually using pin_config
+  am_hal_gpio_pincfg_t sclPinCfg = g_AM_BSP_GPIO_IOM1_SCL;
+  am_hal_gpio_pincfg_t sdaPinCfg = g_AM_BSP_GPIO_IOM1_SDA;
+
+  if (i2cBusPullUps == 0)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE; // No pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE;
+  }
+  else if (i2cBusPullUps == 1)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K; // Use 1K5 pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  }
+  else if (i2cBusPullUps == 6)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K; // Use 6K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K;
+  }
+  else if (i2cBusPullUps == 12)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K; // Use 12K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K;
+  }
+  else
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K; // Use 24K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K;
+  }
+
+  pin_config(PinName(PIN_QWIIC_SCL), sclPinCfg);
+  pin_config(PinName(PIN_QWIIC_SDA), sdaPinCfg);
 }
