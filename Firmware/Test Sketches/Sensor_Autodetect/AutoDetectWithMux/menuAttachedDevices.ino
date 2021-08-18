@@ -11,14 +11,14 @@ bool detectQwiicDevices()
 
   qwiic.setClock(100000); //During detection, go slow
 
-  qwiic.setPullups(1); //Set pullups to 1k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+  setQwiicPullups(1); //Set pullups to 1k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   //24k causes a bunch of unknown devices to be falsely detected.
-  //qwiic.setPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
+  //setQwiicPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
-  delay(100); //SCD30 required >50ms to turn on
+  delay(1000); //GNSS requires at least 1s to turn on
 
   //First scan for Muxes. Valid addresses are 0x70 to 0x77.
   //If any are found, they will be begin()'d causing their ports to turn off
@@ -71,7 +71,7 @@ bool detectQwiicDevices()
       node *muxNode = getNodePointer(muxNumber);
       QWIICMUX *myMux = (QWIICMUX *)muxNode->classPtr;
 
-      for (int portNumber = 0 ; portNumber < 7 ; portNumber++)
+      for (int portNumber = 0 ; portNumber < 8 ; portNumber++)
       {
         myMux->setPort(portNumber);
 
@@ -104,7 +104,7 @@ bool detectQwiicDevices()
     printDetectedDevices();
   }
 
-  if (somethingDetected) qwiic.setPullups(0); //We've detected something on the bus so disable pullups
+  if (somethingDetected) setQwiicPullups(0); //We've detected something on the bus so disable pullups
 
   Serial.println("Autodetect complete");
   Serial.flush();
@@ -152,6 +152,9 @@ void menuAttachedDevices()
         case DEVICE_VOC_CCS811:
           Serial.printf("%s CCS811 tVOC and CO2 Sensor %s\n", strDeviceMenu, strAddress);
           break;
+        case DEVICE_IMU_ICM20948:
+          Serial.printf("%s ICM20948 IMU %s\n", strDeviceMenu, strAddress);
+          break;
         default:
           Serial.printf("Unknown device type %d in menuAttachedDevices\n", temp->deviceType);
           break;
@@ -188,8 +191,6 @@ void menuAttachedDevices()
       printUnknown(nodeNumber);
   }
 }
-
-
 
 void menuConfigure_Multiplexer(void *configPtr)
 {
@@ -422,6 +423,71 @@ void menuConfigure_CCS811(void *configPtr)
         sensor->logTVOC ^= 1;
       else if (incoming == '3')
         sensor->logCO2 ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+  //  sensor->online = false; //Mark as offline so it will be started with new settings
+}
+
+void menuConfigure_ICM20948(void *configPtr)
+{
+  struct_ICM20948 *sensor = (struct_ICM20948*)configPtr;
+
+  while (1)
+  {
+    Serial.println();
+    Serial.println("Menu: ICM20948 IMU");
+
+    Serial.print("1) Sensor Logging: ");
+    if (sensor->log == true) Serial.println("Enabled");
+    else Serial.println("Disabled");
+
+    if (sensor->log == true)
+    {
+      Serial.print("2) Log Accel: ");
+      if (sensor->logAccel == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("3) Log Gyro: ");
+      if (sensor->logGyro == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("4) Log Mag: ");
+      if (sensor->logMag == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+
+      Serial.print("5) Log Temp: ");
+      if (sensor->logTemp == true) Serial.println("Enabled");
+      else Serial.println("Disabled");
+    }
+    Serial.println("x) Exit");
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensor->log ^= 1;
+    else if (sensor->log == true)
+    {
+      if (incoming == '2')
+        sensor->logAccel ^= 1;
+      else if (incoming == '3')
+        sensor->logGyro ^= 1;
+      else if (incoming == '4')
+        sensor->logMag ^= 1;
+      else if (incoming == '5')
+        sensor->logTemp ^= 1;
       else if (incoming == 'x')
         break;
       else if (incoming == STATUS_GETBYTE_TIMEOUT)

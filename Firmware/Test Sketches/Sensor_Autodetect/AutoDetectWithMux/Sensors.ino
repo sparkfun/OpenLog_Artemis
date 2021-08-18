@@ -4,6 +4,9 @@
 void gatherDeviceValues()
 {
   char tempData[50];
+  char tempData1[16];
+  char tempData2[16];
+  char tempData3[16];
   outputData[0] = '\0'; //Clear string contents
 
   //Step through list, printing values as we go
@@ -19,6 +22,52 @@ void gatherDeviceValues()
         case DEVICE_MULTIPLEXER:
           {
             //No data to print for a mux
+          }
+          break;
+        case DEVICE_IMU_ICM20948:
+          {
+            ICM_20948_I2C *nodeDevice = (ICM_20948_I2C *)temp->classPtr;
+            struct_ICM20948 *nodeSetting = (struct_ICM20948 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+
+            if (nodeSetting->log == true)
+            {
+              openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+
+              if (nodeDevice->dataReady())
+              {
+                nodeDevice->getAGMT(); // The values are only updated when you call 'getAGMT'
+                if (nodeSetting->logAccel)
+                {
+                  olaftoa(nodeDevice->accX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                  olaftoa(nodeDevice->accY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+                  olaftoa(nodeDevice->accZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+                  sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
+                  strcat(outputData, tempData);
+                }
+                if (nodeSetting->logGyro)
+                {
+                  olaftoa(nodeDevice->gyrX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                  olaftoa(nodeDevice->gyrY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+                  olaftoa(nodeDevice->gyrZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+                  sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
+                  strcat(outputData, tempData);
+                }
+                if (nodeSetting->logMag)
+                {
+                  olaftoa(nodeDevice->magX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                  olaftoa(nodeDevice->magY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+                  olaftoa(nodeDevice->magZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+                  sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
+                  strcat(outputData, tempData);
+                }
+                if (nodeSetting->logTemp)
+                {
+                  olaftoa(nodeDevice->temp(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                  sprintf(tempData, "%s,", tempData1);
+                  strcat(outputData, tempData);
+                }
+              }
+            }
           }
           break;
         case DEVICE_DISTANCE_VL53L1X:
@@ -58,22 +107,26 @@ void gatherDeviceValues()
 
               if (nodeSetting->logPressure)
               {
-                sprintf(tempData, "%.02f,", nodeDevice->readFloatPressure());
+                olaftoa(nodeDevice->readFloatPressure(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
               }
               if (nodeSetting->logHumidity)
               {
-                sprintf(tempData, "%.02f,", nodeDevice->readFloatHumidity());
+                olaftoa(nodeDevice->readFloatHumidity(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
               }
               if (nodeSetting->logAltitude)
               {
-                sprintf(tempData, "%.02f,", nodeDevice->readFloatAltitudeMeters());
+                olaftoa(nodeDevice->readFloatAltitudeMeters(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
               }
               if (nodeSetting->logTemperature)
               {
-                sprintf(tempData, "%.02f,", nodeDevice->readTempC());
+                olaftoa(nodeDevice->readTempC(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
                 strcat(outputData, tempData);
               }
             }

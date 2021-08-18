@@ -5,12 +5,20 @@
 
   By: Paul Clark
   SparkFun Electronics
-  Date: April 23rd, 2021
+  Date: August 17th, 2021
   License: MIT. See license file for more information but you can
   basically do whatever you want with this code.
 
   This example shows how to configure the u-blox GNSS to send RXM SFRBX and RAWX reports automatically
   and log the data to SD card in UBX format
+
+  This version uses v2.1.0 of the SparkFun Apollo3 (artemis) core.
+  
+  Please note: v2.1.1 of the core contains a change to the I2C interface which makes communication
+  with u-blox modules over I2C less reliable. If you are building this code yourself,
+  please use V2.1.0 of the core.
+  
+  The Board should be set to SparkFun Apollo3 \ RedBoard Artemis ATP.
 
   ** Please note: this example will only work with u-blox ADR or High Precision GNSS or Time Sync products **
 
@@ -28,8 +36,6 @@
   Insert a formatted micro-SD card into the socket on OpenLog Artemis.
   Connect OpenLog Artemis to your computer using a USB-C cable.
   Ensure you have the SparkFun Apollo3 boards installed: http://boardsmanager/All#SparkFun_Apollo3
-  This code has been tested using version 1.2.1 of the Apollo3 boards on Arduino IDE 1.8.13.
-  Select "SparkFun Artemis ATP" as the board type.
   Press upload to upload the code onto the Artemis.
   Open the Serial Monitor at 115200 baud to see the output.
 
@@ -49,7 +55,7 @@
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_u-blox_GNSS
 SFE_UBLOX_GNSS myGNSS;
 
-#include <SdFat.h> //SdFat v2.0.6 by Bill Greiman. Click here to get the library: http://librarymanager/All#SdFat_exFAT
+#include <SdFat.h> //SdFat v2.0.7 by Bill Greiman. Click here to get the library: http://librarymanager/All#SdFat_exFAT
 
 #define SD_FAT_TYPE 3 // SD_FAT_TYPE = 0 for SdFat/File, 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
@@ -72,7 +78,9 @@ File myFile; //File that all GNSS data is written to
 
 //Setup Qwiic Port
 #include <Wire.h>
-TwoWire qwiic(1); //Will use pads 8/9
+const byte PIN_QWIIC_SCL = 8;
+const byte PIN_QWIIC_SDA = 9;
+TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9
 
 //Define the pin functions
 //Depends on hardware version. This can be found as a marking on the PCB.
@@ -103,8 +111,6 @@ const byte BREAKOUT_PIN_32 = 32;
 const byte BREAKOUT_PIN_TX = 12;
 const byte BREAKOUT_PIN_RX = 13;
 const byte BREAKOUT_PIN_11 = 11;
-const byte PIN_QWIIC_SCL = 8;
-const byte PIN_QWIIC_SDA = 9;
 
 // Globals and Consts
 
@@ -115,6 +121,8 @@ const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low
 const int sdPowerDownDelay = 100; //Delay for this many ms before turning off the SD card power
 bool powerLossSeen = false; //Interrupt flag for power loss detection
 bool stopLoggingSeen = false; //Interrupt flag for stop logging detection
+bool ignorePowerLossInterrupt = true; // Ignore the power loss interrupt - when attaching the interrupt
+bool ignoreStopLoggingInterrupt = true; // Ignore the stop logging interrupt - when attaching the interrupt
 
 // Data Logging Specifics:
 
@@ -134,7 +142,9 @@ void setup()
   delay(1); // Let PIN_POWER_LOSS stabilize
 
   if (digitalRead(PIN_POWER_LOSS) == LOW) powerLossISR(); //Check PIN_POWER_LOSS just in case we missed the falling edge
+  ignorePowerLossInterrupt = true; // Ignore the power loss interrupt - when attaching the interrupt
   attachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS), powerLossISR, FALLING);
+  ignorePowerLossInterrupt = false;
 
   powerLEDOn(); // Turn the power LED on - if the hardware supports it
 
@@ -155,15 +165,16 @@ void setup()
 
   beginSD(); // Enable power for the SD card
 
-  enableCIPOpullUp(); // Enable CIPO pull-up after beginSD
-
   imuPowerOff(); // We're not using the IMU so turn it off
 
   delay(2500); // Give the GNSS time to power up
 
   pinMode(PIN_STOP_LOGGING, INPUT_PULLUP);
   delay(1); // Let the pin stabilize
+  ignoreStopLoggingInterrupt = true; // Ignore the stop logging interrupt - when attaching the interrupt
   attachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING), stopLoggingISR, FALLING); // Enable the stop logging interrupt
+  pinMode(PIN_STOP_LOGGING, INPUT_PULLUP); //Re-attach the pull-up (bug in v2.1.0 of the core)
+  ignoreStopLoggingInterrupt = false;
 
   Serial.println("Initializing SD card...");
 
@@ -296,17 +307,23 @@ void loop()
 //Stop Logging ISR
 void stopLoggingISR(void)
 {
-  Serial.println(F("Stop Logging Seen!"));
-  detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); //Prevent multiple interrupts
-  stopLoggingSeen = true;
+  if (ignoreStopLoggingInterrupt == false)
+  {
+    Serial.println(F("Stop Logging Seen!"));
+    detachInterrupt(digitalPinToInterrupt(PIN_STOP_LOGGING)); //Prevent multiple interrupts
+    stopLoggingSeen = true;
+  }
 }
 
 //Power Loss ISR
 void powerLossISR(void)
 {
-  Serial.println(F("Power Loss Detected!"));
-  detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent multiple interrupts
-  powerLossSeen = true;
+  if (ignorePowerLossInterrupt == false)
+  {
+    Serial.println(F("Power Loss Detected!"));
+    detachInterrupt(digitalPinToInterrupt(PIN_POWER_LOSS)); //Prevent multiple interrupts
+    powerLossSeen = true;
+  }
 }
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -357,7 +374,7 @@ void stopLogging(void) // Stop logging; close the SD file; go into deep sleep
 
   SPI.end(); //Power down SPI
 
-  power_adc_disable(); //Power down ADC. It it started by default before setup().
+  powerControlADC(false); //Power down ADC. It it started by default before setup().
 
   Serial.end(); //Power down UART
   
@@ -383,9 +400,10 @@ void stopLogging(void) // Stop logging; close the SD file; go into deep sleep
   //Disable pads
   for (int x = 0; x < 50; x++)
   {
-    if ((x != ap3_gpio_pin2pad(PIN_MICROSD_POWER)) &&
-        (x != ap3_gpio_pin2pad(PIN_QWIIC_POWER)) &&
-        (x != ap3_gpio_pin2pad(PIN_IMU_POWER)))
+    if ((x != PIN_MICROSD_POWER) &&
+        //(x != PIN_LOGIC_DEBUG) &&
+        (x != PIN_QWIIC_POWER) &&
+        (x != PIN_IMU_POWER))
     {
       am_hal_gpio_pinconfig(x, g_AM_HAL_GPIO_DISABLE);
     }
@@ -475,7 +493,43 @@ void beginQwiic()
   pinMode(PIN_QWIIC_POWER, OUTPUT);
   qwiicPowerOn();
   qwiic.begin();
-  qwiic.setPullups(0); //Just to make it really clear what pull-ups are being used, set pullups here.
+  setQwiicPullups(0); //Just to make it really clear what pull-ups are being used, set pullups here.
+}
+
+void setQwiicPullups(uint32_t i2cBusPullUps)
+{
+  //Change SCL and SDA pull-ups manually using pin_config
+  am_hal_gpio_pincfg_t sclPinCfg = g_AM_BSP_GPIO_IOM1_SCL;
+  am_hal_gpio_pincfg_t sdaPinCfg = g_AM_BSP_GPIO_IOM1_SDA;
+
+  if (i2cBusPullUps == 0)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE; // No pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE;
+  }
+  else if (i2cBusPullUps == 1)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K; // Use 1K5 pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  }
+  else if (i2cBusPullUps == 6)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K; // Use 6K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K;
+  }
+  else if (i2cBusPullUps == 12)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K; // Use 12K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K;
+  }
+  else
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K; // Use 24K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K;
+  }
+
+  pin_config(PinName(PIN_QWIIC_SCL), sclPinCfg);
+  pin_config(PinName(PIN_QWIIC_SDA), sdaPinCfg);
 }
 
 void beginSD()
@@ -490,22 +544,6 @@ void beginSD()
   delay(1);
 
   microSDPowerOn();
-}
-
-// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-bool enableCIPOpullUp()
-{
-  //Add CIPO pull-up
-  ap3_err_t retval = AP3_OK;
-  am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
-  cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
-  cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
-  cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
-  cipoPinCfg.uIOMnum = AP3_SPI_IOM;
-  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
-  padMode(MISO, cipoPinCfg, &retval);
-  return (retval == AP3_OK);
 }
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

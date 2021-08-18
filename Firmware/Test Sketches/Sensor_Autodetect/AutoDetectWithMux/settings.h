@@ -14,6 +14,7 @@ typedef enum
   DEVICE_VOC_SGP30,
   DEVICE_CO2_SCD30,
   DEVICE_PRESSURE_MS8607,
+  DEVICE_IMU_ICM20948,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -77,5 +78,13 @@ struct struct_BME280 {
   bool logPressure = true;
   bool logAltitude = true;
   bool logTemperature = true;
+};
+
+struct struct_ICM20948 {
+  bool log = true;
+  bool logAccel = true;
+  bool logGyro = true;
+  bool logMag = true;
+  bool logTemp = true;
 };
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
