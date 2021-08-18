@@ -21,6 +21,9 @@ const byte PIN_IMU_POWER = 27; // The Red SparkFun version of the OLA (V10) uses
 //const byte PIN_IMU_POWER = 22; // The Black SparkX version of the OLA (X04) uses pin 22
 const byte PIN_IMU_INT = 37;
 const byte PIN_IMU_CHIP_SELECT = 44;
+const byte PIN_SPI_SCK = 5;
+const byte PIN_SPI_CIPO = 6;
+const byte PIN_SPI_COPI = 7;
 
 
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
@@ -47,17 +50,27 @@ const byte PIN_IMU_CHIP_SELECT = 44;
 void setup() {
 
 #ifdef USE_SPI
-    SPI_PORT.begin();
-#else
-    WIRE_PORT.begin();
-    WIRE_PORT.setClock(400000);
-#endif
+  SPI_PORT.begin();
+  
+  pinMode(PIN_IMU_CHIP_SELECT, OUTPUT);
+  digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
   
   enableCIPOpullUp(); // Enable CIPO pull-up on the OLA
 
-  pinMode(PIN_IMU_CHIP_SELECT, OUTPUT);
-  digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
+  //There is a quirk in v2.1 of the Apollo3 mbed core which means that the first SPI transaction will
+  //disable the pull-up on CIPO. We need to do a fake transaction and then re-enable the pull-up
+  //to work around this...
+#if defined(ARDUINO_ARCH_MBED)
+  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0)); // Do a fake transaction
+  SPI.endTransaction();
+  enableCIPOpullUp(); // Re-enable the CIPO pull-up
+#endif
 
+#else
+  WIRE_PORT.begin();
+  WIRE_PORT.setClock(400000);
+#endif
+  
   //Reset ICM by power cycling it
   imuPowerOff();
 
@@ -214,16 +227,27 @@ void imuPowerOff()
   digitalWrite(PIN_IMU_POWER, LOW);
 }
 
+#if defined(ARDUINO_ARCH_MBED) // updated for v2.1.0 of the Apollo3 core
+bool enableCIPOpullUp()
+{
+  //Add 1K5 pull-up on CIPO
+  am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
+  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  pin_config(PinName(PIN_SPI_CIPO), cipoPinCfg);
+  return (true);
+}
+#else
 bool enableCIPOpullUp()
 {
   //Add CIPO pull-up
   ap3_err_t retval = AP3_OK;
   am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
   cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
+  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
   cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
   cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
   cipoPinCfg.uIOMnum = AP3_SPI_IOM;
-  cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
   padMode(MISO, cipoPinCfg, &retval);
   return (retval == AP3_OK);
 }
+#endif

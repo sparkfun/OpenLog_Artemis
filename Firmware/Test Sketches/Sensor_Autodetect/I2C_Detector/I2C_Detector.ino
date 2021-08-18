@@ -1,8 +1,22 @@
 #include <Wire.h>
-TwoWire qwiic(1); //Will use pads 8/9
+const byte PIN_QWIIC_SCL = 8;
+const byte PIN_QWIIC_SDA = 9;
+TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9
+
+const byte PIN_QWIIC_POWER = 18;
+
+//Define the pin functions
+//Depends on hardware version. This can be found as a marking on the PCB.
+//x04 was the SparkX 'black' version.
+//v10 was the first red version.
+#define HARDWARE_VERSION_MAJOR 1
+#define HARDWARE_VERSION_MINOR 0
 
 //Header files for all possible Qwiic sensors
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+#include "ICM_20948.h" // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
+ICM_20948_I2C IMU_ICM20948; // Otherwise create an ICM_20948_I2C object
 
 #include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
 NAU7802 loadcellSensor_NAU7802;
@@ -10,8 +24,8 @@ NAU7802 loadcellSensor_NAU7802;
 #include "SparkFun_VL53L1X.h" //Click here to get the library: http://librarymanager/All#SparkFun_VL53L1X
 SFEVL53L1X distanceSensor_VL53L1X(qwiic);
 
-#include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
-SFE_UBLOX_GPS gpsSensor_ublox;
+#include "SparkFun_u-blox_GNSS_Arduino_Library.h" //http://librarymanager/All#SparkFun_u-blox_GNSS
+SFE_UBLOX_GNSS gpsSensor_ublox;
 
 #include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
 VCNL4040 proximitySensor_VCNL4040;
@@ -35,9 +49,8 @@ BME280 phtSensor_BME280;
 VEML6075 uvSensor_VEML6075;
 
 #include "SparkFunCCS811.h" //Click here to get the library: http://librarymanager/All#SparkFun_CCS811
-#define CCS811_ADDR 0x5B //Default I2C Address
-//#define CCS811_ADDR 0x5A //Alternate I2C Address
-CCS811 vocSensor_CCS811(CCS811_ADDR);
+#define ADR_CCS811_1 0x5B
+CCS811 vocSensor_CCS811(ADR_CCS811_1);
 
 #include "SparkFun_SGP30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SGP30
 SGP30 vocSensor_SGP30;
@@ -45,12 +58,13 @@ SGP30 vocSensor_SGP30;
 #include "SparkFun_SCD30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SCD30
 SCD30 co2Sensor_SCD30;
 
-#include "MS8607_Library.h" //Click here to get the library: http://librarymanager/All#Qwiic_MS8607
+#include "SparkFun_PHT_MS8607_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_PHT_MS8607
 MS8607 pressureSensor_MS8607;
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 struct struct_QwiicSensors {
+  bool ICM_20948_I2C;
   bool LPS25HB;
   bool MCP9600;
   bool BH1749NUC;
@@ -69,6 +83,7 @@ struct struct_QwiicSensors {
 };
 
 struct_QwiicSensors qwiicAvailable = {
+  .ICM_20948_I2C = false,
   .LPS25HB = false,
   .MCP9600 = false,
   .BH1749NUC = false,
@@ -86,8 +101,6 @@ struct_QwiicSensors qwiicAvailable = {
   .MS8607 = false,
 };
 
-const byte PIN_QWIIC_POWER = 18;
-
 void setup()
 {
   Serial.begin(115200);
@@ -98,37 +111,7 @@ void setup()
   qwiic.begin();
   qwiic.setClock(100000);
 
-  qwiic.setPullups(1); //Set pullups to 1k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
-
-  //  byte error, address;
-  //  int nDevices = 0;
-  //  for (address = 1; address < 127; address++ )
-  //  {
-  //    qwiic.beginTransmission(address);
-  //    error = qwiic.endTransmission();
-  //
-  //    if (error == 0)
-  //    {
-  //      Serial.print("I2C device found at address 0x");
-  //      if (address < 16)
-  //        Serial.print("0");
-  //      Serial.print(address, HEX);
-  //      Serial.println();
-  //
-  //      nDevices++;
-  //    }
-  //    //    else if (error == 4)
-  //    //    {
-  //    //      Serial.print("Unknown error at address 0x");
-  //    //      if (address < 16)
-  //    //        Serial.print("0");
-  //    //      Serial.println(address, HEX);
-  //    //    }
-  //  }
-  //  if (nDevices == 0)
-  //    Serial.println("No I2C devices found\n");
-  //  else
-  //    Serial.println("done\n");
+  setQwiicPullups(1); //Set pullups to 1K5
 }
 
 void loop()
@@ -138,13 +121,13 @@ void loop()
   qwiicPowerOn();
   //delay(1000); //SCD30 acks and responds
   //delay(100); //SCD30 acks but fails to start
-  delay(100); //
+  delay(1000); //u-blox GNSS needs at least 1s
   Serial.println("On!");
   Serial.flush();
 
   bool somethingDetected = false;
 
-  for (uint8_t address = 0x60 ; address < 127 ; address++)
+  for (uint8_t address = 0x10 ; address < 127 ; address++)
   {
     qwiic.beginTransmission(address);
     if (qwiic.endTransmission() == 0)
@@ -170,12 +153,14 @@ void loop()
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_SGP30 0x58
 #define ADR_CCS811_2 0x5A
-#define ADR_CCS811_1 0x5B
+//#define ADR_CCS811_1 0x5B
 #define ADR_LPS25HB_2 0x5C
 #define ADR_LPS25HB_1 0x5D
 #define ADR_VCNL4040_OR_MCP9600 0x60
 #define ADR_SCD30 0x61
 #define ADR_MCP9600_1 0x66
+#define ADR_ICM_20948_AD0 0x68 // Or 0x69 when AD0 is high
+#define ADR_ICM_20948_AD1 0x69
 #define ADR_BME280_2 0x76
 #define ADR_MS5637 0x76
 //#define ADR_MS8607 0x76 //Pressure portion of the MS8607 sensor. We'll catch the 0x40 first
@@ -187,6 +172,14 @@ bool testDevice(uint8_t i2cAddress)
 {
   switch (i2cAddress)
   {
+    case ADR_ICM_20948_AD0:
+      if (IMU_ICM20948.begin(qwiic, false) == true) //Wire port, ad0val
+        qwiicAvailable.ICM_20948_I2C = true;
+      break;
+    case ADR_ICM_20948_AD1:
+      if (IMU_ICM20948.begin(qwiic, true) == true) //Wire port, ad0val
+        qwiicAvailable.ICM_20948_I2C = true;
+      break;
     case ADR_LPS25HB_1:
       if (pressureSensor_LPS25HB.begin(qwiic, ADR_LPS25HB_1) == true) //Wire port, Address.
         if (pressureSensor_LPS25HB.isConnected() == true)
@@ -280,10 +273,54 @@ bool testDevice(uint8_t i2cAddress)
 void qwiicPowerOn()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
+#if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, LOW);
+#else
+  digitalWrite(PIN_QWIIC_POWER, HIGH);
+#endif
 }
 void qwiicPowerOff()
 {
   pinMode(PIN_QWIIC_POWER, OUTPUT);
+#if(HARDWARE_VERSION_MAJOR == 0)
   digitalWrite(PIN_QWIIC_POWER, HIGH);
+#else
+  digitalWrite(PIN_QWIIC_POWER, LOW);
+#endif
+}
+
+void setQwiicPullups(uint32_t qwiicBusPullUps)
+{
+  //Change SCL and SDA pull-ups manually using pin_config
+  am_hal_gpio_pincfg_t sclPinCfg = g_AM_BSP_GPIO_IOM1_SCL;
+  am_hal_gpio_pincfg_t sdaPinCfg = g_AM_BSP_GPIO_IOM1_SDA;
+
+  if (qwiicBusPullUps == 0)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE; // No pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_NONE;
+  }
+  else if (qwiicBusPullUps == 1)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K; // Use 1K5 pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
+  }
+  else if (qwiicBusPullUps == 6)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K; // Use 6K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_6K;
+  }
+  else if (qwiicBusPullUps == 12)
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K; // Use 12K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_12K;
+  }
+  else
+  {
+    sclPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K; // Use 24K pull-ups
+    sdaPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_24K;
+  }
+
+  pin_config(PinName(PIN_QWIIC_SCL), sclPinCfg);
+  pin_config(PinName(PIN_QWIIC_SDA), sdaPinCfg);
 }

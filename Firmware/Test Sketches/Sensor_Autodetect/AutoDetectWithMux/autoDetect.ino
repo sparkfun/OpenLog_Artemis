@@ -1,24 +1,3 @@
-/*
-
-*/
-
-/*
-  getNodePointer(nodeNumber)
-  getNodePointer(deviceType, address, mux, port)
-  addDevice(address, deviceType)
-
-  getConfigPointer(nodeNumber)
-  getConfigPointer(deviceType, address, mux, port)
-
-  getConfigFunctionPtr(nodeNumber)
-  getDeviceName(deviceType)
-
-  getNodeNumber(deviceType, address, mux, port)
-
-  configureDevice(nodePointer)
-  configureDevice(nodeNumber)
-*/
-
 //Given node number, get a pointer to the node
 node *getNodePointer(uint8_t nodeNumber)
 {
@@ -139,6 +118,16 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->online = tempDevice->begin(qwiic); //Wire port
       }
       break;
+    case DEVICE_IMU_ICM20948:
+      {
+        temp->classPtr = new ICM_20948_I2C;
+        temp->configPtr = new struct_ICM20948;
+
+        ICM_20948_I2C *tempDevice = (ICM_20948_I2C *)temp->classPtr;
+        tempDevice->begin(qwiic, address == 0x68 ? false : true); //Wire port, ad0val
+        temp->online = (tempDevice->status == ICM_20948_Stat_Ok);
+      }
+      break;
 
     default:
       Serial.printf("addDevice Device type not found: %d\n", deviceType);
@@ -178,6 +167,9 @@ void configureDevice(node *temp)
   uint8_t deviceType = temp->deviceType;
   switch (deviceType)
   {
+    case DEVICE_IMU_ICM20948:
+      //Nothing to configure
+      break;
     case DEVICE_DISTANCE_VL53L1X:
       {
         SFEVL53L1X *tempDevice = (SFEVL53L1X *)temp->classPtr;
@@ -229,6 +221,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_VOC_CCS811:
       ptr = (FunctionPointer)menuConfigure_CCS811;
+      break;
+    case DEVICE_IMU_ICM20948:
+      ptr = (FunctionPointer)menuConfigure_ICM20948;
       break;
     default:
       Serial.println("getConfigFunctionPtr: Unknown device type");
@@ -294,6 +289,8 @@ bool openConnection(uint8_t muxAddress, uint8_t portNumber)
 #define ADR_VL53L1X 0x29
 #define ADR_CCS811_2 0x5A
 #define ADR_CCS811_1 0x5B
+#define ADR_ICM_20948_AD0 0x68 // Or 0x69 when AD0 is high
+#define ADR_ICM_20948_AD1 0x69 //
 #define ADR_MUX_1 0x70 //to 0x77
 #define ADR_MUX_2 0x71
 #define ADR_BME280_2 0x76
@@ -317,6 +314,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         CCS811 vocSensor_CCS811(i2cAddress); //Start with given I2C address
         if (vocSensor_CCS811.begin(qwiic) == true) //Wire port
           return (DEVICE_VOC_CCS811);
+        break;
+      }
+    case 0x68:
+    case 0x69:
+      {
+        ICM_20948_I2C imu_icm20948;
+        imu_icm20948.begin(qwiic, i2cAddress == 0x68 ? false : true);
+        if (imu_icm20948.status == ICM_20948_Stat_Ok)
+          return (DEVICE_IMU_ICM20948);
         break;
       }
     case 0x70:
@@ -432,6 +438,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_PRESSURE_MS8607:
       return "Pressure-MS8607";
+      break;
+    case DEVICE_IMU_ICM20948:
+      return "IMU-ICM20948";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:

@@ -4,7 +4,7 @@
  * Example6_DMP_Quat9_Orientation.ino
  * ICM 20948 Arduino Library Demo
  * Initialize the DMP based on the TDK InvenSense ICM20948_eMD_nucleo_1.0 example-icm20948
- * Paul Clark, February 15th 2021
+ * Paul Clark, August 17th 2021
  * Based on original code by:
  * Owen Lyke @ SparkFun Electronics
  * Original Creation Date: April 17 2019
@@ -33,6 +33,9 @@ const byte PIN_IMU_POWER = 27; // The Red SparkFun version of the OLA (V10) uses
 //const byte PIN_IMU_POWER = 22; // The Black SparkX version of the OLA (X04) uses pin 22
 const byte PIN_IMU_INT = 37;
 const byte PIN_IMU_CHIP_SELECT = 44;
+const byte PIN_SPI_SCK = 5;
+const byte PIN_SPI_CIPO = 6;
+const byte PIN_SPI_COPI = 7;
 
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 
@@ -294,7 +297,7 @@ bool enableCIPOpullUp()
   //Add 1K5 pull-up on CIPO
   am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
   cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
-  pin_config(D6, cipoPinCfg);
+  pin_config(PinName(PIN_SPI_CIPO), cipoPinCfg);
   return (true);
 }
 #else

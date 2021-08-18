@@ -4,10 +4,14 @@
  * Example9_DMP_MultipleSensors.ino
  * ICM 20948 Arduino Library Demo
  * Initialize the DMP based on the TDK InvenSense ICM20948_eMD_nucleo_1.0 example-icm20948
- * Paul Clark, February 15th 2021
+ * Paul Clark, August 17th 2021
  * Based on original code by:
  * Owen Lyke @ SparkFun Electronics
  * Original Creation Date: April 17 2019
+ * 
+ * This version uses v2.1.0 of the SparkFun Apollo3 (artemis) core.
+ * 
+ * The Board should be set to SparkFun Apollo3 \ RedBoard Artemis ATP.
  * 
  * ** This example is based on InvenSense's _confidential_ Application Note "Programming Sequence for DMP Hardware Functions".
  * ** We are grateful to InvenSense for sharing this with us.
@@ -31,6 +35,9 @@ const byte PIN_IMU_POWER = 27; // The Red SparkFun version of the OLA (V10) uses
 //const byte PIN_IMU_POWER = 22; // The Black SparkX version of the OLA (X04) uses pin 22
 const byte PIN_IMU_INT = 37;
 const byte PIN_IMU_CHIP_SELECT = 44;
+const byte PIN_SPI_SCK = 5;
+const byte PIN_SPI_CIPO = 6;
+const byte PIN_SPI_COPI = 7;
 
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 
@@ -43,9 +50,14 @@ ICM_20948_SPI myICM;  // Create an ICM_20948_SPI object
 
 void setup() {
 
+  // Start the SPI port
   SPI_PORT.begin();
-
-  enableCIPOpullUp(); // Enable CIPO pull-up on the OLA
+  // 'Kickstart' the SPI hardware at 4MHz - this changes the CIPO pin mode
+  SPI_PORT.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
+  SPI_PORT.transfer(0x00);
+  SPI_PORT.endTransaction();
+  // *Now* enable CIPO pull-up on the OLA
+  enableCIPOpullUp();
 
   pinMode(PIN_IMU_CHIP_SELECT, OUTPUT);
   digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
@@ -75,14 +87,27 @@ void setup() {
 
   //myICM.enableDebugging(); // Uncomment this line to enable helpful debug messages on Serial
 
-  bool initialized = false;
+  // Initialize the ICM-20948
+  // If the DMP is enabled, .begin performs a minimal startup. We need to configure the sample mode etc. manually.
+  myICM.begin( CS_PIN, SPI_PORT, 4000000); //Set IMU SPI rate to 4MHz
+  bool initialized = (myICM.status == ICM_20948_Stat_Ok);
+  
   while( !initialized ){
 
-    // Initialize the ICM-20948
-    // If the DMP is enabled, .begin performs a minimal startup. We need to configure the sample mode etc. manually.
-    myICM.begin( CS_PIN, SPI_PORT );
+    enableCIPOpullUp(); // Enable CIPO pull-up on the OLA
 
-    SERIAL_PORT.print( F("Initialization of the sensor returned: ") );
+    //Reset ICM by power cycling it
+    imuPowerOff();
+  
+    delay(10);
+  
+    imuPowerOn(); // Enable power for the OLA IMU
+  
+    delay(100); // Wait for the IMU to power up
+
+    myICM.begin( CS_PIN, SPI_PORT, 4000000); //Set IMU SPI rate to 4MHz
+
+    SERIAL_PORT.print( F("Initialization of the IMU returned: ") );
     SERIAL_PORT.println( myICM.statusString() );
     if( myICM.status != ICM_20948_Stat_Ok ){
       SERIAL_PORT.println( F("Trying again...") );
@@ -92,7 +117,7 @@ void setup() {
     }
   }
 
-  SERIAL_PORT.println(F("Device connected!"));
+  SERIAL_PORT.println(F("IMU connected!"));
 
   bool success = true; // Use success to show if the DMP configuration was successful
 
@@ -265,16 +290,16 @@ void imuPowerOff()
   digitalWrite(PIN_IMU_POWER, LOW);
 }
 
-bool enableCIPOpullUp()
+void enableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core
 {
-  //Add CIPO pull-up
-  ap3_err_t retval = AP3_OK;
-  am_hal_gpio_pincfg_t cipoPinCfg = AP3_GPIO_DEFAULT_PINCFG;
-  cipoPinCfg.uFuncSel = AM_HAL_PIN_6_M0MISO;
-  cipoPinCfg.eDriveStrength = AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA;
-  cipoPinCfg.eGPOutcfg = AM_HAL_GPIO_PIN_OUTCFG_PUSHPULL;
-  cipoPinCfg.uIOMnum = AP3_SPI_IOM;
+  //Add 1K5 pull-up on CIPO
+  am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
   cipoPinCfg.ePullup = AM_HAL_GPIO_PIN_PULLUP_1_5K;
-  padMode(MISO, cipoPinCfg, &retval);
-  return (retval == AP3_OK);
+  pin_config(PinName(PIN_SPI_CIPO), cipoPinCfg);
+}
+
+void disableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core
+{
+  am_hal_gpio_pincfg_t cipoPinCfg = g_AM_BSP_GPIO_IOM0_MISO;
+  pin_config(PinName(PIN_SPI_CIPO), cipoPinCfg);
 }
