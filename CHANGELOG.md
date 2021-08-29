@@ -1,6 +1,13 @@
 Change Log
 ======================
 
+v2.0
+---------
+
+* Upgrades the OLA firmware to use v2.1.0 of the Apollo3 core
+  * Please note: v2.1.1 of Apollo3 contains a feature which makes communication with the u-blox GNSS modules problematic. Please use v2.1.0 until a fix is available
+  * If you are compiling the code yourself, please set the board to RedBoard Artemis ATP
+
 v1.11
 ---------
 
