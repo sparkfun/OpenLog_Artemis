@@ -1556,9 +1556,9 @@ void beginSerialOutput()
 
 void updateDataFileCreate(SdFileType *dataFile)
 {
-    myRTC.getTime(); //Get the RTC time so we can use it to update the create time
-    //Update the file create time
-    dataFile->timestamp(T_CREATE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+  myRTC.getTime(); //Get the RTC time so we can use it to update the create time
+  //Update the file create time
+  dataFile->timestamp(T_CREATE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
 }
 
 void updateDataFileAccess(SdFileType *dataFile)
