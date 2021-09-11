@@ -196,22 +196,22 @@ TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
 
 #if SD_FAT_TYPE == 1
-SdFat32 sd;
-File32 sensorDataFile; //File that all sensor data is written to
-File32 serialDataFile; //File that all incoming serial data is written to
+typedef SdFat32 SdFileSystemType;
+typedef File32 SdFileType;
 #elif SD_FAT_TYPE == 2
-SdExFat sd;
-ExFile sensorDataFile; //File that all sensor data is written to
-ExFile serialDataFile; //File that all incoming serial data is written to
+typedef SdExFat SdFileSystemType;
+typedef ExFile SdFileType;
 #elif SD_FAT_TYPE == 3
-SdFs sd;
-FsFile sensorDataFile; //File that all sensor data is written to
-FsFile serialDataFile; //File that all incoming serial data is written to
+typedef SdFs SdFileSystemType;
+typedef FsFile SdFileType;
 #else // SD_FAT_TYPE == 0
-SdFat sd;
-File sensorDataFile; //File that all sensor data is written to
-File serialDataFile; //File that all incoming serial data is written to
+typedef SdFat SdFileSystemType;
+typedef File SdFileType;
 #endif  // SD_FAT_TYPE
+
+SdFileSystemType sd;
+SdFileType sensorDataFile; //File that all sensor data is written to
+SdFileType serialDataFile; //File that all incoming serial data is written to
 
 //#define PRINT_LAST_WRITE_TIME // Uncomment this line to enable the 'measure the time between writes' diagnostic
 
@@ -1554,30 +1554,14 @@ void beginSerialOutput()
     online.serialOutput = false;
 }
 
-#if SD_FAT_TYPE == 1
-void updateDataFileCreate(File32 *dataFile)
-#elif SD_FAT_TYPE == 2
-void updateDataFileCreate(ExFile *dataFile)
-#elif SD_FAT_TYPE == 3
-void updateDataFileCreate(FsFile *dataFile)
-#else // SD_FAT_TYPE == 0
-void updateDataFileCreate(File *dataFile)
-#endif  // SD_FAT_TYPE
+void updateDataFileCreate(SdFileType *dataFile)
 {
-  myRTC.getTime(); //Get the RTC time so we can use it to update the create time
-  //Update the file create time
-  dataFile->timestamp(T_CREATE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
+    myRTC.getTime(); //Get the RTC time so we can use it to update the create time
+    //Update the file create time
+    dataFile->timestamp(T_CREATE, (myRTC.year + 2000), myRTC.month, myRTC.dayOfMonth, myRTC.hour, myRTC.minute, myRTC.seconds);
 }
 
-#if SD_FAT_TYPE == 1
-void updateDataFileAccess(File32 *dataFile)
-#elif SD_FAT_TYPE == 2
-void updateDataFileAccess(ExFile *dataFile)
-#elif SD_FAT_TYPE == 3
-void updateDataFileAccess(FsFile *dataFile)
-#else // SD_FAT_TYPE == 0
-void updateDataFileAccess(File *dataFile)
-#endif  // SD_FAT_TYPE
+void updateDataFileAccess(SdFileType *dataFile)
 {
   myRTC.getTime(); //Get the RTC time so we can use it to update the last modified time
   //Update the file access time
