@@ -352,7 +352,6 @@ struct struct_settings {
   bool logMaxRate = false;
   bool enableRTC = true;
   bool enableIMU = true;
-  bool enableSD = true;
   bool enableTerminalOutput = true;
   bool logDate = true;
   bool logTime = true;

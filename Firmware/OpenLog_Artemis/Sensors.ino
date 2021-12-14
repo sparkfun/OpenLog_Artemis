@@ -1541,7 +1541,7 @@ void printHelperText(bool terminalOnly)
   strcat(helperText, "\r\n");
 
   SerialPrint(helperText);
-  if ((terminalOnly == false) && (settings.logData == true) && (online.microSD) && (settings.enableSD && online.microSD))
+  if ((terminalOnly == false) && (settings.logData == true) && (online.microSD))
     sensorDataFile.print(helperText);
 }
 

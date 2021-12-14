@@ -113,7 +113,6 @@ void recordSystemSettingsToFile()
     settingsFile.println("logMaxRate=" + (String)settings.logMaxRate);
     settingsFile.println("enableRTC=" + (String)settings.enableRTC);
     settingsFile.println("enableIMU=" + (String)settings.enableIMU);
-    settingsFile.println("enableSD=" + (String)settings.enableSD);
     settingsFile.println("enableTerminalOutput=" + (String)settings.enableTerminalOutput);
     settingsFile.println("logDate=" + (String)settings.logDate);
     settingsFile.println("logTime=" + (String)settings.logTime);
@@ -325,8 +324,6 @@ bool parseLine(char* str) {
     settings.enableRTC = d;
   else if (strcmp(settingName, "enableIMU") == 0)
     settings.enableIMU = d;
-  else if (strcmp(settingName, "enableSD") == 0)
-    settings.enableSD = d;
   else if (strcmp(settingName, "enableTerminalOutput") == 0)
     settings.enableTerminalOutput = d;
   else if (strcmp(settingName, "logDate") == 0)
