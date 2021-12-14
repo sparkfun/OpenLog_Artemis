@@ -107,10 +107,13 @@
     The work-around is to use Serial1 in place of serialLog and then to manually force UART1 to use pins 12 and 13
     We need a work-around anyway because if pins 12 or 13 have been used as analog inputs, Serial1.begin does not re-configure them for UART TX and RX
   (in progress) Reduce sleep current as much as possible. v1.2.1 achieved ~110uA. With v2.1.0 the draw is more like 260uA...
+
+  (in progress) Update to Apollo3 v2.2.0 - FIRMWARE_VERSION_MAJOR = 2; FIRMWARE_VERSION_MINOR = 1.
+  (done) Add a fix for issue #109 - check if a BME280 is connected before calling multiplexerBegin: https://github.com/sparkfun/OpenLog_Artemis/issues/109
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 0;
+const int FIRMWARE_VERSION_MINOR = 1;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -120,7 +123,7 @@ const int FIRMWARE_VERSION_MINOR = 0;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x120 // Stored as 288 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x121 // Stored as 289 decimal in OLA_settings.txt
 
 #include "settings.h"
 

@@ -1502,11 +1502,27 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
 //Given an address, returns the device type if it responds as we would expect
 //This version is dedicated to testing muxes and uses a custom .begin to avoid the slippery mux problem
 //However, we also need to check if an MS8607 is attached (address 0x76) as it can cause the I2C bus to lock up if not detected correctly
+//Also check for a BME280 - to prevent multiplexerBegin from confusing it
 deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumber)
 {
   switch (i2cAddress)
   {
     case 0x70:
+      {
+        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
+        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
+
+        //I don't think multiplexerBegin will cause any badness for the SHTC3 as its commands are all 16-bit
+        //But, just in case, let's see if one is connected
+        SHTC3 sensor;
+        if (sensor.begin(qwiic) == 0) //Wire port. Device returns 0 upon success.
+          return (DEVICE_HUMIDITY_SHTC3);
+
+        //Confidence: Medium - Write/Read/Clear to 0x00
+        if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_MULTIPLEXER);
+      }
+      break;    
     case 0x71:
     case 0x72:
     case 0x73:
@@ -1532,9 +1548,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
         // So, we can't use .begin as the test for a MS5637 / MS5837 / MS8607. We need to be more creative!
         // If we write 0xA0 to i2cAddress and then read two bytes:
         //  A mux will return 0xA0A0
-        //  An MS5637 / MS5837 / MS8607 will return the value stored in its eeprom which _hopefully_ is not 0xA0A0!
-
-        // Let's hope this doesn't cause problems for the BME280...! We should be OK as the default address for the BME280 is 0x77.
+        //  An MS5637 / MS5837 / MS8607 / BME280 will return an eeprom or register value which _hopefully_ is not 0xA0A0!
 
         qwiic.beginTransmission((uint8_t)i2cAddress);
         qwiic.write((uint8_t)0xA0);
@@ -1543,12 +1557,12 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
         if (i2c_status == 0) // If the I2C write was successful
         {
           qwiic.requestFrom((uint8_t)i2cAddress, 2U); // Read two bytes
-          uint8_t buffer[2];
+          uint8_t buffer[2] = { 0, 0 };
           for (uint8_t i = 0; i < 2; i++)
           {
             buffer[i] = qwiic.read();
           }
-          if ((buffer[0] != 0xA0) || (buffer[1] != 0xA0)) // If we read back something other than 0xA0A0 then we are probably talking to an MS5637 / MS5837 / MS8607, not a mux
+          if ((buffer[0] != 0xA0) || (buffer[1] != 0xA0)) // If we read back something other than 0xA0A0 then we are probably talking to an MS5637 / MS5837 / MS8607 / BME280, not a mux
           {
             return (DEVICE_PRESSURE_MS5637);
           }
@@ -1563,6 +1577,29 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
         if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
+
+        //multiplexerBegin confuses the BME280, so let's check if one is connected first
+        // If we write 0xA0 to i2cAddress and then read two bytes:
+        //  A mux will return 0xA0A0
+        //  A BME280 will return a register value which _hopefully_ is not 0xA0A0!
+
+        qwiic.beginTransmission((uint8_t)i2cAddress);
+        qwiic.write((uint8_t)0xA0);
+        uint8_t i2c_status = qwiic.endTransmission();
+
+        if (i2c_status == 0) // If the I2C write was successful
+        {
+          qwiic.requestFrom((uint8_t)i2cAddress, 2U); // Read two bytes
+          uint8_t buffer[2] = { 0, 0 };
+          for (uint8_t i = 0; i < 2; i++)
+          {
+            buffer[i] = qwiic.read();
+          }
+          if ((buffer[0] != 0xA0) || (buffer[1] != 0xA0)) // If we read back something other than 0xA0A0 then we are probably talking to a BME280, not a mux
+          {
+            return (DEVICE_PHT_BME280);
+          }
+        }
 
         //Confidence: Medium - Write/Read/Clear to 0x00
         if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
