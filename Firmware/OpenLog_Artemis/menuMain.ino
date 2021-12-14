@@ -25,7 +25,7 @@ void menuMain()
 
     SerialPrintln(F("h) Print Sensor Helper Text (and return to logging)"));
 
-    if (settings.enableSD && online.microSD)
+    if (online.microSD)
       SerialPrintln(F("s) SD Card File Transfer"));
 
     SerialPrintln(F("r) Reset all settings to default"));
@@ -61,7 +61,7 @@ void menuMain()
       menuDebug();
     else if (incoming == 's')
     {
-      if (settings.enableSD && online.microSD)
+      if (online.microSD)
       {
         //Close log files before showing sdCardMenu
         if (online.dataLogging == true)

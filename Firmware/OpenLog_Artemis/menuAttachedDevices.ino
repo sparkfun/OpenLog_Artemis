@@ -82,7 +82,21 @@ bool detectQwiicDevices()
       {
         if (settings.printDebugMessages == true)
         {
-          SerialPrintf2("detectQwiicDevices: MS8607/MS5637/MS5837 found at address 0x%02X. Ignoring it for now...\r\n", address);
+          SerialPrintf2("detectQwiicDevices: MS8607/MS5637/MS5837/BME280 found at address 0x%02X. Ignoring it for now...\r\n", address);
+        }
+      }
+      else if (foundType == DEVICE_PHT_BME280)
+      {
+        if (settings.printDebugMessages == true)
+        {
+          SerialPrintf2("detectQwiicDevices: BME280 found at address 0x%02X. Ignoring it for now...\r\n", address);
+        }
+      }
+      else if (foundType == DEVICE_HUMIDITY_SHTC3)
+      {
+        if (settings.printDebugMessages == true)
+        {
+          SerialPrintf2("detectQwiicDevices: SHTC3 found at address 0x%02X. Ignoring it for now...\r\n", address);
         }
       }
     }

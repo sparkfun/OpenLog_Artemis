@@ -107,10 +107,15 @@
     The work-around is to use Serial1 in place of serialLog and then to manually force UART1 to use pins 12 and 13
     We need a work-around anyway because if pins 12 or 13 have been used as analog inputs, Serial1.begin does not re-configure them for UART TX and RX
   (in progress) Reduce sleep current as much as possible. v1.2.1 achieved ~110uA. With v2.1.0 the draw is more like 260uA...
+
+  (in progress) Update to Apollo3 v2.2.0 - FIRMWARE_VERSION_MAJOR = 2; FIRMWARE_VERSION_MINOR = 1.
+  (done) Add a fix for issue #109 - check if a BME280 is connected before calling multiplexerBegin: https://github.com/sparkfun/OpenLog_Artemis/issues/109
+  (done) Correct issue #104. enableSD was redundant. The microSD power always needs to be on if there is a card inserted, otherwise the card pulls
+         the SPI lines low, preventing communication with the IMU:  https://github.com/sparkfun/OpenLog_Artemis/issues/104
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 0;
+const int FIRMWARE_VERSION_MINOR = 1;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -120,7 +125,7 @@ const int FIRMWARE_VERSION_MINOR = 0;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x120 // Stored as 288 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x121 // Stored as 289 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -642,58 +647,55 @@ void loop() {
       Serial1.print(outputData); //Print to TX pin
 
     //Record to SD
-    if (settings.logData == true)
+    if ((settings.logData == true) && (online.microSD))
     {
-      if (settings.enableSD && online.microSD)
+      digitalWrite(PIN_STAT_LED, HIGH);
+      uint32_t recordLength = sensorDataFile.write(outputData, strlen(outputData));
+      if (recordLength != strlen(outputData)) //Record the buffer to the card
       {
-        digitalWrite(PIN_STAT_LED, HIGH);
-        uint32_t recordLength = sensorDataFile.write(outputData, strlen(outputData));
-        if (recordLength != strlen(outputData)) //Record the buffer to the card
+        if (settings.printDebugMessages == true)
         {
-          if (settings.printDebugMessages == true)
-          {
-            SerialPrintf3("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\r\n", recordLength, strlen(outputData));
-          }
+          SerialPrintf3("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\r\n", recordLength, strlen(outputData));
         }
-
-        //Force sync every 500ms
-        if (bestMillis() - lastDataLogSyncTime > 500)
-        {
-          lastDataLogSyncTime = bestMillis();
-          sensorDataFile.sync();
-          if (settings.frequentFileAccessTimestamps == true)
-            updateDataFileAccess(&sensorDataFile); // Update the file access time & date
-        }
-
-        //Check if it is time to open a new log file
-        uint64_t secsSinceLastFileNameChange = rtcMillis() - lastSDFileNameChangeTime; // Calculate how long we have been logging for
-        secsSinceLastFileNameChange /= 1000ULL; // Convert to secs
-        if ((settings.openNewLogFilesAfter > 0) && (((unsigned long)secsSinceLastFileNameChange) >= settings.openNewLogFilesAfter))
-        {
-          //Close existings files
-          if (online.dataLogging == true)
-          {
-            sensorDataFile.sync();
-            updateDataFileAccess(&sensorDataFile); // Update the file access time & date
-            sensorDataFile.close();
-            strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
-            beginDataLogging(); //180ms
-            if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
-          }
-          if (online.serialLogging == true)
-          {
-            serialDataFile.sync();
-            updateDataFileAccess(&serialDataFile); // Update the file access time & date
-            serialDataFile.close();
-            strcpy(serialDataFileName, findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"));
-            beginSerialLogging();
-          }
-
-          lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
-        }
-
-        digitalWrite(PIN_STAT_LED, LOW);
       }
+
+      //Force sync every 500ms
+      if (bestMillis() - lastDataLogSyncTime > 500)
+      {
+        lastDataLogSyncTime = bestMillis();
+        sensorDataFile.sync();
+        if (settings.frequentFileAccessTimestamps == true)
+          updateDataFileAccess(&sensorDataFile); // Update the file access time & date
+      }
+
+      //Check if it is time to open a new log file
+      uint64_t secsSinceLastFileNameChange = rtcMillis() - lastSDFileNameChangeTime; // Calculate how long we have been logging for
+      secsSinceLastFileNameChange /= 1000ULL; // Convert to secs
+      if ((settings.openNewLogFilesAfter > 0) && (((unsigned long)secsSinceLastFileNameChange) >= settings.openNewLogFilesAfter))
+      {
+        //Close existings files
+        if (online.dataLogging == true)
+        {
+          sensorDataFile.sync();
+          updateDataFileAccess(&sensorDataFile); // Update the file access time & date
+          sensorDataFile.close();
+          strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
+          beginDataLogging(); //180ms
+          if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+        }
+        if (online.serialLogging == true)
+        {
+          serialDataFile.sync();
+          updateDataFileAccess(&serialDataFile); // Update the file access time & date
+          serialDataFile.close();
+          strcpy(serialDataFileName, findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"));
+          beginSerialLogging();
+        }
+
+        lastSDFileNameChangeTime = rtcMillis(); // Record the time of the file name change
+      }
+
+      digitalWrite(PIN_STAT_LED, LOW);
     }
 
     if ((settings.useGPIO32ForStopLogging == true) && (stopLoggingSeen == true)) // Has the user pressed the stop logging button?
@@ -889,56 +891,51 @@ void beginSD()
   pin_config(PinName(PIN_MICROSD_CHIP_SELECT), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
   digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
 
-  if (settings.enableSD == true)
+  // If the microSD card is present, it needs to be powered on otherwise the IMU will fail to start
+  // (The microSD card will pull the SPI pins low, preventing communication with the IMU)
+
+  // For reasons I don't understand, we seem to have to wait for at least 1ms after SPI.begin before we call microSDPowerOn.
+  // If you comment the next line, the Artemis resets at microSDPowerOn when beginSD is called from wakeFromSleep...
+  // But only on one of my V10 red boards. The second one I have doesn't seem to need the delay!?
+  delay(5);
+
+  microSDPowerOn();
+
+  //Max power up time is 250ms: https://www.kingston.com/datasheets/SDCIT-specsheet-64gb_en.pdf
+  //Max current is 200mA average across 1s, peak 300mA
+  for (int i = 0; i < 10; i++) //Wait
   {
-    // For reasons I don't understand, we seem to have to wait for at least 1ms after SPI.begin before we call microSDPowerOn.
-    // If you comment the next line, the Artemis resets at microSDPowerOn when beginSD is called from wakeFromSleep...
-    // But only on one of my V10 red boards. The second one I have doesn't seem to need the delay!?
-    delay(5);
+    checkBattery();
+    delay(1);
+  }
 
-    microSDPowerOn();
-
-    //Max power up time is 250ms: https://www.kingston.com/datasheets/SDCIT-specsheet-64gb_en.pdf
-    //Max current is 200mA average across 1s, peak 300mA
-    for (int i = 0; i < 10; i++) //Wait
+  if (sd.begin(SD_CONFIG) == false) // Try to begin the SD card using the correct chip select
+  {
+    printDebug(F("SD init failed (first attempt). Trying again...\r\n"));
+    for (int i = 0; i < 250; i++) //Give SD more time to power up, then try again
     {
       checkBattery();
       delay(1);
     }
-
     if (sd.begin(SD_CONFIG) == false) // Try to begin the SD card using the correct chip select
     {
-      printDebug(F("SD init failed (first attempt). Trying again...\r\n"));
-      for (int i = 0; i < 250; i++) //Give SD more time to power up, then try again
-      {
-        checkBattery();
-        delay(1);
-      }
-      if (sd.begin(SD_CONFIG) == false) // Try to begin the SD card using the correct chip select
-      {
-        SerialPrintln(F("SD init failed (second attempt). Is card present? Formatted?"));
-        SerialPrintln(F("Please ensure the SD card is formatted correctly using https://www.sdcard.org/downloads/formatter/"));
-        digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
-        online.microSD = false;
-        return;
-      }
-    }
-
-    //Change to root directory. All new file creation will be in root.
-    if (sd.chdir() == false)
-    {
-      SerialPrintln(F("SD change directory failed"));
+      SerialPrintln(F("SD init failed (second attempt). Is card present? Formatted?"));
+      SerialPrintln(F("Please ensure the SD card is formatted correctly using https://www.sdcard.org/downloads/formatter/"));
+      digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
       online.microSD = false;
       return;
     }
+  }
 
-    online.microSD = true;
-  }
-  else
+  //Change to root directory. All new file creation will be in root.
+  if (sd.chdir() == false)
   {
-    microSDPowerOff();
+    SerialPrintln(F("SD change directory failed"));
     online.microSD = false;
+    return;
   }
+
+  online.microSD = true;
 }
 
 void enableCIPOpullUp() // updated for v2.1.0 of the Apollo3 core

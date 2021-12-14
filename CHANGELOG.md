@@ -1,6 +1,15 @@
 Change Log
 ======================
 
+v2.1
+---------
+
+v2.1 is a 'mini' release:
+
+* The compiled binaries for v2.1 are based on v2.2.0 of the Apollo3 core
+* Corrects issue [109](https://github.com/sparkfun/OpenLog_Artemis/issues/109)
+* Corrects issue [104](https://github.com/sparkfun/OpenLog_Artemis/issues/104)
+
 v2.0
 ---------
 
