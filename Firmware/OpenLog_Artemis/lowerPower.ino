@@ -318,11 +318,16 @@ void goToSleep(uint32_t sysTicksToSleep)
   am_hal_gpio_pinconfig(PIN_QWIIC_SCL , g_AM_HAL_GPIO_DISABLE);
 
   //If requested, disable pins 48 and 49 (UART0) to stop them back-feeding the CH340
-  if (settings.serialTxRxDuringSleep == false)
-  {
+if (settings.serialTxRxDuringSleep == false)
+{
     am_hal_gpio_pinconfig(48 , g_AM_HAL_GPIO_DISABLE); //TX0
     am_hal_gpio_pinconfig(49 , g_AM_HAL_GPIO_DISABLE); //RX0
-  }
+    if (settings.useTxRxPinsForTerminal == true)
+    {
+        am_hal_gpio_pinconfig(12 , g_AM_HAL_GPIO_DISABLE); //TX1
+        am_hal_gpio_pinconfig(13 , g_AM_HAL_GPIO_DISABLE); //RX1
+    }
+}
 
   //Make sure PIN_POWER_LOSS is configured as an input for the WDT
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
@@ -470,6 +475,7 @@ void wakeFromSleep()
     pin_config(PinName(48), g_AM_BSP_GPIO_COM_UART_TX);    
     pin_config(PinName(49), g_AM_BSP_GPIO_COM_UART_RX);
   }
+  
 
   //Re-enable CIPO, COPI, SCK and the chip selects but may as well leave ICM_INT disabled
   pin_config(PinName(PIN_SPI_CIPO), g_AM_BSP_GPIO_IOM0_MISO);
