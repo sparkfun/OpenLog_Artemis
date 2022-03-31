@@ -112,9 +112,12 @@
   v2.2:
     Use Apollo3 v2.2.0 with changes by paulvha to fix Issue 117 (Thank you Paul!)
       https://github.com/sparkfun/OpenLog_Artemis/issues/117#issuecomment-1034973065
+    Also includes Paul's SPI.end fix
+      https://github.com/sparkfun/Arduino_Apollo3/issues/442
     Use SdFat v2.1.2
     Compensate for missing / not-populated IMU
     Add support for yyyy/mm/dd and ISO 8601 date style (Issue 118)
+    Add support for fractional time zone offsets
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -195,7 +198,7 @@ TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
 
-#include <SdFat.h> //SdFat v2.0.7 by Bill Greiman: http://librarymanager/All#SdFat_exFAT
+#include <SdFat.h> //SdFat by Bill Greiman: http://librarymanager/All#SdFat_exFAT
 
 #define SD_FAT_TYPE 3 // SD_FAT_TYPE = 0 for SdFat/File, 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
@@ -375,6 +378,8 @@ void setup() {
 
   enableCIPOpullUp(); // Enable CIPO pull-up _after_ beginSD
 
+  beginIMU(); //61ms
+
   loadSettings(); //50 - 250ms
 
   if (settings.useTxRxPinsForTerminal == true)
@@ -438,8 +443,6 @@ void setup() {
     beginSerialLogging(); //20 - 99ms
     beginSerialOutput(); // Begin serial data output on the TX pin
   }
-
-  beginIMU(); //61ms
 
   if (online.microSD == true) SerialPrintln(F("SD card online"));
   else SerialPrintln(F("SD card offline"));
@@ -1236,6 +1239,7 @@ void beginDataLogging()
     }
 
     updateDataFileCreate(&sensorDataFile); // Update the file create time & date
+    sensorDataFile.sync();
 
     online.dataLogging = true;
   }
@@ -1260,6 +1264,7 @@ void beginSerialLogging()
     }
 
     updateDataFileCreate(&serialDataFile); // Update the file create time & date
+    serialDataFile.sync();
 
     //We need to manually restore the Serial1 TX and RX pins
     configureSerial1TxRx();

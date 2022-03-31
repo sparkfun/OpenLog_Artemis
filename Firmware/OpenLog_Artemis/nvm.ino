@@ -135,7 +135,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("logA13=" + (String)settings.logA13);
     settingsFile.println("logA32=" + (String)settings.logA32);
     settingsFile.println("logAnalogVoltages=" + (String)settings.logAnalogVoltages);
-    settingsFile.println("localUTCOffset=" + (String)settings.localUTCOffset);
+    settingsFile.print("localUTCOffset="); settingsFile.println(settings.localUTCOffset);
     settingsFile.println("printDebugMessages=" + (String)settings.printDebugMessages);
     settingsFile.println("powerDownQwiicBusBetweenReads=" + (String)settings.powerDownQwiicBusBetweenReads);
     settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
@@ -217,6 +217,7 @@ bool loadSystemSettingsFromFile()
           {
             //If we can't read the first line of the settings file, give up
             SerialPrintln(F("Giving up on settings file"));
+            settingsFile.close();
             return (false);
           }
         }
@@ -226,6 +227,7 @@ bool loadSystemSettingsFromFile()
           {
             //If we can't read the first line of the settings file, give up
             SerialPrintln(F("Giving up on settings file"));
+            settingsFile.close();
             return (false);
           }
         }
@@ -836,7 +838,7 @@ bool loadDeviceSettingsFromFile()
       }
 
       //SerialPrintln(F("Device config file read complete"));
-      updateDataFileAccess(&settingsFile); // Update the file access time & date
+      //updateDataFileAccess(&settingsFile); // Update the file access time & date
       settingsFile.close();
       return (true);
     }
