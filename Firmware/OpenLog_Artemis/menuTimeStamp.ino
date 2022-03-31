@@ -152,7 +152,7 @@ void menuTimeStamp()
       else if (incoming == 9)
       {
         SerialPrint(F("Enter the local hour offset from UTC (-12 to 14): "));
-        int offset = getNumber(menuTimeout); //Timeout after x seconds
+        float offset = (float)getDouble(menuTimeout); //Timeout after x seconds
         if (offset < -12 || offset > 14)
           SerialPrintln(F("Error: Offset is out of range"));
         else

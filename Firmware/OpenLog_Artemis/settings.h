@@ -374,7 +374,7 @@ struct struct_settings {
   bool logA13 = false;
   bool logA32 = false;
   bool logAnalogVoltages = true;
-  int  localUTCOffset = 0; //Default to UTC because we should
+  float localUTCOffset = 0; // Default to UTC because we should. Support offsets in 15 minute increments.
   bool printDebugMessages = false;
 #if(HARDWARE_VERSION_MAJOR == 0)
   bool powerDownQwiicBusBetweenReads = false; // For the SparkX (black) board: default to leaving the Qwiic power enabled during sleep and powerDown to prevent a brown-out.
