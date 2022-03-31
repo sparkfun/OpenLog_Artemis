@@ -26,16 +26,20 @@ void getTimeString(char timeStringBuffer[])
       sprintf(rtcYear, "200%d", myRTC.year);
     else
       sprintf(rtcYear, "20%d", myRTC.year);
-    if (settings.americanDateStyle == true)
+    if (settings.dateStyle == 0)
       sprintf(rtcDate, "%s/%s/%s,", rtcMonth, rtcDay, rtcYear);
-    else
+    else if (settings.dateStyle == 1)
       sprintf(rtcDate, "%s/%s/%s,", rtcDay, rtcMonth, rtcYear);
+    else if (settings.dateStyle == 2)
+      sprintf(rtcDate, "%s/%s/%s,", rtcYear, rtcMonth, rtcDay);
+    else // if (settings.dateStyle == 3)
+      sprintf(rtcDate, "%s-%s-%sT", rtcYear, rtcMonth, rtcDay);
     strcat(timeStringBuffer, rtcDate);
   }
 
-  if (settings.logTime)
+  if ((settings.logTime) || ((settings.logDate) && (settings.dateStyle == 3)))
   {
-    char rtcTime[13]; //09:14:37.41,
+    char rtcTime[16]; //09:14:37.41, or 09:14:37+00:00,
     int adjustedHour = myRTC.hour;
     if (settings.hour24Style == false)
     {
@@ -45,6 +49,7 @@ void getTimeString(char timeStringBuffer[])
     char rtcMin[3];
     char rtcSec[3];
     char rtcHundredths[3];
+    char timeZone[4];
     if (adjustedHour < 10)
       sprintf(rtcHour, "0%d", adjustedHour);
     else
@@ -61,8 +66,30 @@ void getTimeString(char timeStringBuffer[])
       sprintf(rtcHundredths, "0%d", myRTC.hundredths);
     else
       sprintf(rtcHundredths, "%d", myRTC.hundredths);
-    sprintf(rtcTime, "%s:%s:%s.%s,", rtcHour, rtcMin, rtcSec, rtcHundredths);
-    strcat(timeStringBuffer, rtcTime);
+    if (settings.localUTCOffset >= 0)
+    {
+      if (settings.localUTCOffset < 10)
+        sprintf(timeZone, "+0%d", settings.localUTCOffset);
+      else
+        sprintf(timeZone, "+%d", settings.localUTCOffset);
+    }
+    else
+    {
+      if (settings.localUTCOffset <= -10)
+        sprintf(timeZone, "-%d", 0 - settings.localUTCOffset);
+      else
+        sprintf(timeZone, "-0%d", 0 - settings.localUTCOffset);
+    }
+    if ((settings.logDate) && (settings.dateStyle == 3))
+    {
+      sprintf(rtcTime, "%s:%s:%s%s:00,", rtcHour, rtcMin, rtcSec, timeZone);
+      strcat(timeStringBuffer, rtcTime);      
+    }
+    if (settings.logTime)
+    {
+      sprintf(rtcTime, "%s:%s:%s.%s,", rtcHour, rtcMin, rtcSec, rtcHundredths);
+      strcat(timeStringBuffer, rtcTime);
+    }
   }
   
   if (settings.logMicroseconds)
@@ -155,7 +182,7 @@ void correctDate(int &year, int &month, int &day, int &hour)
       adjustMonth = true;
     else if (month == 2)
     {
-      if (year % 4 == 0 && day == 30)
+      if (year % 4 == 0 && day == 30) // Note: this will fail in 2100. 2100 is not a leap year.
         adjustMonth = true;
       else if (day == 29)
         adjustMonth = true;
@@ -213,7 +240,7 @@ void correctDate(int &year, int &month, int &day, int &hour)
           day = 31;
           break;
         case 2: //February
-          if (year % 4 == 0) day = 29;
+          if (year % 4 == 0) day = 29; // Note: this will fail in 2100. 2100 is not a leap year.
           else day = 28;
           break;
         case 3: //March

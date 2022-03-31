@@ -299,12 +299,18 @@ void gatherDeviceValues()
                 else
                   sprintf(gnssMonthStr, "%d", gnssMonth);
                 sprintf(gnssYearStr, "%d", gnssYear);
-                if (settings.americanDateStyle == true)
+                if (settings.dateStyle == 0)
                 {
                   sprintf(tempData, "%s/%s/%s,", gnssMonthStr, gnssDayStr, gnssYearStr);
                 }
-                else
+                else if (settings.dateStyle == 1)
+                {
                   sprintf(tempData, "%s/%s/%s,", gnssDayStr, gnssMonthStr, gnssYearStr);
+                }
+                else // if (settings.dateStyle == 2)
+                {
+                  sprintf(tempData, "%s/%s/%s,", gnssYearStr, gnssMonthStr, gnssDayStr);
+                }
                 strcat(outputData, tempData);
               }
               if (nodeSetting->logTime)

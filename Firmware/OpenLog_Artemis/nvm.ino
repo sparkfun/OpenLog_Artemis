@@ -125,7 +125,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("logRTC=" + (String)settings.logRTC);
     settingsFile.println("logHertz=" + (String)settings.logHertz);
     settingsFile.println("correctForDST=" + (String)settings.correctForDST);
-    settingsFile.println("americanDateStyle=" + (String)settings.americanDateStyle);
+    settingsFile.println("dateStyle=" + (String)settings.dateStyle);
     settingsFile.println("hour24Style=" + (String)settings.hour24Style);
     settingsFile.println("serialTerminalBaudRate=" + (String)settings.serialTerminalBaudRate);
     settingsFile.println("serialLogBaudRate=" + (String)settings.serialLogBaudRate);
@@ -348,8 +348,10 @@ bool parseLine(char* str) {
     settings.logHertz = d;
   else if (strcmp(settingName, "correctForDST") == 0)
     settings.correctForDST = d;
-  else if (strcmp(settingName, "americanDateStyle") == 0)
-    settings.americanDateStyle = d;
+  else if (strcmp(settingName, "dateStyle") == 0)
+    settings.dateStyle = d;
+  else if (strcmp(settingName, "americanDateStyle") == 0) // Included for backward-compatibility
+    settings.dateStyle = d;
   else if (strcmp(settingName, "hour24Style") == 0)
     settings.hour24Style = d;
   else if (strcmp(settingName, "serialTerminalBaudRate") == 0)

@@ -23,10 +23,12 @@ void menuTimeStamp()
       sprintf(rtcYear, "200%d", myRTC.year);
     else
       sprintf(rtcYear, "20%d", myRTC.year);
-    if (settings.americanDateStyle == true)
+    if (settings.dateStyle == 0)
       sprintf(rtcDate, "%s/%s/%s,", rtcMonth, rtcDay, rtcYear);
-    else
+    else if (settings.dateStyle == 1)
       sprintf(rtcDate, "%s/%s/%s,", rtcDay, rtcMonth, rtcYear);
+    else
+      sprintf(rtcDate, "%s/%s/%s,", rtcYear, rtcMonth, rtcDay);
 
     SerialPrint(rtcDate);
     SerialPrint(F(" "));
@@ -79,8 +81,10 @@ void menuTimeStamp()
       SerialPrintln(F("4) Manually set RTC date"));
 
       SerialPrint(F("5) Toggle date style: "));
-      if (settings.americanDateStyle == true) SerialPrintln(F("mm/dd/yyyy"));
-      else SerialPrintln(F("dd/mm/yyyy"));
+      if (settings.dateStyle == 0) SerialPrintln(F("mm/dd/yyyy"));
+      else if (settings.dateStyle == 1) SerialPrintln(F("dd/mm/yyyy"));
+      else if (settings.dateStyle == 2) SerialPrintln(F("yyyy/mm/dd"));
+      else SerialPrintln(F("ISO 8601"));
     }
 
     if (settings.logTime == true)
@@ -181,7 +185,9 @@ void menuTimeStamp()
       }
       else if (incoming == 5)
       {
-        settings.americanDateStyle ^= 1;
+        settings.dateStyle += 1;
+        if (settings.dateStyle == 4)
+          settings.dateStyle = 0;
       }
     }
 

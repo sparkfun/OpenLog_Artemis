@@ -13,10 +13,6 @@
 
   The Board should be set to SparkFun Apollo3 \ RedBoard Artemis ATP.
 
-  Please note: this version of the firmware compiles on v2.1.0 of the Apollo3 boards.
-
-  (At the time of writing, data logging with the the u-blox ZED-F9P is problematic when using v2.1.1 of the core.)
-
   v1.0 Power Consumption:
    Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
    10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
@@ -112,10 +108,17 @@
   (done) Add a fix for issue #109 - check if a BME280 is connected before calling multiplexerBegin: https://github.com/sparkfun/OpenLog_Artemis/issues/109
   (done) Correct issue #104. enableSD was redundant. The microSD power always needs to be on if there is a card inserted, otherwise the card pulls
          the SPI lines low, preventing communication with the IMU:  https://github.com/sparkfun/OpenLog_Artemis/issues/104
+
+  v2.2:
+    Use Apollo3 v2.2.0 with changes by paulvha to fix Issue 117 (Thank you Paul!)
+      https://github.com/sparkfun/OpenLog_Artemis/issues/117#issuecomment-1034973065
+    Use SdFat v2.1.2
+    Compensate for missing / not-populated IMU
+    Add support for yyyy/mm/dd and ISO 8601 date style (Issue 118)
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 1;
+const int FIRMWARE_VERSION_MINOR = 2;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -125,7 +128,7 @@ const int FIRMWARE_VERSION_MINOR = 1;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x121 // Stored as 289 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x122 // Stored as 290 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -448,7 +451,7 @@ void setup() {
   else SerialPrintln(F("Serial logging offline"));
 
   if (online.IMU == true) SerialPrintln(F("IMU online"));
-  else SerialPrintln(F("IMU offline"));
+  else SerialPrintln(F("IMU offline - or not present"));
 
   if (settings.logMaxRate == true) SerialPrintln(F("Logging analog pins at max data rate"));
 

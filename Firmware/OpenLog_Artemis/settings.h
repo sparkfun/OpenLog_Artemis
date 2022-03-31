@@ -364,7 +364,7 @@ struct struct_settings {
   bool logRTC = true;
   bool logHertz = true;
   bool correctForDST = false;
-  bool americanDateStyle = true;
+  int dateStyle = 0; // 0 : mm/dd/yyyy, 1 : dd/mm/yyyy, 2 : yyyy/mm/dd, 3 : ISO8601 (date and time)
   bool hour24Style = true;
   int  serialTerminalBaudRate = 115200;
   int  serialLogBaudRate = 9600;
