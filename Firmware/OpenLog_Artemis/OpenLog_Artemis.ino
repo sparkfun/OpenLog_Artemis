@@ -378,8 +378,6 @@ void setup() {
 
   enableCIPOpullUp(); // Enable CIPO pull-up _after_ beginSD
 
-  beginIMU(); //61ms
-
   loadSettings(); //50 - 250ms
 
   if (settings.useTxRxPinsForTerminal == true)
@@ -443,6 +441,8 @@ void setup() {
     beginSerialLogging(); //20 - 99ms
     beginSerialOutput(); // Begin serial data output on the TX pin
   }
+
+  beginIMU(); //61ms
 
   if (online.microSD == true) SerialPrintln(F("SD card online"));
   else SerialPrintln(F("SD card offline"));
