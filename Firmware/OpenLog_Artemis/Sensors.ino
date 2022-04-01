@@ -188,7 +188,7 @@ void getData()
 
     //If we are sleeping between readings then we cannot rely on millis() as it is powered down
     //Use RTC instead
-    currentMillis = bestMillis();
+    currentMillis = rtcMillis();
     float actualRate;
     if ((currentMillis - measurementStartTime) < 1) // Avoid divide by zero
       actualRate = 0.0;

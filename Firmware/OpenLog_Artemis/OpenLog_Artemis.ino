@@ -110,10 +110,18 @@
          the SPI lines low, preventing communication with the IMU:  https://github.com/sparkfun/OpenLog_Artemis/issues/104
 
   v2.2:
-    Use Apollo3 v2.2.0 with changes by paulvha to fix Issue 117 (Thank you Paul!)
+    Use Apollo3 v2.1.0 with changes by paulvha to fix Issue 117 (Thank you Paul!)
       https://github.com/sparkfun/OpenLog_Artemis/issues/117#issuecomment-1034973065
+      https://github.com/sparkfun/Arduino_Apollo3/issues/279#issuecomment-710060977
     Also includes Paul's SPI.end fix
       https://github.com/sparkfun/Arduino_Apollo3/issues/442
+      In libraries/SPI/src/SPI.cpp change end() to:
+        void arduino::MbedSPI::end() {
+            if (dev) {
+                delete dev;
+                dev = NULL;
+            }
+        }      
     Use SdFat v2.1.2
     Compensate for missing / not-populated IMU
     Add support for yyyy/mm/dd and ISO 8601 date style (Issue 118)
@@ -486,7 +494,7 @@ void setup() {
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
-  measurementStartTime = bestMillis();
+  measurementStartTime = rtcMillis();
 
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
 
@@ -553,12 +561,12 @@ void loop() {
 
       //If we are sleeping between readings then we cannot rely on millis() as it is powered down
       //Use RTC instead
-      lastSeriaLogSyncTime = bestMillis(); //Reset the last sync time to now
+      lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
       newSerialData = true;
     }
     else if (newSerialData == true)
     {
-      if ((bestMillis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
+      if ((rtcMillis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
       {
         if (incomingBufferSpot > 0)
         {
@@ -574,7 +582,7 @@ void loop() {
         }
 
         newSerialData = false;
-        lastSeriaLogSyncTime = bestMillis(); //Reset the last sync time to now
+        lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
         printDebug("Total chars received: " + (String)charsReceived + "\r\n");
       }
     }
@@ -666,9 +674,9 @@ void loop() {
       }
 
       //Force sync every 500ms
-      if (bestMillis() - lastDataLogSyncTime > 500)
+      if (rtcMillis() - lastDataLogSyncTime > 500)
       {
-        lastDataLogSyncTime = bestMillis();
+        lastDataLogSyncTime = rtcMillis();
         sensorDataFile.sync();
         if (settings.frequentFileAccessTimestamps == true)
           updateDataFileAccess(&sensorDataFile); // Update the file access time & date
@@ -725,7 +733,7 @@ void loop() {
     {
       // Check if we have been awake long enough (millis is reset to zero when waking from sleep)
       // goToSleep will automatically compensate for how long we have been awake
-      if ((bestMillis() - lastAwakeTimeMillis) < settings.minimumAwakeTimeMillis)
+      if ((rtcMillis() - lastAwakeTimeMillis) < settings.minimumAwakeTimeMillis)
         return; // Too early to sleep - leave sleepAfterRead set true
     }
 

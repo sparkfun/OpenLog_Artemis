@@ -176,7 +176,7 @@ void menuMain()
   totalCharactersPrinted = 0;
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
-  measurementStartTime = bestMillis();
+  measurementStartTime = rtcMillis();
 
   //Edge case: after 10Hz reading, user sets the log rate above 2s mark. We never go to sleep because 
   //takeReading is not true. And since we don't wake up, takeReading never gets set to true.

@@ -562,11 +562,13 @@ void waitForQwiicBusPowerDelay() // Wait while the qwiic devices power up
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
   // If we're not using the SD card, everything will have happened much quicker than usual.
-  uint64_t qwiicPowerHasBeenOnFor = bestMillis() - qwiicPowerOnTime;
-  if (qwiicPowerHasBeenOnFor < qwiicPowerOnDelayMillis)
+  uint64_t qwiicPowerHasBeenOnFor = rtcMillis() - qwiicPowerOnTime;
+  printDebug("waitForQwiicBusPowerDelay: qwiicPowerHasBeenOnFor " + (String)((unsigned long)qwiicPowerHasBeenOnFor) + "ms\r\n");
+  if (qwiicPowerHasBeenOnFor < (uint64_t)qwiicPowerOnDelayMillis)
   {
-    unsigned long delayFor = qwiicPowerOnDelayMillis - qwiicPowerHasBeenOnFor;
-    for (unsigned long i = 0; i < delayFor; i++)
+    uint64_t delayFor = (uint64_t)qwiicPowerOnDelayMillis - qwiicPowerHasBeenOnFor;
+    printDebug("waitForQwiicBusPowerDelay: delaying for " + (String)((unsigned long)delayFor) + "\r\n");
+    for (uint64_t i = 0; i < delayFor; i++)
     {
       checkBattery();
       delay(1);
@@ -584,7 +586,7 @@ void qwiicPowerOn()
   digitalWrite(PIN_QWIIC_POWER, HIGH);
 #endif
 
-  qwiicPowerOnTime = bestMillis(); //Record this time so we wait enough time before detecting certain sensors
+  qwiicPowerOnTime = rtcMillis(); //Record this time so we wait enough time before detecting certain sensors
 }
 void qwiicPowerOff()
 {
