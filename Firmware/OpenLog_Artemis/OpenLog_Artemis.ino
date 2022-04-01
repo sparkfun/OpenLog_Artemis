@@ -110,9 +110,8 @@
          the SPI lines low, preventing communication with the IMU:  https://github.com/sparkfun/OpenLog_Artemis/issues/104
 
   v2.2:
-    Use Apollo3 v2.1.0 with changes by paulvha to fix Issue 117 (Thank you Paul!)
-      https://github.com/sparkfun/OpenLog_Artemis/issues/117#issuecomment-1034973065
-      https://github.com/sparkfun/Arduino_Apollo3/issues/279#issuecomment-710060977
+    Use Apollo3 v2.2.0 with changes by paulvha to fix Issue 117 (Thank you Paul!)
+      https://github.com/sparkfun/OpenLog_Artemis/issues/117#issuecomment-1085881142
     Also includes Paul's SPI.end fix
       https://github.com/sparkfun/Arduino_Apollo3/issues/442
       In libraries/SPI/src/SPI.cpp change end() to:
