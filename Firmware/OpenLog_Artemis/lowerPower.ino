@@ -443,13 +443,11 @@ void wakeFromSleep()
     am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
     if (settings.fallingEdgeTrigger == true)
     {
-      SerialPrintln(F("Falling-edge triggering is enabled. Sensor data will be logged on a falling edge on GPIO pin 11."));
       attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
       intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
     }
     else
     {
-      SerialPrintln(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
       attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
       intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_LO2HI;
     }
@@ -474,6 +472,10 @@ void wakeFromSleep()
   {
     pin_config(PinName(48), g_AM_BSP_GPIO_COM_UART_TX);    
     pin_config(PinName(49), g_AM_BSP_GPIO_COM_UART_RX);
+    if (settings.useTxRxPinsForTerminal == true)
+    {
+      configureSerial1TxRx();
+    }
   }
 
   //Re-enable CIPO, COPI, SCK and the chip selects but may as well leave ICM_INT disabled
@@ -491,9 +493,6 @@ void wakeFromSleep()
 
   if (settings.useTxRxPinsForTerminal == true)
   {
-    //We may need to manually restore the Serial1 TX and RX pins?
-    configureSerial1TxRx();
-
     Serial1.begin(settings.serialTerminalBaudRate); // Start the serial port
   }
 
