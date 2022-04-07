@@ -138,7 +138,7 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
     case DEVICE_GPS_UBLOX:
       {
         temp->classPtr = new SFE_UBLOX_GNSS;
-        temp->configPtr = new struct_uBlox;
+        temp->configPtr = new struct_ublox;
       }
       break;
     case DEVICE_PROXIMITY_VCNL4040:
@@ -351,7 +351,7 @@ bool beginQwiicDevices()
         {
           setQwiicPullups(0); //Disable pullups for u-blox comms.
           SFE_UBLOX_GNSS *tempDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
-          struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if(settings.printGNSSDebugMessages == true) tempDevice->enableDebugging(); // Enable debug messages if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
@@ -661,7 +661,7 @@ void configureDevice(node * temp)
         setQwiicPullups(0); //Disable pullups for u-blox comms.
 
         SFE_UBLOX_GNSS *sensor = (SFE_UBLOX_GNSS *)temp->classPtr;
-        struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+        struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr;
 
         sensor->setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
 
@@ -882,7 +882,7 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       ptr = (FunctionPointer)menuConfigure_VL53L1X;
       break;
     case DEVICE_GPS_UBLOX:
-      ptr = (FunctionPointer)menuConfigure_uBlox;
+      ptr = (FunctionPointer)menuConfigure_ublox;
       break;
     case DEVICE_PROXIMITY_VCNL4040:
       ptr = (FunctionPointer)menuConfigure_VCNL4040;

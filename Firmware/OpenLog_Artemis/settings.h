@@ -55,7 +55,7 @@ typedef void (*FunctionPointer)(void*); //Used for pointing to device config men
 //Begin specific sensor config structs
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-const unsigned long worstCaseQwiicPowerOnDelay = 1000; // Remember to update this if required when adding a new sensor (currently defined by the uBlox). (This is OK for the SCD30. beginQwiicDevices will extend the delay.)
+const unsigned long worstCaseQwiicPowerOnDelay = 1000; // Remember to update this if required when adding a new sensor (currently defined by the u-blox). (This is OK for the SCD30. beginQwiicDevices will extend the delay.)
 const unsigned long minimumQwiicPowerOnDelay = 10; //The minimum number of milliseconds between turning on the Qwiic power and attempting to communicate with Qwiic devices
 
 // Power On Delay Testing:
@@ -117,7 +117,7 @@ struct struct_VCNL4040 {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
-struct struct_uBlox {
+struct struct_ublox {
   bool log = true;
   bool logDate = true;
   bool logTime = true;

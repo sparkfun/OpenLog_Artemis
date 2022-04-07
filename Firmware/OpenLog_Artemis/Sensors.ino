@@ -278,7 +278,7 @@ void gatherDeviceValues()
             setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
             SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
-            struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+            struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr;
 
             if (nodeSetting->log == true)
             {
@@ -1188,7 +1188,7 @@ void printHelperText(bool terminalOnly)
           break;
         case DEVICE_GPS_UBLOX:
           {
-            struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+            struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr;
             if (nodeSetting->log)
             {
               if (nodeSetting->logDate)
@@ -1572,7 +1572,7 @@ void setMaxI2CSpeed()
     if (temp->deviceType == DEVICE_GPS_UBLOX)
     {
       //Check if i2cSpeed is lowered
-      struct_uBlox *sensor = (struct_uBlox*)temp->configPtr;
+      struct_ublox *sensor = (struct_ublox*)temp->configPtr;
       if (sensor->i2cSpeed == 100000)
       {
         //printDebug("setMaxI2CSpeed: sensor->i2cSpeed is 100000. Reducing maxSpeed to 100kHz\r\n");

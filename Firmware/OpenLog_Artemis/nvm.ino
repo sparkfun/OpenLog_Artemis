@@ -537,7 +537,7 @@ void recordDeviceSettingsToFile()
           break;
         case DEVICE_GPS_UBLOX:
           {
-            struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+            struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr;
             settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logDate=" + nodeSetting->logDate);
             settingsFile.println((String)base + "logTime=" + nodeSetting->logTime);
@@ -980,7 +980,7 @@ bool parseDeviceLine(char* str) {
         break;
       case DEVICE_GPS_UBLOX:
         {
-          struct_uBlox *nodeSetting = (struct_uBlox *)deviceConfigPtr;
+          struct_ublox *nodeSetting = (struct_ublox *)deviceConfigPtr;
 
           //Apply the appropriate settings
           if (strcmp(deviceSettingName, "log") == 0)

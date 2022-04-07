@@ -961,14 +961,14 @@ void menuConfigure_NAU7802(void *configPtr)
   }
 }
 
-void menuConfigure_uBlox(void *configPtr)
+void menuConfigure_ublox(void *configPtr)
 {
-  struct_uBlox *sensorSetting = (struct_uBlox*)configPtr;
+  struct_ublox *sensorSetting = (struct_ublox*)configPtr;
 
   while (1)
   {
     SerialPrintln(F(""));
-    SerialPrintln(F("Menu: Configure uBlox GPS Receiver"));
+    SerialPrintln(F("Menu: Configure u-blox GPS Receiver"));
 
     SerialPrint(F("1) Sensor Logging: "));
     if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
@@ -1137,7 +1137,7 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
           setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
           SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
-          struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+          struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr;
 
           //If autoPVT is enabled, flush the data to make sure we get fresh date and time
           if (nodeSetting->useAutoPVT) nodeDevice->flushPVT();
@@ -1175,7 +1175,7 @@ void gnssFactoryDefault(void)
           setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
           SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
-          struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+          struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr;
 
           //Reset the module to the factory defaults
           nodeDevice->factoryDefault();
