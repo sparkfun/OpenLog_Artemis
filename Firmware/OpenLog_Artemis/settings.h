@@ -55,7 +55,7 @@ typedef void (*FunctionPointer)(void*); //Used for pointing to device config men
 //Begin specific sensor config structs
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-const unsigned long worstCaseQwiicPowerOnDelay = 1000; // Remember to update this if required when adding a new sensor (currently defined by the uBlox). (This is OK for the SCD30. beginQwiicDevices will extend the delay.)
+const unsigned long worstCaseQwiicPowerOnDelay = 1000; // Remember to update this if required when adding a new sensor (currently defined by the u-blox). (This is OK for the SCD30. beginQwiicDevices will extend the delay.)
 const unsigned long minimumQwiicPowerOnDelay = 10; //The minimum number of milliseconds between turning on the Qwiic power and attempting to communicate with Qwiic devices
 
 // Power On Delay Testing:
@@ -117,7 +117,7 @@ struct struct_VCNL4040 {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
-struct struct_uBlox {
+struct struct_ublox {
   bool log = true;
   bool logDate = true;
   bool logTime = true;
@@ -364,7 +364,7 @@ struct struct_settings {
   bool logRTC = true;
   bool logHertz = true;
   bool correctForDST = false;
-  bool americanDateStyle = true;
+  int dateStyle = 0; // 0 : mm/dd/yyyy, 1 : dd/mm/yyyy, 2 : yyyy/mm/dd, 3 : ISO8601 (date and time)
   bool hour24Style = true;
   int  serialTerminalBaudRate = 115200;
   int  serialLogBaudRate = 9600;
@@ -374,7 +374,7 @@ struct struct_settings {
   bool logA13 = false;
   bool logA32 = false;
   bool logAnalogVoltages = true;
-  int  localUTCOffset = 0; //Default to UTC because we should
+  float localUTCOffset = 0; // Default to UTC because we should. Support offsets in 15 minute increments.
   bool printDebugMessages = false;
 #if(HARDWARE_VERSION_MAJOR == 0)
   bool powerDownQwiicBusBetweenReads = false; // For the SparkX (black) board: default to leaving the Qwiic power enabled during sleep and powerDown to prevent a brown-out.

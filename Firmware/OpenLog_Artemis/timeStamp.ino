@@ -26,16 +26,20 @@ void getTimeString(char timeStringBuffer[])
       sprintf(rtcYear, "200%d", myRTC.year);
     else
       sprintf(rtcYear, "20%d", myRTC.year);
-    if (settings.americanDateStyle == true)
+    if (settings.dateStyle == 0)
       sprintf(rtcDate, "%s/%s/%s,", rtcMonth, rtcDay, rtcYear);
-    else
+    else if (settings.dateStyle == 1)
       sprintf(rtcDate, "%s/%s/%s,", rtcDay, rtcMonth, rtcYear);
+    else if (settings.dateStyle == 2)
+      sprintf(rtcDate, "%s/%s/%s,", rtcYear, rtcMonth, rtcDay);
+    else // if (settings.dateStyle == 3)
+      sprintf(rtcDate, "%s-%s-%sT", rtcYear, rtcMonth, rtcDay);
     strcat(timeStringBuffer, rtcDate);
   }
 
-  if (settings.logTime)
+  if ((settings.logTime) || ((settings.logDate) && (settings.dateStyle == 3)))
   {
-    char rtcTime[13]; //09:14:37.41,
+    char rtcTime[16]; //09:14:37.41, or 09:14:37+00:00,
     int adjustedHour = myRTC.hour;
     if (settings.hour24Style == false)
     {
@@ -45,6 +49,8 @@ void getTimeString(char timeStringBuffer[])
     char rtcMin[3];
     char rtcSec[3];
     char rtcHundredths[3];
+    char timeZoneH[4];
+    char timeZoneM[4];
     if (adjustedHour < 10)
       sprintf(rtcHour, "0%d", adjustedHour);
     else
@@ -61,8 +67,37 @@ void getTimeString(char timeStringBuffer[])
       sprintf(rtcHundredths, "0%d", myRTC.hundredths);
     else
       sprintf(rtcHundredths, "%d", myRTC.hundredths);
-    sprintf(rtcTime, "%s:%s:%s.%s,", rtcHour, rtcMin, rtcSec, rtcHundredths);
-    strcat(timeStringBuffer, rtcTime);
+    if (settings.localUTCOffset >= 0)
+    {
+      if (settings.localUTCOffset < 10)
+        sprintf(timeZoneH, "+0%d", (int)settings.localUTCOffset);
+      else
+        sprintf(timeZoneH, "+%d", (int)settings.localUTCOffset);
+    }
+    else
+    {
+      if (settings.localUTCOffset <= -10)
+        sprintf(timeZoneH, "-%d", 0 - (int)settings.localUTCOffset);
+      else
+        sprintf(timeZoneH, "-0%d", 0 - (int)settings.localUTCOffset);
+    }
+    int tzMins = (int)((settings.localUTCOffset - (float)((int)settings.localUTCOffset)) * 60.0);
+    if (tzMins < 0)
+      tzMins = 0 - tzMins;
+    if (tzMins < 10)
+      sprintf(timeZoneM, ":0%d", tzMins);
+    else
+      sprintf(timeZoneM, ":%d", tzMins);
+    if ((settings.logDate) && (settings.dateStyle == 3))
+    {
+      sprintf(rtcTime, "%s:%s:%s%s%s,", rtcHour, rtcMin, rtcSec, timeZoneH, timeZoneM);
+      strcat(timeStringBuffer, rtcTime);      
+    }
+    if (settings.logTime)
+    {
+      sprintf(rtcTime, "%s:%s:%s.%s,", rtcHour, rtcMin, rtcSec, rtcHundredths);
+      strcat(timeStringBuffer, rtcTime);
+    }
   }
   
   if (settings.logMicroseconds)
@@ -115,7 +150,7 @@ void getGPSDateTime(int &year, int &month, int &day, int &hour, int &minute, int
   //Do it twice - to make sure the data is fresh
   getUbloxDateTime(year, month, day, hour, minute, second, millisecond, dateValid, timeValid);
 
-  adjustToLocalDateTime(year, month, day, hour, settings.localUTCOffset);
+  adjustToLocalDateTime(year, month, day, hour, minute, settings.localUTCOffset);
 }
 
 //Given the date and hour, calculate local date/time
@@ -123,10 +158,24 @@ void getGPSDateTime(int &year, int &month, int &day, int &hour, int &minute, int
 //Adjust the hour by DST as necessary
 //Adjust the date as necessary
 //Leap year is taken into account but does not interact with DST (DST happens later in March)
-void adjustToLocalDateTime(int &year, int &month, int &day, int &hour, int localUTCOffset) {
+void adjustToLocalDateTime(int &year, int &month, int &day, int &hour, int &minute, float localUTCOffset) {
 
   //Apply any offset to UTC
-  hour += localUTCOffset;
+  hour += (int)localUTCOffset;
+
+  //Apply minutes offset
+  int tzMins = (int)((localUTCOffset - (float)((int)localUTCOffset)) * 60.0);
+  minute += tzMins;
+  if (minute >= 60)
+  {
+    hour += 1;
+    minute -= 60;
+  }
+  else if (minute < 0)
+  {
+    hour -= 1;
+    minute += 60;
+  }
 
   //If the adjusted hour is outside 0 to 23, then adjust date as necessary
   correctDate(year, month, day, hour);
@@ -155,7 +204,7 @@ void correctDate(int &year, int &month, int &day, int &hour)
       adjustMonth = true;
     else if (month == 2)
     {
-      if (year % 4 == 0 && day == 30)
+      if (year % 4 == 0 && day == 30) // Note: this will fail in 2100. 2100 is not a leap year.
         adjustMonth = true;
       else if (day == 29)
         adjustMonth = true;
@@ -213,7 +262,7 @@ void correctDate(int &year, int &month, int &day, int &hour)
           day = 31;
           break;
         case 2: //February
-          if (year % 4 == 0) day = 29;
+          if (year % 4 == 0) day = 29; // Note: this will fail in 2100. 2100 is not a leap year.
           else day = 28;
           break;
         case 3: //March

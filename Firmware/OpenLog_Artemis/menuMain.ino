@@ -12,7 +12,8 @@ void menuMain()
 
     SerialPrintln(F("2) Configure Time Stamp"));
 
-    SerialPrintln(F("3) Configure IMU Logging"));
+    if (online.IMU)
+      SerialPrintln(F("3) Configure IMU Logging"));
 
     if (settings.useTxRxPinsForTerminal == false)
       SerialPrintln(F("4) Configure Serial Logging"));
@@ -42,7 +43,7 @@ void menuMain()
       menuLogRate();
     else if (incoming == '2')
       menuTimeStamp();
-    else if (incoming == '3')
+    else if ((incoming == '3') && (online.IMU))
       restartIMU = menuIMU();
     else if ((incoming == '4') && (settings.useTxRxPinsForTerminal == false))
       menuSerialLogging();
@@ -175,7 +176,7 @@ void menuMain()
   totalCharactersPrinted = 0;
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
-  measurementStartTime = bestMillis();
+  measurementStartTime = rtcMillis();
 
   //Edge case: after 10Hz reading, user sets the log rate above 2s mark. We never go to sleep because 
   //takeReading is not true. And since we don't wake up, takeReading never gets set to true.

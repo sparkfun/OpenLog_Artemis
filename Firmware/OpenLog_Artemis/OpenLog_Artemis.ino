@@ -13,10 +13,6 @@
 
   The Board should be set to SparkFun Apollo3 \ RedBoard Artemis ATP.
 
-  Please note: this version of the firmware compiles on v2.1.0 of the Apollo3 boards.
-
-  (At the time of writing, data logging with the the u-blox ZED-F9P is problematic when using v2.1.1 of the core.)
-
   v1.0 Power Consumption:
    Sleep between reads, RTC fully charged, no Qwiic, SD, no USB, no Power LED: 260uA
    10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
@@ -112,10 +108,27 @@
   (done) Add a fix for issue #109 - check if a BME280 is connected before calling multiplexerBegin: https://github.com/sparkfun/OpenLog_Artemis/issues/109
   (done) Correct issue #104. enableSD was redundant. The microSD power always needs to be on if there is a card inserted, otherwise the card pulls
          the SPI lines low, preventing communication with the IMU:  https://github.com/sparkfun/OpenLog_Artemis/issues/104
+
+  v2.2:
+    Use Apollo3 v2.2.1 with changes by paulvha to fix Issue 117 (Thank you Paul!)
+      https://github.com/sparkfun/OpenLog_Artemis/issues/117#issuecomment-1085881142
+    Also includes Paul's SPI.end fix
+      https://github.com/sparkfun/Arduino_Apollo3/issues/442
+      In libraries/SPI/src/SPI.cpp change end() to:
+        void arduino::MbedSPI::end() {
+            if (dev) {
+                delete dev;
+                dev = NULL;
+            }
+        }      
+    Use SdFat v2.1.2
+    Compensate for missing / not-populated IMU
+    Add support for yyyy/mm/dd and ISO 8601 date style (Issue 118)
+    Add support for fractional time zone offsets
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 1;
+const int FIRMWARE_VERSION_MINOR = 2;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -125,7 +138,7 @@ const int FIRMWARE_VERSION_MINOR = 1;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x121 // Stored as 289 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x122 // Stored as 290 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -192,7 +205,7 @@ TwoWire qwiic(PIN_QWIIC_SDA,PIN_QWIIC_SCL); //Will use pads 8/9
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include <SPI.h>
 
-#include <SdFat.h> //SdFat v2.0.7 by Bill Greiman: http://librarymanager/All#SdFat_exFAT
+#include <SdFat.h> //SdFat by Bill Greiman: http://librarymanager/All#SdFat_exFAT
 
 #define SD_FAT_TYPE 3 // SD_FAT_TYPE = 0 for SdFat/File, 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
 #define SD_CONFIG SdSpiConfig(PIN_MICROSD_CHIP_SELECT, SHARED_SPI, SD_SCK_MHZ(24)) // 24MHz
@@ -448,7 +461,7 @@ void setup() {
   else SerialPrintln(F("Serial logging offline"));
 
   if (online.IMU == true) SerialPrintln(F("IMU online"));
-  else SerialPrintln(F("IMU offline"));
+  else SerialPrintln(F("IMU offline - or not present"));
 
   if (settings.logMaxRate == true) SerialPrintln(F("Logging analog pins at max data rate"));
 
@@ -480,7 +493,7 @@ void setup() {
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
-  measurementStartTime = bestMillis();
+  measurementStartTime = rtcMillis();
 
   digitalWrite(PIN_STAT_LED, LOW); // Turn the STAT LED off now that everything is configured
 
@@ -547,12 +560,12 @@ void loop() {
 
       //If we are sleeping between readings then we cannot rely on millis() as it is powered down
       //Use RTC instead
-      lastSeriaLogSyncTime = bestMillis(); //Reset the last sync time to now
+      lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
       newSerialData = true;
     }
     else if (newSerialData == true)
     {
-      if ((bestMillis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
+      if ((rtcMillis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
       {
         if (incomingBufferSpot > 0)
         {
@@ -568,7 +581,7 @@ void loop() {
         }
 
         newSerialData = false;
-        lastSeriaLogSyncTime = bestMillis(); //Reset the last sync time to now
+        lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
         printDebug("Total chars received: " + (String)charsReceived + "\r\n");
       }
     }
@@ -660,9 +673,9 @@ void loop() {
       }
 
       //Force sync every 500ms
-      if (bestMillis() - lastDataLogSyncTime > 500)
+      if (rtcMillis() - lastDataLogSyncTime > 500)
       {
-        lastDataLogSyncTime = bestMillis();
+        lastDataLogSyncTime = rtcMillis();
         sensorDataFile.sync();
         if (settings.frequentFileAccessTimestamps == true)
           updateDataFileAccess(&sensorDataFile); // Update the file access time & date
@@ -719,7 +732,7 @@ void loop() {
     {
       // Check if we have been awake long enough (millis is reset to zero when waking from sleep)
       // goToSleep will automatically compensate for how long we have been awake
-      if ((bestMillis() - lastAwakeTimeMillis) < settings.minimumAwakeTimeMillis)
+      if ((rtcMillis() - lastAwakeTimeMillis) < settings.minimumAwakeTimeMillis)
         return; // Too early to sleep - leave sleepAfterRead set true
     }
 
@@ -1233,6 +1246,7 @@ void beginDataLogging()
     }
 
     updateDataFileCreate(&sensorDataFile); // Update the file create time & date
+    sensorDataFile.sync();
 
     online.dataLogging = true;
   }
@@ -1257,6 +1271,7 @@ void beginSerialLogging()
     }
 
     updateDataFileCreate(&serialDataFile); // Update the file create time & date
+    serialDataFile.sync();
 
     //We need to manually restore the Serial1 TX and RX pins
     configureSerial1TxRx();

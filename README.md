@@ -20,7 +20,7 @@ OpenLog Artemis is highly configurable over an easy to use serial interface. Sim
 
 The OpenLog Artemis automatically scans, detects, configures, and logs various Qwiic sensors plugged into the board (no soldering required!). Currently, auto-detection is supported on the following Qwiic products:
 
-* uBlox GPS Modules (Lat/Long, Altitude, Velocity, SIV, Time, Date):
+* u-blox GPS Modules (Lat/Long, Altitude, Velocity, SIV, Time, Date):
   * [ZED-F9P](https://www.sparkfun.com/products/15136) 1cm High Precision GPS
   * [NEO-M8P-2](https://www.sparkfun.com/products/15005) 2.5cm High Precision GPS
   * [SAM-M8Q](https://www.sparkfun.com/products/15210) 1.5m 72 Channel GPS
@@ -59,7 +59,7 @@ The OLA can be tailored to many different applications and we will be releasing 
 
 * [Latest OLA firmware](https://github.com/sparkfun/OpenLog_Artemis/tree/main/Binaries)
 * [Geophone Logger firmware](https://github.com/sparkfun/OpenLog_Artemis_Geophone_Logger) for logging seismic activity
-* [GNSS Logger](https://github.com/sparkfun/OpenLog_Artemis_GNSS_Logger) for advanced data logging with the uBlox F9 and M9 GNSS modules including support for RAWX and RELPOSNED
+* [GNSS Logger](https://github.com/sparkfun/OpenLog_Artemis_GNSS_Logger) for advanced data logging with the u-blox F9 and M9 GNSS modules including support for RAWX and RELPOSNED
 
 Repository Contents
 -------------------

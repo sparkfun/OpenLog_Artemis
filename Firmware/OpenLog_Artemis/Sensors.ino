@@ -188,7 +188,7 @@ void getData()
 
     //If we are sleeping between readings then we cannot rely on millis() as it is powered down
     //Use RTC instead
-    currentMillis = bestMillis();
+    currentMillis = rtcMillis();
     float actualRate;
     if ((currentMillis - measurementStartTime) < 1) // Avoid divide by zero
       actualRate = 0.0;
@@ -278,7 +278,7 @@ void gatherDeviceValues()
             setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
             SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
-            struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+            struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr;
 
             if (nodeSetting->log == true)
             {
@@ -299,12 +299,18 @@ void gatherDeviceValues()
                 else
                   sprintf(gnssMonthStr, "%d", gnssMonth);
                 sprintf(gnssYearStr, "%d", gnssYear);
-                if (settings.americanDateStyle == true)
+                if (settings.dateStyle == 0)
                 {
                   sprintf(tempData, "%s/%s/%s,", gnssMonthStr, gnssDayStr, gnssYearStr);
                 }
-                else
+                else if (settings.dateStyle == 1)
+                {
                   sprintf(tempData, "%s/%s/%s,", gnssDayStr, gnssMonthStr, gnssYearStr);
+                }
+                else // if (settings.dateStyle == 2)
+                {
+                  sprintf(tempData, "%s/%s/%s,", gnssYearStr, gnssMonthStr, gnssDayStr);
+                }
                 strcat(outputData, tempData);
               }
               if (nodeSetting->logTime)
@@ -1182,7 +1188,7 @@ void printHelperText(bool terminalOnly)
           break;
         case DEVICE_GPS_UBLOX:
           {
-            struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+            struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr;
             if (nodeSetting->log)
             {
               if (nodeSetting->logDate)
@@ -1566,7 +1572,7 @@ void setMaxI2CSpeed()
     if (temp->deviceType == DEVICE_GPS_UBLOX)
     {
       //Check if i2cSpeed is lowered
-      struct_uBlox *sensor = (struct_uBlox*)temp->configPtr;
+      struct_ublox *sensor = (struct_ublox*)temp->configPtr;
       if (sensor->i2cSpeed == 100000)
       {
         //printDebug("setMaxI2CSpeed: sensor->i2cSpeed is 100000. Reducing maxSpeed to 100kHz\r\n");

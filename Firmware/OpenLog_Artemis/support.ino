@@ -90,7 +90,7 @@ uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL)
   if (settings.useTxRxPinsForTerminal == true)
     while (Serial1.available() > 0) Serial1.read(); //Clear buffer
 
-  long startTime = millis();
+  unsigned long startTime = millis();
   byte incoming;
   while (1)
   {
@@ -160,7 +160,7 @@ int64_t getNumber(int numberOfSeconds)
   //Get input from user
   char cleansed[20]; //Good for very large numbers: 123,456,789,012,345,678\0
 
-  long startTime = millis();
+  unsigned long startTime = millis();
   int spot = 0;
   while (spot < 20 - 1) //Leave room for terminating \0
   {
@@ -265,7 +265,7 @@ double getDouble(int numberOfSeconds)
   //Get input from user
   char cleansed[20]; //Good for very large numbers: 123,456,789,012,345,678\0
 
-  long startTime = millis();
+  unsigned long startTime = millis();
   int spot = 0;
   bool dpSeen = false;
   while (spot < 20 - 1) //Leave room for terminating \0

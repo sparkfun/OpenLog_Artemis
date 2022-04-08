@@ -322,6 +322,11 @@ void goToSleep(uint32_t sysTicksToSleep)
   {
     am_hal_gpio_pinconfig(48 , g_AM_HAL_GPIO_DISABLE); //TX0
     am_hal_gpio_pinconfig(49 , g_AM_HAL_GPIO_DISABLE); //RX0
+    if (settings.useTxRxPinsForTerminal == true)
+    {
+      am_hal_gpio_pinconfig(12 , g_AM_HAL_GPIO_DISABLE); //TX1
+      am_hal_gpio_pinconfig(13 , g_AM_HAL_GPIO_DISABLE); //RX1
+    }
   }
 
   //Make sure PIN_POWER_LOSS is configured as an input for the WDT
@@ -438,13 +443,11 @@ void wakeFromSleep()
     am_hal_gpio_pincfg_t intPinConfig = g_AM_HAL_GPIO_INPUT_PULLUP;
     if (settings.fallingEdgeTrigger == true)
     {
-      SerialPrintln(F("Falling-edge triggering is enabled. Sensor data will be logged on a falling edge on GPIO pin 11."));
       attachInterrupt(PIN_TRIGGER, triggerPinISR, FALLING); // Enable the interrupt
       intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_HI2LO;
     }
     else
     {
-      SerialPrintln(F("Rising-edge triggering is enabled. Sensor data will be logged on a rising edge on GPIO pin 11."));
       attachInterrupt(PIN_TRIGGER, triggerPinISR, RISING); // Enable the interrupt
       intPinConfig.eIntDir = AM_HAL_GPIO_PIN_INTDIR_LO2HI;
     }
@@ -469,6 +472,10 @@ void wakeFromSleep()
   {
     pin_config(PinName(48), g_AM_BSP_GPIO_COM_UART_TX);    
     pin_config(PinName(49), g_AM_BSP_GPIO_COM_UART_RX);
+    if (settings.useTxRxPinsForTerminal == true)
+    {
+      configureSerial1TxRx();
+    }
   }
 
   //Re-enable CIPO, COPI, SCK and the chip selects but may as well leave ICM_INT disabled
@@ -486,9 +493,6 @@ void wakeFromSleep()
 
   if (settings.useTxRxPinsForTerminal == true)
   {
-    //We may need to manually restore the Serial1 TX and RX pins?
-    configureSerial1TxRx();
-
     Serial1.begin(settings.serialTerminalBaudRate); // Start the serial port
   }
 
@@ -557,11 +561,13 @@ void waitForQwiicBusPowerDelay() // Wait while the qwiic devices power up
   //Depending on what hardware is configured, the Qwiic bus may have only been turned on a few ms ago
   //Give sensors, specifically those with a low I2C address, time to turn on
   // If we're not using the SD card, everything will have happened much quicker than usual.
-  uint64_t qwiicPowerHasBeenOnFor = bestMillis() - qwiicPowerOnTime;
-  if (qwiicPowerHasBeenOnFor < qwiicPowerOnDelayMillis)
+  uint64_t qwiicPowerHasBeenOnFor = rtcMillis() - qwiicPowerOnTime;
+  printDebug("waitForQwiicBusPowerDelay: qwiicPowerHasBeenOnFor " + (String)((unsigned long)qwiicPowerHasBeenOnFor) + "ms\r\n");
+  if (qwiicPowerHasBeenOnFor < (uint64_t)qwiicPowerOnDelayMillis)
   {
-    unsigned long delayFor = qwiicPowerOnDelayMillis - qwiicPowerHasBeenOnFor;
-    for (unsigned long i = 0; i < delayFor; i++)
+    uint64_t delayFor = (uint64_t)qwiicPowerOnDelayMillis - qwiicPowerHasBeenOnFor;
+    printDebug("waitForQwiicBusPowerDelay: delaying for " + (String)((unsigned long)delayFor) + "\r\n");
+    for (uint64_t i = 0; i < delayFor; i++)
     {
       checkBattery();
       delay(1);
@@ -579,7 +585,7 @@ void qwiicPowerOn()
   digitalWrite(PIN_QWIIC_POWER, HIGH);
 #endif
 
-  qwiicPowerOnTime = bestMillis(); //Record this time so we wait enough time before detecting certain sensors
+  qwiicPowerOnTime = rtcMillis(); //Record this time so we wait enough time before detecting certain sensors
 }
 void qwiicPowerOff()
 {

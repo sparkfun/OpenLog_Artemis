@@ -171,6 +171,8 @@ void productionTest()
           if (myICM.dataReady())
           {
             myICM.getAGMT(); //Update values
+            delay(10);
+            myICM.getAGMT(); //Update values
 #ifdef verboseProdTest
             olaftoa(myICM.temp(), tempData1, 2, sizeof(tempData1) / sizeof(char));
             Serial.printf("IMU Temp is: %sC\r\n", tempData1);
@@ -211,6 +213,8 @@ void productionTest()
           delay(100); // Give the IMU time to get going
           if (myICM.dataReady())
           {
+            myICM.getAGMT(); //Update values
+            delay(10);
             myICM.getAGMT(); //Update values
 #ifdef verboseProdTest
             olaftoa(myICM.accX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
@@ -256,6 +260,8 @@ void productionTest()
           delay(100); // Give the IMU time to get going
           if (myICM.dataReady())
           {
+            myICM.getAGMT(); //Update values
+            delay(10);
             myICM.getAGMT(); //Update values
 #ifdef verboseProdTest
             olaftoa(myICM.magX(), tempData1, 2, sizeof(tempData1) / sizeof(char));

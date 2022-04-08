@@ -125,7 +125,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("logRTC=" + (String)settings.logRTC);
     settingsFile.println("logHertz=" + (String)settings.logHertz);
     settingsFile.println("correctForDST=" + (String)settings.correctForDST);
-    settingsFile.println("americanDateStyle=" + (String)settings.americanDateStyle);
+    settingsFile.println("dateStyle=" + (String)settings.dateStyle);
     settingsFile.println("hour24Style=" + (String)settings.hour24Style);
     settingsFile.println("serialTerminalBaudRate=" + (String)settings.serialTerminalBaudRate);
     settingsFile.println("serialLogBaudRate=" + (String)settings.serialLogBaudRate);
@@ -135,7 +135,7 @@ void recordSystemSettingsToFile()
     settingsFile.println("logA13=" + (String)settings.logA13);
     settingsFile.println("logA32=" + (String)settings.logA32);
     settingsFile.println("logAnalogVoltages=" + (String)settings.logAnalogVoltages);
-    settingsFile.println("localUTCOffset=" + (String)settings.localUTCOffset);
+    settingsFile.print("localUTCOffset="); settingsFile.println(settings.localUTCOffset);
     settingsFile.println("printDebugMessages=" + (String)settings.printDebugMessages);
     settingsFile.println("powerDownQwiicBusBetweenReads=" + (String)settings.powerDownQwiicBusBetweenReads);
     settingsFile.println("qwiicBusMaxSpeed=" + (String)settings.qwiicBusMaxSpeed);
@@ -217,6 +217,7 @@ bool loadSystemSettingsFromFile()
           {
             //If we can't read the first line of the settings file, give up
             SerialPrintln(F("Giving up on settings file"));
+            settingsFile.close();
             return (false);
           }
         }
@@ -226,6 +227,7 @@ bool loadSystemSettingsFromFile()
           {
             //If we can't read the first line of the settings file, give up
             SerialPrintln(F("Giving up on settings file"));
+            settingsFile.close();
             return (false);
           }
         }
@@ -348,8 +350,10 @@ bool parseLine(char* str) {
     settings.logHertz = d;
   else if (strcmp(settingName, "correctForDST") == 0)
     settings.correctForDST = d;
-  else if (strcmp(settingName, "americanDateStyle") == 0)
-    settings.americanDateStyle = d;
+  else if (strcmp(settingName, "dateStyle") == 0)
+    settings.dateStyle = d;
+  else if (strcmp(settingName, "americanDateStyle") == 0) // Included for backward-compatibility
+    settings.dateStyle = d;
   else if (strcmp(settingName, "hour24Style") == 0)
     settings.hour24Style = d;
   else if (strcmp(settingName, "serialTerminalBaudRate") == 0)
@@ -533,7 +537,7 @@ void recordDeviceSettingsToFile()
           break;
         case DEVICE_GPS_UBLOX:
           {
-            struct_uBlox *nodeSetting = (struct_uBlox *)temp->configPtr;
+            struct_ublox *nodeSetting = (struct_ublox *)temp->configPtr;
             settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logDate=" + nodeSetting->logDate);
             settingsFile.println((String)base + "logTime=" + nodeSetting->logTime);
@@ -834,7 +838,7 @@ bool loadDeviceSettingsFromFile()
       }
 
       //SerialPrintln(F("Device config file read complete"));
-      updateDataFileAccess(&settingsFile); // Update the file access time & date
+      //updateDataFileAccess(&settingsFile); // Update the file access time & date
       settingsFile.close();
       return (true);
     }
@@ -976,7 +980,7 @@ bool parseDeviceLine(char* str) {
         break;
       case DEVICE_GPS_UBLOX:
         {
-          struct_uBlox *nodeSetting = (struct_uBlox *)deviceConfigPtr;
+          struct_ublox *nodeSetting = (struct_ublox *)deviceConfigPtr;
 
           //Apply the appropriate settings
           if (strcmp(deviceSettingName, "log") == 0)
