@@ -125,10 +125,15 @@
     Compensate for missing / not-populated IMU
     Add support for yyyy/mm/dd and ISO 8601 date style (Issue 118)
     Add support for fractional time zone offsets
+
+  v2.3 BETA:
+    Change GNSS maximum rate to 25Hz as per:
+      https://github.com/sparkfun/OpenLog_Artemis/issues/121
+      https://forum.sparkfun.com/viewtopic.php?f=172&t=57512
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 2;
+const int FIRMWARE_VERSION_MINOR = 3;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
