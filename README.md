@@ -32,7 +32,7 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [BME280 Humidity and Barometric Pressure Sensor](https://www.sparkfun.com/products/15440)
 * [MS5637 Barometric Pressure Sensor](https://www.sparkfun.com/products/14688)
 * [MS5837 Depth / Pressure Sensor](https://www.sparkfun.com/products/17709)
-* [SDP3X Differential Pressure Sensor](https://www.sparkfun.com/products/nnnnn)
+* [SDP3X Differential Pressure Sensor](https://www.sparkfun.com/products/17874)
 * [MS8607 Pressure Humidity Temperature Sensor](https://www.sparkfun.com/products/16298)
 * [MPR0025PA MicroPressure Sensor](https://www.sparkfun.com/products/16476)
 * [TMP117 High Precision Temperature Sensor](https://www.sparkfun.com/products/15805)
