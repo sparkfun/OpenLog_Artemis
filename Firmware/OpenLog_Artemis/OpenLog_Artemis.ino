@@ -514,9 +514,12 @@ void loop() {
 
   checkBattery(); // Check for low battery
 
+<<<<<<< HEAD
   //if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (Serial1.available())))
-  //if (isPrintable(Serial.peek()) || ((settings.useTxRxPinsForTerminal == true) && isPrintable(Serial1.peek())))
-  if ((Serial.read() >= 11) || ((settings.useTxRxPinsForTerminal == true) && (Serial1.read() >= 11))) // is it a CR (11) or higher
+  if ((Serial.peek() >= 9) || ((settings.useTxRxPinsForTerminal == true) && (Serial1.peek() >= 9))) // is it a TAB (9) or higher
+=======
+  if ((Serial.available()) || ((settings.useTxRxPinsForTerminal == true) && (Serial1.available())))
+>>>>>>> parent of 883838a (Update OpenLog_Artemis.ino)
     menuMain(); //Present user menu
 
   if (settings.logSerial == true && online.serialLogging == true && settings.useTxRxPinsForTerminal == false)
@@ -531,7 +534,6 @@ void loop() {
       {
         if (timestampCharsLeftToWrite > 0) // Based on code written by @DennisMelamed in PR #70
         {
-          
           incomingBuffer[incomingBufferSpot++] = serialTimestamp[0]; // Add a timestamp character to incomingBuffer
 
           for (size_t i = 0; i < timestampCharsLeftToWrite; i++)
