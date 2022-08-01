@@ -130,6 +130,13 @@
     Change GNSS maximum rate to 25Hz as per:
       https://github.com/sparkfun/OpenLog_Artemis/issues/121
       https://forum.sparkfun.com/viewtopic.php?f=172&t=57512
+    Decided not to include this in the next full release.
+    I suspect it will cause major badness on (e.g.) M8 modules that cannot support 25Hz.
+    
+  v2.3:
+    Resolve https://forum.sparkfun.com/viewtopic.php?f=171&t=58109
+    
+    
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -143,7 +150,7 @@ const int FIRMWARE_VERSION_MINOR = 3;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x122 // Stored as 290 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x123 // Stored as 291 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -1031,7 +1038,7 @@ void beginIMU()
       {
         printDebug("beginIMU: second attempt at myICM.begin failed. myICM.status = " + (String)myICM.status + "\r\n");
         digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
-        SerialPrintln(F("ICM-20948 failed to init."));
+        //SerialPrintln(F("ICM-20948 failed to init."));
         imuPowerOff();
         online.IMU = false;
         return;

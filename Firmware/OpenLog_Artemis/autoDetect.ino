@@ -674,10 +674,10 @@ void configureDevice(node * temp)
           // So the slowest rate we can set with setNavigationFrequency is 1Hz
           // (Whereas UBX_CFG_RATE can actually support intervals as slow as 65535ms)
           sensor->setNavigationFrequency(1); //Set output rate to 1Hz
-        else if (1000000ULL / settings.usBetweenReadings <= 25) //If we are slower than 25Hz logging rate
+        else if (1000000ULL / settings.usBetweenReadings <= 10) //If we are slower than 10Hz logging rate
           sensor->setNavigationFrequency((uint8_t)(1000000ULL / settings.usBetweenReadings)); //Set output rate equal to our query rate
         else
-          sensor->setNavigationFrequency(25); //Set nav freq to 25Hz. Max output depends on the module used.
+          sensor->setNavigationFrequency(10); //Set nav freq to 10Hz. Max output depends on the module used.
 
         setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups.
       }

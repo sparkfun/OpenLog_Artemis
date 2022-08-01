@@ -95,7 +95,8 @@ void powerDownOLA(void)
   powerControlADC(false); // power_adc_disable(); //Power down ADC. It it started by default before setup().
 
   Serial.end(); //Power down UART
-  Serial1.end();
+  if ((settings.useTxRxPinsForTerminal == true) || (online.serialLogging == true))
+    Serial1.end();
 
   //Force the peripherals off
   //This will cause badness with v2.1 of the core but we don't care as we are waiting for a reset
@@ -182,7 +183,8 @@ void resetArtemis(void)
   powerControlADC(false); // power_adc_disable(); //Power down ADC. It it started by default before setup().
 
   Serial.end(); //Power down UART
-  Serial1.end();
+  if ((settings.useTxRxPinsForTerminal == true) || (online.serialLogging == true))
+    Serial1.end();
 
   //Force the peripherals off
   //This will cause badness with v2.1 of the core but we don't care as we are going to force a WDT reset
@@ -282,7 +284,8 @@ void goToSleep(uint32_t sysTicksToSleep)
   
   SerialFlush(); //Finish any prints
   Serial.end();
-  Serial1.end();
+  if ((settings.useTxRxPinsForTerminal == true) || (online.serialLogging == true))
+    Serial1.end();
 
   //Force the peripherals off
 
