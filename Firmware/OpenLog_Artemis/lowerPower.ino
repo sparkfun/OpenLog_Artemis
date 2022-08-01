@@ -505,7 +505,7 @@ void wakeFromSleep()
 
   SPI.begin(); //Needed if SD is disabled
 
-  beginSD(); //285 - 293ms
+  beginSD(true); //285 - 293ms
 
   enableCIPOpullUp(); // Enable CIPO pull-up _after_ beginSD
 
@@ -517,7 +517,7 @@ void wakeFromSleep()
     beginSerialOutput();
   }
 
-  beginIMU(); //61ms
+  beginIMU(true); //61ms
   printDebug("wakeFromSleep: online.IMU = " + (String)online.IMU + "\r\n");
 
   //If we powered down the Qwiic bus, then re-begin and re-configure everything
