@@ -130,6 +130,13 @@
     Change GNSS maximum rate to 25Hz as per:
       https://github.com/sparkfun/OpenLog_Artemis/issues/121
       https://forum.sparkfun.com/viewtopic.php?f=172&t=57512
+    Decided not to include this in the next full release.
+    I suspect it will cause major badness on (e.g.) M8 modules that cannot support 25Hz.
+    
+  v2.3:
+    Resolve https://forum.sparkfun.com/viewtopic.php?f=171&t=58109
+    
+    
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -143,7 +150,7 @@ const int FIRMWARE_VERSION_MINOR = 3;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x122 // Stored as 290 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x123 // Stored as 291 decimal in OLA_settings.txt
 
 #include "settings.h"
 
@@ -194,6 +201,10 @@ enum returnStatus {
   STATUS_GETNUMBER_TIMEOUT = -123455555,
   STATUS_PRESSED_X,
 };
+
+//Header
+void beginSD(bool silent = false);
+void beginIMU(bool silent = false);
 
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -906,7 +917,7 @@ void setQwiicPullups(uint32_t qwiicBusPullUps)
   pin_config(PinName(PIN_QWIIC_SDA), sdaPinCfg);
 }
 
-void beginSD()
+void beginSD(bool silent)
 {
   pinMode(PIN_MICROSD_POWER, OUTPUT);
   pin_config(PinName(PIN_MICROSD_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
@@ -942,8 +953,11 @@ void beginSD()
     }
     if (sd.begin(SD_CONFIG) == false) // Try to begin the SD card using the correct chip select
     {
-      SerialPrintln(F("SD init failed (second attempt). Is card present? Formatted?"));
-      SerialPrintln(F("Please ensure the SD card is formatted correctly using https://www.sdcard.org/downloads/formatter/"));
+      if (!silent)
+      {
+        SerialPrintln(F("SD init failed (second attempt). Is card present? Formatted?"));
+        SerialPrintln(F("Please ensure the SD card is formatted correctly using https://www.sdcard.org/downloads/formatter/"));
+      }
       digitalWrite(PIN_MICROSD_CHIP_SELECT, HIGH); //Be sure SD is deselected
       online.microSD = false;
       return;
@@ -953,7 +967,10 @@ void beginSD()
   //Change to root directory. All new file creation will be in root.
   if (sd.chdir() == false)
   {
-    SerialPrintln(F("SD change directory failed"));
+    if (!silent)
+    {
+      SerialPrintln(F("SD change directory failed"));
+    }
     online.microSD = false;
     return;
   }
@@ -986,7 +1003,7 @@ void configureSerial1TxRx(void) // Configure pins 12 and 13 for UART1 TX and RX
   pin_config(PinName(BREAKOUT_PIN_RX), pinConfigRx);
 }
 
-void beginIMU()
+void beginIMU(bool silent)
 {
   pinMode(PIN_IMU_POWER, OUTPUT);
   pin_config(PinName(PIN_IMU_POWER), g_AM_HAL_GPIO_OUTPUT); // Make sure the pin does actually get re-configured
@@ -1036,7 +1053,8 @@ void beginIMU()
       {
         printDebug("beginIMU: second attempt at myICM.begin failed. myICM.status = " + (String)myICM.status + "\r\n");
         digitalWrite(PIN_IMU_CHIP_SELECT, HIGH); //Be sure IMU is deselected
-        SerialPrintln(F("ICM-20948 failed to init."));
+        if (!silent)
+          SerialPrintln(F("ICM-20948 failed to init."));
         imuPowerOff();
         online.IMU = false;
         return;

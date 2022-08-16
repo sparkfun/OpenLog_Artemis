@@ -78,6 +78,12 @@ Documentation
 * **[ADDING_SENSORS.md](./ADDING_SENSORS.md)** - contains _abbreviated_ instructions on how to add a new sensor to the OLA firmware. It's more of an aide-memoire really... Sorry about that.
 * **[SENSOR_UNITS.md](./SENSOR_UNITS.md)** - contains a summary of the units used for each sensor measurement.
 
+Product Versions
+----------------
+* [DEV-19426](https://www.sparkfun.com/products/19426) - SparkFun OpenLog Artemis without IMU
+* [DEV-16832](https://www.sparkfun.com/products/16832) - SparkFun OpenLog Artemis
+* [SPX-15846](https://www.sparkfun.com/products/15846) - SparkX OpenLog Artemis
+
 License Information
 -------------------
 
