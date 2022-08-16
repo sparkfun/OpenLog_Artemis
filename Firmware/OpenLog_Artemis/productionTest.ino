@@ -562,7 +562,9 @@ void productionTest()
         break;
       case 0x55: // Deep sleep
       {
+#ifndef noPowerLossProtection // Probably redundant - included just in case detachInterrupt causes badness when it has not been attached
         detachInterrupt(PIN_POWER_LOSS); // Disable power loss interrupt
+#endif
         Serial.end(); //Power down UART
         //Force the peripherals off
         //am_hal_pwrctrl_periph_disable(AM_HAL_PWRCTRL_PERIPH_IOM0);
