@@ -30,19 +30,20 @@ void checkBattery(void)
       
         delay(sdPowerDownDelay); // Give the SD card time to finish writing ***** THIS IS CRITICAL *****
 
+#ifdef noPowerLossProtection
+        SerialPrintln(F("*** LOW BATTERY VOLTAGE DETECTED! RESETTING... ***"));
+        SerialPrintln(F("*** PLEASE CHANGE THE POWER SOURCE TO CONTINUE ***"));
+      
+        SerialFlush(); //Finish any prints
+
+        resetArtemis(); // Reset the Artemis so we don't get stuck in a low voltage infinite loop
+#else
         SerialPrintln(F("***      LOW BATTERY VOLTAGE DETECTED! GOING INTO POWERDOWN      ***"));
         SerialPrintln(F("*** PLEASE CHANGE THE POWER SOURCE AND RESET THE OLA TO CONTINUE ***"));
       
         SerialFlush(); //Finish any prints
 
-#ifdef noPowerLossProtection
-        // Leave the WDT running so it will reset the Artemis is required
-        // Don't go into deep sleep. Just keep running. Draining the battery...
-        // User can prevent this by disabling settings.enableLowBatteryDetection
-        while (1)
-          ;
-#else
-        powerDownOLA(); // power down and wait for reset
+        powerDownOLA(); // Power down and wait for reset
 #endif
       }
     }
