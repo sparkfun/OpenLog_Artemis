@@ -1,3 +1,7 @@
+
+
+#include "Sensors.h"
+
 //Display the options
 //If user doesn't respond within a few seconds, return to main loop
 void menuMain()
@@ -55,7 +59,7 @@ void menuMain()
       menuPower();
     else if (incoming == 'h')
     {
-      printHelperText(true); //printHelperText to terminal only
+      printHelperText(OL_OUTPUT_SERIAL); //printHelperText to terminal only
       break; //return to logging
     }
     else if (incoming == 'd')
@@ -88,7 +92,8 @@ void menuMain()
         {
           strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
           beginDataLogging(); //180ms
-          if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+          if (settings.showHelperText == true) 
+            printHelperText(OL_OUTPUT_SERIAL | OL_OUTPUT_SDCARD); //printHelperText to terminal and sensor file
         }
         if (online.serialLogging == true)
         {
