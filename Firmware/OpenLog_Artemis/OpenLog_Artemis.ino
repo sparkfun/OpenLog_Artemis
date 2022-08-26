@@ -154,6 +154,8 @@ const int FIRMWARE_VERSION_MINOR = 3;
 
 //#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
 
+#include "Sensors.h"
+
 #include "settings.h"
 
 //Define the pin functions
@@ -545,7 +547,13 @@ void setup() {
   else
     SerialPrintln(F("No Qwiic devices detected"));
 
-  if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+  // KDB add
+  // If we are streaming to Serial, start the stream with a Mime Type marker, followed by CR
+  SerialPrintln(F("Content-Type: text/csv"));
+  SerialPrintln("");
+  
+  if (settings.showHelperText == true) 
+    printHelperText(OL_OUTPUT_SERIAL | OL_OUTPUT_SDCARD); //printHelperText to terminal and sensor file
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
@@ -705,7 +713,7 @@ void loop() {
     }
 #endif
 
-    getData(); //Query all enabled sensors for data
+    getData(outputData, sizeof(outputData)); //Query all enabled sensors for data
 
     //Print to terminal
     if (settings.enableTerminalOutput == true)
@@ -750,7 +758,8 @@ void loop() {
           sensorDataFile.close();
           strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
           beginDataLogging(); //180ms
-          if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+          if (settings.showHelperText == true) 
+            printHelperText(OL_OUTPUT_SDCARD); //printHelperText to the sensor file
         }
         if (online.serialLogging == true)
         {
