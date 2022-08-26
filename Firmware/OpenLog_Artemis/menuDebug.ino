@@ -17,6 +17,10 @@ void menuDebug()
     if (settings.printGNSSDebugMessages == true) SerialPrintln(F("Enabled"));
     else SerialPrintln(F("Disabled"));
 
+    SerialPrint(F("4) Only Open Main Menu With Printable Char: "));
+    if (settings.openMenuWithPrintable == true) SerialPrintln(F("Yes"));
+    else SerialPrintln(F("No"));
+
     SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -46,9 +50,13 @@ void menuDebug()
         settings.resetOnZeroDeviceCount ^= 1;
       }
     }
-   else if (incoming == '3')
+    else if (incoming == '3')
     {
       settings.printGNSSDebugMessages ^= 1;
+    }
+    else if (incoming == '4')
+    {
+      settings.openMenuWithPrintable ^= 1;
     }
     else if (incoming == 'x')
       break;

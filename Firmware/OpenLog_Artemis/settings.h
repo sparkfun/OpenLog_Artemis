@@ -423,7 +423,8 @@ struct struct_settings {
   unsigned long minimumAwakeTimeMillis = 0; // Set to greater than zero to keep the Artemis awake for this long between sleeps
   bool identifyBioSensorHubs = false; // If true, Bio Sensor Hubs (Pulse Oximeters) will be included in autoDetect (requires exclusive use of pins 32 and 11)
   bool serialTxRxDuringSleep = false; // If true, the Serial Tx and Rx pins are left enabled during sleep - to prevent the COM port reinitializing
-  bool printGNSSDebugMessages = false;
+  bool printGNSSDebugMessages = false; // If true, the GNSS library debug messages are enabled
+  bool openMenuWithPrintable = false; // If true, only a printable char can open the main menu. Chars < 9 (Tab) are ignored
 } settings;
 
 //These are the devices on board OpenLog that may be on or offline.

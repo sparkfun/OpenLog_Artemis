@@ -135,12 +135,16 @@
     
   v2.3:
     Resolve https://forum.sparkfun.com/viewtopic.php?f=171&t=58109
-    
+
+  v2.4:
+    Add noPowerLossProtection to the main branch
+    Add changes by KDB: If we are streaming to Serial, start the stream with a Mime Type marker, followed by CR
+    Add debug option to only open the menu using a printable character: based on https://github.com/sparkfun/OpenLog_Artemis/pull/125
     
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 3;
+const int FIRMWARE_VERSION_MINOR = 4;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -150,7 +154,7 @@ const int FIRMWARE_VERSION_MINOR = 3;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x123 // Stored as 291 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x124 // Stored as 292 decimal in OLA_settings.txt
 
 //#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
 
@@ -205,10 +209,6 @@ enum returnStatus {
   STATUS_GETNUMBER_TIMEOUT = -123455555,
   STATUS_PRESSED_X,
 };
-
-//Header
-void beginSD(bool silent = false);
-void beginIMU(bool silent = false);
 
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -336,8 +336,6 @@ volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger in
 char serialTimestamp[40]; //Buffer to store serial timestamp, if needed
 volatile static bool powerLossSeen = false; //Flag to indicate if a power loss event has been seen
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL = false); // Header
 
 // gfvalvo's flash string helper code: https://forum.arduino.cc/index.php?topic=533118.msg3634809#msg3634809
 void SerialPrint(const char *);
@@ -566,7 +564,7 @@ void setup() {
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something
   if (checkIfItIsTimeToSleep())
-    menuMain();
+    menuMain(true); // Always open the menu - even if there is nothing in the serial buffers
 }
 
 void loop() {

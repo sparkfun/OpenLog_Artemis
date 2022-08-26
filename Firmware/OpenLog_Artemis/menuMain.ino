@@ -4,9 +4,28 @@
 
 //Display the options
 //If user doesn't respond within a few seconds, return to main loop
-void menuMain()
+void menuMain(bool alwaysOpen)
 {
   bool restartIMU = false;
+
+  if (settings.openMenuWithPrintable) // If settings.openMenuWithPrintable is true, eat the first character. Return if < 9 (Tab)
+  {
+    if ((settings.useTxRxPinsForTerminal == true) && (Serial1.available()))
+    {
+      uint8_t firstChar = Serial1.read();
+      if (firstChar < 9)
+        return;
+    }
+    else if (Serial.available())
+    {
+      uint8_t firstChar = Serial.read();
+      if (firstChar < 9)
+        return;
+    }
+    else if (!alwaysOpen)
+      return;
+  }
+  
   while (1)
   {
     SerialPrintln(F(""));
