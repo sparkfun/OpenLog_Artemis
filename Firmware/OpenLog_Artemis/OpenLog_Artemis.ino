@@ -135,12 +135,16 @@
     
   v2.3:
     Resolve https://forum.sparkfun.com/viewtopic.php?f=171&t=58109
-    
+
+  v2.4:
+    Add noPowerLossProtection to the main branch
+    Add changes by KDB: If we are streaming to Serial, start the stream with a Mime Type marker, followed by CR
+    Add debug option to only open the menu using a printable character: based on https://github.com/sparkfun/OpenLog_Artemis/pull/125
     
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 3;
+const int FIRMWARE_VERSION_MINOR = 4;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -150,7 +154,11 @@ const int FIRMWARE_VERSION_MINOR = 3;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x123 // Stored as 291 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x124 // Stored as 292 decimal in OLA_settings.txt
+
+//#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
+
+#include "Sensors.h"
 
 #include "settings.h"
 
@@ -201,10 +209,6 @@ enum returnStatus {
   STATUS_GETNUMBER_TIMEOUT = -123455555,
   STATUS_PRESSED_X,
 };
-
-//Header
-void beginSD(bool silent = false);
-void beginIMU(bool silent = false);
 
 //Setup Qwiic Port
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -333,8 +337,6 @@ char serialTimestamp[40]; //Buffer to store serial timestamp, if needed
 volatile static bool powerLossSeen = false; //Flag to indicate if a power loss event has been seen
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-uint8_t getByteChoice(int numberOfSeconds, bool updateDZSERIAL = false); // Header
-
 // gfvalvo's flash string helper code: https://forum.arduino.cc/index.php?topic=533118.msg3634809#msg3634809
 void SerialPrint(const char *);
 void SerialPrint(const __FlashStringHelper *);
@@ -357,15 +359,53 @@ Stream *ZSERIAL;
 // Serial output for debugging info for Zmodem
 Stream *DSERIAL;
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#include "WDT.h" // WDT support
+
+volatile static bool petTheDog = true; // Flag to control whether the WDT ISR pets (resets) the timer.
+
+// Interrupt handler for the watchdog.
+extern "C" void am_watchdog_isr(void)
+{
+  // Clear the watchdog interrupt.
+  wdt.clear();
+
+  // Restart the watchdog if petTheDog is true
+  if (petTheDog)
+    wdt.restart(); // "Pet" the dog.
+}
+
+void startWatchdog()
+{
+  // Set watchdog timer clock to 16 Hz
+  // Set watchdog interrupt to 1 seconds (16 ticks / 16 Hz = 1 second)
+  // Set watchdog reset to 1.25 seconds (20 ticks / 16 Hz = 1.25 seconds)
+  // Note: Ticks are limited to 255 (8-bit)
+  wdt.configure(WDT_16HZ, 16, 20);
+  wdt.start(); // Start the watchdog
+}
+
+void stopWatchdog()
+{
+  wdt.stop();
+}
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 void setup() {
   //If 3.3V rail drops below 3V, system will power down and maintain RTC
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
 
   delay(1); // Let PIN_POWER_LOSS stabilize
 
+#ifndef noPowerLossProtection
   if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
   //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // We can't do this with v2.1.0 as attachInterrupt causes a spontaneous interrupt
   attachInterrupt(PIN_POWER_LOSS, powerLossISR, FALLING);
+#else
+  // No Power Loss Protection
+  // Set up the WDT to generate a reset just in case the code crashes during a brown-out
+  startWatchdog();
+#endif
   powerLossSeen = false; // Make sure the flag is clear
 
   powerLEDOn(); // Turn the power LED on - if the hardware supports it
@@ -505,7 +545,13 @@ void setup() {
   else
     SerialPrintln(F("No Qwiic devices detected"));
 
-  if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+  // KDB add
+  // If we are streaming to Serial, start the stream with a Mime Type marker, followed by CR
+  SerialPrintln(F("Content-Type: text/csv"));
+  SerialPrintln("");
+  
+  if (settings.showHelperText == true) 
+    printHelperText(OL_OUTPUT_SERIAL | OL_OUTPUT_SDCARD); //printHelperText to terminal and sensor file
 
   //If we are sleeping between readings then we cannot rely on millis() as it is powered down
   //Use RTC instead
@@ -518,7 +564,7 @@ void setup() {
   //If we are immediately going to go to sleep after the first reading then
   //first present the user with the config menu in case they need to change something
   if (checkIfItIsTimeToSleep())
-    menuMain();
+    menuMain(true); // Always open the menu - even if there is nothing in the serial buffers
 }
 
 void loop() {
@@ -665,7 +711,7 @@ void loop() {
     }
 #endif
 
-    getData(); //Query all enabled sensors for data
+    getData(outputData, sizeof(outputData)); //Query all enabled sensors for data
 
     //Print to terminal
     if (settings.enableTerminalOutput == true)
@@ -710,7 +756,8 @@ void loop() {
           sensorDataFile.close();
           strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
           beginDataLogging(); //180ms
-          if (settings.showHelperText == true) printHelperText(false); //printHelperText to terminal and sensor file
+          if (settings.showHelperText == true) 
+            printHelperText(OL_OUTPUT_SDCARD); //printHelperText to the sensor file
         }
         if (online.serialLogging == true)
         {

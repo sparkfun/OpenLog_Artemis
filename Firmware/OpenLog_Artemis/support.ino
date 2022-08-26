@@ -1,3 +1,7 @@
+
+
+#include "Sensors.h"
+
 bool useRTCmillis(void)
 {
   return (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
