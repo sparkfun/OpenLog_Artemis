@@ -152,7 +152,10 @@ const int FIRMWARE_VERSION_MINOR = 3;
 //    the minor firmware version
 #define OLA_IDENTIFIER 0x123 // Stored as 291 decimal in OLA_settings.txt
 
+//#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
+
 #include "Sensors.h"
+
 #include "settings.h"
 
 //Define the pin functions
@@ -358,15 +361,53 @@ Stream *ZSERIAL;
 // Serial output for debugging info for Zmodem
 Stream *DSERIAL;
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#include "WDT.h" // WDT support
+
+volatile static bool petTheDog = true; // Flag to control whether the WDT ISR pets (resets) the timer.
+
+// Interrupt handler for the watchdog.
+extern "C" void am_watchdog_isr(void)
+{
+  // Clear the watchdog interrupt.
+  wdt.clear();
+
+  // Restart the watchdog if petTheDog is true
+  if (petTheDog)
+    wdt.restart(); // "Pet" the dog.
+}
+
+void startWatchdog()
+{
+  // Set watchdog timer clock to 16 Hz
+  // Set watchdog interrupt to 1 seconds (16 ticks / 16 Hz = 1 second)
+  // Set watchdog reset to 1.25 seconds (20 ticks / 16 Hz = 1.25 seconds)
+  // Note: Ticks are limited to 255 (8-bit)
+  wdt.configure(WDT_16HZ, 16, 20);
+  wdt.start(); // Start the watchdog
+}
+
+void stopWatchdog()
+{
+  wdt.stop();
+}
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 void setup() {
   //If 3.3V rail drops below 3V, system will power down and maintain RTC
   pinMode(PIN_POWER_LOSS, INPUT); // BD49K30G-TL has CMOS output and does not need a pull-up
 
   delay(1); // Let PIN_POWER_LOSS stabilize
 
+#ifndef noPowerLossProtection
   if (digitalRead(PIN_POWER_LOSS) == LOW) powerDownOLA(); //Check PIN_POWER_LOSS just in case we missed the falling edge
   //attachInterrupt(PIN_POWER_LOSS, powerDownOLA, FALLING); // We can't do this with v2.1.0 as attachInterrupt causes a spontaneous interrupt
   attachInterrupt(PIN_POWER_LOSS, powerLossISR, FALLING);
+#else
+  // No Power Loss Protection
+  // Set up the WDT to generate a reset just in case the code crashes during a brown-out
+  startWatchdog();
+#endif
   powerLossSeen = false; // Make sure the flag is clear
 
   powerLEDOn(); // Turn the power LED on - if the hardware supports it
