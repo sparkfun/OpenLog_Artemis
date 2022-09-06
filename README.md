@@ -20,12 +20,13 @@ OpenLog Artemis is highly configurable over an easy to use serial interface. Sim
 
 The OpenLog Artemis automatically scans, detects, configures, and logs various Qwiic sensors plugged into the board (no soldering required!). Currently, auto-detection is supported on the following Qwiic products:
 
-* u-blox GPS Modules (Lat/Long, Altitude, Velocity, SIV, Time, Date):
+* Any u-blox GPS Modules (Lat/Long, Altitude, Velocity, SIV, Time, Date) such as:
   * [ZED-F9P](https://www.sparkfun.com/products/15136) 1cm High Precision GPS
   * [NEO-M8P-2](https://www.sparkfun.com/products/15005) 2.5cm High Precision GPS
   * [SAM-M8Q](https://www.sparkfun.com/products/15210) 1.5m 72 Channel GPS
   * [ZOE-M8Q](https://www.sparkfun.com/products/15193) 1.5m Compact GPS
   * [NEO-M9N](https://www.sparkfun.com/products/15712) 1.5m GPS
+  * [MAX-M10S](https://www.sparkfun.com/products/18037) 1.5m Ultra-Low Power GPS
 * [MCP9600 Thermocouple Amplifier](https://www.sparkfun.com/products/16294)
 * [NAU7802 Load Cell Amplifier](https://www.sparkfun.com/products/15242)
 * [LPS25HB Barometric Pressure Sensor](https://www.sparkfun.com/products/14767)
