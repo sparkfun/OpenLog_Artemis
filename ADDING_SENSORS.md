@@ -6,7 +6,7 @@ Caveat: this is _currently_ how a new sensor is added, for version v1.n of the O
 
 ## Use The Release Candidate Branch
 
-First up, please target any commits at the _**release_candidate**_ branch, so they can be tested before being merged into the _master_ branch.
+First up, please target any commits at the _**release_candidate**_ branch, so they can be tested before being merged into the _main_ branch.
 
 - https://github.com/sparkfun/OpenLog_Artemis/tree/release_candidate
 
