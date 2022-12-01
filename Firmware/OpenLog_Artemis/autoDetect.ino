@@ -225,6 +225,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_ADS122C04;
       }
       break;
+    case DEVICE_ADC_ADS1115:
+      {
+        temp->classPtr = new ADS1115(address, &qwiic);
+        temp->configPtr = new struct_ADS1115;
+      }
+      break;
     case DEVICE_PRESSURE_MPR0025PA1:
       {
         temp->classPtr = new SparkFun_MicroPressure;
@@ -478,6 +484,15 @@ bool beginQwiicDevices()
           struct_ADS122C04 *nodeSetting = (struct_ADS122C04 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_ADC_ADS1115:
+        {
+          ADS1115 *tempDevice = (ADS1115 *)temp->classPtr;
+          struct_ADS1115 *nodeSetting = (struct_ADS1115 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin() == true) //Address, Wire port. Returns true on success.
             temp->online = true;
         }
         break;
@@ -790,6 +805,14 @@ void configureDevice(node * temp)
           sensor->configureADCmode(ADS122C04_2WIRE_HI_TEMP);
       }
       break;
+    case DEVICE_ADC_ADS1115:
+      {
+        ADS1115 *sensor = (ADS1115 *)temp->classPtr;
+
+        //set datarate to 250Hz, as it is the maximum for OpenLog Artemis
+        sensor->setDataRate(5);
+      }
+      break;
     case DEVICE_PRESSURE_MPR0025PA1:
       //Nothing to configure
       break;
@@ -925,6 +948,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_ADC_ADS122C04:
       ptr = (FunctionPointer)menuConfigure_ADS122C04;
+      break;
+    case DEVICE_ADC_ADS1115:
+      ptr = (FunctionPointer)menuConfigure_ADS1115;
       break;
     case DEVICE_PRESSURE_MPR0025PA1:
       ptr = (FunctionPointer)menuConfigure_MPR0025PA1;
@@ -1084,6 +1110,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
 #define ADR_UBLOX 0x42 //But can be set to any address
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
+#define ADR_ADS1115 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_BIO_SENSOR_HUB 0x55
 #define ADR_SGP30 0x58
@@ -1231,33 +1258,49 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x48:
       {
+        ADS1115 sensor(i2cAddress, &qwiic);
+        if (sensor.begin() == true)
+          return (DEVICE_ADC_ADS1115);
+        
         //Confidence: High - Checks 16 bit ID
-        TMP117 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+        TMP117 sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_TMP117);
       }
       break;
     case 0x49:
       {
+        ADS1115 sensor(i2cAddress, &qwiic);
+        if (sensor.begin() == true)
+          return (DEVICE_ADC_ADS1115);
+          
         //Confidence: High - Checks 16 bit ID
-        TMP117 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+        TMP117 sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_TMP117);
       }
       break;
     case 0x4A:
       {
+        ADS1115 sensor(i2cAddress, &qwiic);
+        if (sensor.begin() == true)
+          return (DEVICE_ADC_ADS1115);
+          
         //Confidence: High - Checks 16 bit ID
-        TMP117 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+        TMP117 sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_TMP117);
       }
       break;
     case 0x4B:
       {
+        ADS1115 sensor(i2cAddress, &qwiic);
+        if (sensor.begin() == true)
+          return (DEVICE_ADC_ADS1115);
+
         //Confidence: High - Checks 16 bit ID
-        TMP117 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+        TMP117 sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_TMP117);
       }
       break;
@@ -1732,6 +1775,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_ADC_ADS122C04:
       return "ADC-ADS122C04";
+      break;
+    case DEVICE_ADC_ADS1115:
+      return "ADC-ADS1115";
       break;
     case DEVICE_PRESSURE_MPR0025PA1:
       return "Pressure-MPR";

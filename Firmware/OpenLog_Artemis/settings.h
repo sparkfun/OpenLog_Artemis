@@ -21,6 +21,7 @@ typedef enum
   DEVICE_HUMIDITY_AHT20,
   DEVICE_HUMIDITY_SHTC3,
   DEVICE_ADC_ADS122C04,
+  DEVICE_ADC_ADS1115,
   DEVICE_PRESSURE_MPR0025PA1, // 0-25 PSI, I2C Address 0x18
   DEVICE_PARTICLE_SNGCJA5,
   DEVICE_VOC_SGP40,
@@ -251,6 +252,16 @@ struct struct_ADS122C04 {
   bool useFourWireHighTemperatureMode = false;
   bool useThreeWireHighTemperatureMode = false;
   bool useTwoWireHighTemperatureMode = false;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_ADS1115 {
+  bool log = true;
+  bool logA0 = true;
+  bool logA1 = true;
+  bool logA2 = true;
+  bool logA3 = true;
+  int Resolution = 0;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

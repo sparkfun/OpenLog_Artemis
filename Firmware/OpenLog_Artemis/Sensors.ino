@@ -792,6 +792,40 @@ void gatherDeviceValues(char * outputData, size_t lenData)
             }
           }
           break;
+        case DEVICE_ADC_ADS1115:
+          {
+            ADS1115 *nodeDevice = (ADS1115 *)temp->classPtr;
+            struct_ADS1115 *nodeSetting = (struct_ADS1115 *)temp->configPtr;
+
+            if (nodeSetting->log == true)
+            {
+              if (nodeSetting->logA0)
+              {
+                olaftoa(nodeDevice->toVoltage(nodeDevice->readADC(0)), tempData1, 4, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logA1)
+              {
+                olaftoa(nodeDevice->toVoltage(nodeDevice->readADC(1)), tempData1, 4, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logA2)
+              {
+                olaftoa(nodeDevice->toVoltage(nodeDevice->readADC(2)), tempData1, 4, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strcat(outputData, tempData);
+              }
+              if (nodeSetting->logA3)
+              {
+                olaftoa(nodeDevice->toVoltage(nodeDevice->readADC(3)), tempData1, 4, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strcat(outputData, tempData);
+              }
+            }
+          }
+          break;
         case DEVICE_PRESSURE_MPR0025PA1:
           {
             SparkFun_MicroPressure *nodeDevice = (SparkFun_MicroPressure *)temp->classPtr;
@@ -1408,6 +1442,22 @@ static void getHelperText(char* helperText, size_t lenText)
                 strlcat(helperText, "degC,", lenText);
               if (nodeSetting->logRawVoltage)
                 strlcat(helperText, "V*2.048/2^23,", lenText);
+            }
+          }
+          break;
+        case DEVICE_ADC_ADS1115:
+          {
+            struct_ADS1115 *nodeSetting = (struct_ADS1115 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logA0)
+                strlcat(helperText, "A0,", lenText);
+              if (nodeSetting->logA1)
+                strlcat(helperText, "A1,", lenText);
+              if (nodeSetting->logA2)
+                strlcat(helperText, "A2,", lenText);
+              if (nodeSetting->logA3)
+                strlcat(helperText, "A3,", lenText);
             }
           }
           break;

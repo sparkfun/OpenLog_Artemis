@@ -696,6 +696,17 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "useTwoWireHighTemperatureMode=" + nodeSetting->useTwoWireHighTemperatureMode);
           }
           break;
+        case DEVICE_ADC_ADS1115:
+          {
+            struct_ADS1115 *nodeSetting = (struct_ADS1115 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logA0=" + nodeSetting->logA0);
+            settingsFile.println((String)base + "logA1=" + nodeSetting->logA1);
+            settingsFile.println((String)base + "logA2=" + nodeSetting->logA2);
+            settingsFile.println((String)base + "logA3=" + nodeSetting->logA3);
+            settingsFile.println((String)base + "Resolution=" + nodeSetting->Resolution);
+          }
+          break;
         case DEVICE_PRESSURE_MPR0025PA1:
           {
             struct_MPR0025PA1 *nodeSetting = (struct_MPR0025PA1 *)temp->configPtr;
@@ -1250,6 +1261,25 @@ bool parseDeviceLine(char* str) {
             nodeSetting->useThreeWireHighTemperatureMode = d;
           else if (strcmp(deviceSettingName, "useTwoWireHighTemperatureMode") == 0)
             nodeSetting->useTwoWireHighTemperatureMode = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_ADC_ADS1115:
+        {
+          struct_ADS1115 *nodeSetting = (struct_ADS1115 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logA0") == 0)
+            nodeSetting->logA0 = d;
+          else if (strcmp(deviceSettingName, "logA1") == 0)
+            nodeSetting->logA1 = d;
+          else if (strcmp(deviceSettingName, "logA2") == 0)
+            nodeSetting->logA2 = d;
+          else if (strcmp(deviceSettingName, "logA3") == 0)
+            nodeSetting->logA3 = d;
+          else if (strcmp(deviceSettingName, "Resolution") == 0)
+            nodeSetting->Resolution = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }

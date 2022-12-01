@@ -55,6 +55,7 @@ This document summarizes the units used for each sensor measurement.
 ### ADC:
 
 - [Qwiic PT100 ADS122C04 platinum resistance sensor](#Qwiic-PT100-ADS122C04-platinum-resistance-sensor)
+- [ADS1115 voltage sensor](#ADS1115-voltage-sensor)
 
 ### Biometric Sensors:
 
@@ -360,3 +361,13 @@ Extended status:
 -4: Pressing too hard  
 -5: Object other than finger detected  
 -6: Excessive finger motion  
+
+---
+## ADS1115 voltage sensor
+
+| []() | | |
+|---|---|---|
+| Raw Voltage A0 | V | Volts |
+| Raw Voltage A1 | V | Volts |
+| Raw Voltage A2 | V | Volts |
+| Raw Voltage A3 | V | Volts |

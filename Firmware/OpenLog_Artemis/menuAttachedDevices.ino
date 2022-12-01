@@ -336,6 +336,9 @@ void menuAttachedDevices()
           case DEVICE_ADC_ADS122C04:
             SerialPrintf3("%s ADS122C04 ADC (Qwiic PT100) %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_ADC_ADS1115:
+            SerialPrintf3("%s ADS1115 ADC %s\r\n", strDeviceMenu, strAddress);
+            break;
           case DEVICE_PRESSURE_MPR0025PA1:
             SerialPrintf3("%s MPR MicroPressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
@@ -2034,6 +2037,117 @@ void menuConfigure_ADS122C04(void *configPtr)
       break;
     else
       printUnknown(incoming);
+  }
+}
+
+void menuConfigure_ADS1115(void *configPtr)
+{
+  //Search the list of nodes looking for the one with matching config pointer
+  node *temp = head;
+  while (temp != NULL)
+  {
+    if (temp->configPtr == configPtr)
+      break;
+
+    temp = temp->next;
+  }
+  if (temp == NULL)
+  {
+    SerialPrintln(F("ADS1115 node not found. Returning."));
+    for (int i = 0; i < 1000; i++)
+    {
+      checkBattery();
+      delay(1);
+    }
+    return;
+  }
+
+  ADS1115 *sensor = (ADS1115 *)temp->classPtr;
+  struct_ADS1115 *sensorSetting = (struct_ADS1115*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure ADS1115 ADC"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log A0: "));
+      if (sensorSetting->logA0 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log A1: "));
+      if (sensorSetting->logA1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Log A2: "));
+      if (sensorSetting->logA2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("5) Log A3: "));
+      if (sensorSetting->logA3 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("6) Set Resolution: "));
+      if (sensorSetting->Resolution == 0) SerialPrintln(F("±6.144V"));
+      if (sensorSetting->Resolution == 1) SerialPrintln(F("±4.096V"));
+      if (sensorSetting->Resolution == 2) SerialPrintln(F("±2.048V"));
+      if (sensorSetting->Resolution == 4) SerialPrintln(F("±1.024V"));
+      if (sensorSetting->Resolution == 8) SerialPrintln(F("±0.512V"));
+      if (sensorSetting->Resolution == 16) SerialPrintln(F("±0.256V"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logA0 ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logA1 ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logA2 ^= 1;
+      else if (incoming == 5)
+        sensorSetting->logA3 ^= 1;
+      else if (incoming == 6) {
+        SerialPrintln(F("Set resolution:"));
+        SerialPrintln(F("0) ±6.144V"));
+        SerialPrintln(F("1) ±4.096V"));
+        SerialPrintln(F("2) ±2.048V"));
+        SerialPrintln(F("4) ±1.024V"));
+        SerialPrintln(F("8) ±0.512V"));
+        SerialPrintln(F("16) ±0.256V"));
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt == 0 || amt == 1 || amt == 2 || amt == 4 || amt == 8 || amt == 16 ) {
+          sensorSetting->Resolution = amt;
+          
+          // set resolution in chip
+          sensor->setGain(sensorSetting->Resolution);
+        }
+        else
+          SerialPrintln(F("Error: Out of range"));
+      }
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+    
   }
 }
 
