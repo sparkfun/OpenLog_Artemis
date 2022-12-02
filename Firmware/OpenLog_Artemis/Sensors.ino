@@ -491,6 +491,33 @@ void gatherDeviceValues(char * outputData, size_t lenData)
             }
           }
           break;
+        case DEVICE_PRESSURE_BMP390:
+          {
+            DFRobot_BMP390L_I2C *nodeDevice = (DFRobot_BMP390L_I2C *)temp->classPtr;
+            struct_BMP390 *nodeSetting = (struct_BMP390 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              if (nodeSetting->logPressure)
+              {
+                olaftoa(nodeDevice->readPressPa(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strlcat(outputData, tempData, lenData);
+              }
+              if (nodeSetting->logAltitude)
+              {
+                olaftoa(nodeDevice->readAltitudeM(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strlcat(outputData, tempData, lenData);
+              }
+              if (nodeSetting->logTemperature)
+              {
+                olaftoa(nodeDevice->readTempC(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strlcat(outputData, tempData, lenData);
+              }
+            }
+          }
+          break;
         case DEVICE_PHT_BME280:
           {
             BME280 *nodeDevice = (BME280 *)temp->classPtr;
@@ -1270,6 +1297,20 @@ static void getHelperText(char* helperText, size_t lenText)
                 strlcat(helperText, "pressure_hPa,", lenText);
               if (nodeSetting->logTemperature)
                 strlcat(helperText, "pressure_degC,", lenText);
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_BMP390:
+          {
+            struct_BMP390 *nodeSetting = (struct_BMP390 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressure)
+                strlcat(helperText, "pressure_Pa,", lenText);
+              if (nodeSetting->logAltitude)
+                strlcat(helperText, "altitude_m,", lenText);
+              if (nodeSetting->logTemperature)
+                strlcat(helperText, "temp_degC,", lenText);
             }
           }
           break;

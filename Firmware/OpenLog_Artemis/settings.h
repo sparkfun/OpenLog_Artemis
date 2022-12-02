@@ -11,6 +11,7 @@ typedef enum
   DEVICE_TEMPERATURE_TMP117,
   DEVICE_PRESSURE_MS5637,
   DEVICE_PRESSURE_LPS25HB,
+  DEVICE_PRESSURE_BMP390,
   DEVICE_PHT_BME280,
   DEVICE_UV_VEML6075,
   DEVICE_VOC_CCS811,
@@ -166,6 +167,14 @@ struct struct_CCS811 {
   bool log = true;
   bool logTVOC = true;
   bool logCO2 = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_BMP390 {
+  bool log = true;
+  bool logPressure = true;
+  bool logAltitude = true;
+  bool logTemperature = true;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

@@ -306,6 +306,9 @@ void menuAttachedDevices()
           case DEVICE_PRESSURE_LPS25HB:
             SerialPrintf3("%s LPS25HB Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_PRESSURE_BMP390:
+            SerialPrintf3("%s BMP390 Pressure/Temperature Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
           case DEVICE_PHT_BME280:
             SerialPrintf3("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
@@ -712,6 +715,63 @@ void menuConfigure_BME280(void *configPtr)
       else if (incoming == '4')
         sensorSetting->logAltitude ^= 1;
       else if (incoming == '5')
+        sensorSetting->logTemperature ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_BMP390(void *configPtr)
+{
+  struct_BMP390 *sensorSetting = (struct_BMP390*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure BMP390 Pressure/Temperature Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Altitude: "));
+      if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == '2')
+        sensorSetting->logPressure ^= 1;
+      else if (incoming == '3')
+        sensorSetting->logAltitude ^= 1;
+      else if (incoming == '4')
         sensorSetting->logTemperature ^= 1;
       else if (incoming == 'x')
         break;

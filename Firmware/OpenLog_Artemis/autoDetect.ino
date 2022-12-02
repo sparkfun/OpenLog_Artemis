@@ -165,6 +165,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_MS5637;
       }
       break;
+    case DEVICE_PRESSURE_BMP390:
+      {
+        temp->classPtr = new DFRobot_BMP390L_I2C(&qwiic);
+        temp->configPtr = new struct_BMP390;
+      }
+      break;
     case DEVICE_PHT_BME280:
       {
         temp->classPtr = new BME280;
@@ -388,6 +394,14 @@ bool beginQwiicDevices()
           struct_MS5637 *nodeSetting = (struct_MS5637 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
+        }
+        break;
+      case DEVICE_PRESSURE_BMP390:
+        {
+          DFRobot_BMP390L_I2C *tempDevice = (DFRobot_BMP390L_I2C *)temp->classPtr;
+          struct_BMP390 *nodeSetting = (struct_BMP390 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          temp->online = tempDevice->begin() == 0; //Wire port, begin() returns 0 on success
         }
         break;
       case DEVICE_PHT_BME280:
@@ -711,6 +725,9 @@ void configureDevice(node * temp)
     case DEVICE_PRESSURE_LPS25HB:
       //Nothing to configure
       break;
+    case DEVICE_PRESSURE_BMP390:
+      //Nothing to configure
+      break;
     case DEVICE_PHT_BME280:
       //Nothing to configure
       break;
@@ -895,6 +912,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_PRESSURE_LPS25HB:
       ptr = (FunctionPointer)menuConfigure_LPS25HB;
+      break;
+    case DEVICE_PRESSURE_BMP390:
+      ptr = (FunctionPointer)menuConfigure_BMP390;
       break;
     case DEVICE_PHT_BME280:
       ptr = (FunctionPointer)menuConfigure_BME280;
@@ -1479,6 +1499,12 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         sensor.setI2CAddress(i2cAddress);
         if (sensor.beginI2C(qwiic) == true) //Wire port
           return (DEVICE_PHT_BME280);
+
+        //Confidence: High - ID check
+        DFRobot_BMP390L_I2C sensor1(&qwiic); //eSDOVDD means 0x77
+        if (sensor1.begin() == 0) // begin returns 0 on success
+          return (DEVICE_PRESSURE_BMP390);
+
       }
       break;
     default:
@@ -1702,6 +1728,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_PRESSURE_LPS25HB:
       return "Pressure-LPS25HB";
+      break;
+    case DEVICE_PRESSURE_BMP390:
+      return "Pressure-BMP390";
       break;
     case DEVICE_PHT_BME280:
       return "PHT-BME280";

@@ -289,6 +289,7 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFunCCS811.h" //Click here to get the library: http://librarymanager/All#SparkFun_CCS811
 #include "SparkFun_VL53L1X.h" //Click here to get the library: http://librarymanager/All#SparkFun_VL53L1X
 #include "SparkFunBME280.h" //Click here to get the library: http://librarymanager/All#SparkFun_BME280
+#include "DFRobot_BMP390.h" //Click here to get the library: http://librarymanager/All#DFRobot_BMP390
 #include "SparkFun_LPS25HB_Arduino_Library.h"  //Click here to get the library: http://librarymanager/All#SparkFun_LPS25HB
 #include "SparkFun_VEML6075_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VEML6075
 #include "SparkFun_PHT_MS8607_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_PHT_MS8607
