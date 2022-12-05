@@ -360,3 +360,12 @@ Extended status:
 -4: Pressing too hard  
 -5: Object other than finger detected  
 -6: Excessive finger motion  
+
+---
+## BMP390 atmospheric sensor
+
+| []() | | |
+|---|---|---|
+| Pressure | pressure_Pa | Pascals |
+| Altitude | altitude_m | m |
+| Temperature | temp_degC | Degrees Centigrade |

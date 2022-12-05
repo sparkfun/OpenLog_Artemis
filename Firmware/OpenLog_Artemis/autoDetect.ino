@@ -726,18 +726,19 @@ void configureDevice(node * temp)
       //Nothing to configure
       break;
     case DEVICE_PRESSURE_BMP390:
-      DFRobot_BMP390L_I2C *sensor = (DFRobot_BMP390L_I2C *)temp->classPtr;
-      /**
-      * 6 commonly used sampling modes that allows users to configure easily, mode:
-      *      eUltraLowPrecision, Ultra-low precision, suitable for monitoring weather (lowest power consumption), the power is mandatory mode.
-      *      eLowPrecision, Low precision, suitable for random detection, power is normal mode
-      *      eNormalPrecision1, Normal precision 1, suitable for dynamic detection on handheld devices (e.g on mobile phones), power is normal mode.
-      *      eNormalPrecision2, Normal precision 2, suitable for drones, power is normal mode.
-      *      eHighPrecision, High precision, suitable for low-power handled devices (e.g mobile phones), power is in normal mode.
-      *      eUltraPrecision, Ultra-high precision, suitable for indoor navigation, its acquisition rate will be extremely low, and the acquisition cycle is 1000 ms.
-      */
-      sensor->setSamplingMode(sensor.eNormalPrecision1);
-
+      {
+        DFRobot_BMP390L_I2C *sensor = (DFRobot_BMP390L_I2C *)temp->classPtr;
+        /**
+        * 6 commonly used sampling modes that allows users to configure easily, mode:
+        *      eUltraLowPrecision, Ultra-low precision, suitable for monitoring weather (lowest power consumption), the power is mandatory mode.
+        *      eLowPrecision, Low precision, suitable for random detection, power is normal mode
+        *      eNormalPrecision1, Normal precision 1, suitable for dynamic detection on handheld devices (e.g on mobile phones), power is normal mode.
+        *      eNormalPrecision2, Normal precision 2, suitable for drones, power is normal mode.
+        *      eHighPrecision, High precision, suitable for low-power handled devices (e.g mobile phones), power is in normal mode.
+        *      eUltraPrecision, Ultra-high precision, suitable for indoor navigation, its acquisition rate will be extremely low, and the acquisition cycle is 1000 ms.
+        */
+        sensor->setSamplingMode(sensor->eNormalPrecision1);
+      }
       break;
     case DEVICE_PHT_BME280:
       //Nothing to configure
