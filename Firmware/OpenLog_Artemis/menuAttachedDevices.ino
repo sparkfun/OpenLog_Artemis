@@ -240,6 +240,7 @@ bool detectQwiicDevices()
 
   bubbleSortDevices(head); //This may destroy mux alignment to node 0.
 
+
   //*** Let's leave pull-ups set to 1k and only disable them when taking to a u-blox device ***
   //setQwiicPullups(0); //We've detected something on the bus so disable pullups.
 
@@ -339,9 +340,6 @@ void menuAttachedDevices()
           case DEVICE_PRESSURE_MPR0025PA1:
             SerialPrintf3("%s MPR MicroPressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
-          case DEVICE_PARTICLE_SNGCJA5:
-            SerialPrintf3("%s SN-GCJA5 Particle Sensor %s\r\n", strDeviceMenu, strAddress);
-            break;
           case DEVICE_VOC_SGP40:
             SerialPrintf3("%s SGP40 VOC Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
@@ -368,6 +366,15 @@ void menuAttachedDevices()
             break;
           case DEVICE_ADS1015:
             SerialPrintf3("%s ADS1015 ADC %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_SBV_MONITOR_INA3221:
+            SerialPrintf3("%s Shunt & Bus Voltage Monitor %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_IO_MCP23017:
+            SerialPrintf3("%s MCP23017 I/O Expander %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_ADC_MAX11615:
+            SerialPrintf3("%s Analog Digital Converter ADC MAX11615 %s\r\n", strDeviceMenu, strAddress);
             break;
           default:
             SerialPrintf2("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
@@ -2209,122 +2216,6 @@ void menuConfigure_MPR0025PA1(void *configPtr)
   }
 }
 
-void menuConfigure_SNGCJA5(void *configPtr)
-{
-  struct_SNGCJA5 *sensorSetting = (struct_SNGCJA5*)configPtr;
-
-  while (1)
-  {
-    SerialPrintln(F(""));
-    SerialPrintln(F("Menu: Configure SNGCJA5 Particle Sensor"));
-
-    SerialPrint(F("1) Sensor Logging: "));
-    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
-    else SerialPrintln(F("Disabled"));
-
-    if (sensorSetting->log == true)
-    {
-      SerialPrint(F("2) Log Particle Mass Density 1.0um (ug/m^3): "));
-      if (sensorSetting->logPM1 == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("3) Log Particle Mass Density 2.5um (ug/m^3): "));
-      if (sensorSetting->logPM25 == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("4) Log Particle Mass Density 10.0um (ug/m^3): "));
-      if (sensorSetting->logPM10 == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("5) Log Particle Count 0.5um: "));
-      if (sensorSetting->logPC05 == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("6) Log Particle Count 1.0um: "));
-      if (sensorSetting->logPC1 == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("7) Log Particle Count 2.5um: "));
-      if (sensorSetting->logPC25 == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("8) Log Particle Count 5.0um: "));
-      if (sensorSetting->logPC50 == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("9) Log Particle Count 7.5um: "));
-      if (sensorSetting->logPC75 == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("10) Log Particle Count 10.0um: "));
-      if (sensorSetting->logPC10 == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("11) Log Combined Sensor Status: "));
-      if (sensorSetting->logSensorStatus == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("12) Log PhotoDiode Status: "));
-      if (sensorSetting->logPDStatus == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("13) Log LaserDiode Status: "));
-      if (sensorSetting->logLDStatus == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-
-      SerialPrint(F("14) Log Fan Status: "));
-      if (sensorSetting->logFanStatus == true) SerialPrintln(F("Enabled"));
-      else SerialPrintln(F("Disabled"));
-    }
-    SerialPrintln(F("x) Exit"));
-
-    int incoming = getNumber(menuTimeout); //Timeout after x seconds
-
-    if (incoming == 1)
-      sensorSetting->log ^= 1;
-    else if (sensorSetting->log == true)
-    {
-      if (incoming == 2)
-        sensorSetting->logPM1 ^= 1;
-      else if (incoming == 3)
-        sensorSetting->logPM25 ^= 1;
-      else if (incoming == 4)
-        sensorSetting->logPM10 ^= 1;
-      else if (incoming == 5)
-        sensorSetting->logPC05 ^= 1;
-      else if (incoming == 6)
-        sensorSetting->logPC1 ^= 1;
-      else if (incoming == 7)
-        sensorSetting->logPC25 ^= 1;
-      else if (incoming == 8)
-        sensorSetting->logPC50 ^= 1;
-      else if (incoming == 9)
-        sensorSetting->logPC75 ^= 1;
-      else if (incoming == 10)
-        sensorSetting->logPC10 ^= 1;
-      else if (incoming == 11)
-        sensorSetting->logSensorStatus ^= 1;
-      else if (incoming == 12)
-        sensorSetting->logPDStatus ^= 1;
-      else if (incoming == 13)
-        sensorSetting->logLDStatus ^= 1;
-      else if (incoming == 14)
-        sensorSetting->logFanStatus ^= 1;
-      else if (incoming == STATUS_PRESSED_X)
-        break;
-      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
-        break;
-      else
-        printUnknown(incoming);
-    }
-    else if (incoming == STATUS_PRESSED_X)
-      break;
-    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
-      break;
-    else
-      printUnknown(incoming);
-  }
-}
 
 void menuConfigure_SGP40(void *configPtr)
 {
@@ -3183,4 +3074,151 @@ void menuConfigure_ADS1015(void *configPtr)
     else
       printUnknown(incoming);
   }
+}
+
+void menuConfigure_INA3221(void *configPtr)
+{
+  struct_INA3221 *sensorSetting = (struct_INA3221*)configPtr; 
+
+  while(1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure INA3221 Shunt & Bus Voltage Monitor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Current: "));
+      if (sensorSetting->logCurrent == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Voltage: "));
+      if (sensorSetting->logVoltage == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logCurrent ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logVoltage ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;   
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming); 
+  } 
+}
+
+void menuConfigure_MCP23017(void *configPtr)
+{
+  struct_MCP23017 *sensorSetting = (struct_MCP23017*)configPtr; 
+
+  while(1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MCP23017 I/O Expander"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log PortA: "));
+      if (sensorSetting->logPortA == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log PortB: "));
+      if (sensorSetting->logPortB == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logPortA ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logPortB ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;   
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming); 
+  } 
+}
+
+void menuConfigure_MAX11615(void *configPtr)
+{
+  struct_MAX11615 *sensorSetting = (struct_MAX11615*)configPtr; 
+
+  while(1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MAX11615 ADC"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log AllCH: "));
+      if (sensorSetting->logAllCH == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logAllCH ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;   
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming); 
+  } 
 }

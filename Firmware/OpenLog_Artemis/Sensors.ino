@@ -1,6 +1,4 @@
 
-
-
 #include "Sensors.h"
 
 #define HELPER_BUFFER_SIZE 1024
@@ -222,10 +220,12 @@ void getData(char* sdOutputData, size_t lenData)
 void gatherDeviceValues(char * sdOutputData, size_t lenData)
 {
   char tempData[100];
-  char tempData1[20];
-  char tempData2[20];
-  char tempData3[20];
-
+  char tempData1[100];
+  char tempData2[100];
+  char tempData3[100];
+  char tempData4[100];
+  char tempData5[100];
+  char tempData6[100];
   //Step through list, printing values as we go
   node *temp = head;
   while (temp != NULL)
@@ -1278,6 +1278,80 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             }
           }
           break;
+        case DEVICE_SBV_MONITOR_INA3221:
+          {
+            INA3221 *nodeDevice = (INA3221 *)temp->classPtr;
+            struct_INA3221 *nodeSetting = (struct_INA3221 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            { 
+              if (nodeSetting->logCurrent)
+              {
+                olaftoa(nodeDevice->getCurrentCompensated(INA3221_CH1), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getCurrentCompensated(INA3221_CH2), tempData2, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getCurrentCompensated(INA3221_CH3), tempData3, 2, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s, ", tempData1);
+                strlcat(outputData, tempData, lenData);
+                sprintf(tempData, "%s, ", tempData2);
+                strlcat(outputData, tempData, lenData);
+                sprintf(tempData, "%s, ", tempData3);
+                strlcat(outputData, tempData, lenData);
+              }
+              if (nodeSetting->logVoltage)
+              {
+                olaftoa(nodeDevice->getVoltage(INA3221_CH1), tempData4, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getVoltage(INA3221_CH2), tempData5, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getVoltage(INA3221_CH3), tempData6, 2, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s, ", tempData4);
+                strlcat(outputData, tempData, lenData);
+                sprintf(tempData, "%s, ", tempData5);
+                strlcat(outputData, tempData, lenData);
+                sprintf(tempData, "%s, ", tempData6);
+                strlcat(outputData, tempData, lenData);
+              }
+            }
+          }
+          break;
+        case DEVICE_IO_MCP23017:
+          {
+            MCP23017 *nodeDevice = (MCP23017 *)temp->classPtr;
+            struct_MCP23017 *nodeSetting = (struct_MCP23017 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            { 
+              uint8_t currentA;
+              currentA = nodeDevice->readPort(MCP23017Port::A);
+
+
+              uint8_t currentB;
+              currentB = nodeDevice->readPort(MCP23017Port::B);
+              if (nodeSetting->logPortA)
+              {
+                sprintf(tempData, "%d,", currentA);
+                strlcat(outputData, tempData, lenData);
+              }
+              if (nodeSetting->logPortB)
+              {
+                sprintf(tempData, "%d,", currentB);
+                strlcat(outputData, tempData, lenData);
+              }
+            }
+          }
+          break;
+        case DEVICE_ADC_MAX11615:
+          {
+            MAX11615 *nodeDevice = (MAX11615 *)temp->classPtr;
+            struct_MAX11615 *nodeSetting = (struct_MAX11615 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            { 
+              uint16_t value[7];
+              nodeDevice->scan(value);
+              if (nodeSetting->logAllCH)
+              {
+                sprintf(tempData, "%d/%d/%d/%d/%d/%d,", value[0], value[1], value[2], value[3], value[4], value[5]);
+                strlcat(outputData, tempData, lenData);
+              }
+            }
+          }
+          break;
         default:
           SerialPrintf2("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
@@ -1624,40 +1698,6 @@ static void getHelperText(char* helperText, size_t lenText)
             }
           }
           break;
-        case DEVICE_PARTICLE_SNGCJA5:
-          {
-            struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr;
-            if (nodeSetting->log)
-            {
-              if (nodeSetting->logPM1)
-                strlcat(helperText, "PM1_0,", lenText);
-              if (nodeSetting->logPM25)
-                strlcat(helperText, "PM2_5,", lenText);
-              if (nodeSetting->logPM10)
-                strlcat(helperText, "PM10,", lenText);
-              if (nodeSetting->logPC05)
-                strlcat(helperText, "PC0_5,", lenText);
-              if (nodeSetting->logPC1)
-                strlcat(helperText, "PC1_0,", lenText);
-              if (nodeSetting->logPC25)
-                strlcat(helperText, "PC2_5,", lenText);
-              if (nodeSetting->logPC50)
-                strlcat(helperText, "PC5_0,", lenText);
-              if (nodeSetting->logPC75)
-                strlcat(helperText, "PC7_5,", lenText);
-              if (nodeSetting->logPC10)
-                strlcat(helperText, "PC10,", lenText);
-              if (nodeSetting->logSensorStatus)
-                strlcat(helperText, "Sensors,", lenText);
-              if (nodeSetting->logPDStatus)
-                strlcat(helperText, "PD,", lenText);
-              if (nodeSetting->logLDStatus)
-                strlcat(helperText, "LD,", lenText);
-              if (nodeSetting->logFanStatus)
-                strlcat(helperText, "Fan,", lenText);
-            }
-          }
-          break;
         case DEVICE_VOC_SGP40:
           {
             struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr;
@@ -1789,6 +1829,44 @@ static void getHelperText(char* helperText, size_t lenText)
                 strlcat(helperText, "A1A3mV,", lenText);
               if (nodeSetting->logA2A3)
                 strlcat(helperText, "A2A3mV,", lenText);
+            }
+          }
+          break;
+        case DEVICE_SBV_MONITOR_INA3221:
+          {
+            struct_INA3221 *nodeSetting = (struct_INA3221 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logCurrent)
+                strlcat(helperText, "Current(CH1),", lenText);
+                strlcat(helperText, "Current(CH2),", lenText);
+                strlcat(helperText, "Current(CH3),", lenText);
+              if (nodeSetting->logVoltage)
+                strlcat(helperText, "Voltage(CH1),", lenText);
+                strlcat(helperText, "Voltage(CH2),", lenText);
+                strlcat(helperText, "Voltage(CH3),", lenText);
+            }
+          }
+          break;
+        case DEVICE_IO_MCP23017:
+          {
+            struct_MCP23017 *nodeSetting = (struct_MCP23017 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPortA)
+                strlcat(helperText, "PortA(GPA0-GPA7),", lenText);
+              if (nodeSetting->logPortB)
+                strlcat(helperText, "PortB(GPB0-GPB7),", lenText);
+            }
+          }
+          break;
+        case DEVICE_ADC_MAX11615:
+          {
+            struct_MAX11615 *nodeSetting = (struct_MAX11615 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logAllCH)
+                strlcat(helperText, "DigitalValue(A0-A7),", lenText);
             }
           }
           break;

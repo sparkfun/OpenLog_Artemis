@@ -711,25 +711,6 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "useBAR=" + nodeSetting->useBAR);
           }
           break;
-        case DEVICE_PARTICLE_SNGCJA5:
-          {
-            struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr;
-            settingsFile.println((String)base + "log=" + nodeSetting->log);
-            settingsFile.println((String)base + "logPM1=" + nodeSetting->logPM1);
-            settingsFile.println((String)base + "logPM25=" + nodeSetting->logPM25);
-            settingsFile.println((String)base + "logPM10=" + nodeSetting->logPM10);
-            settingsFile.println((String)base + "logPC05=" + nodeSetting->logPC05);
-            settingsFile.println((String)base + "logPC1=" + nodeSetting->logPC1);
-            settingsFile.println((String)base + "logPC25=" + nodeSetting->logPC25);
-            settingsFile.println((String)base + "logPC50=" + nodeSetting->logPC50);
-            settingsFile.println((String)base + "logPC75=" + nodeSetting->logPC75);
-            settingsFile.println((String)base + "logPC10=" + nodeSetting->logPC10);
-            settingsFile.println((String)base + "logSensorStatus=" + nodeSetting->logSensorStatus);
-            settingsFile.println((String)base + "logPDStatus=" + nodeSetting->logPDStatus);
-            settingsFile.println((String)base + "logLDStatus=" + nodeSetting->logLDStatus);
-            settingsFile.println((String)base + "logFanStatus=" + nodeSetting->logFanStatus);
-          }
-          break;
         case DEVICE_VOC_SGP40:
           {
             struct_SGP40 *nodeSetting = (struct_SGP40 *)temp->configPtr;
@@ -842,6 +823,29 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "gain16=" + nodeSetting->gain16);
           }
           break;
+        case DEVICE_SBV_MONITOR_INA3221:
+          {
+            struct_INA3221 *nodeSetting = (struct_INA3221 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log); 
+            settingsFile.println((String)base + "logCurrent=" + nodeSetting->logCurrent); 
+            settingsFile.println((String)base + "logVoltage=" + nodeSetting->logVoltage);       
+          }
+          break;
+        case DEVICE_IO_MCP23017:
+          {
+            struct_MCP23017 *nodeSetting = (struct_MCP23017 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log); 
+            settingsFile.println((String)base + "logPortA=" + nodeSetting->logPortA); 
+            settingsFile.println((String)base + "logPortB=" + nodeSetting->logPortB);       
+          }
+          break;
+        case DEVICE_ADC_MAX11615:
+          {
+            struct_MAX11615 *nodeSetting = (struct_MAX11615 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log); 
+            settingsFile.println((String)base + "logAllCH=" + nodeSetting->logAllCH);        
+          }
+          break;       
         default:
           SerialPrintf2("recordSettingsToFile Unknown device: %s\r\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
@@ -1339,41 +1343,6 @@ bool parseDeviceLine(char* str) {
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
-      case DEVICE_PARTICLE_SNGCJA5:
-        {
-          struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
-          if (strcmp(deviceSettingName, "log") == 0)
-            nodeSetting->log = d;
-          else if (strcmp(deviceSettingName, "logPM1") == 0)
-            nodeSetting->logPM1 = d;
-          else if (strcmp(deviceSettingName, "logPM25") == 0)
-            nodeSetting->logPM25 = d;
-          else if (strcmp(deviceSettingName, "logPM10") == 0)
-            nodeSetting->logPM10 = d;
-          else if (strcmp(deviceSettingName, "logPC05") == 0)
-            nodeSetting->logPC05 = d;
-          else if (strcmp(deviceSettingName, "logPC1") == 0)
-            nodeSetting->logPC1 = d;
-          else if (strcmp(deviceSettingName, "logPC25") == 0)
-            nodeSetting->logPC25 = d;
-          else if (strcmp(deviceSettingName, "logPC50") == 0)
-            nodeSetting->logPC50 = d;
-          else if (strcmp(deviceSettingName, "logPC75") == 0)
-            nodeSetting->logPC75 = d;
-          else if (strcmp(deviceSettingName, "logPC10") == 0)
-            nodeSetting->logPC10 = d;
-          else if (strcmp(deviceSettingName, "logSensorStatus") == 0)
-            nodeSetting->logSensorStatus = d;
-          else if (strcmp(deviceSettingName, "logPDStatus") == 0)
-            nodeSetting->logPDStatus = d;
-          else if (strcmp(deviceSettingName, "logLDStatus") == 0)
-            nodeSetting->logLDStatus = d;
-          else if (strcmp(deviceSettingName, "logFanStatus") == 0)
-            nodeSetting->logFanStatus = d;
-          else
-            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
-        }
-        break;
       case DEVICE_VOC_SGP40:
         {
           struct_SGP40 *nodeSetting = (struct_SGP40 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
@@ -1571,6 +1540,43 @@ bool parseDeviceLine(char* str) {
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
+      case DEVICE_SBV_MONITOR_INA3221:
+        {
+          struct_INA3221 *nodeSetting = (struct_INA3221 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logCurrent") == 0)
+            nodeSetting->logCurrent = d;
+          else if (strcmp(deviceSettingName, "logVoltage") == 0)
+            nodeSetting->logVoltage = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);  
+        }
+        break;
+      case DEVICE_IO_MCP23017:
+        {
+          struct_MCP23017 *nodeSetting = (struct_MCP23017 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logPortA") == 0)
+            nodeSetting->logPortA = d;
+          else if (strcmp(deviceSettingName, "logPortB") == 0)
+            nodeSetting->logPortB = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);  
+        }
+        break;
+      case DEVICE_ADC_MAX11615:
+        {
+          struct_MAX11615 *nodeSetting = (struct_MAX11615 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logAllCH") == 0)
+            nodeSetting->logAllCH = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);  
+        }
+        break; 
       default:
         SerialPrintf2("Unknown device type: %d\r\n", deviceType);
         SerialFlush();

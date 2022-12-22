@@ -22,7 +22,6 @@ typedef enum
   DEVICE_HUMIDITY_SHTC3,
   DEVICE_ADC_ADS122C04,
   DEVICE_PRESSURE_MPR0025PA1, // 0-25 PSI, I2C Address 0x18
-  DEVICE_PARTICLE_SNGCJA5,
   DEVICE_VOC_SGP40,
   DEVICE_PRESSURE_SDP3X,
   DEVICE_PRESSURE_MS5837,
@@ -32,6 +31,9 @@ typedef enum
   DEVICE_MMC5983MA,
   DEVICE_KX134,
   DEVICE_ADS1015,
+  DEVICE_SBV_MONITOR_INA3221, // 0-26 V, I2C Address can be 0x40 to 0x43
+  DEVICE_IO_MCP23017, // I2C Address can be 0x20 to 0x27
+  DEVICE_ADC_MAX11615, // I2C Address 0x33
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -272,24 +274,6 @@ struct struct_MPR0025PA1 {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
-struct struct_SNGCJA5 {
-  bool log = true;
-  bool logPM1 = true;
-  bool logPM25 = true;
-  bool logPM10 = true;
-  bool logPC05 = true;
-  bool logPC1 = true;
-  bool logPC25 = true;
-  bool logPC50 = true;
-  bool logPC75 = true;
-  bool logPC10 = true;
-  bool logSensorStatus = false;
-  bool logPDStatus = true;
-  bool logLDStatus = true;
-  bool logFanStatus = true;
-  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
-};
-
 struct struct_SGP40 {
   bool log = true;
   bool logVOC = true;
@@ -425,43 +409,24 @@ struct struct_ISM330DHCX {
   int gyroLP1BW = ISM_MEDIUM;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
-
-struct struct_MMC5983MA {
+struct struct_INA3221 {
   bool log = true;
-  bool logMag = true;
-  bool logTemperature = true;
-  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+  bool logCurrent = true;
+  bool logVoltage = true; 
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wati for at least this many millis before communicating with this device. Increase if required!
 };
 
-struct struct_KX134 {
+struct struct_MCP23017 {
   bool log = true;
-  bool logAccel = true;
-  bool logDataReady = true;
-  bool range8G = false;
-  bool range16G = false;
-  bool range32G = false;
-  bool range64G = true;
-  bool highSpeed = false;
-  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+  bool logPortA = true;
+  bool logPortB = true; 
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wati for at least this many millis before communicating with this device. Increase if required!
 };
 
-struct struct_ADS1015 {
+struct struct_MAX11615 {
   bool log = true;
-  bool logA0 = true;
-  bool logA1 = true;
-  bool logA2 = true;
-  bool logA3 = true;
-  bool logA0A1 = false;
-  bool logA0A3 = false;
-  bool logA1A3 = false;
-  bool logA2A3 = false;
-  bool gain23 = false;
-  bool gain1 = true;
-  bool gain2 = false;
-  bool gain4 = false;
-  bool gain8 = false;
-  bool gain16 = false;
-  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+  bool logAllCH = true; 
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wati for at least this many millis before communicating with this device. Increase if required!
 };
 
 

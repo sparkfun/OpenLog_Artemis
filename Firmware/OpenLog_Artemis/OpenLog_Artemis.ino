@@ -69,7 +69,9 @@
   (done) v1.7: Fix readVin after sleep bug: https://github.com/sparkfun/OpenLog_Artemis/issues/39
   (done) Change detectQwiicDevices so that the MCP9600 (Qwiic Thermocouple) is detected correctly
   (done) Add support for the MPRLS0025PA micro pressure sensor
-  (done) Add support for the SN-GCJA5 particle sensor
+  (in progress) Add support for the INA3221 Shunt and Bus Voltage Monitor
+  (in progress) Add support for the MCP23017 I/O Expander chip
+  (in progress) Add support fot the MAX11615EEE+ ADC
   (done) Add IMU accelerometer and gyro full scale and digital low pass filter settings to menuIMU
   (done) Add a fix to make sure the MS8607 is detected correctly: https://github.com/sparkfun/OpenLog_Artemis/issues/54
   (done) Add logMicroseconds: https://github.com/sparkfun/OpenLog_Artemis/issues/49
@@ -308,7 +310,6 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFun_SHTC3.h" // Click here to get the library: http://librarymanager/All#SparkFun_SHTC3
 #include "SparkFun_ADS122C04_ADC_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_ADS122C04
 #include "SparkFun_MicroPressure.h" // Click here to get the library: http://librarymanager/All#SparkFun_MicroPressure
-#include "SparkFun_Particle_Sensor_SN-GCJA5_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Particle_Sensor_SN-GCJA5
 #include "SparkFun_SGP40_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_SGP40
 #include "SparkFun_SDP3x_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_SDP3x
 #include "MS5837.h" // Click here to download the library: https://github.com/sparkfunX/BlueRobotics_MS5837_Library
@@ -319,6 +320,9 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFun_ADS1015_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_ADS1015
 #include "SparkFun_KX13X.h" //Click here to get the library: http://librarymanager/All#SparkFun_KX13X
 
+#include <Beastdevices_INA3221.h> // https://github.com/nstran129/INA3221
+#include <MCP23017.h> //Click here to get the library: https://github.com/nstran129/arduino-mcp23017/tree/OLA_support
+#include <MAX11615.h> //Click here to get the library: https://github.com/nstran129/MAX11615/tree/OLA_support
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Global variables

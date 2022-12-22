@@ -35,6 +35,8 @@
   is 64 identical address devices. That should be enough.
 */
 
+#include <assert.h>
+
 //Given node number, get a pointer to the node
 node *getNodePointer(uint8_t nodeNumber)
 {
@@ -231,12 +233,6 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_MPR0025PA1;
       }
       break;
-    case DEVICE_PARTICLE_SNGCJA5:
-      {
-        temp->classPtr = new SFE_PARTICLE_SENSOR;
-        temp->configPtr = new struct_SNGCJA5;
-      }
-      break;
     case DEVICE_VOC_SGP40:
       {
         temp->classPtr = new SGP40;
@@ -291,10 +287,29 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_ADS1015;
       }
       break;
+    case DEVICE_SBV_MONITOR_INA3221:
+      {
+        temp->classPtr = new INA3221;
+        temp->configPtr = new struct_INA3221;
+      }
+      break;
+    case DEVICE_IO_MCP23017:
+      {
+        temp->classPtr = new MCP23017;
+        temp->configPtr = new struct_MCP23017;
+      }
+      break;
+    case DEVICE_ADC_MAX11615:
+      {
+        temp->classPtr = new MAX11615;
+        temp->configPtr = new struct_MAX11615;
+      }
+      break;  
     default:
       SerialPrintf2("addDevice Device type not found: %d\r\n", deviceType);
       break;
   }
+
 
   //Link to next node
   temp->next = NULL;
@@ -336,13 +351,11 @@ bool beginQwiicDevices()
   while (temp != NULL)
   {
     openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
-
     if (settings.printDebugMessages == true)
     {
       SerialPrintf2("beginQwiicDevices: attempting to begin deviceType %s", getDeviceName(temp->deviceType));
       SerialPrintf4(" at address 0x%02X using mux address 0x%02X and port number %d\r\n", temp->address, temp->muxAddress, temp->portNumber);
     }
-
     //Attempt to begin the device
     switch (temp->deviceType)
     {
@@ -515,15 +528,6 @@ bool beginQwiicDevices()
             temp->online = true;
         }
         break;
-      case DEVICE_PARTICLE_SNGCJA5:
-        {
-          SFE_PARTICLE_SENSOR *tempDevice = (SFE_PARTICLE_SENSOR *)temp->classPtr;
-          struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr; //Create a local pointer that points to same spot as node does
-          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
-          if (tempDevice->begin(qwiic) == true) //Wire port. Returns true on success.
-            temp->online = true;
-        }
-        break;
       case DEVICE_VOC_SGP40:
         {
           SGP40 *tempDevice = (SGP40 *)temp->classPtr;
@@ -606,11 +610,38 @@ bool beginQwiicDevices()
             temp->online = true;
         }
         break;
+      case DEVICE_SBV_MONITOR_INA3221:
+        {
+          INA3221 *tempDevice = (INA3221 *)temp->classPtr;
+          struct_INA3221 *nodeSetting = (struct_INA3221 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic) == true) //Address, Wire port. Returns true on success.
+             temp->online = true;
+          }
+          break;
+      case DEVICE_IO_MCP23017:
+        {
+          MCP23017 *tempDevice = (MCP23017 *)temp->classPtr;
+          struct_MCP23017 *nodeSetting = (struct_MCP23017 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic) == true) //Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_ADC_MAX11615:
+        {
+          MAX11615 *tempDevice = (MAX11615 *)temp->classPtr;
+          struct_MAX11615 *nodeSetting = (struct_MAX11615 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic) == true) //Wire port. Returns true on success.
+            temp->online = true;
+        }
+        break; 
       default:
+    	printf("failed setting up devtype %x at addr %x\n",temp->deviceType, temp->address);
         SerialPrintf2("beginQwiicDevices: device type not found: %d\r\n", temp->deviceType);
         break;
     }
-
     if (temp->online == true)
     {
       printDebug(F("beginQwiicDevices: device is online\r\n"));
@@ -853,9 +884,6 @@ void configureDevice(node * temp)
     case DEVICE_PRESSURE_MPR0025PA1:
       //Nothing to configure
       break;
-    case DEVICE_PARTICLE_SNGCJA5:
-      //Nothing to configure
-      break;
     case DEVICE_VOC_SGP40:
       //Nothing to configure
       break;
@@ -980,6 +1008,38 @@ void configureDevice(node * temp)
         sensor->useConversionReady(true);
       }
       break;
+    case DEVICE_SBV_MONITOR_INA3221:
+	  {
+    	INA3221 *sensor = (INA3221 *)temp->classPtr;
+    	struct_INA3221 *sensorSetting = (struct_INA3221 *)temp->configPtr;
+
+    	sensor->reset();
+    	sensor->setShuntRes(5, 5, 5);
+    	sensor->setFilterRes(1000, 1000, 1000);
+      }
+      break;
+    case DEVICE_IO_MCP23017:
+      {
+        MCP23017 *sensor = (MCP23017 *)temp->classPtr;
+        struct_MCP23017 *sensorSetting = (struct_MCP23017 *)temp->configPtr;
+        
+        //Set shunt resistors to 10 mOhm for all channels
+        sensor->portMode(MCP23017Port::A, 0b11111111); //Port A as input
+        sensor->portMode(MCP23017Port::B, 0b11111111); //Port B as input 
+        sensor->writeRegister(MCP23017Register::GPIO_A, 0x00);  //Reset port A
+        sensor->writeRegister(MCP23017Register::GPIO_B, 0x00);  //Reset port B 
+        sensor->writeRegister(MCP23017Register::IPOL_A, 0x00);      
+        sensor->writeRegister(MCP23017Register::IPOL_B, 0x00);
+      }
+      break;
+    case DEVICE_ADC_MAX11615:
+    {
+    	MAX11615 *sensor = (MAX11615 *)temp->classPtr;
+    	struct_MAX11615 *sensorSetting = (struct_MAX11615 *)temp->configPtr;
+
+    	sensor->init(4+2+1);
+    }
+      break;
     default:
       SerialPrintf3("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
@@ -1071,9 +1131,6 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
     case DEVICE_PRESSURE_MPR0025PA1:
       ptr = (FunctionPointer)menuConfigure_MPR0025PA1;
       break;
-    case DEVICE_PARTICLE_SNGCJA5:
-      ptr = (FunctionPointer)menuConfigure_SNGCJA5;
-      break;
     case DEVICE_VOC_SGP40:
       ptr = (FunctionPointer)menuConfigure_SGP40;
       break;
@@ -1100,6 +1157,15 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_ADS1015:
       ptr = (FunctionPointer)menuConfigure_ADS1015;
+      break;
+    case DEVICE_SBV_MONITOR_INA3221:
+      ptr = (FunctionPointer)menuConfigure_INA3221;
+      break;
+    case DEVICE_IO_MCP23017:
+      ptr = (FunctionPointer)menuConfigure_MCP23017;
+      break;
+    case DEVICE_ADC_MAX11615:
+      ptr = (FunctionPointer)menuConfigure_MAX11615;
       break;
     default:
       SerialPrintln(F("getConfigFunctionPtr: Unknown device type"));
@@ -1231,13 +1297,16 @@ void swap(struct node * a, struct node * b)
 #define ADR_VEML6075 0x10
 #define ADR_MPR0025PA1 0x18
 #define ADR_KX134 0x1E //Alternate: 0x1F
+#define ADR_MCP23017 0x20 //Alternates: 0x21 - 0x27
 #define ADR_SDP3X 0x21 //Alternates: 0x22, 0x23
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
 #define ADR_MMC5983MA 0x30
 #define ADR_SNGCJA5 0x33
+#define ADR_MAX11615 0x33 //Same address with others so requires high confidence detection
 #define ADR_AHT20 0x38
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
+#define ADR_INA3221 0x43 //Alternates: 0x40, 0x41 and 0x42
 #define ADR_UBLOX 0x42 //But can be set to any address
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
@@ -1289,9 +1358,28 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         SparkFun_KX134 sensor;
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, Address
           return (DEVICE_KX134);
+    case 0x20:
+      {
+        //Confidence: medium - using IOCON bank bit to check register address
+        MCP23017 sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_IO_MCP23017);
       }
       break;
     case 0x21:
+      { 
+        //Confidence: medium - using IOCON bank bit to check register address
+        MCP23017 sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_IO_MCP23017);
+          
+        //Confidence: High - .begin reads the product ID
+        SDP3X sensor1;
+        sensor1.stopContinuousMeasurement(i2cAddress, qwiic); //Make sure continuous measurements are stopped or .begin will fail
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_PRESSURE_SDP3X);
+      }
+      break;
     case 0x22:
     case 0x23:
       {
@@ -1328,11 +1416,11 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       }
       break;
     case 0x33:
-      {
-        //Confidence: low - basic isConnected test only...
-        SFE_PARTICLE_SENSOR sensor;
-        if (sensor.begin(qwiic) == true) //Wire port
-          return (DEVICE_PARTICLE_SNGCJA5);
+      { 
+        //Confidence: medium - perform init() after connection
+        MAX11615 sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true)  //Address, Wire port
+          return (DEVICE_ADC_MAX11615);
       }
       break;
     case 0x38:
@@ -1344,39 +1432,65 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       }
       break;
     case 0x40:
-      {
+      { 
+        //Confidence: High - .begin read the Product ID
+        INA3221 sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_SBV_MONITOR_INA3221);
+        
         //Humidity portion of the MS8607 sensor
         //Confidence: High - does CRC on internal EEPROM read
-        MS8607 sensor;
-        if (sensor.begin(qwiic) == true) //Wire port
+        MS8607 sensor1;
+        if (sensor1.begin(qwiic) == true) //Wire port
           return (DEVICE_PHT_MS8607);
 
+        //Confidence: High - Configures ADC mode
+        SFE_ADS122C04 sensor2;
+        if (sensor2.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_ADC_ADS122C04);
+
+        
+        
+      }
+      break;
+    case 0x41:
+      {
+        //Confidence: High - .begin read the Product ID
+        INA3221 sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_SBV_MONITOR_INA3221);
+         
         //Confidence: High - Configures ADC mode
         SFE_ADS122C04 sensor1;
         if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_ADC_ADS122C04);
       }
       break;
-    case 0x41:
-      {
-        //Confidence: High - Configures ADC mode
-        SFE_ADS122C04 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_ADC_ADS122C04);
-      }
-      break;
     case 0x42:
       {
+         //Confidence: High - .begin read the Product ID
+        INA3221 sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_SBV_MONITOR_INA3221);
+        
         //Confidence: High - Sends/receives CRC checked data response
         setQwiicPullups(0); //Disable pullups to minimize CRC issues
-        SFE_UBLOX_GNSS sensor;
-        if(settings.printGNSSDebugMessages == true) sensor.enableDebugging(); // Enable debug messages if required
-        if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
+        SFE_UBLOX_GNSS sensor1;
+        if(settings.printGNSSDebugMessages == true) sensor1.enableDebugging(); // Enable debug messages if required
+        if (sensor1.begin(qwiic, i2cAddress) == true) //Wire port, address
         {
           setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups to prevent ghosts at 0x43 onwards
           return (DEVICE_GPS_UBLOX);
         }
         setQwiicPullups(settings.qwiicBusPullUps); //Re-enable pullups for normal discovery
+      }
+      break;
+    case 0x43:
+      {
+        //Confidence: High - .begin read the Product ID
+        INA3221 sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_SBV_MONITOR_INA3221);
       }
       break;
     case 0x44:
@@ -1835,9 +1949,6 @@ const char* getDeviceName(deviceType_e deviceNumber)
     case DEVICE_PRESSURE_MPR0025PA1:
       return "Pressure-MPR";
       break;
-    case DEVICE_PARTICLE_SNGCJA5:
-      return "Particle-SNGCJA5";
-      break;
     case DEVICE_VOC_SGP40:
       return "VOC-SGP40";
       break;
@@ -1866,6 +1977,15 @@ const char* getDeviceName(deviceType_e deviceNumber)
       return "ADC-ADS1015";
       break;
 
+    case DEVICE_SBV_MONITOR_INA3221:
+      return "CurrentVoltage-Monitor-INA3221";
+      break;
+    case DEVICE_IO_MCP23017:
+      return "IO-Expander-MCP23017";
+      break;
+    case DEVICE_ADC_MAX11615:
+      return "ADC-MAX11615";
+      break;  
     case DEVICE_UNKNOWN_DEVICE:
       return "Unknown device";
       break;
