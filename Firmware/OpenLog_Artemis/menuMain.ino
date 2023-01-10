@@ -103,7 +103,7 @@ void menuMain(bool alwaysOpen)
   
         SerialPrintln(F(""));
         SerialPrintln(F(""));
-        sdCardMenu(); // Located in zmodem.ino
+        sdCardMenu(sdCardMenuTimeout); // Located in zmodem.ino
         SerialPrintln(F(""));
         SerialPrintln(F(""));
         
