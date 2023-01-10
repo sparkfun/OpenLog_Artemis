@@ -21,6 +21,8 @@ void menuDebug()
     if (settings.openMenuWithPrintable == true) SerialPrintln(F("Yes"));
     else SerialPrintln(F("No"));
 
+    SerialPrintln(F("5) Reboot the logger "));
+
     SerialPrintln(F("x) Exit"));
 
     byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
@@ -57,6 +59,16 @@ void menuDebug()
     else if (incoming == '4')
     {
       settings.openMenuWithPrintable ^= 1;
+    }
+    else if (incoming == '5')
+    {
+        SerialPrint(F("Are you sure? Press 'y' to confirm: "));
+        byte bContinue = getByteChoice(menuTimeout);
+        if (bContinue == 'y')
+        {
+          SerialPrintln(F("y"));
+          resetArtemis();
+        }
     }
     else if (incoming == 'x')
       break;
