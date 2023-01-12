@@ -1153,6 +1153,10 @@ void gatherDeviceValues(char * outputData, size_t lenData)
                 normalizedY /= 131072.0;
                 normalizedZ = (double)rawValueZ - 131072.0;
                 normalizedZ /= 131072.0;
+                // Convert to Gauss
+                normalizedX *= 8.0;
+                normalizedY *= 8.0;
+                normalizedZ *= 8.0;
 
                 olaftoa(normalizedX, tempData1, 6, sizeof(tempData1) / sizeof(char));
                 olaftoa(normalizedY, tempData2, 6, sizeof(tempData2) / sizeof(char));
