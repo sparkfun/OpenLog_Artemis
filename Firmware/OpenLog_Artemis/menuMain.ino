@@ -103,20 +103,24 @@ void menuMain(bool alwaysOpen)
   
         SerialPrintln(F(""));
         SerialPrintln(F(""));
-        sdCardMenu(); // Located in zmodem.ino
+        sdCardMenu(sdCardMenuTimeout); // Located in zmodem.ino
         SerialPrintln(F(""));
         SerialPrintln(F(""));
         
         if (online.dataLogging == true)
         {
-          strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
+          // Check if the current datafile was deleted
+          if (sd.exists(sensorDataFileName) == false)
+            strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
           beginDataLogging(); //180ms
           if (settings.showHelperText == true) 
             printHelperText(OL_OUTPUT_SERIAL | OL_OUTPUT_SDCARD); //printHelperText to terminal and sensor file
         }
         if (online.serialLogging == true)
         {
-          strcpy(serialDataFileName, findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"));
+          // Check if the current serial file was deleted
+          if (sd.exists(serialDataFileName) == false)
+            strcpy(serialDataFileName, findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"));
           beginSerialLogging();
         }
       }
