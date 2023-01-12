@@ -1,6 +1,49 @@
 Change Log
 ======================
 
+v2.5:
+---------
+
+* Add Tony Whipple's PR #146 - thank you @whipple63
+* Add support for the ISM330DHCX and MMC5983MA
+* Add reset log file number to the debug menu
+
+v2.4:
+---------
+
+* Add noPowerLossProtection to the main branch
+* Add changes by KDB: If we are streaming to Serial, start the stream with a Mime Type marker, followed by CR
+* Add debug option to only open the menu using a printable character: based on https://github.com/sparkfun/OpenLog_Artemis/pull/125
+
+v2.3:
+---------
+
+* Resolve https://forum.sparkfun.com/viewtopic.php?f=171&t=58109
+
+v2.2:
+---------
+
+* Use Apollo3 v2.2.1 with changes by paulvha to fix Issue 117 (Thank you Paul!)
+  * https://github.com/sparkfun/OpenLog_Artemis/issues/117#issuecomment-1085881142
+* Also includes Paul's SPI.end fix
+  * https://github.com/sparkfun/Arduino_Apollo3/issues/442
+
+In libraries/SPI/src/SPI.cpp change ```end()``` to:
+
+```
+    void arduino::MbedSPI::end() {
+        if (dev) {
+            delete dev;
+            dev = NULL;
+        }
+    }   
+```   
+
+* Use SdFat v2.1.2
+* Compensate for missing / not-populated IMU
+* Add support for yyyy/mm/dd and ISO 8601 date style (Issue 118)
+  * Add support for fractional time zone offsets
+
 v2.1
 ---------
 

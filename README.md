@@ -26,6 +26,7 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
   * [SAM-M8Q](https://www.sparkfun.com/products/15210) 1.5m 72 Channel GPS
   * [ZOE-M8Q](https://www.sparkfun.com/products/15193) 1.5m Compact GPS
   * [NEO-M9N](https://www.sparkfun.com/products/15712) 1.5m GPS
+  * **Please note:** ZED-F9R HPS 1.30 and MAX-M10S SPG 5.10 are _**not**_ supported 
 * [MCP9600 Thermocouple Amplifier](https://www.sparkfun.com/products/16294)
 * [NAU7802 Load Cell Amplifier](https://www.sparkfun.com/products/15242)
 * [LPS25HB Barometric Pressure Sensor](https://www.sparkfun.com/products/14767)
@@ -49,7 +50,8 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [ADS122C04 ADC PT100 Sensor](https://www.sparkfun.com/products/16770)
 * [Qwiic Mux](https://www.sparkfun.com/products/16784) allowing for the chaining of up to 64 unique buses!
 * [Pulse Oximeter and Heart Rate Sensor](https://www.sparkfun.com/products/15219) (requires exclusive use of pins 32 and 11)
-* More boards are being added all the time!
+* [ISM330DHCX IMU](https://www.sparkfun.com/products/19764)
+* [MMC5983MA Magnetometer](https://www.sparkfun.com/products/19921)
 
 Very low power logging is supported. OpenLog Artemis can be configured to take readings at 500 times a second, or as slow as 1 reading every 24 hours. You choose! When there is more than 2 seconds between readings OLA will automatically power down itself and the sensors on the bus resulting in a sleep current of approximately 18uA. This means a normal [2Ah battery](https://www.sparkfun.com/products/13855) will enable logging for more than 4,000 days! OpenLog Artemis has built-in LiPo charging set at 450mA/hr.
 
