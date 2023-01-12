@@ -223,6 +223,8 @@ void gatherDeviceValues(char * outputData, size_t lenData)
 {
   char tempData[100];
   char tempData1[20];
+  char tempData2[20];
+  char tempData3[20];
 
   //Step through list, printing values as we go
   node *temp = head;
@@ -1087,6 +1089,86 @@ void gatherDeviceValues(char * outputData, size_t lenData)
             }
           }
           break;
+        case DEVICE_ISM330DHCX:
+          {
+            SparkFun_ISM330DHCX *nodeDevice = (SparkFun_ISM330DHCX *)temp->classPtr;
+            struct_ISM330DHCX *nodeSetting = (struct_ISM330DHCX *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              // Structs for X,Y,Z data
+              static sfe_ism_data_t accelData;
+              static sfe_ism_data_t gyroData;
+              if ((nodeSetting->logAccel) || (nodeSetting->logGyro))
+              {
+                // Check if both gyroscope and accelerometer data is available.
+                if( nodeDevice->checkStatus() )
+                {
+                  nodeDevice->getAccel(&accelData);
+                  nodeDevice->getGyro(&gyroData);
+                }
+              }
+              if (nodeSetting->logAccel)
+              {
+                olaftoa(accelData.xData, tempData1, 2, sizeof(tempData1) / sizeof(char));
+                olaftoa(accelData.yData, tempData2, 2, sizeof(tempData2) / sizeof(char));
+                olaftoa(accelData.zData, tempData3, 2, sizeof(tempData3) / sizeof(char));
+                sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
+                strlcat(outputData, tempData, lenData);
+              }
+              if (nodeSetting->logGyro)
+              {
+                olaftoa(gyroData.xData, tempData1, 2, sizeof(tempData1) / sizeof(char));
+                olaftoa(gyroData.yData, tempData2, 2, sizeof(tempData2) / sizeof(char));
+                olaftoa(gyroData.zData, tempData3, 2, sizeof(tempData3) / sizeof(char));
+                sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
+                strlcat(outputData, tempData, lenData);
+              }
+            }
+          }
+          break;
+        case DEVICE_MMC5983MA:
+          {
+            SFE_MMC5983MA *nodeDevice = (SFE_MMC5983MA *)temp->classPtr;
+            struct_MMC5983MA *nodeSetting = (struct_MMC5983MA *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              // X,Y,Z data
+              uint32_t rawValueX;
+              uint32_t rawValueY;
+              uint32_t rawValueZ;
+              double normalizedX;
+              double normalizedY;
+              double normalizedZ;
+              if (nodeSetting->logMag)
+              {
+                
+                // Check if accel data is available.
+                nodeDevice->getMeasurementXYZ(&rawValueX, &rawValueY, &rawValueZ);
+
+                // The magnetic field values are 18-bit unsigned. The zero (mid) point is 2^17 (131072).
+                // Normalize each field to +/- 1.0
+                normalizedX = (double)rawValueX - 131072.0;
+                normalizedX /= 131072.0;
+                normalizedY = (double)rawValueY - 131072.0;
+                normalizedY /= 131072.0;
+                normalizedZ = (double)rawValueZ - 131072.0;
+                normalizedZ /= 131072.0;
+
+                olaftoa(normalizedX, tempData1, 6, sizeof(tempData1) / sizeof(char));
+                olaftoa(normalizedY, tempData2, 6, sizeof(tempData2) / sizeof(char));
+                olaftoa(normalizedZ, tempData3, 6, sizeof(tempData3) / sizeof(char));
+                sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
+                strlcat(outputData, tempData, lenData);
+              }
+              if (nodeSetting->logTemperature)
+              {
+                int temperature = nodeDevice->getTemperature();
+                sprintf(tempData, "%d,", temperature);
+                strlcat(outputData, tempData, lenData);
+              }
+            }
+          }
+          break;
         default:
           SerialPrintf2("printDeviceValue unknown device type: %s\r\n", getDeviceName(temp->deviceType));
           break;
@@ -1536,6 +1618,30 @@ static void getHelperText(char* helperText, size_t lenText)
                 strlcat(helperText, "eStat,", lenText);
               if (nodeSetting->logRValue)
                 strlcat(helperText, "O2R,", lenText);
+            }
+          }
+          break;
+        case DEVICE_ISM330DHCX:
+          {
+            struct_ISM330DHCX *nodeSetting = (struct_ISM330DHCX *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logAccel)
+                strlcat(helperText, "aX,aY,aZ,", lenText);
+              if (nodeSetting->logGyro)
+                strlcat(helperText, "gX,gY,gZ,", lenText);
+            }
+          }
+          break;
+        case DEVICE_MMC5983MA:
+          {
+            struct_MMC5983MA *nodeSetting = (struct_MMC5983MA *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logMag)
+                strlcat(helperText, "mX,mY,mZ,", lenText);
+              if (nodeSetting->logTemperature)
+                strlcat(helperText, "degC,", lenText);
             }
           }
           break;

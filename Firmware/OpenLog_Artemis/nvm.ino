@@ -784,6 +784,22 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logRValue=" + nodeSetting->logRValue);
           }
           break;
+        case DEVICE_ISM330DHCX:
+          {
+            struct_ISM330DHCX *nodeSetting = (struct_ISM330DHCX *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logAccel=" + nodeSetting->logAccel);
+            settingsFile.println((String)base + "logGyro=" + nodeSetting->logGyro);
+          }
+          break;
+        case DEVICE_MMC5983MA:
+          {
+            struct_MMC5983MA *nodeSetting = (struct_MMC5983MA *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logMag=" + nodeSetting->logMag);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+          }
+          break;
         default:
           SerialPrintf2("recordSettingsToFile Unknown device: %s\r\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
@@ -1405,6 +1421,32 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logExtendedStatus = d;
           else if (strcmp(deviceSettingName, "logRValue") == 0)
             nodeSetting->logRValue = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_ISM330DHCX:
+        {
+          struct_ISM330DHCX *nodeSetting = (struct_ISM330DHCX *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logAccel") == 0)
+            nodeSetting->logAccel = d;
+          else if (strcmp(deviceSettingName, "logGyro") == 0)
+            nodeSetting->logGyro = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_MMC5983MA:
+        {
+          struct_MMC5983MA *nodeSetting = (struct_MMC5983MA *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logMag") == 0)
+            nodeSetting->logMag = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }

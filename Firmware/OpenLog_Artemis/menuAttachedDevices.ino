@@ -357,6 +357,12 @@ void menuAttachedDevices()
           case DEVICE_BIO_SENSOR_HUB:
             SerialPrintf3("%s Bio Sensor Pulse Oximeter %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_ISM330DHCX:
+            SerialPrintf3("%s ISM330DHCX IMU %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_MMC5983MA:
+            SerialPrintf3("%s MMC5983MA Magnetometer %s\r\n", strDeviceMenu, strAddress);
+            break;
           default:
             SerialPrintf2("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
             break;
@@ -2463,25 +2469,29 @@ void menuConfigure_MS5837(void *configPtr)
 
     if (sensorSetting->log == true)
     {
+      char tempStr[16];
+      
       SerialPrint(F("2) Log Pressure: "));
       if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-
+      
       SerialPrint(F("3) Log Temperature: "));
       if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-
+      
       SerialPrint(F("4) Log Depth: "));
       if (sensorSetting->logDepth == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-  
+      
       SerialPrint(F("5) Log Altitude: "));
       if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
       
-      SerialPrintf2("6) Fluid Density (kg/m^3): %f\r\n", sensorSetting->fluidDensity);
-  
-      SerialPrintf2("7) Pressure Conversion Factor: %.02f\r\n", sensorSetting->conversion);
+      olaftoa(sensorSetting->fluidDensity, tempStr, 1, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("6) Fluid Density (kg/m^3): %s\r\n", tempStr);
+      
+      olaftoa(sensorSetting->conversion, tempStr, 3, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("7) Pressure Conversion Factor: %s\r\n", tempStr);
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2654,6 +2664,108 @@ void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
         sensorSetting->logExtendedStatus ^= 1;
       else if (incoming == 7)
         sensorSetting->logRValue ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_ISM330DHCX(void *configPtr)
+{
+  struct_ISM330DHCX *sensorSetting = (struct_ISM330DHCX *)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure ISM330DHCX IMU"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Accelerometer: "));
+      if (sensorSetting->logAccel == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Gyro: "));
+      if (sensorSetting->logGyro == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logAccel ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logGyro ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_MMC5983MA(void *configPtr)
+{
+  struct_MMC5983MA *sensorSetting = (struct_MMC5983MA *)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MMC5983MA Magnetometer"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Magnetometer: "));
+      if (sensorSetting->logMag == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logMag ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logTemperature ^= 1;
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

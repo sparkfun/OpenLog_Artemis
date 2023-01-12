@@ -28,6 +28,8 @@ typedef enum
   DEVICE_PRESSURE_MS5837,
   DEVICE_QWIIC_BUTTON,
   DEVICE_BIO_SENSOR_HUB,
+  DEVICE_ISM330DHCX,
+  DEVICE_MMC5983MA,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -333,6 +335,20 @@ struct struct_BIO_SENSOR_HUB {
   bool logStatus = true;
   bool logExtendedStatus = true;
   bool logRValue = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_ISM330DHCX {
+  bool log = true;
+  bool logAccel = true;
+  bool logGyro = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_MMC5983MA {
+  bool log = true;
+  bool logMag = true;
+  bool logTemperature = true;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

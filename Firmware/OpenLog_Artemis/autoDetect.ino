@@ -267,6 +267,18 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_BIO_SENSOR_HUB;
       }
       break;
+    case DEVICE_ISM330DHCX:
+      {
+        temp->classPtr = new SparkFun_ISM330DHCX;
+        temp->configPtr = new struct_ISM330DHCX;
+      }
+      break;
+    case DEVICE_MMC5983MA:
+      {
+        temp->classPtr = new SFE_MMC5983MA;
+        temp->configPtr = new struct_MMC5983MA;
+      }
+      break;
     default:
       SerialPrintf2("addDevice Device type not found: %d\r\n", deviceType);
       break;
@@ -543,6 +555,24 @@ bool beginQwiicDevices()
           struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin(qwiic) == 0x00) //Wire port. Returns 0x00 on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_ISM330DHCX:
+        {
+          SparkFun_ISM330DHCX *tempDevice = (SparkFun_ISM330DHCX *)temp->classPtr;
+          struct_ISM330DHCX *nodeSetting = (struct_ISM330DHCX *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic, temp->address)) //Wire port, address
+            temp->online = true;
+        }
+        break;
+      case DEVICE_MMC5983MA:
+        {
+          SFE_MMC5983MA *tempDevice = (SFE_MMC5983MA *)temp->classPtr;
+          struct_MMC5983MA *nodeSetting = (struct_MMC5983MA *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic)) //Wire port
             temp->online = true;
         }
         break;
@@ -838,6 +868,46 @@ void configureDevice(node * temp)
         sensor->configBpm(MODE_TWO); // MODE_TWO provides the oxygen R value
       }
       break;
+    case DEVICE_ISM330DHCX:
+      {
+        SparkFun_ISM330DHCX *sensor = (SparkFun_ISM330DHCX *)temp->classPtr;
+        struct_ISM330DHCX *sensorSetting = (struct_ISM330DHCX *)temp->configPtr;
+
+        sensor->deviceReset();
+        
+        // Wait for it to finish reseting
+        while( !sensor->getDeviceReset() ){ 
+          delay(1);
+        } 
+
+        sensor->setDeviceConfig();
+        sensor->setBlockDataUpdate();
+        
+        // Set the output data rate and precision of the accelerometer
+        sensor->setAccelDataRate(ISM_XL_ODR_104Hz);
+        sensor->setAccelFullScale(ISM_4g); 
+      
+        // Set the output data rate and precision of the gyroscope
+        sensor->setGyroDataRate(ISM_GY_ODR_104Hz);
+        sensor->setGyroFullScale(ISM_500dps); 
+      
+        // Turn on the accelerometer's filter and apply settings. 
+        sensor->setAccelFilterLP2();
+        sensor->setAccelSlopeFilter(ISM_LP_ODR_DIV_100);
+      
+        // Turn on the gyroscope's filter and apply settings. 
+        sensor->setGyroFilterLP1();
+        sensor->setGyroLP1Bandwidth(ISM_MEDIUM);
+      }
+      break;
+    case DEVICE_MMC5983MA:
+      {
+        SFE_MMC5983MA *sensor = (SFE_MMC5983MA *)temp->classPtr;
+        struct_MMC5983MA *sensorSetting = (struct_MMC5983MA *)temp->configPtr;
+
+        sensor->softReset();
+      }
+      break;
     default:
       SerialPrintf3("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
@@ -946,6 +1016,12 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_BIO_SENSOR_HUB:
       ptr = (FunctionPointer)menuConfigure_BIO_SENSOR_HUB;
+      break;
+    case DEVICE_ISM330DHCX:
+      ptr = (FunctionPointer)menuConfigure_ISM330DHCX;
+      break;
+    case DEVICE_MMC5983MA:
+      ptr = (FunctionPointer)menuConfigure_MMC5983MA;
       break;
     default:
       SerialPrintln(F("getConfigFunctionPtr: Unknown device type"));
@@ -1079,6 +1155,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_SDP3X 0x21 //Alternates: 0x22, 0x23
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
+#define ADR_MMC5983MA 0x30
 #define ADR_SNGCJA5 0x33
 #define ADR_AHT20 0x38
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
@@ -1093,6 +1170,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_VCNL4040 0x60
 #define ADR_SCD30 0x61
 #define ADR_MCP9600 0x60 //0x60 to 0x67
+#define ADR_ISM330DHCX 0x6A //Alternate: 0x6B
 #define ADR_QWIIC_BUTTON 0x6F //But can be any address... Limit the range to 0x68-0x6F
 #define ADR_MULTIPLEXER 0x70 //0x70 to 0x77
 #define ADR_SHTC3 0x70
@@ -1166,6 +1244,14 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         SFEVL53L1X sensor(qwiic); //Start with given wire port
         if (sensor.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
           return (DEVICE_DISTANCE_VL53L1X);
+      }
+      break;
+    case 0x30:
+      {
+        //Confidence: high - reads PROD_ID_REG
+        SFE_MMC5983MA sensor;
+        if (sensor.begin(qwiic) == true) //Wire port
+          return (DEVICE_MMC5983MA);
       }
       break;
     case 0x33:
@@ -1387,8 +1473,24 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x68:
     case 0x69:
+      {
+        QwiicButton sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_QWIIC_BUTTON);
+      }
+      break;
     case 0x6A:
     case 0x6B:
+      {
+        SparkFun_ISM330DHCX sensor;
+        if (sensor.begin(qwiic, i2cAddress))
+          return(DEVICE_ISM330DHCX);
+          
+        QwiicButton sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_QWIIC_BUTTON);
+      }
+      break;
     case 0x6C:
     case 0x6D:
     case 0x6E:
@@ -1753,6 +1855,12 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_BIO_SENSOR_HUB:
       return "Bio-Sensor-Oximeter";
+      break;
+    case DEVICE_ISM330DHCX:
+      return "IMU-ISM330DHCX";
+      break;
+    case DEVICE_MMC5983MA:
+      return "Mag-MMC5983MA";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:
