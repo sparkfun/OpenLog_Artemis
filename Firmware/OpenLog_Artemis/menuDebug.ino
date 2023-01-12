@@ -1,4 +1,4 @@
-void menuDebug()
+void menuDebug(bool *dataLogUpdated, bool *serialLogUpdated)
 {
   while (1)
   {
@@ -21,7 +21,11 @@ void menuDebug()
     if (settings.openMenuWithPrintable == true) SerialPrintln(F("Yes"));
     else SerialPrintln(F("No"));
 
-    SerialPrintln(F("5) Reboot the logger "));
+    SerialPrintln(F("5) Reboot the logger"));
+
+    SerialPrintln(F("6) Set nextDataLogNumber"));
+
+    SerialPrintln(F("7) Set nextSerialLogNumber"));
 
     SerialPrintln(F("x) Exit"));
 
@@ -68,6 +72,26 @@ void menuDebug()
         {
           SerialPrintln(F("y"));
           resetArtemis();
+        }
+    }
+    else if (incoming == '6')
+    {
+        SerialPrint(F("Enter the new nextDataLogNumber ( >= 1 ) ( or x to abort ): "));
+        int64_t newNum = getNumber(menuTimeout);
+        if ((newNum > 0) && (newNum < 99999)) // Needs to be >= 1 as it is the _next_ file
+        {
+          settings.nextDataLogNumber = newNum;
+          *dataLogUpdated = true;
+        }
+    }
+    else if (incoming == '7')
+    {
+        SerialPrint(F("Enter the new nextSerialLogNumber ( >= 1 ) ( or x to abort ): "));
+        int64_t newNum = getNumber(menuTimeout);
+        if ((newNum > 0) && (newNum < 99999)) // Needs to be >= 1 as it is the _next_ file
+        {
+          settings.nextSerialLogNumber = newNum;
+          *serialLogUpdated = true;
         }
     }
     else if (incoming == 'x')
