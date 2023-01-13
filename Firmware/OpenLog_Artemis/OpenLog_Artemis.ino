@@ -1173,6 +1173,13 @@ void beginIMU(bool silent)
         SerialPrintln(F("Error: Could not startup the IMU in DMP mode!"));
         success = false;
       }
+
+      int ODR = 0; // Set ODR to 55Hz
+      if (settings.usBetweenReadings >= 500000ULL)
+        ODR = 3; // 17Hz ODR rate when DMP is running at 55Hz
+      if (settings.usBetweenReadings >= 1000000ULL)
+        ODR = 10; // 5Hz ODR rate when DMP is running at 55Hz
+
       if (settings.imuLogDMPQuat6)
       {
         retval = myICM.enableDMPSensor(INV_ICM20948_SENSOR_GAME_ROTATION_VECTOR);
@@ -1181,7 +1188,7 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the Game Rotation Vector (Quat6)!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat6, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat6, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Quat6 ODR!"));
@@ -1196,7 +1203,7 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the Rotation Vector (Quat9)!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat9, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat9, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Quat9 ODR!"));
@@ -1211,7 +1218,7 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the DMP Accelerometer!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Accel, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Accel, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Accel ODR!"));
@@ -1226,13 +1233,13 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the DMP Gyroscope!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Gyro ODR!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Gyro Calibr ODR!"));
@@ -1247,13 +1254,13 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the DMP Compass!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Compass ODR!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Compass Calibr ODR!"));
