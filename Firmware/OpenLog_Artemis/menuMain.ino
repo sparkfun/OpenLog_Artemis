@@ -83,42 +83,7 @@ void menuMain(bool alwaysOpen)
     }
     else if (incoming == 'd')
     {
-      if (online.microSD)
-      {
-        //Close log files before showing menuDebug
-        if (online.dataLogging == true)
-        {
-          sensorDataFile.sync();
-          updateDataFileAccess(&sensorDataFile); // Update the file access time & date
-          sensorDataFile.close();
-        }
-        if (online.serialLogging == true)
-        {
-          serialDataFile.sync();
-          updateDataFileAccess(&serialDataFile); // Update the file access time & date
-          serialDataFile.close();
-        }
-
-        bool dataLogUpdated = false;
-        bool serialLogUpdated = false;
-
-        menuDebug(&dataLogUpdated, &serialLogUpdated);
-        
-        if (online.dataLogging == true)
-        {
-          if (dataLogUpdated)
-            strcpy(sensorDataFileName, findNextAvailableLog(settings.nextDataLogNumber, "dataLog"));
-          beginDataLogging(); //180ms
-          if (settings.showHelperText == true) 
-            printHelperText(OL_OUTPUT_SERIAL | OL_OUTPUT_SDCARD); //printHelperText to terminal and sensor file
-        }
-        if (online.serialLogging == true)
-        {
-          if (serialLogUpdated)
-            strcpy(serialDataFileName, findNextAvailableLog(settings.nextSerialLogNumber, "serialLog"));
-          beginSerialLogging();
-        }
-      }      
+      menuDebug();
     }
     else if (incoming == 's')
     {

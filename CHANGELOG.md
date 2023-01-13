@@ -6,7 +6,6 @@ v2.5:
 
 * Add Tony Whipple's PR #146 - thank you @whipple63
 * Add support for the ISM330DHCX and MMC5983MA
-* Add reset log file number to the debug menu
 
 v2.4:
 ---------

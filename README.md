@@ -26,7 +26,6 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
   * [SAM-M8Q](https://www.sparkfun.com/products/15210) 1.5m 72 Channel GPS
   * [ZOE-M8Q](https://www.sparkfun.com/products/15193) 1.5m Compact GPS
   * [NEO-M9N](https://www.sparkfun.com/products/15712) 1.5m GPS
-  * **Please note:** ZED-F9R HPS 1.30 and MAX-M10S SPG 5.10 are _**not**_ supported 
 * [MCP9600 Thermocouple Amplifier](https://www.sparkfun.com/products/16294)
 * [NAU7802 Load Cell Amplifier](https://www.sparkfun.com/products/15242)
 * [LPS25HB Barometric Pressure Sensor](https://www.sparkfun.com/products/14767)
