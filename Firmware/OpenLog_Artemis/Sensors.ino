@@ -1098,10 +1098,12 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               // Structs for X,Y,Z data
               static sfe_ism_data_t accelData;
               static sfe_ism_data_t gyroData;
+              static bool dataReady;
               if ((nodeSetting->logAccel) || (nodeSetting->logGyro))
               {
                 // Check if both gyroscope and accelerometer data is available.
-                if( nodeDevice->checkStatus() )
+                dataReady = nodeDevice->checkStatus();
+                if( dataReady )
                 {
                   nodeDevice->getAccel(&accelData);
                   nodeDevice->getGyro(&gyroData);
@@ -1123,6 +1125,11 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
                 sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
                 strlcat(sdOutputData, tempData, lenData);
               }
+              if (nodeSetting->logDataReady)
+              {
+                sprintf(tempData, "%d,", dataReady);
+                strlcat(sdOutputData, tempData, lenData);
+              }
             }
           }
           break;
@@ -1142,7 +1149,6 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               if (nodeSetting->logMag)
               {
                 
-                // Check if accel data is available.
                 nodeDevice->getMeasurementXYZ(&rawValueX, &rawValueY, &rawValueZ);
 
                 // The magnetic field values are 18-bit unsigned. The zero (mid) point is 2^17 (131072).
@@ -1733,6 +1739,8 @@ static void getHelperText(char* helperText, size_t lenText)
                 strlcat(helperText, "aX,aY,aZ,", lenText);
               if (nodeSetting->logGyro)
                 strlcat(helperText, "gX,gY,gZ,", lenText);
+              if (nodeSetting->logDataReady)
+                strlcat(helperText, "dataRdy,", lenText);
             }
           }
           break;

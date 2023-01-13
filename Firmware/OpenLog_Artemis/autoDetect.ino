@@ -914,20 +914,20 @@ void configureDevice(node * temp)
         sensor->setBlockDataUpdate();
         
         // Set the output data rate and precision of the accelerometer
-        sensor->setAccelDataRate(ISM_XL_ODR_104Hz);
-        sensor->setAccelFullScale(ISM_4g); 
-      
-        // Set the output data rate and precision of the gyroscope
-        sensor->setGyroDataRate(ISM_GY_ODR_104Hz);
-        sensor->setGyroFullScale(ISM_500dps); 
+        sensor->setAccelDataRate(sensorSetting->accelRate);
+        sensor->setAccelFullScale(sensorSetting->accelScale); 
       
         // Turn on the accelerometer's filter and apply settings. 
-        sensor->setAccelFilterLP2();
-        sensor->setAccelSlopeFilter(ISM_LP_ODR_DIV_100);
+        sensor->setAccelFilterLP2(sensorSetting->accelFilterLP2);
+        sensor->setAccelSlopeFilter(sensorSetting->accelSlopeFilter);
+      
+        // Set the output data rate and precision of the gyroscope
+        sensor->setGyroDataRate(sensorSetting->gyroRate);
+        sensor->setGyroFullScale(sensorSetting->gyroScale); 
       
         // Turn on the gyroscope's filter and apply settings. 
-        sensor->setGyroFilterLP1();
-        sensor->setGyroLP1Bandwidth(ISM_MEDIUM);
+        sensor->setGyroFilterLP1(sensorSetting->gyroFilterLP1);
+        sensor->setGyroLP1Bandwidth(sensorSetting->gyroLP1BW);
       }
       break;
     case DEVICE_MMC5983MA:
@@ -936,6 +936,8 @@ void configureDevice(node * temp)
         struct_MMC5983MA *sensorSetting = (struct_MMC5983MA *)temp->configPtr;
 
         sensor->softReset();
+
+        sensor->enableAutomaticSetReset();
       }
       break;
     case DEVICE_KX134:

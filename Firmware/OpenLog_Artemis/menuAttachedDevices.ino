@@ -2694,6 +2694,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
   {
     SerialPrintln(F(""));
     SerialPrintln(F("Menu: Configure ISM330DHCX IMU"));
+    SerialPrintln(F("Consult the datasheet for the accel and gyro settings"));
 
     SerialPrint(F("1) Sensor Logging: "));
     if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
@@ -2708,6 +2709,23 @@ void menuConfigure_ISM330DHCX(void *configPtr)
       SerialPrint(F("3) Log Gyro: "));
       if (sensorSetting->logGyro == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("4) Log Data Ready: "));
+      if (sensorSetting->logDataReady == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrintf2("5) Accel Scale: %d\r\n", sensorSetting->accelScale);
+      SerialPrintf2("6) Accel Rate: %d\r\n", sensorSetting->accelRate);
+      SerialPrint(F("7) Accel Filter LP2: "));
+      if (sensorSetting->accelFilterLP2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      SerialPrintf2("8) Accel Slope Filter: %d\r\n", sensorSetting->accelSlopeFilter);
+      SerialPrintf2("9) Gyro Scale: %d\r\n", sensorSetting->gyroScale);
+      SerialPrintf2("10) Gyro Rate: %d\r\n", sensorSetting->gyroRate);
+      SerialPrint(F("11) Gyro Filter LP1: "));
+      if (sensorSetting->gyroFilterLP1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      SerialPrintf2("12) Gyro LP1 Bandwidth: %d\r\n", sensorSetting->gyroLP1BW);   
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2721,6 +2739,66 @@ void menuConfigure_ISM330DHCX(void *configPtr)
         sensorSetting->logAccel ^= 1;
       else if (incoming == 3)
         sensorSetting->logGyro ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logDataReady ^= 1;
+      else if (incoming == 5)
+      {
+        SerialPrint(F("Enter the Accel Full Scale (0 to 3): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 3)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->accelScale = newNum;
+      }        
+      else if (incoming == 6)
+      {
+        SerialPrint(F("Enter the Accel Rate (0 to 11): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 11)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->accelRate = newNum;
+      }        
+      else if (incoming == 7)
+        sensorSetting->accelFilterLP2 ^= 1;
+      else if (incoming == 8)
+      {
+        SerialPrint(F("Enter the Accel Slope Filter setting (0 to 0x37): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 55)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->accelSlopeFilter = newNum;
+      }        
+      else if (incoming == 9)
+      {
+        SerialPrint(F("Enter the Gyro Full Scale (0 to 12): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 12)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->gyroScale = newNum;
+      }        
+      else if (incoming == 10)
+      {
+        SerialPrint(F("Enter the Gyro Rate (0 to 10): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 10)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->gyroRate = newNum;
+      }        
+      else if (incoming == 11)
+        sensorSetting->gyroFilterLP1 ^= 1;
+      else if (incoming == 12)
+      {
+        SerialPrint(F("Enter the Gyro LP1 Bandwidth (0 to 7): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 7)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->gyroLP1BW = newNum;
+      }        
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

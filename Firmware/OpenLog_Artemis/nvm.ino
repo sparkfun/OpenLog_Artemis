@@ -790,6 +790,15 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logAccel=" + nodeSetting->logAccel);
             settingsFile.println((String)base + "logGyro=" + nodeSetting->logGyro);
+            settingsFile.println((String)base + "logDataReady=" + nodeSetting->logDataReady);
+            settingsFile.println((String)base + "accelScale=" + nodeSetting->accelScale);
+            settingsFile.println((String)base + "gyroScale=" + nodeSetting->gyroScale);
+            settingsFile.println((String)base + "accelRate=" + nodeSetting->accelRate);
+            settingsFile.println((String)base + "gyroRate=" + nodeSetting->gyroRate);
+            settingsFile.println((String)base + "accelFilterLP2=" + nodeSetting->accelFilterLP2);
+            settingsFile.println((String)base + "gyroFilterLP1=" + nodeSetting->gyroFilterLP1);
+            settingsFile.println((String)base + "gyroLP1BW=" + nodeSetting->gyroLP1BW);
+            settingsFile.println((String)base + "accelSlopeFilter=" + nodeSetting->accelSlopeFilter);
           }
           break;
         case DEVICE_MMC5983MA:
@@ -1467,6 +1476,24 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logAccel = d;
           else if (strcmp(deviceSettingName, "logGyro") == 0)
             nodeSetting->logGyro = d;
+          else if (strcmp(deviceSettingName, "logDataReady") == 0)
+            nodeSetting->logDataReady = d;
+          else if (strcmp(deviceSettingName, "accelScale") == 0)
+            nodeSetting->accelScale = d;
+          else if (strcmp(deviceSettingName, "gyroScale") == 0)
+            nodeSetting->gyroScale = d;
+          else if (strcmp(deviceSettingName, "accelRate") == 0)
+            nodeSetting->accelRate = d;
+          else if (strcmp(deviceSettingName, "gyroRate") == 0)
+            nodeSetting->gyroRate = d;
+          else if (strcmp(deviceSettingName, "accelFilterLP2") == 0)
+            nodeSetting->accelFilterLP2 = d;
+          else if (strcmp(deviceSettingName, "gyroFilterLP1") == 0)
+            nodeSetting->gyroFilterLP1 = d;
+          else if (strcmp(deviceSettingName, "gyroLP1BW") == 0)
+            nodeSetting->gyroLP1BW = d;
+          else if (strcmp(deviceSettingName, "accelSlopeFilter") == 0)
+            nodeSetting->accelSlopeFilter = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
