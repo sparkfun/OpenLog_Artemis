@@ -2694,7 +2694,6 @@ void menuConfigure_ISM330DHCX(void *configPtr)
   {
     SerialPrintln(F(""));
     SerialPrintln(F("Menu: Configure ISM330DHCX IMU"));
-    SerialPrintln(F("Consult the datasheet for the accel and gyro settings"));
 
     SerialPrint(F("1) Sensor Logging: "));
     if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
@@ -2743,6 +2742,10 @@ void menuConfigure_ISM330DHCX(void *configPtr)
         sensorSetting->logDataReady ^= 1;
       else if (incoming == 5)
       {
+        SerialPrintln(F("2g : 0"));
+        SerialPrintln(F("16g: 1"));
+        SerialPrintln(F("4g : 2"));
+        SerialPrintln(F("8g : 3"));
         SerialPrint(F("Enter the Accel Full Scale (0 to 3): "));
         int newNum = getNumber(menuTimeout); //x second timeout
         if (newNum < 0 || newNum > 3)
@@ -2752,6 +2755,18 @@ void menuConfigure_ISM330DHCX(void *configPtr)
       }        
       else if (incoming == 6)
       {
+        SerialPrintln(F("OFF   : 0"));
+        SerialPrintln(F("12.5Hz: 1"));
+        SerialPrintln(F("26Hz  : 2"));
+        SerialPrintln(F("52Hz  : 3"));
+        SerialPrintln(F("104Hz : 4"));
+        SerialPrintln(F("208Hz : 5"));
+        SerialPrintln(F("416Hz : 6"));
+        SerialPrintln(F("833Hz : 7"));
+        SerialPrintln(F("1666Hz: 8"));
+        SerialPrintln(F("3332Hz: 9"));
+        SerialPrintln(F("6667Hz: 10"));
+        SerialPrintln(F("1Hz6  : 11"));
         SerialPrint(F("Enter the Accel Rate (0 to 11): "));
         int newNum = getNumber(menuTimeout); //x second timeout
         if (newNum < 0 || newNum > 11)
@@ -2763,7 +2778,30 @@ void menuConfigure_ISM330DHCX(void *configPtr)
         sensorSetting->accelFilterLP2 ^= 1;
       else if (incoming == 8)
       {
-        SerialPrint(F("Enter the Accel Slope Filter setting (0 to 0x37): "));
+        SerialPrintln(F("HP_PATH_DISABLE_ON_OUT: 0"));
+        SerialPrintln(F("LP_ODR_DIV_10         : 1"));
+        SerialPrintln(F("LP_ODR_DIV_20         : 2"));
+        SerialPrintln(F("LP_ODR_DIV_45         : 3"));
+        SerialPrintln(F("LP_ODR_DIV_100        : 4"));
+        SerialPrintln(F("LP_ODR_DIV_200        : 5"));
+        SerialPrintln(F("LP_ODR_DIV_400        : 6"));
+        SerialPrintln(F("LP_ODR_DIV_800        : 7"));
+        SerialPrintln(F("SLOPE_ODR_DIV_4       : 16"));
+        SerialPrintln(F("HP_ODR_DIV_10         : 17"));
+        SerialPrintln(F("HP_ODR_DIV_20         : 18"));
+        SerialPrintln(F("HP_ODR_DIV_45         : 19"));
+        SerialPrintln(F("HP_ODR_DIV_100        : 20"));
+        SerialPrintln(F("HP_ODR_DIV_200        : 21"));
+        SerialPrintln(F("HP_ODR_DIV_400        : 22"));
+        SerialPrintln(F("HP_ODR_DIV_800        : 23"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_10  : 49"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_20  : 50"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_45  : 51"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_100 : 52"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_200 : 53"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_400 : 54"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_800 : 55"));
+        SerialPrint(F("Enter the Accel Slope Filter setting (0 to 55): "));
         int newNum = getNumber(menuTimeout); //x second timeout
         if (newNum < 0 || newNum > 55)
           SerialPrintln(F("Error: Out of range"));
@@ -2772,6 +2810,12 @@ void menuConfigure_ISM330DHCX(void *configPtr)
       }        
       else if (incoming == 9)
       {
+        SerialPrintln(F("125dps : 2"));
+        SerialPrintln(F("250dps : 0"));
+        SerialPrintln(F("500dps : 4"));
+        SerialPrintln(F("1000dps: 8"));
+        SerialPrintln(F("2000dps: 12"));
+        SerialPrintln(F("4000dps: 1"));
         SerialPrint(F("Enter the Gyro Full Scale (0 to 12): "));
         int newNum = getNumber(menuTimeout); //x second timeout
         if (newNum < 0 || newNum > 12)
@@ -2781,6 +2825,17 @@ void menuConfigure_ISM330DHCX(void *configPtr)
       }        
       else if (incoming == 10)
       {
+        SerialPrintln(F("OFF   : 0"));
+        SerialPrintln(F("12Hz  : 1"));
+        SerialPrintln(F("26Hz  : 2"));
+        SerialPrintln(F("52Hz  : 3"));
+        SerialPrintln(F("104Hz : 4"));
+        SerialPrintln(F("208Hz : 5"));
+        SerialPrintln(F("416Hz : 6"));
+        SerialPrintln(F("833Hz : 7"));
+        SerialPrintln(F("1666Hz: 8"));
+        SerialPrintln(F("3332Hz: 9"));
+        SerialPrintln(F("6667Hz: 10"));
         SerialPrint(F("Enter the Gyro Rate (0 to 10): "));
         int newNum = getNumber(menuTimeout); //x second timeout
         if (newNum < 0 || newNum > 10)
@@ -2792,7 +2847,15 @@ void menuConfigure_ISM330DHCX(void *configPtr)
         sensorSetting->gyroFilterLP1 ^= 1;
       else if (incoming == 12)
       {
-        SerialPrint(F("Enter the Gyro LP1 Bandwidth (0 to 7): "));
+        SerialPrintln(F("ULTRA_LIGHT: 0"));
+        SerialPrintln(F("VERY_LIGHT : 1"));
+        SerialPrintln(F("LIGHT      : 2"));
+        SerialPrintln(F("MEDIUM     : 3"));
+        SerialPrintln(F("STRONG     : 4"));
+        SerialPrintln(F("VERY_STRONG: 5"));
+        SerialPrintln(F("AGGRESSIVE : 6"));
+        SerialPrintln(F("XTREME     : 7"));
+        SerialPrintln(F("Enter the Gyro LP1 Bandwidth (0 to 7): "));
         int newNum = getNumber(menuTimeout); //x second timeout
         if (newNum < 0 || newNum > 7)
           SerialPrintln(F("Error: Out of range"));
