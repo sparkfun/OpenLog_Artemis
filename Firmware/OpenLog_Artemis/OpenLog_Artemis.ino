@@ -30,7 +30,7 @@
   (done) Change settings extension to txt
   (done) Fix max I2C speed to use linked list
   Currently device settings are not recorded to EEPROM, only deviceSettings.txt
-  Is there a better way to dynamically create size of outputData array so we don't ever get larger than X sensors outputting?
+  Is there a better way to dynamically create size of sdOutputData array so we don't ever get larger than X sensors outputting?
   Find way to store device configs into EEPROM
   Log four pressure sensors and graph them on plotter
   (checked) Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
@@ -144,6 +144,7 @@
   v2.5:
     Add Tony Whipple's PR #146 - thank you @whipple63
     Add support for the ISM330DHCX and MMC5983MA
+    Add KX134 and ADS1015
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -315,6 +316,8 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFun_Bio_Sensor_Hub_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Bio_Sensor
 #include "SparkFun_ISM330DHCX.h" // Click here to get the library: http://librarymanager/All#SparkFun_6DoF_ISM330DHCX
 #include "SparkFun_MMC5983MA_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
+#include "SparkFun_ADS1015_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_ADS1015
+#include "SparkFun_KX13X.h" //Click here to get the library: http://librarymanager/All#SparkFun_KX13X
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -324,7 +327,7 @@ uint64_t measurementStartTime; //Used to calc the actual update rate. Max is ~80
 uint64_t lastSDFileNameChangeTime; //Used to calculate the interval since the last SD filename change
 unsigned long measurementCount = 0; //Used to calc the actual update rate.
 unsigned long measurementTotal = 0; //The total number of recorded measurements. (Doesn't get reset when the menu is opened)
-char outputData[512 * 2]; //Factor of 512 for easier recording to SD in 512 chunks
+char sdOutputData[512 * 2]; //Factor of 512 for easier recording to SD in 512 chunks
 unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
 unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
@@ -717,26 +720,26 @@ void loop() {
     }
 #endif
 
-    getData(outputData, sizeof(outputData)); //Query all enabled sensors for data
+    getData(sdOutputData, sizeof(sdOutputData)); //Query all enabled sensors for data
 
     //Print to terminal
     if (settings.enableTerminalOutput == true)
-      SerialPrint(outputData); //Print to terminal
+      SerialPrint(sdOutputData); //Print to terminal
 
     //Output to TX pin
     if ((settings.outputSerial == true) && (online.serialOutput == true))
-      Serial1.print(outputData); //Print to TX pin
+      Serial1.print(sdOutputData); //Print to TX pin
 
     //Record to SD
     if ((settings.logData == true) && (online.microSD))
     {
       digitalWrite(PIN_STAT_LED, HIGH);
-      uint32_t recordLength = sensorDataFile.write(outputData, strlen(outputData));
-      if (recordLength != strlen(outputData)) //Record the buffer to the card
+      uint32_t recordLength = sensorDataFile.write(sdOutputData, strlen(sdOutputData));
+      if (recordLength != strlen(sdOutputData)) //Record the buffer to the card
       {
         if (settings.printDebugMessages == true)
         {
-          SerialPrintf3("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\r\n", recordLength, strlen(outputData));
+          SerialPrintf3("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\r\n", recordLength, strlen(sdOutputData));
         }
       }
 

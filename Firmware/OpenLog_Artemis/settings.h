@@ -30,6 +30,8 @@ typedef enum
   DEVICE_BIO_SENSOR_HUB,
   DEVICE_ISM330DHCX,
   DEVICE_MMC5983MA,
+  DEVICE_KX134,
+  DEVICE_ADS1015,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -349,6 +351,37 @@ struct struct_MMC5983MA {
   bool log = true;
   bool logMag = true;
   bool logTemperature = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_KX134 {
+  bool log = true;
+  bool logAccel = true;
+  bool logDataReady = true;
+  bool range8G = false;
+  bool range16G = false;
+  bool range32G = false;
+  bool range64G = true;
+  bool highSpeed = false;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_ADS1015 {
+  bool log = true;
+  bool logA0 = true;
+  bool logA1 = true;
+  bool logA2 = true;
+  bool logA3 = true;
+  bool logA0A1 = false;
+  bool logA0A3 = false;
+  bool logA1A3 = false;
+  bool logA2A3 = false;
+  bool gain23 = false;
+  bool gain1 = true;
+  bool gain2 = false;
+  bool gain4 = false;
+  bool gain8 = false;
+  bool gain16 = false;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

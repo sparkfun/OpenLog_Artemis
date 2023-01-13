@@ -5,7 +5,7 @@ v2.5:
 ---------
 
 * Add Tony Whipple's PR #146 - thank you @whipple63
-* Add support for the ISM330DHCX and MMC5983MA
+* Add support for the ISM330DHCX, MMC5983MA, KX134 and ADS1015
 
 v2.4:
 ---------

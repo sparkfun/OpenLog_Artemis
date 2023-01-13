@@ -68,6 +68,14 @@ This document summarizes the units used for each sensor measurement.
 
 - [MMC5983MA magnetometer](#MMC5983MA-Magnetometer)
 
+### Accelerometer:
+
+- [KX134 accelerometer](#KX134-accelerometer)
+
+### ADC:
+
+- [ADS1015 ADC](#ADS1015-ADC)
+
 ---
 ## Sensor Units
 
@@ -384,4 +392,18 @@ Extended status:
 |---|---|---|
 | Magnetometer | mX,mY,mZ | Gauss |
 | Temperature | degC | Degrees Centigrade |
+
+---
+## KX134 Accelerometer
+
+| []() | | |
+|---|---|---|
+| Accelerometer | aX,aY,aZ | g |
+
+---
+## ADS1015 ADC
+
+| []() | | |
+|---|---|---|
+| Voltage | A0mV,A1mV,A2mV,A3mV,A0A1mV,A0A3mV,A1A3mV,A2A3mV | milliVolts |
 

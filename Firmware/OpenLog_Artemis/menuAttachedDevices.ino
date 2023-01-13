@@ -363,6 +363,12 @@ void menuAttachedDevices()
           case DEVICE_MMC5983MA:
             SerialPrintf3("%s MMC5983MA Magnetometer %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_KX134:
+            SerialPrintf3("%s KX134 Accelerometer %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_ADS1015:
+            SerialPrintf3("%s ADS1015 ADC %s\r\n", strDeviceMenu, strAddress);
+            break;
           default:
             SerialPrintf2("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
             break;
@@ -2766,6 +2772,262 @@ void menuConfigure_MMC5983MA(void *configPtr)
         sensorSetting->logMag ^= 1;
       else if (incoming == 3)
         sensorSetting->logTemperature ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_KX134(void *configPtr)
+{
+  struct_KX134 *sensorSetting = (struct_KX134 *)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure KX134 Accelerometer"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Range 8G: "));
+      if (sensorSetting->range8G == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Range 16G: "));
+      if (sensorSetting->range16G == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Range 32G: "));
+      if (sensorSetting->range32G == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("5) Range 64G: "));
+      if (sensorSetting->range64G == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("6) High Speed (400Hz): "));
+      if (sensorSetting->highSpeed == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+      {
+        sensorSetting->range8G = true;
+        sensorSetting->range16G = false;
+        sensorSetting->range32G = false;
+        sensorSetting->range64G = false;
+      }
+      else if (incoming == 3)
+      {
+        sensorSetting->range8G = false;
+        sensorSetting->range16G = true;
+        sensorSetting->range32G = false;
+        sensorSetting->range64G = false;
+      }
+      else if (incoming == 3)
+      {
+        sensorSetting->range8G = false;
+        sensorSetting->range16G = false;
+        sensorSetting->range32G = true;
+        sensorSetting->range64G = false;
+      }
+      else if (incoming == 5)
+      {
+        sensorSetting->range8G = false;
+        sensorSetting->range16G = false;
+        sensorSetting->range32G = false;
+        sensorSetting->range64G = true;
+      }
+      else if (incoming == 6)
+        sensorSetting->highSpeed ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_ADS1015(void *configPtr)
+{
+  struct_ADS1015 *sensorSetting = (struct_ADS1015 *)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure ADS1015 ADC"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log A0: "));
+      if (sensorSetting->logA0 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log A1: "));
+      if (sensorSetting->logA1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Log A2: "));
+      if (sensorSetting->logA2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("5) Log A3: "));
+      if (sensorSetting->logA3 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("6) Log A0-A1: "));
+      if (sensorSetting->logA0A1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("7) Log A0-A3: "));
+      if (sensorSetting->logA0A3 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("8) Log A1-A3: "));
+      if (sensorSetting->logA1A3 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("9) Log A2-A3: "));
+      if (sensorSetting->logA2A3 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("10) Gain x2/3: "));
+      if (sensorSetting->gain23 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("11) Gain x1: "));
+      if (sensorSetting->gain1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("12) Gain x2: "));
+      if (sensorSetting->gain2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("13) Gain x4: "));
+      if (sensorSetting->gain4 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("14) Gain x8: "));
+      if (sensorSetting->gain8 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("15) Gain x16: "));
+      if (sensorSetting->gain16 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logA0 ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logA1 ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logA2 ^= 1;
+      else if (incoming == 5)
+        sensorSetting->logA3 ^= 1;
+      else if (incoming == 6)
+        sensorSetting->logA0A1 ^= 1;
+      else if (incoming == 7)
+        sensorSetting->logA0A3 ^= 1;
+      else if (incoming == 8)
+        sensorSetting->logA1A3 ^= 1;
+      else if (incoming == 9)
+        sensorSetting->logA2A3 ^= 1;
+      else if (incoming == 10)
+      {
+        sensorSetting->gain23 = true;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 11)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = true;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 12)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = true;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 13)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = true;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 14)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = true;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 15)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = true;
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

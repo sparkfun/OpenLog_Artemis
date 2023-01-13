@@ -800,6 +800,39 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
           }
           break;
+        case DEVICE_KX134:
+          {
+            struct_KX134 *nodeSetting = (struct_KX134 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logAccel=" + nodeSetting->logAccel);
+            settingsFile.println((String)base + "logDataReady=" + nodeSetting->logDataReady);
+            settingsFile.println((String)base + "range8G=" + nodeSetting->range8G);
+            settingsFile.println((String)base + "range16G=" + nodeSetting->range16G);
+            settingsFile.println((String)base + "range32G=" + nodeSetting->range32G);
+            settingsFile.println((String)base + "range64G=" + nodeSetting->range64G);
+            settingsFile.println((String)base + "highSpeed=" + nodeSetting->highSpeed);
+          }
+          break;
+        case DEVICE_ADS1015:
+          {
+            struct_ADS1015 *nodeSetting = (struct_ADS1015 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logA0=" + nodeSetting->logA0);
+            settingsFile.println((String)base + "logA1=" + nodeSetting->logA1);
+            settingsFile.println((String)base + "logA2=" + nodeSetting->logA2);
+            settingsFile.println((String)base + "logA3=" + nodeSetting->logA3);
+            settingsFile.println((String)base + "logA0A1=" + nodeSetting->logA0A1);
+            settingsFile.println((String)base + "logA0A3=" + nodeSetting->logA0A3);
+            settingsFile.println((String)base + "logA1A3=" + nodeSetting->logA1A3);
+            settingsFile.println((String)base + "logA2A3=" + nodeSetting->logA2A3);
+            settingsFile.println((String)base + "gain23=" + nodeSetting->gain23);
+            settingsFile.println((String)base + "gain1=" + nodeSetting->gain1);
+            settingsFile.println((String)base + "gain2=" + nodeSetting->gain2);
+            settingsFile.println((String)base + "gain4=" + nodeSetting->gain4);
+            settingsFile.println((String)base + "gain8=" + nodeSetting->gain8);
+            settingsFile.println((String)base + "gain16=" + nodeSetting->gain16);
+          }
+          break;
         default:
           SerialPrintf2("recordSettingsToFile Unknown device: %s\r\n", base);
           //settingsFile.println((String)base + "=UnknownDeviceSettings");
@@ -1447,6 +1480,66 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logMag = d;
           else if (strcmp(deviceSettingName, "logTemperature") == 0)
             nodeSetting->logTemperature = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_KX134:
+        {
+          struct_KX134 *nodeSetting = (struct_KX134 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logAccel") == 0)
+            nodeSetting->logAccel = d;
+          else if (strcmp(deviceSettingName, "logDataReady") == 0)
+            nodeSetting->logDataReady = d;
+          else if (strcmp(deviceSettingName, "range8G") == 0)
+            nodeSetting->range8G = d;
+          else if (strcmp(deviceSettingName, "range16G") == 0)
+            nodeSetting->range16G = d;
+          else if (strcmp(deviceSettingName, "range32G") == 0)
+            nodeSetting->range32G = d;
+          else if (strcmp(deviceSettingName, "range64G") == 0)
+            nodeSetting->range64G = d;
+          else if (strcmp(deviceSettingName, "highSpeed") == 0)
+            nodeSetting->highSpeed = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_ADS1015:
+        {
+          struct_ADS1015 *nodeSetting = (struct_ADS1015 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logA0") == 0)
+            nodeSetting->logA0 = d;
+          else if (strcmp(deviceSettingName, "logA1") == 0)
+            nodeSetting->logA1 = d;
+          else if (strcmp(deviceSettingName, "logA2") == 0)
+            nodeSetting->logA2 = d;
+          else if (strcmp(deviceSettingName, "logA3") == 0)
+            nodeSetting->logA3 = d;
+          else if (strcmp(deviceSettingName, "logA0A1") == 0)
+            nodeSetting->logA0A1 = d;
+          else if (strcmp(deviceSettingName, "logA0A3") == 0)
+            nodeSetting->logA0A3 = d;
+          else if (strcmp(deviceSettingName, "logA1A3") == 0)
+            nodeSetting->logA1A3 = d;
+          else if (strcmp(deviceSettingName, "logA2A3") == 0)
+            nodeSetting->logA2A3 = d;
+          else if (strcmp(deviceSettingName, "gain23") == 0)
+            nodeSetting->gain23 = d;
+          else if (strcmp(deviceSettingName, "gain1") == 0)
+            nodeSetting->gain1 = d;
+          else if (strcmp(deviceSettingName, "gain2") == 0)
+            nodeSetting->gain2 = d;
+          else if (strcmp(deviceSettingName, "gain4") == 0)
+            nodeSetting->gain4 = d;
+          else if (strcmp(deviceSettingName, "gain8") == 0)
+            nodeSetting->gain8 = d;
+          else if (strcmp(deviceSettingName, "gain16") == 0)
+            nodeSetting->gain16 = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
