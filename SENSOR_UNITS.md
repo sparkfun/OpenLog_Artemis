@@ -60,6 +60,22 @@ This document summarizes the units used for each sensor measurement.
 
 - [Pulse Oximeter and Heart Rate Sensor](#Pulse-Oximeter)
 
+### Inertial Measurement Unit:
+
+- [ISM330DHCX IMU](#ISM330DHCX-IMU)
+
+### Magnetometer:
+
+- [MMC5983MA magnetometer](#MMC5983MA-Magnetometer)
+
+### Accelerometer:
+
+- [KX134 accelerometer](#KX134-accelerometer)
+
+### ADC:
+
+- [ADS1015 ADC](#ADS1015-ADC)
+
 ---
 ## Sensor Units
 
@@ -360,3 +376,34 @@ Extended status:
 -4: Pressing too hard  
 -5: Object other than finger detected  
 -6: Excessive finger motion  
+
+---
+## ISM330DHCX IMU
+
+| []() | | |
+|---|---|---|
+| Accelerometer | aX,aY,aZ | milli g |
+| Gyro | gX,gY,gZ | milli Degrees per Second |
+
+---
+## MMC5983MA Magnetometer
+
+| []() | | |
+|---|---|---|
+| Magnetometer | mX,mY,mZ | Gauss |
+| Temperature | degC | Degrees Centigrade |
+
+---
+## KX134 Accelerometer
+
+| []() | | |
+|---|---|---|
+| Accelerometer | aX,aY,aZ | g |
+
+---
+## ADS1015 ADC
+
+| []() | | |
+|---|---|---|
+| Voltage | A0mV,A1mV,A2mV,A3mV,A0A1mV,A0A3mV,A1A3mV,A2A3mV | milliVolts |
+

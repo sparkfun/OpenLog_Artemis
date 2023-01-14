@@ -201,10 +201,12 @@ int count_files(int *file_count, long *byte_count)
   return 0;
 }
 
-void sdCardMenu(void)
+void sdCardMenu(int numberOfSeconds)
 {
   sdCardHelp(); // Display the help
   
+  unsigned long startTime = millis();
+
   bool keepGoing = true;
   
   while (keepGoing)
@@ -221,6 +223,7 @@ void sdCardMenu(void)
     {
       if (DSERIAL->available() > 0)
       {
+        startTime = millis(); // reset the start time if we receive a char
         c = DSERIAL->read();
         if ((c == 8 or c == 127) && strlen(cmd) > 0) cmd[strlen(cmd)-1] = 0;
         if (c == '\n' || c == '\r') break;
@@ -236,6 +239,11 @@ void sdCardMenu(void)
         // from Serial
         checkBattery();
         delay(1);
+        if ( (millis() - startTime) / 1000 >= numberOfSeconds)
+        {
+          SerialPrintln(F("No user input received."));
+          return;
+        }        
       }
     }
      
@@ -459,5 +467,7 @@ void sdCardMenu(void)
     {
       keepGoing = false;
     }
+    
+    startTime = millis(); // reset the start time after commanded action completes
   }
 }

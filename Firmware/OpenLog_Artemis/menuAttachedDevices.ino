@@ -357,6 +357,18 @@ void menuAttachedDevices()
           case DEVICE_BIO_SENSOR_HUB:
             SerialPrintf3("%s Bio Sensor Pulse Oximeter %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_ISM330DHCX:
+            SerialPrintf3("%s ISM330DHCX IMU %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_MMC5983MA:
+            SerialPrintf3("%s MMC5983MA Magnetometer %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_KX134:
+            SerialPrintf3("%s KX134 Accelerometer %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_ADS1015:
+            SerialPrintf3("%s ADS1015 ADC %s\r\n", strDeviceMenu, strAddress);
+            break;
           default:
             SerialPrintf2("Unknown device type %d in menuAttachedDevices\r\n", temp->deviceType);
             break;
@@ -2463,25 +2475,29 @@ void menuConfigure_MS5837(void *configPtr)
 
     if (sensorSetting->log == true)
     {
+      char tempStr[16];
+      
       SerialPrint(F("2) Log Pressure: "));
       if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-
+      
       SerialPrint(F("3) Log Temperature: "));
       if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-
+      
       SerialPrint(F("4) Log Depth: "));
       if (sensorSetting->logDepth == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-  
+      
       SerialPrint(F("5) Log Altitude: "));
       if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
       
-      SerialPrintf2("6) Fluid Density (kg/m^3): %f\r\n", sensorSetting->fluidDensity);
-  
-      SerialPrintf2("7) Pressure Conversion Factor: %.02f\r\n", sensorSetting->conversion);
+      olaftoa(sensorSetting->fluidDensity, tempStr, 1, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("6) Fluid Density (kg/m^3): %s\r\n", tempStr);
+      
+      olaftoa(sensorSetting->conversion, tempStr, 3, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("7) Pressure Conversion Factor: %s\r\n", tempStr);
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2654,6 +2670,505 @@ void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
         sensorSetting->logExtendedStatus ^= 1;
       else if (incoming == 7)
         sensorSetting->logRValue ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_ISM330DHCX(void *configPtr)
+{
+  struct_ISM330DHCX *sensorSetting = (struct_ISM330DHCX *)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure ISM330DHCX IMU"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Accelerometer: "));
+      if (sensorSetting->logAccel == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Gyro: "));
+      if (sensorSetting->logGyro == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("4) Log Data Ready: "));
+      if (sensorSetting->logDataReady == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrintf2("5) Accel Scale: %d\r\n", sensorSetting->accelScale);
+      SerialPrintf2("6) Accel Rate: %d\r\n", sensorSetting->accelRate);
+      SerialPrint(F("7) Accel Filter LP2: "));
+      if (sensorSetting->accelFilterLP2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      SerialPrintf2("8) Accel Slope Filter: %d\r\n", sensorSetting->accelSlopeFilter);
+      SerialPrintf2("9) Gyro Scale: %d\r\n", sensorSetting->gyroScale);
+      SerialPrintf2("10) Gyro Rate: %d\r\n", sensorSetting->gyroRate);
+      SerialPrint(F("11) Gyro Filter LP1: "));
+      if (sensorSetting->gyroFilterLP1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      SerialPrintf2("12) Gyro LP1 Bandwidth: %d\r\n", sensorSetting->gyroLP1BW);   
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logAccel ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logGyro ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logDataReady ^= 1;
+      else if (incoming == 5)
+      {
+        SerialPrintln(F("2g : 0"));
+        SerialPrintln(F("16g: 1"));
+        SerialPrintln(F("4g : 2"));
+        SerialPrintln(F("8g : 3"));
+        SerialPrint(F("Enter the Accel Full Scale (0 to 3): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 3)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->accelScale = newNum;
+      }        
+      else if (incoming == 6)
+      {
+        SerialPrintln(F("OFF   : 0"));
+        SerialPrintln(F("12.5Hz: 1"));
+        SerialPrintln(F("26Hz  : 2"));
+        SerialPrintln(F("52Hz  : 3"));
+        SerialPrintln(F("104Hz : 4"));
+        SerialPrintln(F("208Hz : 5"));
+        SerialPrintln(F("416Hz : 6"));
+        SerialPrintln(F("833Hz : 7"));
+        SerialPrintln(F("1666Hz: 8"));
+        SerialPrintln(F("3332Hz: 9"));
+        SerialPrintln(F("6667Hz: 10"));
+        SerialPrintln(F("1Hz6  : 11"));
+        SerialPrint(F("Enter the Accel Rate (0 to 11): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 11)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->accelRate = newNum;
+      }        
+      else if (incoming == 7)
+        sensorSetting->accelFilterLP2 ^= 1;
+      else if (incoming == 8)
+      {
+        SerialPrintln(F("HP_PATH_DISABLE_ON_OUT: 0"));
+        SerialPrintln(F("LP_ODR_DIV_10         : 1"));
+        SerialPrintln(F("LP_ODR_DIV_20         : 2"));
+        SerialPrintln(F("LP_ODR_DIV_45         : 3"));
+        SerialPrintln(F("LP_ODR_DIV_100        : 4"));
+        SerialPrintln(F("LP_ODR_DIV_200        : 5"));
+        SerialPrintln(F("LP_ODR_DIV_400        : 6"));
+        SerialPrintln(F("LP_ODR_DIV_800        : 7"));
+        SerialPrintln(F("SLOPE_ODR_DIV_4       : 16"));
+        SerialPrintln(F("HP_ODR_DIV_10         : 17"));
+        SerialPrintln(F("HP_ODR_DIV_20         : 18"));
+        SerialPrintln(F("HP_ODR_DIV_45         : 19"));
+        SerialPrintln(F("HP_ODR_DIV_100        : 20"));
+        SerialPrintln(F("HP_ODR_DIV_200        : 21"));
+        SerialPrintln(F("HP_ODR_DIV_400        : 22"));
+        SerialPrintln(F("HP_ODR_DIV_800        : 23"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_10  : 49"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_20  : 50"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_45  : 51"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_100 : 52"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_200 : 53"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_400 : 54"));
+        SerialPrintln(F("HP_REF_MD_ODR_DIV_800 : 55"));
+        SerialPrint(F("Enter the Accel Slope Filter setting (0 to 55): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 55)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->accelSlopeFilter = newNum;
+      }        
+      else if (incoming == 9)
+      {
+        SerialPrintln(F("125dps : 2"));
+        SerialPrintln(F("250dps : 0"));
+        SerialPrintln(F("500dps : 4"));
+        SerialPrintln(F("1000dps: 8"));
+        SerialPrintln(F("2000dps: 12"));
+        SerialPrintln(F("4000dps: 1"));
+        SerialPrint(F("Enter the Gyro Full Scale (0 to 12): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 12)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->gyroScale = newNum;
+      }        
+      else if (incoming == 10)
+      {
+        SerialPrintln(F("OFF   : 0"));
+        SerialPrintln(F("12Hz  : 1"));
+        SerialPrintln(F("26Hz  : 2"));
+        SerialPrintln(F("52Hz  : 3"));
+        SerialPrintln(F("104Hz : 4"));
+        SerialPrintln(F("208Hz : 5"));
+        SerialPrintln(F("416Hz : 6"));
+        SerialPrintln(F("833Hz : 7"));
+        SerialPrintln(F("1666Hz: 8"));
+        SerialPrintln(F("3332Hz: 9"));
+        SerialPrintln(F("6667Hz: 10"));
+        SerialPrint(F("Enter the Gyro Rate (0 to 10): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 10)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->gyroRate = newNum;
+      }        
+      else if (incoming == 11)
+        sensorSetting->gyroFilterLP1 ^= 1;
+      else if (incoming == 12)
+      {
+        SerialPrintln(F("ULTRA_LIGHT: 0"));
+        SerialPrintln(F("VERY_LIGHT : 1"));
+        SerialPrintln(F("LIGHT      : 2"));
+        SerialPrintln(F("MEDIUM     : 3"));
+        SerialPrintln(F("STRONG     : 4"));
+        SerialPrintln(F("VERY_STRONG: 5"));
+        SerialPrintln(F("AGGRESSIVE : 6"));
+        SerialPrintln(F("XTREME     : 7"));
+        SerialPrintln(F("Enter the Gyro LP1 Bandwidth (0 to 7): "));
+        int newNum = getNumber(menuTimeout); //x second timeout
+        if (newNum < 0 || newNum > 7)
+          SerialPrintln(F("Error: Out of range"));
+        else
+          sensorSetting->gyroLP1BW = newNum;
+      }        
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_MMC5983MA(void *configPtr)
+{
+  struct_MMC5983MA *sensorSetting = (struct_MMC5983MA *)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure MMC5983MA Magnetometer"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Magnetometer: "));
+      if (sensorSetting->logMag == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logMag ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logTemperature ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_KX134(void *configPtr)
+{
+  struct_KX134 *sensorSetting = (struct_KX134 *)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure KX134 Accelerometer"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Range 8G: "));
+      if (sensorSetting->range8G == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Range 16G: "));
+      if (sensorSetting->range16G == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Range 32G: "));
+      if (sensorSetting->range32G == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("5) Range 64G: "));
+      if (sensorSetting->range64G == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("6) High Speed (400Hz): "));
+      if (sensorSetting->highSpeed == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+      {
+        sensorSetting->range8G = true;
+        sensorSetting->range16G = false;
+        sensorSetting->range32G = false;
+        sensorSetting->range64G = false;
+      }
+      else if (incoming == 3)
+      {
+        sensorSetting->range8G = false;
+        sensorSetting->range16G = true;
+        sensorSetting->range32G = false;
+        sensorSetting->range64G = false;
+      }
+      else if (incoming == 3)
+      {
+        sensorSetting->range8G = false;
+        sensorSetting->range16G = false;
+        sensorSetting->range32G = true;
+        sensorSetting->range64G = false;
+      }
+      else if (incoming == 5)
+      {
+        sensorSetting->range8G = false;
+        sensorSetting->range16G = false;
+        sensorSetting->range32G = false;
+        sensorSetting->range64G = true;
+      }
+      else if (incoming == 6)
+        sensorSetting->highSpeed ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
+
+void menuConfigure_ADS1015(void *configPtr)
+{
+  struct_ADS1015 *sensorSetting = (struct_ADS1015 *)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure ADS1015 ADC"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log A0: "));
+      if (sensorSetting->logA0 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log A1: "));
+      if (sensorSetting->logA1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Log A2: "));
+      if (sensorSetting->logA2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("5) Log A3: "));
+      if (sensorSetting->logA3 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("6) Log A0-A1: "));
+      if (sensorSetting->logA0A1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("7) Log A0-A3: "));
+      if (sensorSetting->logA0A3 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("8) Log A1-A3: "));
+      if (sensorSetting->logA1A3 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("9) Log A2-A3: "));
+      if (sensorSetting->logA2A3 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("10) Gain x2/3: "));
+      if (sensorSetting->gain23 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("11) Gain x1: "));
+      if (sensorSetting->gain1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("12) Gain x2: "));
+      if (sensorSetting->gain2 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("13) Gain x4: "));
+      if (sensorSetting->gain4 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("14) Gain x8: "));
+      if (sensorSetting->gain8 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+      SerialPrint(F("15) Gain x16: "));
+      if (sensorSetting->gain16 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+      
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logA0 ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logA1 ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logA2 ^= 1;
+      else if (incoming == 5)
+        sensorSetting->logA3 ^= 1;
+      else if (incoming == 6)
+        sensorSetting->logA0A1 ^= 1;
+      else if (incoming == 7)
+        sensorSetting->logA0A3 ^= 1;
+      else if (incoming == 8)
+        sensorSetting->logA1A3 ^= 1;
+      else if (incoming == 9)
+        sensorSetting->logA2A3 ^= 1;
+      else if (incoming == 10)
+      {
+        sensorSetting->gain23 = true;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 11)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = true;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 12)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = true;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 13)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = true;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 14)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = true;
+        sensorSetting->gain16 = false;
+      }
+      else if (incoming == 15)
+      {
+        sensorSetting->gain23 = false;
+        sensorSetting->gain1 = false;
+        sensorSetting->gain2 = false;
+        sensorSetting->gain4 = false;
+        sensorSetting->gain8 = false;
+        sensorSetting->gain16 = true;
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)

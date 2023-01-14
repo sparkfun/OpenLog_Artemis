@@ -267,6 +267,30 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_BIO_SENSOR_HUB;
       }
       break;
+    case DEVICE_ISM330DHCX:
+      {
+        temp->classPtr = new SparkFun_ISM330DHCX;
+        temp->configPtr = new struct_ISM330DHCX;
+      }
+      break;
+    case DEVICE_MMC5983MA:
+      {
+        temp->classPtr = new SFE_MMC5983MA;
+        temp->configPtr = new struct_MMC5983MA;
+      }
+      break;
+    case DEVICE_KX134:
+      {
+        temp->classPtr = new SparkFun_KX134;
+        temp->configPtr = new struct_KX134;
+      }
+      break;
+    case DEVICE_ADS1015:
+      {
+        temp->classPtr = new ADS1015;
+        temp->configPtr = new struct_ADS1015;
+      }
+      break;
     default:
       SerialPrintf2("addDevice Device type not found: %d\r\n", deviceType);
       break;
@@ -543,6 +567,42 @@ bool beginQwiicDevices()
           struct_BIO_SENSOR_HUB *nodeSetting = (struct_BIO_SENSOR_HUB *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           if (tempDevice->begin(qwiic) == 0x00) //Wire port. Returns 0x00 on success.
+            temp->online = true;
+        }
+        break;
+      case DEVICE_ISM330DHCX:
+        {
+          SparkFun_ISM330DHCX *tempDevice = (SparkFun_ISM330DHCX *)temp->classPtr;
+          struct_ISM330DHCX *nodeSetting = (struct_ISM330DHCX *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic, temp->address)) //Wire port, address
+            temp->online = true;
+        }
+        break;
+      case DEVICE_MMC5983MA:
+        {
+          SFE_MMC5983MA *tempDevice = (SFE_MMC5983MA *)temp->classPtr;
+          struct_MMC5983MA *nodeSetting = (struct_MMC5983MA *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic)) //Wire port
+            temp->online = true;
+        }
+        break;
+      case DEVICE_KX134:
+        {
+          SparkFun_KX134 *tempDevice = (SparkFun_KX134 *)temp->classPtr;
+          struct_KX134 *nodeSetting = (struct_KX134 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(qwiic, temp->address)) //Wire port, address
+            temp->online = true;
+        }
+        break;
+      case DEVICE_ADS1015:
+        {
+          ADS1015 *tempDevice = (ADS1015 *)temp->classPtr;
+          struct_ADS1015 *nodeSetting = (struct_ADS1015 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (tempDevice->begin(temp->address, qwiic)) //address, Wire port
             temp->online = true;
         }
         break;
@@ -838,6 +898,88 @@ void configureDevice(node * temp)
         sensor->configBpm(MODE_TWO); // MODE_TWO provides the oxygen R value
       }
       break;
+    case DEVICE_ISM330DHCX:
+      {
+        SparkFun_ISM330DHCX *sensor = (SparkFun_ISM330DHCX *)temp->classPtr;
+        struct_ISM330DHCX *sensorSetting = (struct_ISM330DHCX *)temp->configPtr;
+
+        sensor->deviceReset();
+        
+        // Wait for it to finish reseting
+        while( !sensor->getDeviceReset() ){ 
+          delay(1);
+        } 
+
+        sensor->setDeviceConfig();
+        sensor->setBlockDataUpdate();
+        
+        // Set the output data rate and precision of the accelerometer
+        sensor->setAccelDataRate(sensorSetting->accelRate);
+        sensor->setAccelFullScale(sensorSetting->accelScale); 
+      
+        // Turn on the accelerometer's filter and apply settings. 
+        sensor->setAccelFilterLP2(sensorSetting->accelFilterLP2);
+        sensor->setAccelSlopeFilter(sensorSetting->accelSlopeFilter);
+      
+        // Set the output data rate and precision of the gyroscope
+        sensor->setGyroDataRate(sensorSetting->gyroRate);
+        sensor->setGyroFullScale(sensorSetting->gyroScale); 
+      
+        // Turn on the gyroscope's filter and apply settings. 
+        sensor->setGyroFilterLP1(sensorSetting->gyroFilterLP1);
+        sensor->setGyroLP1Bandwidth(sensorSetting->gyroLP1BW);
+      }
+      break;
+    case DEVICE_MMC5983MA:
+      {
+        SFE_MMC5983MA *sensor = (SFE_MMC5983MA *)temp->classPtr;
+        struct_MMC5983MA *sensorSetting = (struct_MMC5983MA *)temp->configPtr;
+
+        sensor->softReset();
+
+        sensor->enableAutomaticSetReset();
+      }
+      break;
+    case DEVICE_KX134:
+      {
+        SparkFun_KX134 *sensor = (SparkFun_KX134 *)temp->classPtr;
+        struct_KX134 *sensorSetting = (struct_KX134 *)temp->configPtr;
+
+        sensor->softwareReset();
+        delay(5);
+        
+        sensor->enableAccel(false); 
+      
+        if (sensorSetting->range8G) sensor->setRange(SFE_KX134_RANGE8G);
+        else if (sensorSetting->range16G) sensor->setRange(SFE_KX134_RANGE16G);
+        else if (sensorSetting->range32G) sensor->setRange(SFE_KX134_RANGE32G);
+        else sensor->setRange(SFE_KX134_RANGE64G);
+      
+        sensor->enableDataEngine();     // Enables the bit that indicates data is ready.
+        
+        if (sensorSetting->highSpeed) sensor->setOutputDataRate(9); // 400Hz
+        else sensor->setOutputDataRate(6); // Default is 50Hz
+        
+        sensor->enableAccel();          
+      }
+      break;
+    case DEVICE_ADS1015:
+      {
+        ADS1015 *sensor = (ADS1015 *)temp->classPtr;
+        struct_ADS1015 *sensorSetting = (struct_ADS1015 *)temp->configPtr;
+
+        if (sensorSetting->gain23) sensor->setGain(ADS1015_CONFIG_PGA_TWOTHIRDS);
+        else if (sensorSetting->gain1) sensor->setGain(ADS1015_CONFIG_PGA_1);
+        else if (sensorSetting->gain2) sensor->setGain(ADS1015_CONFIG_PGA_2);
+        else if (sensorSetting->gain4) sensor->setGain(ADS1015_CONFIG_PGA_4);
+        else if (sensorSetting->gain8) sensor->setGain(ADS1015_CONFIG_PGA_8);
+        else sensor->setGain(ADS1015_CONFIG_PGA_16);
+
+        //sensor->setSampleRate(ADS1015_CONFIG_RATE_490HZ); // Default is 1600Hz
+
+        sensor->useConversionReady(true);
+      }
+      break;
     default:
       SerialPrintf3("configureDevice: Unknown device type %d: %s\r\n", deviceType, getDeviceName((deviceType_e)deviceType));
       break;
@@ -946,6 +1088,18 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_BIO_SENSOR_HUB:
       ptr = (FunctionPointer)menuConfigure_BIO_SENSOR_HUB;
+      break;
+    case DEVICE_ISM330DHCX:
+      ptr = (FunctionPointer)menuConfigure_ISM330DHCX;
+      break;
+    case DEVICE_MMC5983MA:
+      ptr = (FunctionPointer)menuConfigure_MMC5983MA;
+      break;
+    case DEVICE_KX134:
+      ptr = (FunctionPointer)menuConfigure_KX134;
+      break;
+    case DEVICE_ADS1015:
+      ptr = (FunctionPointer)menuConfigure_ADS1015;
       break;
     default:
       SerialPrintln(F("getConfigFunctionPtr: Unknown device type"));
@@ -1076,15 +1230,18 @@ void swap(struct node * a, struct node * b)
 //We no longer use defines in the search table. These are just here for reference.
 #define ADR_VEML6075 0x10
 #define ADR_MPR0025PA1 0x18
+#define ADR_KX134 0x1E //Alternate: 0x1F
 #define ADR_SDP3X 0x21 //Alternates: 0x22, 0x23
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
+#define ADR_MMC5983MA 0x30
 #define ADR_SNGCJA5 0x33
 #define ADR_AHT20 0x38
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
 #define ADR_UBLOX 0x42 //But can be set to any address
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
+#define ADR_ADS1015 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_BIO_SENSOR_HUB 0x55
 #define ADR_SGP30 0x58
 #define ADR_SGP40 0x59
@@ -1093,6 +1250,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_VCNL4040 0x60
 #define ADR_SCD30 0x61
 #define ADR_MCP9600 0x60 //0x60 to 0x67
+#define ADR_ISM330DHCX 0x6A //Alternate: 0x6B
 #define ADR_QWIIC_BUTTON 0x6F //But can be any address... Limit the range to 0x68-0x6F
 #define ADR_MULTIPLEXER 0x70 //0x70 to 0x77
 #define ADR_SHTC3 0x70
@@ -1124,24 +1282,17 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
             return (DEVICE_PRESSURE_MPR0025PA1);
       }
       break;
+    case 0x1E:
+    case 0x1F:
+      {
+        //Confidence: High - reads ID register
+        SparkFun_KX134 sensor;
+        if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, Address
+          return (DEVICE_KX134);
+      }
+      break;
     case 0x21:
-      {
-        //Confidence: High - .begin reads the product ID
-        SDP3X sensor;
-        sensor.stopContinuousMeasurement(i2cAddress, qwiic); //Make sure continuous measurements are stopped or .begin will fail
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_PRESSURE_SDP3X);
-      }
-      break;
     case 0x22:
-      {
-        //Confidence: High - .begin reads the product ID
-        SDP3X sensor;
-        sensor.stopContinuousMeasurement(i2cAddress, qwiic); //Make sure continuous measurements are stopped or .begin will fail
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_PRESSURE_SDP3X);
-      }
-      break;
     case 0x23:
       {
         //Confidence: High - .begin reads the product ID
@@ -1166,6 +1317,14 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         SFEVL53L1X sensor(qwiic); //Start with given wire port
         if (sensor.begin() == 0) //Returns 0 if init was successful. Wire port passed in constructor.
           return (DEVICE_DISTANCE_VL53L1X);
+      }
+      break;
+    case 0x30:
+      {
+        //Confidence: high - reads PROD_ID_REG
+        SFE_MMC5983MA sensor;
+        if (sensor.begin(qwiic) == true) //Wire port
+          return (DEVICE_MMC5983MA);
       }
       break;
     case 0x33:
@@ -1230,35 +1389,19 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       }
       break;
     case 0x48:
-      {
-        //Confidence: High - Checks 16 bit ID
-        TMP117 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_TEMPERATURE_TMP117);
-      }
-      break;
     case 0x49:
-      {
-        //Confidence: High - Checks 16 bit ID
-        TMP117 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_TEMPERATURE_TMP117);
-      }
-      break;
     case 0x4A:
-      {
-        //Confidence: High - Checks 16 bit ID
-        TMP117 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_TEMPERATURE_TMP117);
-      }
-      break;
     case 0x4B:
       {
         //Confidence: High - Checks 16 bit ID
         TMP117 sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_TMP117);
+
+        //Confidence: Low - only does a simple isConnected
+        ADS1015 sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_ADS1015);
       }
       break;
     case 0x55:
@@ -1332,50 +1475,10 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       }
       break;
     case 0x62:
-      {
-        //Always do the MCP9600 first. It's fussy...
-        //Confidence: High - Checks 8bit ID
-        MCP9600 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_TEMPERATURE_MCP9600);
-      }
-      break;
     case 0x63:
-      {
-        //Always do the MCP9600 first. It's fussy...
-        //Confidence: High - Checks 8bit ID
-        MCP9600 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_TEMPERATURE_MCP9600);
-      }
-      break;
     case 0x64:
-      {
-        //Always do the MCP9600 first. It's fussy...
-        //Confidence: High - Checks 8bit ID
-        MCP9600 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_TEMPERATURE_MCP9600);
-      }
-      break;
     case 0x65:
-      {
-        //Always do the MCP9600 first. It's fussy...
-        //Confidence: High - Checks 8bit ID
-        MCP9600 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_TEMPERATURE_MCP9600);
-      }
-      break;
     case 0x66:
-      {
-        //Always do the MCP9600 first. It's fussy...
-        //Confidence: High - Checks 8bit ID
-        MCP9600 sensor;
-        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_TEMPERATURE_MCP9600);
-      }
-      break;
     case 0x67:
       {
         //Always do the MCP9600 first. It's fussy...
@@ -1387,8 +1490,24 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       break;
     case 0x68:
     case 0x69:
+      {
+        QwiicButton sensor;
+        if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_QWIIC_BUTTON);
+      }
+      break;
     case 0x6A:
     case 0x6B:
+      {
+        SparkFun_ISM330DHCX sensor;
+        if (sensor.begin(qwiic, i2cAddress))
+          return(DEVICE_ISM330DHCX);
+          
+        QwiicButton sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_QWIIC_BUTTON);
+      }
+      break;
     case 0x6C:
     case 0x6D:
     case 0x6E:
@@ -1411,29 +1530,9 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       }
       break;
     case 0x71:
-      {
-        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
-        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-      }
-      break;
     case 0x72:
-      {
-        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
-        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-      }
-      break;
     case 0x73:
-      {
-        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
-        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-      }
-      break;
     case 0x74:
-      {
-        //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
-        if (deviceExists(DEVICE_MULTIPLEXER, i2cAddress, muxAddress, portNumber) == true) return (DEVICE_MULTIPLEXER);
-      }
-      break;
     case 0x75:
       {
         //Ignore devices we've already recorded. This was causing the mux to get tested, a begin() would happen, and the mux would be reset.
@@ -1753,6 +1852,18 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_BIO_SENSOR_HUB:
       return "Bio-Sensor-Oximeter";
+      break;
+    case DEVICE_ISM330DHCX:
+      return "IMU-ISM330DHCX";
+      break;
+    case DEVICE_MMC5983MA:
+      return "Mag-MMC5983MA";
+      break;
+    case DEVICE_KX134:
+      return "Accel-KX134";
+      break;
+    case DEVICE_ADS1015:
+      return "ADC-ADS1015";
       break;
 
     case DEVICE_UNKNOWN_DEVICE:

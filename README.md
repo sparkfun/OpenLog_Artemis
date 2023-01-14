@@ -50,7 +50,10 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [ADS122C04 ADC PT100 Sensor](https://www.sparkfun.com/products/16770)
 * [Qwiic Mux](https://www.sparkfun.com/products/16784) allowing for the chaining of up to 64 unique buses!
 * [Pulse Oximeter and Heart Rate Sensor](https://www.sparkfun.com/products/15219) (requires exclusive use of pins 32 and 11)
-* More boards are being added all the time!
+* [ISM330DHCX IMU](https://www.sparkfun.com/products/19764)
+* [MMC5983MA Magnetometer](https://www.sparkfun.com/products/19921)
+* [KX134 Accelerometer](https://www.sparkfun.com/products/17589)
+* [ADS1015 ADC](https://www.sparkfun.com/products/15334)
 
 Very low power logging is supported. OpenLog Artemis can be configured to take readings at 500 times a second, or as slow as 1 reading every 24 hours. You choose! When there is more than 2 seconds between readings OLA will automatically power down itself and the sensors on the bus resulting in a sleep current of approximately 18uA. This means a normal [2Ah battery](https://www.sparkfun.com/products/13855) will enable logging for more than 4,000 days! OpenLog Artemis has built-in LiPo charging set at 450mA/hr.
 

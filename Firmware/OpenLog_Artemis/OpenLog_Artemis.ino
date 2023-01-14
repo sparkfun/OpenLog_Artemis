@@ -1,12 +1,12 @@
 /*
   OpenLog Artemis
-  By: Nathan Seidle
+  By: Nathan Seidle and Paul Clark
   SparkFun Electronics
   Date: November 26th, 2019
-  License: This code is public domain but you buy me a beer if you use this
-  and we meet someday (Beerware license).
+  License: MIT. Please see LICENSE.md for more details.
   Feel like supporting our work? Buy a board from SparkFun!
-  https://www.sparkfun.com/products/15793
+  https://www.sparkfun.com/products/16832
+  https://www.sparkfun.com/products/19426
 
   This firmware runs the OpenLog Artemis. A large variety of system settings can be
   adjusted by connecting at 115200bps.
@@ -30,7 +30,7 @@
   (done) Change settings extension to txt
   (done) Fix max I2C speed to use linked list
   Currently device settings are not recorded to EEPROM, only deviceSettings.txt
-  Is there a better way to dynamically create size of outputData array so we don't ever get larger than X sensors outputting?
+  Is there a better way to dynamically create size of sdOutputData array so we don't ever get larger than X sensors outputting?
   Find way to store device configs into EEPROM
   Log four pressure sensors and graph them on plotter
   (checked) Test GPS - not sure about %d with int32s. Does lat, long, and alt look correct?
@@ -140,11 +140,15 @@
     Add noPowerLossProtection to the main branch
     Add changes by KDB: If we are streaming to Serial, start the stream with a Mime Type marker, followed by CR
     Add debug option to only open the menu using a printable character: based on https://github.com/sparkfun/OpenLog_Artemis/pull/125
-    
+
+  v2.5:
+    Add Tony Whipple's PR #146 - thank you @whipple63
+    Add support for the ISM330DHCX, MMC5983MA, KX134 and ADS1015
+    Resolve issue #87
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 4;
+const int FIRMWARE_VERSION_MINOR = 5;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -154,7 +158,7 @@ const int FIRMWARE_VERSION_MINOR = 4;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x124 // Stored as 292 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x125 // Stored as 293 decimal in OLA_settings.txt
 
 //#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
 
@@ -310,6 +314,10 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "MS5837.h" // Click here to download the library: https://github.com/sparkfunX/BlueRobotics_MS5837_Library
 #include "SparkFun_Qwiic_Button.h" // Click here to get the library: http://librarymanager/All#SparkFun_Qwiic_Button_Switch
 #include "SparkFun_Bio_Sensor_Hub_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_Bio_Sensor
+#include "SparkFun_ISM330DHCX.h" // Click here to get the library: http://librarymanager/All#SparkFun_6DoF_ISM330DHCX
+#include "SparkFun_MMC5983MA_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
+#include "SparkFun_ADS1015_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_ADS1015
+#include "SparkFun_KX13X.h" //Click here to get the library: http://librarymanager/All#SparkFun_KX13X
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -319,7 +327,7 @@ uint64_t measurementStartTime; //Used to calc the actual update rate. Max is ~80
 uint64_t lastSDFileNameChangeTime; //Used to calculate the interval since the last SD filename change
 unsigned long measurementCount = 0; //Used to calc the actual update rate.
 unsigned long measurementTotal = 0; //The total number of recorded measurements. (Doesn't get reset when the menu is opened)
-char outputData[512 * 2]; //Factor of 512 for easier recording to SD in 512 chunks
+char sdOutputData[512 * 2]; //Factor of 512 for easier recording to SD in 512 chunks
 unsigned long lastReadTime = 0; //Used to delay until user wants to record a new reading
 unsigned long lastDataLogSyncTime = 0; //Used to record to SD every half second
 unsigned int totalCharactersPrinted = 0; //Limit output rate based on baud rate and number of characters to print
@@ -327,6 +335,7 @@ bool takeReading = true; //Goes true when enough time has passed between reading
 bool sleepAfterRead = false; //Used to keep the code awake for at least minimumAwakeTimeMillis
 const uint64_t maxUsBeforeSleep = 2000000ULL; //Number of us between readings before sleep is activated.
 const byte menuTimeout = 15; //Menus will exit/timeout after this number of seconds
+const int sdCardMenuTimeout = 60; // sdCard menu will exit/timeout after this number of seconds
 volatile static bool stopLoggingSeen = false; //Flag to indicate if we should stop logging
 uint64_t qwiicPowerOnTime = 0; //Used to delay after Qwiic power on to allow sensors to power on, then answer autodetect
 unsigned long qwiicPowerOnDelayMillis; //Wait for this many milliseconds after turning on the Qwiic power before attempting to communicate with Qwiic devices
@@ -711,26 +720,26 @@ void loop() {
     }
 #endif
 
-    getData(outputData, sizeof(outputData)); //Query all enabled sensors for data
+    getData(sdOutputData, sizeof(sdOutputData)); //Query all enabled sensors for data
 
     //Print to terminal
     if (settings.enableTerminalOutput == true)
-      SerialPrint(outputData); //Print to terminal
+      SerialPrint(sdOutputData); //Print to terminal
 
     //Output to TX pin
     if ((settings.outputSerial == true) && (online.serialOutput == true))
-      Serial1.print(outputData); //Print to TX pin
+      Serial1.print(sdOutputData); //Print to TX pin
 
     //Record to SD
     if ((settings.logData == true) && (online.microSD))
     {
       digitalWrite(PIN_STAT_LED, HIGH);
-      uint32_t recordLength = sensorDataFile.write(outputData, strlen(outputData));
-      if (recordLength != strlen(outputData)) //Record the buffer to the card
+      uint32_t recordLength = sensorDataFile.write(sdOutputData, strlen(sdOutputData));
+      if (recordLength != strlen(sdOutputData)) //Record the buffer to the card
       {
         if (settings.printDebugMessages == true)
         {
-          SerialPrintf3("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\r\n", recordLength, strlen(outputData));
+          SerialPrintf3("*** sensorDataFile.write data length mismatch! *** recordLength: %d, outputDataLength: %d\r\n", recordLength, strlen(sdOutputData));
         }
       }
 
@@ -1164,6 +1173,13 @@ void beginIMU(bool silent)
         SerialPrintln(F("Error: Could not startup the IMU in DMP mode!"));
         success = false;
       }
+
+      int ODR = 0; // Set ODR to 55Hz
+      if (settings.usBetweenReadings >= 500000ULL)
+        ODR = 3; // 17Hz ODR rate when DMP is running at 55Hz
+      if (settings.usBetweenReadings >= 1000000ULL)
+        ODR = 10; // 5Hz ODR rate when DMP is running at 55Hz
+
       if (settings.imuLogDMPQuat6)
       {
         retval = myICM.enableDMPSensor(INV_ICM20948_SENSOR_GAME_ROTATION_VECTOR);
@@ -1172,7 +1188,7 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the Game Rotation Vector (Quat6)!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat6, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat6, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Quat6 ODR!"));
@@ -1187,7 +1203,7 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the Rotation Vector (Quat9)!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat9, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Quat9, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Quat9 ODR!"));
@@ -1202,7 +1218,7 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the DMP Accelerometer!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Accel, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Accel, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Accel ODR!"));
@@ -1217,13 +1233,13 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the DMP Gyroscope!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Gyro ODR!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Gyro Calibr ODR!"));
@@ -1238,13 +1254,13 @@ void beginIMU(bool silent)
           SerialPrintln(F("Error: Could not enable the DMP Compass!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Compass ODR!"));
           success = false;
         }
-        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, 0); // Set ODR to 55Hz
+        retval = myICM.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, ODR);
         if (retval != ICM_20948_Stat_Ok)
         {
           SerialPrintln(F("Error: Could not set the Compass Calibr ODR!"));
