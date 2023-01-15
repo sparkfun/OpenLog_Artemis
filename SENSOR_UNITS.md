@@ -55,6 +55,7 @@ This document summarizes the units used for each sensor measurement.
 ### ADC:
 
 - [Qwiic PT100 ADS122C04 platinum resistance sensor](#Qwiic-PT100-ADS122C04-platinum-resistance-sensor)
+- [ADS1015 ADC](#ADS1015-ADC)
 
 ### Biometric Sensors:
 
@@ -72,9 +73,6 @@ This document summarizes the units used for each sensor measurement.
 
 - [KX134 accelerometer](#KX134-accelerometer)
 
-### ADC:
-
-- [ADS1015 ADC](#ADS1015-ADC)
 
 ---
 ## Sensor Units
