@@ -243,6 +243,10 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             //No data to print for a mux
           }
           break;
+        case DEVICE_IMU_ICM20948:
+          {
+            //TODO: Add support for ICM20948
+          }
         case DEVICE_LOADCELL_NAU7802:
           {
             NAU7802 *nodeDevice = (NAU7802 *)temp->classPtr;

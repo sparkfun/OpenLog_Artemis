@@ -1250,6 +1250,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_VCNL4040 0x60
 #define ADR_SCD30 0x61
 #define ADR_MCP9600 0x60 //0x60 to 0x67
+#define ADR_ICM20948 0x69 //Alternate: 0x68
 #define ADR_ISM330DHCX 0x6A //Alternate: 0x6B
 #define ADR_QWIIC_BUTTON 0x6F //But can be any address... Limit the range to 0x68-0x6F
 #define ADR_MULTIPLEXER 0x70 //0x70 to 0x77
@@ -1489,11 +1490,23 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       }
       break;
     case 0x68:
+      {
+        //Confidence high - Checks functionality
+        ICM_20948_I2C sensor;
+        if (sensor.begin(qwiic, 1) == ICM_20948_Stat_Ok) //Wire port, AD0_VAL
+          return(DEVICE_ICM20948);
+        if ()
+      }
     case 0x69:
       {
         QwiicButton sensor;
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_QWIIC_BUTTON);
+        //Confidence high - Checks functionality
+        ICM_20948_I2C sensor1;
+        if (sensor1.begin(qwiic, 1) == ICM_20948_Stat_Ok) //Wire port, AD0_VAL
+          return(DEVICE_ICM20948);
+        if ()
       }
       break;
     case 0x6A:
