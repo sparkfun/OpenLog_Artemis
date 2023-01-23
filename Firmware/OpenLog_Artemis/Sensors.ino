@@ -243,10 +243,6 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             //No data to print for a mux
           }
           break;
-        case DEVICE_IMU_ICM20948:
-          {
-            //TODO: Add support for ICM20948
-          }
         case DEVICE_LOADCELL_NAU7802:
           {
             NAU7802 *nodeDevice = (NAU7802 *)temp->classPtr;
@@ -1093,6 +1089,55 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             }
           }
           break;
+        case DEVICE_IMU_ICM20948:
+          {
+            ICM_20948_I2C *nodeDevice = (ICM_20948_I2C *)temp->classPtr;
+            struct_ICM20948 *nodeSetting = (struct_ICM20948 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              static bool dataReady;
+              if ((nodeSetting->logAccel) || (nodeSetting->logGyro) || (nodeSetting->logMag))
+              {
+                // Check if both gyroscope and accelerometer data is available.
+                dataReady = nodeDevice->dataReady();
+                if( dataReady )
+                {
+                  nodeDevice->getAGMT();
+                }
+              }
+              if (nodeSetting->logAccel)
+              {
+                olaftoa(nodeDevice->accX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                olaftoa(nodeDevice->accY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+                olaftoa(nodeDevice->accZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+                sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
+                strlcat(sdOutputData, tempData, lenData);
+              }
+              if (nodeSetting->logGyro)
+              {
+                olaftoa(nodeDevice->gyrX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                olaftoa(nodeDevice->gyrY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+                olaftoa(nodeDevice->gyrZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+                sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
+                strlcat(sdOutputData, tempData, lenData);
+              }
+              if (nodeSetting->logMag)
+              {
+                olaftoa(nodeDevice->magX(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                olaftoa(nodeDevice->magY(), tempData2, 2, sizeof(tempData2) / sizeof(char));
+                olaftoa(nodeDevice->magZ(), tempData3, 2, sizeof(tempData3) / sizeof(char));
+                sprintf(tempData, "%s,%s,%s,", tempData1, tempData2, tempData3);
+                strlcat(sdOutputData, tempData, lenData);
+              }
+              if (nodeSetting->logTemp)
+              {
+                olaftoa(nodeDevice->temp(), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strlcat(sdOutputData, tempData, lenData);
+              }
+            }
+          }
+          break;
         case DEVICE_ISM330DHCX:
           {
             SparkFun_ISM330DHCX *nodeDevice = (SparkFun_ISM330DHCX *)temp->classPtr;
@@ -1367,6 +1412,22 @@ static void getHelperText(char* helperText, size_t lenText)
         case DEVICE_MULTIPLEXER:
           {
             //No data to print for a mux
+          }
+          break;
+        case DEVICE_IMU_ICM20948:
+          {
+            struct_ICM20948 *nodeSetting = (struct_ICM20948 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logAccel)
+                strlcat(helperText, "aX,aY,aZ,", lenText);
+              if (nodeSetting->logGyro)
+                strlcat(helperText, "gX,gY,gZ,", lenText);
+              if (nodeSetting->logMag)
+                strlcat(helperText, "mX,mY,mZ,", lenText);
+              if (nodeSetting->logTemp)
+                strlcat(helperText, "imu_degC,", lenText);
+            }
           }
           break;
         case DEVICE_LOADCELL_NAU7802:

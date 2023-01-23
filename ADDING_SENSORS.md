@@ -22,7 +22,7 @@ First up, please target any commits at the _**release_candidate**_ branch, so th
 
 - This is where the sensor readings are actually read. [Add a case for the new sensor](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-fba25af49a58a7a24fb75cb34321e25dd4a94a9d3515ac051fcaa4502e444f7fR725-R798)
 
-### printHelperText
+### getHelperText
 
 - [Add helper text for the sensor readings](https://github.com/sparkfun/OpenLog_Artemis/commit/2a26acd279fa93cfe84f1bc518c0e7a041b3bc44#diff-fba25af49a58a7a24fb75cb34321e25dd4a94a9d3515ac051fcaa4502e444f7fR1132-R1165)
 

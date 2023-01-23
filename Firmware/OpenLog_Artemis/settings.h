@@ -4,6 +4,7 @@
 typedef enum
 {
   DEVICE_MULTIPLEXER = 0,
+  DEVICE_IMU_ICM20948,
   DEVICE_LOADCELL_NAU7802,
   DEVICE_DISTANCE_VL53L1X,
   DEVICE_GPS_UBLOX,
@@ -90,6 +91,16 @@ struct struct_LPS25HB {
   bool log = true;
   bool logPressure = true;
   bool logTemperature = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+
+struct struct_ICM20948 {
+  bool log = true;
+  bool logAccel = true;
+  bool logGyro = true;
+  bool logMag = true;
+  bool logTemp = true;
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

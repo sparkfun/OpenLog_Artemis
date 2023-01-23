@@ -288,6 +288,9 @@ void menuAttachedDevices()
           case DEVICE_LOADCELL_NAU7802:
             SerialPrintf3("%s NAU7802 Weight Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_IMU_ICM20948:
+            SerialPrintf3("%s ICM20948 IMU %s\r\n", strDeviceMenu, strAddress);
+            break;
           case DEVICE_DISTANCE_VL53L1X:
             SerialPrintf3("%s VL53L1X Distance Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
@@ -473,6 +476,13 @@ void menuAttachedDevices()
     else
       printUnknown(nodeNumber);
   }
+}
+
+void menuConfigure_ICM20948()
+{
+  SerialPrintln(F(""));
+  SerialPrintln(F("Menu: Configure ICM20948 not yet implemented"));
+  //TODO: Implement this
 }
 
 void menuConfigure_QwiicBus()

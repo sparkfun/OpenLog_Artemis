@@ -515,6 +515,16 @@ void recordDeviceSettingsToFile()
             //settingsFile.println((String)base + "log=" + nodeSetting->log);
           }
           break;
+        case DEVICE_IMU_ICM20948:
+          {
+            struct_ICM20948 *nodeSetting = (struct_ICM20948 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logAccel=" + nodeSetting->logAccel);
+            settingsFile.println((String)base + "logGyro=" + nodeSetting->logGyro);
+            settingsFile.println((String)base + "logMag=" + nodeSetting->logMag);
+            settingsFile.println((String)base + "logTemp=" + nodeSetting->logTemp);
+          }
+          break;
         case DEVICE_LOADCELL_NAU7802:
           {
             struct_NAU7802 *nodeSetting = (struct_NAU7802 *)temp->configPtr;
@@ -995,6 +1005,25 @@ bool parseDeviceLine(char* str) {
       case DEVICE_MULTIPLEXER:
         {
           SerialPrintln(F("There are no known settings for a multiplexer to load."));
+        }
+        break;
+      case DEVICE_IMU_ICM20948:
+        {
+          struct_ICM20948 *nodeSetting = (struct_ICM20948 *)deviceConfigPtr;
+
+          //Apply the appropriate settings
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logAccel") == 0)
+            nodeSetting->logAccel = d;
+          else if (strcmp(deviceSettingName, "logGyro") == 0)
+            nodeSetting->logGyro = d;
+          else if (strcmp(deviceSettingName, "logMag") == 0)
+            nodeSetting->logMag = d;
+          else if (strcmp(deviceSettingName, "logTemp") == 0)
+            nodeSetting->logTemp = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
       case DEVICE_LOADCELL_NAU7802:

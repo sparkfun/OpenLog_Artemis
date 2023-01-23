@@ -123,6 +123,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_multiplexer;
       }
       break;
+    case DEVICE_IMU_ICM20948:
+      {
+        temp->classPtr = new ICM_20948_I2C;
+        temp->configPtr = new struct_ICM20948;
+      }
+      break;
     case DEVICE_LOADCELL_NAU7802:
       {
         temp->classPtr = new NAU7802;
@@ -352,6 +358,21 @@ bool beginQwiicDevices()
           struct_multiplexer *nodeSetting = (struct_multiplexer *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(temp->address, qwiic); //Address, Wire port
+        }
+        break;
+      case DEVICE_IMU_ICM20948:
+        {
+          ICM_20948_I2C *tempDevice = (ICM_20948_I2C *)temp->classPtr;
+          struct_ICM20948 *nodeSetting = (struct_ICM20948 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          if (temp->address == 0x69) 
+          {
+            temp->online = (tempDevice->begin(qwiic, 1) == ICM_20948_Stat_Ok); //Wire port, AD0_VAL
+          }
+          else
+          {
+            temp->online = (tempDevice->begin(qwiic, 0) == ICM_20948_Stat_Ok); //Wire port, AD0_VAL
+          }
         }
         break;
       case DEVICE_LOADCELL_NAU7802:
@@ -1017,6 +1038,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
     case DEVICE_MULTIPLEXER:
       ptr = (FunctionPointer)menuConfigure_Multiplexer;
       break;
+    case DEVICE_IMU_ICM20948:
+      ptr = (FunctionPointer)menuConfigure_ICM20948;
+      break;
     case DEVICE_LOADCELL_NAU7802:
       ptr = (FunctionPointer)menuConfigure_NAU7802;
       break;
@@ -1493,9 +1517,8 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Confidence high - Checks functionality
         ICM_20948_I2C sensor;
-        if (sensor.begin(qwiic, 1) == ICM_20948_Stat_Ok) //Wire port, AD0_VAL
-          return(DEVICE_ICM20948);
-        if ()
+        if (sensor.begin(qwiic, 0) == ICM_20948_Stat_Ok) //Wire port, AD0_VAL
+          return(DEVICE_IMU_ICM20948);
       }
     case 0x69:
       {
@@ -1505,8 +1528,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         //Confidence high - Checks functionality
         ICM_20948_I2C sensor1;
         if (sensor1.begin(qwiic, 1) == ICM_20948_Stat_Ok) //Wire port, AD0_VAL
-          return(DEVICE_ICM20948);
-        if ()
+          return(DEVICE_IMU_ICM20948);
       }
       break;
     case 0x6A:
@@ -1793,6 +1815,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
   {
     case DEVICE_MULTIPLEXER:
       return "Multiplexer";
+      break;
+    case DEVICE_IMU_ICM20948:
+      return "IMU-ICM20948";
       break;
     case DEVICE_LOADCELL_NAU7802:
       return "LoadCell-NAU7802";
