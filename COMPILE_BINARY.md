@@ -82,7 +82,7 @@ Unzip it (Extract All files)
 
 ## Copy the OLA Source Code
 
-Navigate to the Firmware sub-folder
+Navigate to the `Firmware` sub-folder
 
 Copy the entire `OpenLog_Artemis` folder from the Zip file into your `Arduino` folder. This contains the source code for the firmware. The result should be:
 
@@ -148,7 +148,7 @@ The extra code prevents badness when the Artemis goes into deep sleep
 Open the following file:
 
 ```
-C:\Users\pc235\Documents\Arduino\libraries\SparkFun_ICM-20948_ArduinoLibrary\src\util\ICM_20948_C.h
+C:\Users\<Your_User>\Documents\Arduino\libraries\SparkFun_ICM-20948_ArduinoLibrary\src\util\ICM_20948_C.h
 ```
 
 Uncomment the following line (29):
