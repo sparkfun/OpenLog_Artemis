@@ -17,7 +17,7 @@ Click the File icon to the right of the `Additional Boards Manager URLs` text bo
 Add:
 
 ```
-https://raw.githubusercontent.com/sparkfun/Arduino_Apollo3/master/package_sparkfun_apollo3_index.json
+https://raw.githubusercontent.com/sparkfun/Arduino_Apollo3/main/package_sparkfun_apollo3_index.json
 ```
 
 Click OK
@@ -90,7 +90,9 @@ Copy the entire `OpenLog_Artemis` folder from the Zip file into your `Arduino` f
 C:\Users\<Your_User>\Documents\Arduino\OpenLog_Artemis
 ```
 
-## Copy Paulvha's Patch for Apollo3
+## Patch the Apollo3 Core
+
+The Apollo3 core (2.2.1) requires patching - using code kindly provided by Paulvha. For more information, open [this link](https://github.com/sparkfun/OpenLog_Artemis/issues/117#issuecomment-1085881142) in a web browser.
 
 Navigate to the `Extras` folder in the Zip file. Copy the `UartPower3.zip` file. Paste it into the Apollo3 board package folder. On Windows machines, this is (usually):
 
@@ -100,15 +102,11 @@ C:\Users\<Your_User>\AppData\Local\Arduino15\packages\SparkFun\hardware\apollo3
 
 Unzip it (Extract All files)
 
-## Update the Apollo3 Core
-
 **Close the Arduino IDE**
 
-For information, open this link in a web browser: https://github.com/sparkfun/OpenLog_Artemis/issues/117#issuecomment-1085881142
+Follow the instructions contained in `uart_power_3.odt`
 
-Follow Paul's instructions contained in `uart_power_3.odt`
-
-Summary: replace the following five files with the ones from `UartPower3.zip` :
+In summary: replace the following five files with the ones from `UartPower3.zip` :
 
 ```
 C:\Users\<Your_User>\AppData\Local\Arduino15\packages\SparkFun\hardware\apollo3\2.2.1\cores\arduino\mbed-bridge\core-extend\HardwareSerial.h
