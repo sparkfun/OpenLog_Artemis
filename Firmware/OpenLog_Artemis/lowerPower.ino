@@ -562,7 +562,16 @@ void wakeFromSleep()
     //loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
-
+  
+  // Late in the process to allow time for external device to generate unwanted signals
+  while(Serial.available())  // Flush the input buffer
+    Serial.read();
+  if (settings.useTxRxPinsForTerminal == true)
+  {
+    while(Serial1.available())  // Flush the input buffer
+      Serial1.read();
+  }
+  
   //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
   takeReading = true;
 }
