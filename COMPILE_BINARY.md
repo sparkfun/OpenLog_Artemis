@@ -63,7 +63,6 @@ Copy and paste the following into an empty sketch. Click on each link in turn to
 // http://librarymanager/All#SparkFun_Particle_Sensor_SN-GCJA5
 // http://librarymanager/All#SparkFun_SGP40
 // http://librarymanager/All#SparkFun_SDP3x
-// Blue Robotics MS5837 (Required version: 1.1.1): http://librarymanager/All#BlueRobotics_MS5837
 // http://librarymanager/All#SparkFun_Qwiic_Button_Switch
 // http://librarymanager/All#SparkFun_Bio_Sensor
 // http://librarymanager/All#SparkFun_6DoF_ISM330DHCX
@@ -71,6 +70,14 @@ Copy and paste the following into an empty sketch. Click on each link in turn to
 // http://librarymanager/All#SparkFun_ADS1015
 // http://librarymanager/All#SparkFun_KX13X
 ```
+
+### Blue Robotics MS5837
+
+Please manually download and install the Blue Robotics MS5837 library from:
+
+https://github.com/bluerobotics/BlueRobotics_MS5837_Library/archive/refs/heads/master.zip
+
+(Version 1.1.1 - available through the Arduino Library Manager - is not the latest version...)
 
 ## Download the OLA Firmware Zip
 
