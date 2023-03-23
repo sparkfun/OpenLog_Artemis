@@ -73,7 +73,7 @@ Copy and paste the following into an empty sketch. Click on each link in turn to
 
 ### Blue Robotics MS5837
 
-Please manually download and install the Blue Robotics MS5837 library from:
+Please manually download and install the latest version of the Blue Robotics MS5837 library from:
 
 https://github.com/bluerobotics/BlueRobotics_MS5837_Library/archive/refs/heads/master.zip
 
