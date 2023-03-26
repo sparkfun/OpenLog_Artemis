@@ -52,3 +52,7 @@ Icon
 .cproject
 
 .project
+
+build
+*.axf
+*.map
