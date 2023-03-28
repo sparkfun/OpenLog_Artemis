@@ -340,6 +340,9 @@ void menuAttachedDevices()
           case DEVICE_PRESSURE_MPR0025PA1:
             SerialPrintf3("%s MPR MicroPressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_PARTICLE_SNGCJA5:
+            SerialPrintf3("%s SN-GCJA5 Particle Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
           case DEVICE_VOC_SGP40:
             SerialPrintf3("%s SGP40 VOC Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
@@ -2216,6 +2219,122 @@ void menuConfigure_MPR0025PA1(void *configPtr)
   }
 }
 
+void menuConfigure_SNGCJA5(void *configPtr)
+{
+  struct_SNGCJA5 *sensorSetting = (struct_SNGCJA5*)configPtr;
+
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure SNGCJA5 Particle Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Particle Mass Density 1.0um (ug/m^3): "));
+      if (sensorSetting->logPM1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Particle Mass Density 2.5um (ug/m^3): "));
+      if (sensorSetting->logPM25 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Log Particle Mass Density 10.0um (ug/m^3): "));
+      if (sensorSetting->logPM10 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("5) Log Particle Count 0.5um: "));
+      if (sensorSetting->logPC05 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("6) Log Particle Count 1.0um: "));
+      if (sensorSetting->logPC1 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("7) Log Particle Count 2.5um: "));
+      if (sensorSetting->logPC25 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("8) Log Particle Count 5.0um: "));
+      if (sensorSetting->logPC50 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("9) Log Particle Count 7.5um: "));
+      if (sensorSetting->logPC75 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("10) Log Particle Count 10.0um: "));
+      if (sensorSetting->logPC10 == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("11) Log Combined Sensor Status: "));
+      if (sensorSetting->logSensorStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("12) Log PhotoDiode Status: "));
+      if (sensorSetting->logPDStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("13) Log LaserDiode Status: "));
+      if (sensorSetting->logLDStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("14) Log Fan Status: "));
+      if (sensorSetting->logFanStatus == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    int incoming = getNumber(menuTimeout); //Timeout after x seconds
+
+    if (incoming == 1)
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == 2)
+        sensorSetting->logPM1 ^= 1;
+      else if (incoming == 3)
+        sensorSetting->logPM25 ^= 1;
+      else if (incoming == 4)
+        sensorSetting->logPM10 ^= 1;
+      else if (incoming == 5)
+        sensorSetting->logPC05 ^= 1;
+      else if (incoming == 6)
+        sensorSetting->logPC1 ^= 1;
+      else if (incoming == 7)
+        sensorSetting->logPC25 ^= 1;
+      else if (incoming == 8)
+        sensorSetting->logPC50 ^= 1;
+      else if (incoming == 9)
+        sensorSetting->logPC75 ^= 1;
+      else if (incoming == 10)
+        sensorSetting->logPC10 ^= 1;
+      else if (incoming == 11)
+        sensorSetting->logSensorStatus ^= 1;
+      else if (incoming == 12)
+        sensorSetting->logPDStatus ^= 1;
+      else if (incoming == 13)
+        sensorSetting->logLDStatus ^= 1;
+      else if (incoming == 14)
+        sensorSetting->logFanStatus ^= 1;
+      else if (incoming == STATUS_PRESSED_X)
+        break;
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == STATUS_PRESSED_X)
+      break;
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+}
 
 void menuConfigure_SGP40(void *configPtr)
 {

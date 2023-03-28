@@ -1286,27 +1286,27 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             { 
               if (nodeSetting->logCurrent)
               {
-                olaftoa(nodeDevice->getCurrentCompensated(INA3221_CH1), tempData1, 2, sizeof(tempData) / sizeof(char));
-                olaftoa(nodeDevice->getCurrentCompensated(INA3221_CH2), tempData2, 2, sizeof(tempData) / sizeof(char));
-                olaftoa(nodeDevice->getCurrentCompensated(INA3221_CH3), tempData3, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getCurrentCompensated(INA3221_CH1), tempData1, 2, sizeof(tempData1) / sizeof(char));
+                olaftoa(nodeDevice->getCurrentCompensated(INA3221_CH2), tempData2, 2, sizeof(tempData2) / sizeof(char));
+                olaftoa(nodeDevice->getCurrentCompensated(INA3221_CH3), tempData3, 2, sizeof(tempData3) / sizeof(char));
                 sprintf(tempData, "%s, ", tempData1);
-                strlcat(outputData, tempData, lenData);
+                strlcat(sdOutputData, tempData, lenData);
                 sprintf(tempData, "%s, ", tempData2);
-                strlcat(outputData, tempData, lenData);
+                strlcat(sdOutputData, tempData, lenData);
                 sprintf(tempData, "%s, ", tempData3);
-                strlcat(outputData, tempData, lenData);
+                strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logVoltage)
               {
-                olaftoa(nodeDevice->getVoltage(INA3221_CH1), tempData4, 2, sizeof(tempData) / sizeof(char));
-                olaftoa(nodeDevice->getVoltage(INA3221_CH2), tempData5, 2, sizeof(tempData) / sizeof(char));
-                olaftoa(nodeDevice->getVoltage(INA3221_CH3), tempData6, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getVoltage(INA3221_CH1), tempData4, 2, sizeof(tempData4) / sizeof(char));
+                olaftoa(nodeDevice->getVoltage(INA3221_CH2), tempData5, 2, sizeof(tempData5) / sizeof(char));
+                olaftoa(nodeDevice->getVoltage(INA3221_CH3), tempData6, 2, sizeof(tempData6) / sizeof(char));
                 sprintf(tempData, "%s, ", tempData4);
-                strlcat(outputData, tempData, lenData);
+                strlcat(sdOutputData, tempData, lenData);
                 sprintf(tempData, "%s, ", tempData5);
-                strlcat(outputData, tempData, lenData);
+                strlcat(sdOutputData, tempData, lenData);
                 sprintf(tempData, "%s, ", tempData6);
-                strlcat(outputData, tempData, lenData);
+                strlcat(sdOutputData, tempData, lenData);
               }
             }
           }
@@ -1326,12 +1326,12 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               if (nodeSetting->logPortA)
               {
                 sprintf(tempData, "%d,", currentA);
-                strlcat(outputData, tempData, lenData);
+                strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logPortB)
               {
                 sprintf(tempData, "%d,", currentB);
-                strlcat(outputData, tempData, lenData);
+                strlcat(sdOutputData, tempData, lenData);
               }
             }
           }
@@ -1347,7 +1347,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               if (nodeSetting->logAllCH)
               {
                 sprintf(tempData, "%d/%d/%d/%d/%d/%d,", value[0], value[1], value[2], value[3], value[4], value[5]);
-                strlcat(outputData, tempData, lenData);
+                strlcat(sdOutputData, tempData, lenData);
               }
             }
           }
@@ -1695,6 +1695,40 @@ static void getHelperText(char* helperText, size_t lenText)
                 strlcat(helperText, "atm,", lenText);
               if (nodeSetting->useBAR)
                 strlcat(helperText, "bar,", lenText);
+            }
+          }
+          break;
+        case DEVICE_PARTICLE_SNGCJA5:
+          {
+            struct_SNGCJA5 *nodeSetting = (struct_SNGCJA5 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPM1)
+                strlcat(helperText, "PM1_0,", lenText);
+              if (nodeSetting->logPM25)
+                strlcat(helperText, "PM2_5,", lenText);
+              if (nodeSetting->logPM10)
+                strlcat(helperText, "PM10,", lenText);
+              if (nodeSetting->logPC05)
+                strlcat(helperText, "PC0_5,", lenText);
+              if (nodeSetting->logPC1)
+                strlcat(helperText, "PC1_0,", lenText);
+              if (nodeSetting->logPC25)
+                strlcat(helperText, "PC2_5,", lenText);
+              if (nodeSetting->logPC50)
+                strlcat(helperText, "PC5_0,", lenText);
+              if (nodeSetting->logPC75)
+                strlcat(helperText, "PC7_5,", lenText);
+              if (nodeSetting->logPC10)
+                strlcat(helperText, "PC10,", lenText);
+              if (nodeSetting->logSensorStatus)
+                strlcat(helperText, "Sensors,", lenText);
+              if (nodeSetting->logPDStatus)
+                strlcat(helperText, "PD,", lenText);
+              if (nodeSetting->logLDStatus)
+                strlcat(helperText, "LD,", lenText);
+              if (nodeSetting->logFanStatus)
+                strlcat(helperText, "Fan,", lenText);
             }
           }
           break;
