@@ -46,8 +46,9 @@ RUN arduino-cli lib install "SparkFun MMC5983MA Magnetometer Arduino Library"
 RUN arduino-cli lib install "SparkFun ADS1015 Arduino Library"
 RUN arduino-cli lib install "SparkFun KX13X Arduino Library"
 RUN arduino-cli lib install "SparkFun SDP3x Arduino Library"
-# RUN arduino-cli lib install "BlueRobotics MS5837 Library"
+RUN arduino-cli lib install "SparkFun LPS28DFW Arduino Library"
 
+# Add BlueRobotics_MS5837_Library from git
 WORKDIR /root/Arduino/libraries
 RUN curl -L https://github.com/bluerobotics/BlueRobotics_MS5837_Library/archive/refs/heads/master.zip -o ms5837.zip
 RUN unzip ms5837.zip
