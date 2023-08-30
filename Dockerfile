@@ -2,7 +2,7 @@ FROM ubuntu:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y curl git build-essential arduino-mk && apt-get clean
+RUN apt-get update && apt-get install -y curl git build-essential arduino-mk unzip && apt-get clean
 
 RUN curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/local/bin sh
 
@@ -50,7 +50,6 @@ RUN arduino-cli lib install "SparkFun SDP3x Arduino Library"
 
 WORKDIR /root/Arduino/libraries
 RUN curl -L https://github.com/bluerobotics/BlueRobotics_MS5837_Library/archive/refs/heads/master.zip -o ms5837.zip
-RUN apt-get install -y unzip
 RUN unzip ms5837.zip
 
 WORKDIR /work
