@@ -594,6 +594,14 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
           }
           break;
+        case DEVICE_PRESSURE_LPS28DFW:
+          {
+            struct_LPS28DFW *nodeSetting = (struct_LPS28DFW *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+          }
+          break;
         case DEVICE_PHT_BME280:
           {
             struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr;
@@ -1128,6 +1136,19 @@ bool parseDeviceLine(char* str) {
       case DEVICE_PRESSURE_LPS25HB:
         {
           struct_LPS25HB *nodeSetting = (struct_LPS25HB *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logPressure") == 0)
+            nodeSetting->logPressure = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_PRESSURE_LPS28DFW:
+        {
+          struct_LPS28DFW *nodeSetting = (struct_LPS28DFW *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
           if (strcmp(deviceSettingName, "log") == 0)
             nodeSetting->log = d;
           else if (strcmp(deviceSettingName, "logPressure") == 0)

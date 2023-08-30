@@ -11,6 +11,7 @@ typedef enum
   DEVICE_TEMPERATURE_TMP117,
   DEVICE_PRESSURE_MS5637,
   DEVICE_PRESSURE_LPS25HB,
+  DEVICE_PRESSURE_LPS28DFW,
   DEVICE_PHT_BME280,
   DEVICE_UV_VEML6075,
   DEVICE_VOC_CCS811,
@@ -87,6 +88,13 @@ struct struct_multiplexer {
 
 //Add the new sensor settings below
 struct struct_LPS25HB {
+  bool log = true;
+  bool logPressure = true;
+  bool logTemperature = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+struct struct_LPS28DFW {
   bool log = true;
   bool logPressure = true;
   bool logTemperature = true;

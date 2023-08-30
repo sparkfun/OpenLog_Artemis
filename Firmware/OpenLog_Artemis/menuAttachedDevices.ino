@@ -41,7 +41,7 @@ bool detectQwiicDevices()
   //setQwiicPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up
-  
+
   // Note: The MCP9600 (Qwiic Thermocouple) is a fussy device. If we use beginTransmission + endTransmission more than once
   // the second and subsequent times will fail. The MCP9600 only ACKs the first time. The MCP9600 also appears to be able to
   // lock up the I2C bus if you don't discover it and then begin it in one go...
@@ -197,7 +197,7 @@ bool detectQwiicDevices()
             {
               // We don't need to do anything special for the MCP9600 here, because we can guarantee that beginTransmission + endTransmission
               // have only been used once for each MCP9600 address
-              
+
               somethingDetected = true;
 
               deviceType_e foundType = testDevice(address, muxNode->address, portNumber);
@@ -305,6 +305,9 @@ void menuAttachedDevices()
             break;
           case DEVICE_PRESSURE_LPS25HB:
             SerialPrintf3("%s LPS25HB Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_PRESSURE_LPS28DFW:
+            SerialPrintf3("%s LPS28DFW Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_PHT_BME280:
             SerialPrintf3("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\r\n", strDeviceMenu, strAddress);
@@ -443,9 +446,9 @@ void menuAttachedDevices()
             settings.useGPIO32ForStopLogging = false;
             detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           }
-          
+
           recordSystemSettings(); //Record the new settings to EEPROM and config file now in case the user resets before exiting the menus
-                
+
           if (detectQwiicDevices() == true) //Detect the oximeter
           {
             beginQwiicDevices(); //Begin() each device in the node list
@@ -454,7 +457,7 @@ void menuAttachedDevices()
           }
 
           recordSystemSettings(); //Record the new settings to EEPROM and config file now in case the user resets before exiting the menus
-                
+
           if (detectQwiicDevices() == true) //Detect the oximeter
           {
             beginQwiicDevices(); //Begin() each device in the node list
@@ -843,6 +846,57 @@ void menuConfigure_LPS25HB(void *configPtr)
 
 }
 
+void menuConfigure_LPS28DFW(void *configPtr)
+{
+  struct_LPS28DFW *sensorSetting = (struct_LPS28DFW*)configPtr;
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure LPS28DFW Pressure Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == '2')
+        sensorSetting->logPressure ^= 1;
+      else if (incoming == '3')
+        sensorSetting->logTemperature ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+}
+
 void menuConfigure_NAU7802(void *configPtr)
 {
   //Search the list of nodes looking for the one with matching config pointer
@@ -1100,7 +1154,7 @@ void menuConfigure_ublox(void *configPtr)
         }
         else
           SerialPrintln(F("Reset GNSS aborted"));
-      } 
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -1191,7 +1245,7 @@ void gnssFactoryDefault(void)
 
           //Reset the module to the factory defaults
           nodeDevice->factoryDefault();
-          
+
           delay(5000); //Blocking delay to allow module to reset
 
           nodeDevice->setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
@@ -2346,7 +2400,7 @@ void menuConfigure_SGP40(void *configPtr)
       else SerialPrintln(F("Disabled"));
 
       SerialPrintf2("3) Sensor Compensation: Relative Humidity (%): %d\r\n", sensorSetting->RH);
-  
+
       SerialPrintf2("4) Sensor Compensation: Temperature (C): %d\r\n", sensorSetting->T);
     }
     SerialPrintln(F("x) Exit"));
@@ -2419,7 +2473,7 @@ void menuConfigure_SDP3X(void *configPtr)
       SerialPrint(F("4) Temperature Compensation: "));
       if (sensorSetting->massFlow == true) SerialPrintln(F("Mass Flow"));
       else SerialPrintln(F("Differential Pressure"));
-  
+
       SerialPrint(F("5) Measurement Averaging: "));
       if (sensorSetting->averaging == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
@@ -2468,7 +2522,7 @@ void menuConfigure_MS5837(void *configPtr)
     SerialPrint(F("Sensor Model: "));
     if (sensorSetting->model == 1) SerialPrintln(F("MS5837-02BA / BlueRobotics Bar02: 2 Bar Absolute / 10m Depth"));
     else SerialPrintln(F("MS5837-30BA / BlueRobotics Bar30: 30 Bar Absolute / 300m Depth"));
-      
+
     SerialPrint(F("1) Sensor Logging: "));
     if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
     else SerialPrintln(F("Disabled"));
@@ -2476,26 +2530,26 @@ void menuConfigure_MS5837(void *configPtr)
     if (sensorSetting->log == true)
     {
       char tempStr[16];
-      
+
       SerialPrint(F("2) Log Pressure: "));
       if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("3) Log Temperature: "));
       if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("4) Log Depth: "));
       if (sensorSetting->logDepth == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("5) Log Altitude: "));
       if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       olaftoa(sensorSetting->fluidDensity, tempStr, 1, sizeof(tempStr) / sizeof(char));
       SerialPrintf2("6) Fluid Density (kg/m^3): %s\r\n", tempStr);
-      
+
       olaftoa(sensorSetting->conversion, tempStr, 3, sizeof(tempStr) / sizeof(char));
       SerialPrintf2("7) Pressure Conversion Factor: %s\r\n", tempStr);
     }
@@ -2520,13 +2574,13 @@ void menuConfigure_MS5837(void *configPtr)
         SerialPrint(F("Enter the Fluid Density (kg/m^3): "));
         double FD = getDouble(menuTimeout); //x second timeout
         sensorSetting->fluidDensity = (float)FD;
-      }        
+      }
       else if (incoming == 7)
       {
         SerialPrint(F("Enter the Pressure Conversion Factor: "));
         double PCF = getDouble(menuTimeout); //x second timeout
         sensorSetting->conversion = (float)PCF;
-      }        
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -2569,7 +2623,7 @@ void menuConfigure_QWIIC_BUTTON(void *configPtr)
       SerialPrint(F("4) Toggle LED on each click (and log the LED state): "));
       if (sensorSetting->toggleLEDOnClick == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-  
+
       SerialPrintf2("5) LED Brightness: %d\r\n", sensorSetting->ledBrightness);
     }
     SerialPrintln(F("x) Exit"));
@@ -2594,7 +2648,7 @@ void menuConfigure_QWIIC_BUTTON(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->ledBrightness = bright;
-      }        
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -2637,7 +2691,7 @@ void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
       SerialPrint(F("4) Log Oxygen %: "));
       if (sensorSetting->logOxygen == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-  
+
       SerialPrint(F("5) Log Status: "));
       if (sensorSetting->logStatus == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
@@ -2708,11 +2762,11 @@ void menuConfigure_ISM330DHCX(void *configPtr)
       SerialPrint(F("3) Log Gyro: "));
       if (sensorSetting->logGyro == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("4) Log Data Ready: "));
       if (sensorSetting->logDataReady == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrintf2("5) Accel Scale: %d\r\n", sensorSetting->accelScale);
       SerialPrintf2("6) Accel Rate: %d\r\n", sensorSetting->accelRate);
       SerialPrint(F("7) Accel Filter LP2: "));
@@ -2724,7 +2778,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
       SerialPrint(F("11) Gyro Filter LP1: "));
       if (sensorSetting->gyroFilterLP1 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      SerialPrintf2("12) Gyro LP1 Bandwidth: %d\r\n", sensorSetting->gyroLP1BW);   
+      SerialPrintf2("12) Gyro LP1 Bandwidth: %d\r\n", sensorSetting->gyroLP1BW);
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2752,7 +2806,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->accelScale = newNum;
-      }        
+      }
       else if (incoming == 6)
       {
         SerialPrintln(F("OFF   : 0"));
@@ -2773,7 +2827,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->accelRate = newNum;
-      }        
+      }
       else if (incoming == 7)
         sensorSetting->accelFilterLP2 ^= 1;
       else if (incoming == 8)
@@ -2807,7 +2861,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->accelSlopeFilter = newNum;
-      }        
+      }
       else if (incoming == 9)
       {
         SerialPrintln(F("125dps : 2"));
@@ -2822,7 +2876,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->gyroScale = newNum;
-      }        
+      }
       else if (incoming == 10)
       {
         SerialPrintln(F("OFF   : 0"));
@@ -2842,7 +2896,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->gyroRate = newNum;
-      }        
+      }
       else if (incoming == 11)
         sensorSetting->gyroFilterLP1 ^= 1;
       else if (incoming == 12)
@@ -2861,7 +2915,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->gyroLP1BW = newNum;
-      }        
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -3069,27 +3123,27 @@ void menuConfigure_ADS1015(void *configPtr)
       SerialPrint(F("10) Gain x2/3: "));
       if (sensorSetting->gain23 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("11) Gain x1: "));
       if (sensorSetting->gain1 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("12) Gain x2: "));
       if (sensorSetting->gain2 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("13) Gain x4: "));
       if (sensorSetting->gain4 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("14) Gain x8: "));
       if (sensorSetting->gain8 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("15) Gain x16: "));
       if (sensorSetting->gain16 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
     }
     SerialPrintln(F("x) Exit"));
 
