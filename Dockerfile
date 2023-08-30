@@ -74,4 +74,4 @@ RUN sed -i 's|//#define ICM|#define ICM|g' /root/Arduino/libraries/SparkFun_9DoF
 
 WORKDIR /work/Firmware/OpenLog_Artemis
 
-CMD arduino-cli compile -v -b SparkFun:apollo3:sfe_artemis_atp
+CMD arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp
