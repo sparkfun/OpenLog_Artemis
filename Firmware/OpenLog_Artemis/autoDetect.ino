@@ -417,7 +417,15 @@ bool beginQwiicDevices()
           LPS28DFW *tempDevice = (LPS28DFW *)temp->classPtr;
           struct_LPS28DFW *nodeSetting = (struct_LPS28DFW *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
-          temp->online = tempDevice->begin(temp->address, qwiic);
+          temp->online = tempDevice->begin(temp->address, qwiic) == LPS28DFW_OK;
+          lps28dfw_md_t modeConfig =
+          {
+              .fs  = LPS28DFW_1260hPa,    // Full scale range
+              .odr = LPS28DFW_ONE_SHOT,        // Output data rate
+              .avg = LPS28DFW_4_AVG,      // Average filter
+              .lpf = LPS28DFW_LPF_DISABLE // Low-pass filter
+          };
+          tempDevice->setModeConfig(&modeConfig);
         }
         break;
       case DEVICE_PRESSURE_MS5637:
@@ -1460,14 +1468,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     case 0x5C:
     case 0x5D:
       {
+        // Same address, but different WHO_AM_I value.
+        LPS28DFW sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == LPS28DFW_OK) //Wire port, address
+          return (DEVICE_PRESSURE_LPS28DFW);
+
         LPS25HB sensor;
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
           return (DEVICE_PRESSURE_LPS25HB);
 
-        // Same address, but different WHO_AM_I value.
-        LPS28DFW sensor1;
-        if (sensor1.begin(i2cAddress, qwiic) == true) //Wire port, address
-          return (DEVICE_PRESSURE_LPS28DFW);
       }
       break;
     case 0x60:
