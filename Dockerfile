@@ -16,7 +16,7 @@ RUN arduino-cli core install "Sparkfun:apollo3@2.2.1"
 RUN arduino-cli lib update-index
 
 # RUN arduino-cli lib install "SparkFun Qwiic Power Switch Arduino Library"
-RUN arduino-cli lib install "SdFat@2.2.2"
+RUN arduino-cli lib install "SdFat@2.2.0"
 RUN arduino-cli lib install "SparkFun 9DoF IMU Breakout - ICM 20948 - Arduino Library"
 RUN arduino-cli lib install "SparkFun I2C Mux Arduino Library"
 RUN arduino-cli lib install "SparkFun CCS811 Arduino Library"
@@ -71,6 +71,10 @@ RUN patch -p1 /work/Extras/spi.diff
 
 # Enable DMP on ICM 20948
 RUN sed -i 's|//#define ICM|#define ICM|g' /root/Arduino/libraries/SparkFun_9DoF_IMU_Breakout_-_ICM_20948_-_Arduino_Library/src/util/ICM_20948_C.h
+
+# Enable debug symbols
+# echo "compiler.c.extra_flags=-MMD -g3" >> /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/platform.local.txt
+# echo "compiler.cxx.extra_flags=-MMD -g3" >> /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/platform.local.txt
 
 WORKDIR /work/Firmware/OpenLog_Artemis
 
