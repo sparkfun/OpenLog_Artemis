@@ -66,8 +66,8 @@ RUN cp UnbufferedSerial.h /root/.arduino15/packages/SparkFun/hardware/apollo3/2.
 RUN cp serial_api.c /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/cores/mbed-os/targets/TARGET_Ambiq_Micro/TARGET_Apollo3/device/serial_api.c
 RUN cp libmbed-os.a /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/variants/SFE_ARTEMIS_ATP/mbed/libmbed-os.a
 
-WORKDIR /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/libraries/SPI
-RUN patch -p1 /work/Extras/spi.diff
+WORKDIR /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/libraries/SPI/src
+RUN patch -p1 < /work/Extras/spi.diff
 
 # Enable DMP on ICM 20948
 RUN sed -i 's|//#define ICM|#define ICM|g' /root/Arduino/libraries/SparkFun_9DoF_IMU_Breakout_-_ICM_20948_-_Arduino_Library/src/util/ICM_20948_C.h
