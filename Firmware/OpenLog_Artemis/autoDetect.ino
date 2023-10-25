@@ -791,10 +791,18 @@ void configureDevice(node * temp)
         SCD30 *sensor = (SCD30 *)temp->classPtr;
         struct_SCD30 *sensorSetting = (struct_SCD30 *)temp->configPtr;
 
+        //Apply one-off calibrations
+        if(sensorSetting->applyCalibrationConcentration)
+        {
+          sensor->setForcedRecalibrationFactor(sensorSetting->calibrationConcentration);
+          sensorSetting->applyCalibrationConcentration = false;
+        }
+
         sensor->setMeasurementInterval(sensorSetting->measurementInterval);
         sensor->setAltitudeCompensation(sensorSetting->altitudeCompensation);
         sensor->setAmbientPressure(sensorSetting->ambientPressure);
         //sensor->setTemperatureOffset(sensorSetting->temperatureOffset);
+
       }
       break;
     case DEVICE_PHT_MS8607:

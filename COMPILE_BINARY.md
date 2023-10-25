@@ -107,6 +107,11 @@ Navigate to the `Extras` folder in the Zip file. Copy the `UartPower3.zip` file.
 C:\Users\<Your_User>\AppData\Local\Arduino15\packages\SparkFun\hardware\apollo3
 ```
 
+On Linux machines, this is (usually):
+```
+/home/<Your_User>/.arduino15/packages/SparkFun/hardware/apollo3/
+```
+
 Unzip it (Extract All files)
 
 **Close the Arduino IDE**
@@ -153,7 +158,7 @@ The extra code prevents badness when the Artemis goes into deep sleep
 Open the following file:
 
 ```
-C:\Users\<Your_User>\Documents\Arduino\libraries\SparkFun_ICM-20948_ArduinoLibrary\src\util\ICM_20948_C.h
+C:\Users\<Your_User>\Documents\Arduino\libraries\SparkFun_9DoF_IMU_Breakout_-_ICM_20948_-_Arduino_Library\src\util\ICM_20948_C.h
 ```
 
 Uncomment the following line (29):
