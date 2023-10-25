@@ -802,7 +802,6 @@ void configureDevice(node * temp)
         sensor->setAltitudeCompensation(sensorSetting->altitudeCompensation);
         sensor->setAmbientPressure(sensorSetting->ambientPressure);
         //sensor->setTemperatureOffset(sensorSetting->temperatureOffset);
-
       }
       break;
     case DEVICE_PHT_MS8607:
