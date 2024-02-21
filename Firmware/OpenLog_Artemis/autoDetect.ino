@@ -159,6 +159,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_LPS25HB;
       }
       break;
+    case DEVICE_PRESSURE_LPS28DFW:
+      {
+        temp->classPtr = new LPS28DFW;
+        temp->configPtr = new struct_LPS28DFW;
+      }
+      break;
     case DEVICE_PRESSURE_MS5637:
       {
         temp->classPtr = new MS5637;
@@ -404,6 +410,22 @@ bool beginQwiicDevices()
           struct_LPS25HB *nodeSetting = (struct_LPS25HB *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
+        }
+        break;
+      case DEVICE_PRESSURE_LPS28DFW:
+        {
+          LPS28DFW *tempDevice = (LPS28DFW *)temp->classPtr;
+          struct_LPS28DFW *nodeSetting = (struct_LPS28DFW *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          temp->online = tempDevice->begin(temp->address, qwiic) == LPS28DFW_OK;
+          lps28dfw_md_t modeConfig =
+          {
+              .fs  = LPS28DFW_1260hPa,    // Full scale range
+              .odr = LPS28DFW_ONE_SHOT,        // Output data rate
+              .avg = LPS28DFW_4_AVG,      // Average filter
+              .lpf = LPS28DFW_LPF_DISABLE // Low-pass filter
+          };
+          tempDevice->setModeConfig(&modeConfig);
         }
         break;
       case DEVICE_PRESSURE_MS5637:
@@ -771,6 +793,9 @@ void configureDevice(node * temp)
     case DEVICE_PRESSURE_LPS25HB:
       //Nothing to configure
       break;
+    case DEVICE_PRESSURE_LPS28DFW:
+      //Nothing to configure
+      break;
     case DEVICE_PHT_BME280:
       //Nothing to configure
       break;
@@ -904,28 +929,28 @@ void configureDevice(node * temp)
         struct_ISM330DHCX *sensorSetting = (struct_ISM330DHCX *)temp->configPtr;
 
         sensor->deviceReset();
-        
+
         // Wait for it to finish reseting
-        while( !sensor->getDeviceReset() ){ 
+        while( !sensor->getDeviceReset() ){
           delay(1);
-        } 
+        }
 
         sensor->setDeviceConfig();
         sensor->setBlockDataUpdate();
-        
+
         // Set the output data rate and precision of the accelerometer
         sensor->setAccelDataRate(sensorSetting->accelRate);
-        sensor->setAccelFullScale(sensorSetting->accelScale); 
-      
-        // Turn on the accelerometer's filter and apply settings. 
+        sensor->setAccelFullScale(sensorSetting->accelScale);
+
+        // Turn on the accelerometer's filter and apply settings.
         sensor->setAccelFilterLP2(sensorSetting->accelFilterLP2);
         sensor->setAccelSlopeFilter(sensorSetting->accelSlopeFilter);
-      
+
         // Set the output data rate and precision of the gyroscope
         sensor->setGyroDataRate(sensorSetting->gyroRate);
-        sensor->setGyroFullScale(sensorSetting->gyroScale); 
-      
-        // Turn on the gyroscope's filter and apply settings. 
+        sensor->setGyroFullScale(sensorSetting->gyroScale);
+
+        // Turn on the gyroscope's filter and apply settings.
         sensor->setGyroFilterLP1(sensorSetting->gyroFilterLP1);
         sensor->setGyroLP1Bandwidth(sensorSetting->gyroLP1BW);
       }
@@ -947,20 +972,20 @@ void configureDevice(node * temp)
 
         sensor->softwareReset();
         delay(5);
-        
-        sensor->enableAccel(false); 
-      
+
+        sensor->enableAccel(false);
+
         if (sensorSetting->range8G) sensor->setRange(SFE_KX134_RANGE8G);
         else if (sensorSetting->range16G) sensor->setRange(SFE_KX134_RANGE16G);
         else if (sensorSetting->range32G) sensor->setRange(SFE_KX134_RANGE32G);
         else sensor->setRange(SFE_KX134_RANGE64G);
-      
+
         sensor->enableDataEngine();     // Enables the bit that indicates data is ready.
-        
+
         if (sensorSetting->highSpeed) sensor->setOutputDataRate(9); // 400Hz
         else sensor->setOutputDataRate(6); // Default is 50Hz
-        
-        sensor->enableAccel();          
+
+        sensor->enableAccel();
       }
       break;
     case DEVICE_ADS1015:
@@ -1037,6 +1062,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
       break;
     case DEVICE_PRESSURE_LPS25HB:
       ptr = (FunctionPointer)menuConfigure_LPS25HB;
+      break;
+    case DEVICE_PRESSURE_LPS28DFW:
+      ptr = (FunctionPointer)menuConfigure_LPS28DFW;
       break;
     case DEVICE_PHT_BME280:
       ptr = (FunctionPointer)menuConfigure_BME280;
@@ -1247,6 +1275,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_SGP40 0x59
 #define ADR_CCS811 0x5B //Alternates: 0x5A
 #define ADR_LPS25HB 0x5D //Alternates: 0x5C
+#define ADR_LPS28DFW 0x5C //Alternates: 0x5D
 #define ADR_VCNL4040 0x60
 #define ADR_SCD30 0x61
 #define ADR_MCP9600 0x60 //0x60 to 0x67
@@ -1439,9 +1468,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     case 0x5C:
     case 0x5D:
       {
+        // Same address, but different WHO_AM_I value.
+        LPS28DFW sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == LPS28DFW_OK) //Wire port, address
+          return (DEVICE_PRESSURE_LPS28DFW);
+
         LPS25HB sensor;
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
           return (DEVICE_PRESSURE_LPS25HB);
+
       }
       break;
     case 0x60:
@@ -1502,7 +1537,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         SparkFun_ISM330DHCX sensor;
         if (sensor.begin(qwiic, i2cAddress))
           return(DEVICE_ISM330DHCX);
-          
+
         QwiicButton sensor1;
         if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_QWIIC_BUTTON);
@@ -1621,7 +1656,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
         if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
       }
-      break;    
+      break;
     case 0x71:
     case 0x72:
     case 0x73:
@@ -1801,6 +1836,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_PRESSURE_LPS25HB:
       return "Pressure-LPS25HB";
+      break;
+    case DEVICE_PRESSURE_LPS28DFW:
+      return "Pressure-LPS28DFW";
       break;
     case DEVICE_PHT_BME280:
       return "PHT-BME280";

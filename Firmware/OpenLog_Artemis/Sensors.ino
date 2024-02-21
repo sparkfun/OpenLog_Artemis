@@ -493,6 +493,29 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             }
           }
           break;
+        case DEVICE_PRESSURE_LPS28DFW:
+          {
+            LPS28DFW *nodeDevice = (LPS28DFW *)temp->classPtr;
+            struct_LPS28DFW *nodeSetting = (struct_LPS28DFW *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              nodeDevice->getSensorData();
+
+              if (nodeSetting->logPressure)
+              {
+                olaftoa(nodeDevice->data.pressure.hpa, tempData1, 2, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strlcat(sdOutputData, tempData, lenData);
+              }
+              if (nodeSetting->logTemperature)
+              {
+                olaftoa(nodeDevice->data.heat.deg_c, tempData1, 2, sizeof(tempData) / sizeof(char));
+                sprintf(tempData, "%s,", tempData1);
+                strlcat(sdOutputData, tempData, lenData);
+              }
+            }
+          }
+          break;
         case DEVICE_PHT_BME280:
           {
             BME280 *nodeDevice = (BME280 *)temp->classPtr;
@@ -1148,7 +1171,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               double normalizedZ;
               if (nodeSetting->logMag)
               {
-                
+
                 nodeDevice->getMeasurementXYZ(&rawValueX, &rawValueY, &rawValueZ);
 
                 // The magnetic field values are 18-bit unsigned. The zero (mid) point is 2^17 (131072).
@@ -1253,7 +1276,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               // X,Y,Z data
               static outputData xyzData;
               static bool dataReady = false;
-              
+
               if ((nodeSetting->logAccel) || (nodeSetting->logDataReady))
               {
                 // Check if accel data is available.
@@ -1261,7 +1284,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
                 if (dataReady)
                   nodeDevice->getAccelData(&xyzData);
               }
-                
+
               if (nodeSetting->logAccel)
               {
                 olaftoa(xyzData.xData, tempData1, 4, sizeof(tempData1) / sizeof(char));
@@ -1455,6 +1478,18 @@ static void getHelperText(char* helperText, size_t lenText)
         case DEVICE_PRESSURE_LPS25HB:
           {
             struct_LPS25HB *nodeSetting = (struct_LPS25HB *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              if (nodeSetting->logPressure)
+                strlcat(helperText, "pressure_hPa,", lenText);
+              if (nodeSetting->logTemperature)
+                strlcat(helperText, "pressure_degC,", lenText);
+            }
+          }
+          break;
+        case DEVICE_PRESSURE_LPS28DFW:
+          {
+            struct_LPS28DFW *nodeSetting = (struct_LPS28DFW *)temp->configPtr;
             if (nodeSetting->log)
             {
               if (nodeSetting->logPressure)
