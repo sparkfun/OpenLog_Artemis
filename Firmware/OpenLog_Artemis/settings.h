@@ -219,10 +219,12 @@ struct struct_SCD30 {
   bool logCO2 = true;
   bool logHumidity = true;
   bool logTemperature = true;
+  bool applyCalibrationConcentration = false;
   int measurementInterval = 2; //2 seconds
   int altitudeCompensation = 0; //0 m above sea level
   int ambientPressure = 1000; //mBar STP (Toto, I have a feeling we're not in Boulder anymore)
   int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
+  int calibrationConcentration = 400; //ppm CO2 - Must be applied 2+ minutes after sensor running in chamber of calibration gas 
   unsigned long powerOnDelayMillis = 5000; // Wait for at least this many millis before communicating with this device
 };
 
