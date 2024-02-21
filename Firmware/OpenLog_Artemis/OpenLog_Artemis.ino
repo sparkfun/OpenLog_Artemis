@@ -148,7 +148,7 @@
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 5;
+const int FIRMWARE_VERSION_MINOR = 6;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -467,6 +467,10 @@ void setup() {
   Serial.begin(settings.serialTerminalBaudRate);
 
   SerialPrintf3("Artemis OpenLog v%d.%d\r\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
+
+#ifdef noPowerLossProtection
+  SerialPrintln(F("** No Power Loss Protection **"));
+#endif
 
   if (settings.useGPIO32ForStopLogging == true)
   {
