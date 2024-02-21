@@ -94,7 +94,7 @@ jobs:
 
       - name: Compile Sketch
         run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
-          --build-property "compiler.cpp.extra_flags=\"-DICM_20948_USE_DMP\""
+          --build-property "compiler.cxx-flags=\"-DICM_20948_USE_DMP\""
 
       - name: Rename binary
         run: |
