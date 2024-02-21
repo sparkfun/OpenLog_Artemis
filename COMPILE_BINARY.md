@@ -69,7 +69,7 @@ Copy and paste the following into an empty sketch. Click on each link in turn to
 // http://librarymanager/All#SparkFun_MMC5983MA
 // http://librarymanager/All#SparkFun_ADS1015
 // http://librarymanager/All#SparkFun_KX13X
-// SparkFun LPS28DFW Arduino Library
+// http://librarymanager/All#SparkFun_LPS28DFW_Arduino_Library
 ```
 
 ### Blue Robotics MS5837

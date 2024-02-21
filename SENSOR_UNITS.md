@@ -23,6 +23,7 @@ This document summarizes the units used for each sensor measurement.
 - [MS5837 depth and pressure sensor](#MS5837-depth-pressure-sensor)
 - [AHT20 humidity and temperature sensor](#AHT20-humidity-and-temperature-sensor)
 - [SHTC3 humidity and temperature sensor](#SHTC3-humidity-and-temperature-sensor)
+- [LPS28DFW absolute pressure sensor](#LPS28DFW-absolute-pressure-sensor)
 
 ### Differential Pressure:
 
@@ -140,7 +141,15 @@ Carrier Solution:
 | []() | | |
 |---|---|---|
 | Pressure | pressure_hPa | hectoPascals |
-| Temperature | pressure_degC | Degrees Centigrade |
+| Temperature | temperature_degC | Degrees Centigrade |
+
+---
+## LPS28DFW absolute pressure sensor
+
+| []() | | |
+|---|---|---|
+| Pressure | pressure_hPa | hectoPascals |
+| Temperature | temperature_degC | Degrees Centigrade |
 
 ---
 ## MS8607 PHT sensor

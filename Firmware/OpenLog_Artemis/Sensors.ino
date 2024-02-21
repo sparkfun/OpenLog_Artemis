@@ -1483,7 +1483,7 @@ static void getHelperText(char* helperText, size_t lenText)
               if (nodeSetting->logPressure)
                 strlcat(helperText, "pressure_hPa,", lenText);
               if (nodeSetting->logTemperature)
-                strlcat(helperText, "pressure_degC,", lenText);
+                strlcat(helperText, "temperature_degC,", lenText);
             }
           }
           break;
@@ -1495,7 +1495,7 @@ static void getHelperText(char* helperText, size_t lenText)
               if (nodeSetting->logPressure)
                 strlcat(helperText, "pressure_hPa,", lenText);
               if (nodeSetting->logTemperature)
-                strlcat(helperText, "pressure_degC,", lenText);
+                strlcat(helperText, "temperature_degC,", lenText);
             }
           }
           break;
