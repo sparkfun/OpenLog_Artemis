@@ -151,7 +151,6 @@
     Only disable I2C SDA and SCL during sleep when I2C bus is being powered down - thank you @whipple63 #167
     Add calibrationConcentration support for the SCD30 - thank you @hotstick #181
     Add limited support for the VEML7700 light sensor
-    Allow the calibration and offset for a _single_ NAU7802 to be stored in nvm
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
