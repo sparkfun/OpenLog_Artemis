@@ -1,0 +1,109 @@
+# Workflow that builds the firmware, but doesn't add to a release.
+
+name: non-release-build
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    branches: 
+
+env:
+  FILENAME_PREFIX: OpenLog_Artemis
+
+jobs:
+  build:
+    
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Get firmware version 1
+        run: |
+          echo "firmwareMajor=$(grep -Po "(?<=FIRMWARE_VERSION_MAJOR = )([0-9])*(?=;$)" ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino)" >> "$GITHUB_ENV"
+          echo "firmwareMinor=$(grep -Po "(?<=FIRMWARE_VERSION_MINOR = )([0-9])*(?=;$)" ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino)" >> "$GITHUB_ENV"
+
+      - name: Get firmware version 2
+        run: echo "firmwareMajorMinor=-V10-v${{ env.firmwareMajor }}${{ env.firmwareMinor }}" >> "$GITHUB_ENV"
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+
+      - name: Start config file
+        run: arduino-cli config init --additional-urls "https://raw.githubusercontent.com/sparkfun/Arduino_Apollo3/main/package_sparkfun_apollo3_index.json"
+
+      - name: Update index
+        run: arduino-cli core update-index
+
+      - name: Install platform
+        run: arduino-cli core install "Sparkfun:apollo3@2.2.1"
+
+      - name: Get Known Libraries
+        run: arduino-cli lib install
+          "SdFat@2.2.2"
+          "SparkFun 9DoF IMU Breakout - ICM 20948 - Arduino Library"
+          "SparkFun I2C Mux Arduino Library"
+          "SparkFun CCS811 Arduino Library"
+          "SparkFun VL53L1X 4m Laser Distance Sensor"
+          "SparkFun BME280"
+          "SparkFun LPS25HB Pressure Sensor Library"
+          "SparkFun VEML6075 Arduino Library"
+          "SparkFun PHT MS8607 Arduino Library"
+          "SparkFun MCP9600 Thermocouple Library"
+          "SparkFun SGP30 Arduino Library"
+          "SparkFun VCNL4040 Proximity Sensor Library"
+          "SparkFun MS5637 Barometric Pressure Library"
+          "SparkFun High Precision Temperature Sensor TMP117 Qwiic"
+          "SparkFun u-blox GNSS Arduino Library"
+          "SparkFun 6DoF ISM330DHCX"
+          "SparkFun Qwiic Scale NAU7802 Arduino Library"
+          "SparkFun SCD30 Arduino Library"
+          "SparkFun Qwiic Humidity AHT20"
+          "SparkFun SHTC3 Humidity and Temperature Sensor Library"
+          "SparkFun ADS122C04 ADC Arduino Library"
+          "SparkFun MicroPressure Library"
+          "SparkFun Particle Sensor Panasonic SN-GCJA5"
+          "SparkFun SGP40 Arduino Library"
+          "SparkFun Qwiic Button and Qwiic Switch Library"
+          "SparkFun Bio Sensor Hub Library"
+          "SparkFun MMC5983MA Magnetometer Arduino Library"
+          "SparkFun ADS1015 Arduino Library"
+          "SparkFun KX13X Arduino Library"
+          "SparkFun SDP3x Arduino Library"
+
+      - name: Enable external libs
+        run: arduino-cli config set library.enable_unsafe_install true
+
+      - name: Get Libraries
+        run: arduino-cli lib install --git-url
+          https://github.com/bluerobotics/BlueRobotics_MS5837_Library.git
+
+      - name: Patch Apollo3 Core
+        run: |
+          cd ./Extras
+          unzip UartPower3.zip
+          cp HardwareSerial.h /home/runner/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/cores/arduino/mbed-bridge/core-extend/HardwareSerial.h
+          cp HardwareSerial.cpp /home/runner/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/cores/arduino/mbed-bridge/core-implement/HardwareSerial.cpp
+          cp UnbufferedSerial.h /home/runner/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/cores/mbed-os/drivers/UnbufferedSerial.h
+          cp serial_api.c /home/runner/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/cores/mbed-os/targets/TARGET_Ambiq_Micro/TARGET_Apollo3/device/serial_api.c
+          cp libmbed-os.a /home/runner/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/variants/SFE_ARTEMIS_ATP/mbed/libmbed-os.a
+          cp SPI.cpp /home/runner/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/libraries/SPI/src/SPI.cpp
+
+      - name: Compile Sketch
+        run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+          --build-property "compiler.cpp.extra_flags=\"-DICM_20948_USE_DMP\"
+
+      - name: Rename binary
+        run: |
+          cd ./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/
+          mv ${{ env.FILENAME_PREFIX }}.ino.bin ${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}.bin
+          echo "targetBinary=./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}.bin" >> "$GITHUB_ENV"
+
+      - name: Upload binary to action
+        uses: actions/upload-artifact@v3
+        with: 
+          name: ${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}.bin
+          path: ${{ env.targetBinary }}
