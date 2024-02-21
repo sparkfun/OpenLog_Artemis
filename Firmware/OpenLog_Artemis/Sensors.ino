@@ -576,6 +576,18 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             }
           }
           break;
+        case DEVICE_LIGHT_VEML7700:
+          {
+            VEML7700 *nodeDevice = (VEML7700 *)temp->classPtr;
+            struct_VEML7700 *nodeSetting = (struct_VEML7700 *)temp->configPtr;
+            if (nodeSetting->log == true)
+            {
+              olaftoa(nodeDevice->getLux(), tempData1, 2, sizeof(tempData) / sizeof(char));
+              sprintf(tempData, "%s,", tempData1);
+              strlcat(sdOutputData, tempData, lenData);
+            }
+          }
+          break;
 
         case DEVICE_VOC_CCS811:
           {
@@ -1526,6 +1538,15 @@ static void getHelperText(char* helperText, size_t lenText)
                 strlcat(helperText, "uvb,", lenText);
               if (nodeSetting->logUVIndex)
                 strlcat(helperText, "uvIndex,", lenText);
+            }
+          }
+          break;
+        case DEVICE_LIGHT_VEML7700:
+          {
+            struct_VEML7700 *nodeSetting = (struct_VEML7700 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+              strlcat(helperText, "lux,", lenText);
             }
           }
           break;

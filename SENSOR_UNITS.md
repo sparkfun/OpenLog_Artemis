@@ -37,6 +37,7 @@ This document summarizes the units used for each sensor measurement.
 - [SGP40 air quality (VOC index) sensor](#SGP40-air-quality-sensor)
 - [SCD30 CO2 humidity and temperature sensor](#SCD30-CO2-humidity-and-temperature-sensor)
 - [SN-GCJA5 Particle Sensor](#SN-GCJA5-Particle-Sensor)
+- [VEML7700 Ambient light sensor](#VEML7700-Ambient-light-sensor)
 
 ### Distance:
 
@@ -233,6 +234,13 @@ VOC = Volatile Organic Compounds
 | UVA | uva |  |
 | UVB | uvb |  |
 | UV Index | uvIndex |  |
+
+---
+## VEML7700 Ambient light sensor
+
+| []() | | |
+|---|---|---|
+| Lux | lux |  |
 
 ---
 ## SGP30 air quality and VOC sensor

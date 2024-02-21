@@ -183,6 +183,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_VEML6075;
       }
       break;
+    case DEVICE_LIGHT_VEML7700:
+      {
+        temp->classPtr = new VEML7700;
+        temp->configPtr = new struct_VEML7700;
+      }
+      break;
     case DEVICE_VOC_CCS811:
       {
         temp->classPtr = new CCS811(address);
@@ -449,6 +455,14 @@ bool beginQwiicDevices()
         {
           VEML6075 *tempDevice = (VEML6075 *)temp->classPtr;
           struct_VEML6075 *nodeSetting = (struct_VEML6075 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          temp->online = tempDevice->begin(qwiic); //Wire port
+        }
+        break;
+      case DEVICE_LIGHT_VEML7700:
+        {
+          VEML7700 *tempDevice = (VEML7700 *)temp->classPtr;
+          struct_VEML7700 *nodeSetting = (struct_VEML7700 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
@@ -802,6 +816,9 @@ void configureDevice(node * temp)
     case DEVICE_UV_VEML6075:
       //Nothing to configure
       break;
+    case DEVICE_LIGHT_VEML7700:
+      //Nothing to configure
+      break;
     case DEVICE_VOC_CCS811:
       //Nothing to configure
       break;
@@ -1079,6 +1096,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
     case DEVICE_UV_VEML6075:
       ptr = (FunctionPointer)menuConfigure_VEML6075;
       break;
+    case DEVICE_LIGHT_VEML7700:
+      ptr = (FunctionPointer)menuConfigure_VEML7700;
+      break;
     case DEVICE_VOC_CCS811:
       ptr = (FunctionPointer)menuConfigure_CCS811;
       break;
@@ -1264,6 +1284,7 @@ void swap(struct node * a, struct node * b)
 // Available Qwiic devices
 //We no longer use defines in the search table. These are just here for reference.
 #define ADR_VEML6075 0x10
+#define ADR_VEML7700 0x10
 #define ADR_MPR0025PA1 0x18
 #define ADR_KX134 0x1E //Alternate: 0x1F
 #define ADR_SDP3X 0x21 //Alternates: 0x22, 0x23
@@ -1307,6 +1328,11 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         VEML6075 sensor;
         if (sensor.begin(qwiic) == true) //Wire port
           return (DEVICE_UV_VEML6075);
+
+        //Confidence: Low - just checks registers can be written to
+        VEML7700 sensor1;
+        if (sensor1.begin(qwiic) == true) //Wire port
+          return (DEVICE_LIGHT_VEML7700);
       }
       break;
     case 0x18:
@@ -1852,6 +1878,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_UV_VEML6075:
       return "UV-VEML6075";
+      break;
+    case DEVICE_LIGHT_VEML7700:
+      return "LIGHT-VEML7700";
       break;
     case DEVICE_VOC_CCS811:
       return "VOC-CCS811";

@@ -47,6 +47,7 @@ RUN arduino-cli lib install "SparkFun ADS1015 Arduino Library"
 RUN arduino-cli lib install "SparkFun KX13X Arduino Library"
 RUN arduino-cli lib install "SparkFun SDP3x Arduino Library"
 RUN arduino-cli lib install "SparkFun LPS28DFW Arduino Library"
+RUN arduino-cli lib install "SparkFun VEML7700 Arduino Library"
 
 # Add BlueRobotics_MS5837_Library from git
 WORKDIR /root/Arduino/libraries

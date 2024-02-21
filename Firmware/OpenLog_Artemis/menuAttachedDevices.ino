@@ -315,6 +315,9 @@ void menuAttachedDevices()
           case DEVICE_UV_VEML6075:
             SerialPrintf3("%s VEML6075 UV Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_LIGHT_VEML7700:
+            SerialPrintf3("%s VEML7700 Ambient Light Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
           case DEVICE_VOC_CCS811:
             SerialPrintf3("%s CCS811 tVOC and CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
@@ -1559,6 +1562,33 @@ void menuConfigure_VEML6075(void *configPtr)
 
 }
 
+void menuConfigure_VEML7700(void *configPtr)
+{
+  struct_VEML7700 *sensorSetting = (struct_VEML7700*)configPtr;
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure VEML7700 Ambient Light Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    SerialPrintln(F("x) Exit"));
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensorSetting->log ^= 1;
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+}
 
 void menuConfigure_MS5637(void *configPtr)
 {

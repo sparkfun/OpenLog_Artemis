@@ -145,6 +145,13 @@
     Add Tony Whipple's PR #146 - thank you @whipple63
     Add support for the ISM330DHCX, MMC5983MA, KX134 and ADS1015
     Resolve issue #87
+
+  v2.6:
+    Add support for the LPS28DFW - thank you @gauteh #179
+    Only disable I2C SDA and SCL during sleep when I2C bus is being powered down - thank you @whipple63 #167
+    Add calibrationConcentration support for the SCD30 - thank you @hotstick #181
+    Add limited support for the VEML7700 light sensor
+    Allow the calibration and offset for a _single_ NAU7802 to be stored in nvm
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -319,6 +326,7 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFun_ADS1015_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_ADS1015
 #include "SparkFun_KX13X.h" //Click here to get the library: http://librarymanager/All#SparkFun_KX13X
 #include "SparkFun_LPS28DFW_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_LPS28DFW_Arduino_Library
+#include "SparkFun_VEML7700_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_VEML7700
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 

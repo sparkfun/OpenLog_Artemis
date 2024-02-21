@@ -621,6 +621,12 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logUVIndex=" + nodeSetting->logUVIndex);
           }
           break;
+        case DEVICE_LIGHT_VEML7700:
+          {
+            struct_VEML7700 *nodeSetting = (struct_VEML7700 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+          }
+          break;
         case DEVICE_VOC_CCS811:
           {
             struct_CCS811 *nodeSetting = (struct_CCS811 *)temp->configPtr;
@@ -1187,6 +1193,15 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logUVB = d;
           else if (strcmp(deviceSettingName, "logUVIndex") == 0)
             nodeSetting->logUVIndex = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_LIGHT_VEML7700:
+        {
+          struct_VEML7700 *nodeSetting = (struct_VEML7700 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }

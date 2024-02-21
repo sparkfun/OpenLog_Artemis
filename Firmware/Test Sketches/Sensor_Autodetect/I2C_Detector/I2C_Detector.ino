@@ -48,6 +48,9 @@ BME280 phtSensor_BME280;
 #include "SparkFun_VEML6075_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VEML6075
 VEML6075 uvSensor_VEML6075;
 
+#include "SparkFun_VEML7700_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VEML7700
+VEML7700 light_VEML7700;
+
 #include "SparkFunCCS811.h" //Click here to get the library: http://librarymanager/All#SparkFun_CCS811
 #define ADR_CCS811_1 0x5B
 CCS811 vocSensor_CCS811(ADR_CCS811_1);
@@ -77,6 +80,7 @@ struct struct_QwiicSensors {
   bool BME280;
   bool SGP30;
   bool VEML6075;
+  bool VEML7700;
   bool MS5637;
   bool SCD30;
   bool MS8607;
@@ -96,6 +100,7 @@ struct_QwiicSensors qwiicAvailable = {
   .BME280 = false,
   .SGP30 = false,
   .VEML6075 = false,
+  .VEML7700 = false,
   .MS5637 = false,
   .SCD30 = false,
   .MS8607 = false,
@@ -146,6 +151,7 @@ void loop()
 
 // Available Qwiic devices
 #define ADR_VEML6075 0x10
+#define ADR_VEML7700 0x10
 #define ADR_NAU7802 0x2A
 #define ADR_VL53L1X 0x29
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
@@ -231,8 +237,13 @@ bool testDevice(uint8_t i2cAddress)
         qwiicAvailable.SGP30 = true;
       break;
     case ADR_VEML6075:
+    case ADR_VEML7700:
+      {
       if (uvSensor_VEML6075.begin(qwiic) == true) //Wire port
         qwiicAvailable.VEML6075 = true;
+      else if (light_VEML7700.begin(qwiic) == true) //Wire port
+        qwiicAvailable.VEML7700 = true;
+      }
       break;
     case ADR_MS5637:
       {

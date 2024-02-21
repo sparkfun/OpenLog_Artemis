@@ -70,6 +70,7 @@ Copy and paste the following into an empty sketch. Click on each link in turn to
 // http://librarymanager/All#SparkFun_ADS1015
 // http://librarymanager/All#SparkFun_KX13X
 // http://librarymanager/All#SparkFun_LPS28DFW_Arduino_Library
+// http://librarymanager/All#SparkFun_VEML7700
 ```
 
 ### Blue Robotics MS5837
