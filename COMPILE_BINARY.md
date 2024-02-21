@@ -108,6 +108,11 @@ Navigate to the `Extras` folder in the Zip file. Copy the `UartPower3.zip` file.
 C:\Users\<Your_User>\AppData\Local\Arduino15\packages\SparkFun\hardware\apollo3
 ```
 
+On Linux machines, this is (usually):
+```
+/home/<Your_User>/.arduino15/packages/SparkFun/hardware/apollo3/
+```
+
 Unzip it (Extract All files)
 
 **Close the Arduino IDE**

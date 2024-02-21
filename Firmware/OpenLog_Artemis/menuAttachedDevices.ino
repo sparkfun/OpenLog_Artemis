@@ -1664,6 +1664,7 @@ void menuConfigure_SCD30(void *configPtr)
       SerialPrintf2("6) Set Altitude Compensation: %d\r\n", sensorSetting->altitudeCompensation);
       SerialPrintf2("7) Set Ambient Pressure: %d\r\n", sensorSetting->ambientPressure);
       SerialPrintf2("8) Set Temperature Offset: %d\r\n", sensorSetting->temperatureOffset);
+      SerialPrintln(F("9) Set FRC Calibration CO2"));
     }
     SerialPrintln(F("x) Exit"));
 
@@ -1719,6 +1720,18 @@ void menuConfigure_SCD30(void *configPtr)
           sensorSetting->temperatureOffset = amt;
         else
           SerialPrintln(F("Error: Out of range"));
+      }
+      else if (incoming == '9')
+      {
+        SerialPrint(F("Enter Calibration CO2 in ppm (400 to 2000): "));
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt < 400 || amt > 2000)
+          SerialPrintln(F("Error: Out of range"));
+        else
+        {
+          sensorSetting->calibrationConcentration = amt;
+          sensorSetting->applyCalibrationConcentration = true;
+        }
       }
       else if (incoming == 'x')
         break;
