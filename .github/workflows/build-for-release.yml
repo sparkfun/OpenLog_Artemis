@@ -118,6 +118,27 @@ jobs:
       - name: Move binary
         run: mv ${{ env.targetBinary }} ./Binaries
 
+      - name: Enable Power Loss Protection
+        run: sed -i 's|//#define noPowerLossProtection|#define noPowerLossProtection|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: Compile Sketch
+        run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: Rename binary
+        run: |
+          cd ./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/
+          mv ${{ env.FILENAME_PREFIX }}.ino.bin ${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}-NoPowerLossProtection.bin
+          echo "targetBinary=./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}-NoPowerLossProtection.bin" >> "$GITHUB_ENV"
+          rm *.axf
+          rm *.hex
+          rm *.map
+
+      - name: Move binary
+        run: mv ${{ env.targetBinary }} ./Binaries
+
+      - name: Disable Power Loss Protection
+        run: sed -i 's|#define noPowerLossProtection|//#define noPowerLossProtection|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
       - uses: actions-js/push@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
