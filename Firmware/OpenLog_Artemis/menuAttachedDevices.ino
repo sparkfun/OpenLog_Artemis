@@ -941,7 +941,7 @@ void menuConfigure_NAU7802(void *configPtr)
       olaftoa(sensorConfig->calibrationFactor, tempStr, 6, sizeof(tempStr) / sizeof(char));
       SerialPrintf2("\tScale calibration factor: %s\r\n", tempStr);
       SerialPrintf2("\tScale zero offset: %d\r\n", sensorConfig->zeroOffset);
-      olaftoa(sensor->getWeight(), tempStr, sensorConfig->decimalPlaces, sizeof(tempStr) / sizeof(char));
+      olaftoa(sensor->getWeight(true, sensorConfig->averageAmount), tempStr, sensorConfig->decimalPlaces, sizeof(tempStr) / sizeof(char));
       SerialPrintf2("\tWeight currently on scale: %s\r\n", tempStr);
 
       SerialPrintf2("3) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
