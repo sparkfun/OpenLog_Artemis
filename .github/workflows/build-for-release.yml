@@ -84,6 +84,9 @@ jobs:
         run: arduino-cli lib install --git-url
           https://github.com/bluerobotics/BlueRobotics_MS5837_Library.git
 
+      - name: Enable ICM20948 DMP
+        run: sed -i 's|//#define ICM_20948_USE_DMP|#define ICM_20948_USE_DMP|g' /home/runner/Arduino/libraries/SparkFun_9DoF_IMU_Breakout_-_ICM_20948_-_Arduino_Library/src/util/ICM_20948_C.h
+
       - name: Patch Apollo3 Core
         run: |
           cd ./Extras
@@ -102,7 +105,6 @@ jobs:
 
       - name: Compile Sketch
         run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
-          --build-property "compiler.cxx-flags=\"-DICM_20948_USE_DMP\""
 
       - name: Rename binary
         run: |
