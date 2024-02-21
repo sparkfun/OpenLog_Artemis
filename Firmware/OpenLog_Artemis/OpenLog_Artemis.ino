@@ -164,7 +164,7 @@ const int FIRMWARE_VERSION_MINOR = 6;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x125 // Stored as 293 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x126 // Stored as 294 decimal in OLA_settings.txt
 
 //#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
 
