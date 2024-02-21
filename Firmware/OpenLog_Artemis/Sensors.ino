@@ -250,7 +250,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
 
             if (nodeSetting->log == true)
             {
-              float currentWeight = nodeDevice->getWeight(false, nodeSetting->averageAmount); //Do not allow negative weights, take average of X readings
+              float currentWeight = nodeDevice->getWeight(true, nodeSetting->averageAmount); //Allow negative weights, take average of X readings
               olaftoa(currentWeight, tempData1, nodeSetting->decimalPlaces, sizeof(tempData) / sizeof(char));
               sprintf(tempData, "%s,", tempData1);
               strlcat(sdOutputData, tempData, lenData);
