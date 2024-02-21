@@ -73,6 +73,7 @@ jobs:
           "SparkFun ADS1015 Arduino Library"
           "SparkFun KX13X Arduino Library"
           "SparkFun SDP3x Arduino Library"
+          "SparkFun LPS28DFW Arduino Library"
           "SparkFun VEML7700 Arduino Library"
 
       - name: Enable external libs
