@@ -6,6 +6,7 @@ v2.6:
 
 * Add workflow actions to automatically compile the firmware binaries
 * Add support for the LPS28DFW - thank you @gauteh #179
+* Only disable I2C SDA and SCL during sleep when I2C bus is being powered down - thank you @whipple63 #167
 
 v2.5:
 ---------
