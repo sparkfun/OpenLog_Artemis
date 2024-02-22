@@ -1041,7 +1041,7 @@ void menuConfigure_NAU7802(void *configPtr)
         SerialPrintln(F("Setup scale with no weight on it. Press a key when ready."));
         waitForInput();
 
-        sensor->calculateZeroOffset(64); //Zero or Tare the scale. Average over 64 readings.
+        sensor->calculateZeroOffset(sensorConfig->averageAmount); //Zero or Tare the scale
         sensorConfig->zeroOffset = sensor->getZeroOffset();
         SerialPrint(F("New zero offset: "));
         Serial.println(sensorConfig->zeroOffset);
@@ -1052,10 +1052,11 @@ void menuConfigure_NAU7802(void *configPtr)
       else if (incoming == '3')
       {
         SerialPrint(F("Please enter the weight, without units, for scale calibration (4) - (for example '100.0'): "));
-        waitForInput();
 
         //Read user input
-        sensorConfig->calibrationWeight = DSERIAL->parseFloat();
+        double newWeight = getDouble(menuTimeout); //Timeout after x seconds
+        if ((newWeight != STATUS_GETNUMBER_TIMEOUT) && (newWeight != STATUS_PRESSED_X))
+          sensorConfig->calibrationWeight = (float)newWeight;
 
         SerialPrintln(F(""));
       }
@@ -1068,7 +1069,7 @@ void menuConfigure_NAU7802(void *configPtr)
         SerialPrintln(F("Place calibration weight on scale. Press a key when weight is in place and stable."));
         waitForInput();
 
-        sensor->calculateCalibrationFactor(sensorConfig->calibrationWeight, 64); //Tell the library how much weight is currently on it. Average over 64 readings.
+        sensor->calculateCalibrationFactor(sensorConfig->calibrationWeight, sensorConfig->averageAmount); //Tell the library how much weight is currently on it
 
         sensorConfig->calibrationFactor = sensor->getCalibrationFactor();
 
