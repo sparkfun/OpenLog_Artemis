@@ -930,22 +930,96 @@ void menuConfigure_NAU7802(void *configPtr)
     SerialPrintln(F(""));
     SerialPrintln(F("Menu: Configure NAU7802 Load Cell Amplifier"));
 
+    if (sensorConfig->log == true)
+    {
+      char tempStr[16];
+      olaftoa(sensorConfig->calibrationFactor, tempStr, 6, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("\r\nScale calibration factor: %s\r\n", tempStr);
+      SerialPrintf2("Scale zero offset: %d\r\n", sensorConfig->zeroOffset);
+      olaftoa(sensor->getWeight(true, sensorConfig->averageAmount), tempStr, sensorConfig->decimalPlaces, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("Weight currently on scale: %s\r\n\r\n", tempStr);
+    }
+
     SerialPrint(F("1) Sensor Logging: "));
     if (sensorConfig->log == true) SerialPrintln(F("Enabled"));
     else SerialPrintln(F("Disabled"));
 
     if (sensorConfig->log == true)
     {
-      SerialPrintln(F("2) Calibrate Scale"));
+      SerialPrintln(F("2) Zero scale"));
       char tempStr[16];
-      olaftoa(sensorConfig->calibrationFactor, tempStr, 6, sizeof(tempStr) / sizeof(char));
-      SerialPrintf2("\tScale calibration factor: %s\r\n", tempStr);
-      SerialPrintf2("\tScale zero offset: %d\r\n", sensorConfig->zeroOffset);
-      olaftoa(sensor->getWeight(true, sensorConfig->averageAmount), tempStr, sensorConfig->decimalPlaces, sizeof(tempStr) / sizeof(char));
-      SerialPrintf2("\tWeight currently on scale: %s\r\n", tempStr);
-
-      SerialPrintf2("3) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
-      SerialPrintf2("4) Average number of readings to take per weight read: %d\r\n", sensorConfig->averageAmount);
+      olaftoa(sensorConfig->calibrationWeight, tempStr, 6, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("3) Calibration weight: %s\r\n", tempStr);
+      SerialPrintln(F("4) Calibrate scale"));
+      SerialPrintf2("5) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
+      SerialPrintf2("6) Average number of readings to take per weight read: %d\r\n", sensorConfig->averageAmount);
+      int gain;
+      switch (sensorConfig->gain)
+      {
+        case 0:
+          gain = 1;
+          break;
+        case 1:
+          gain = 2;
+          break;
+        case 2:
+          gain = 4;
+          break;
+        case 3:
+          gain = 8;
+          break;
+        case 4:
+          gain = 16;
+          break;
+        case 5:
+          gain = 32;
+          break;
+        case 6:
+          gain = 64;
+          break;
+        case 7:
+          gain = 128;
+          break;
+      }
+      SerialPrintf2("7) Gain: %d\r\n", gain);
+      int rate;
+      switch (sensorConfig->sampleRate)
+      {
+        case 0:
+          rate = 10;
+          break;
+        case 1:
+          rate = 20;
+          break;
+        case 2:
+          rate = 40;
+          break;
+        case 3:
+          rate = 80;
+          break;
+        case 7:
+          rate = 320;
+          break;
+      }
+      SerialPrintf2("8) Sample rate: %d\r\n", rate);
+      float LDO;
+      switch (sensorConfig->LDO)
+      {
+        case 4:
+          LDO = 3.3;
+          break;
+        case 5:
+          LDO = 3.0;
+          break;
+        case 6:
+          LDO = 2.7;
+          break;
+        case 7:
+          LDO = 2.4;
+          break;
+      }
+      olaftoa(LDO, tempStr, 1, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("9) LDO voltage: %s\r\n", tempStr);
     }
 
     SerialPrintln(F("x) Exit"));
@@ -962,33 +1036,45 @@ void menuConfigure_NAU7802(void *configPtr)
       {
         //Gives user the ability to set a known weight on the scale and calculate a calibration factor
         SerialPrintln(F(""));
-        SerialPrintln(F("Scale calibration"));
+        SerialPrintln(F("Zero scale"));
 
         SerialPrintln(F("Setup scale with no weight on it. Press a key when ready."));
         waitForInput();
 
         sensor->calculateZeroOffset(64); //Zero or Tare the scale. Average over 64 readings.
-        SerialPrint(F("New zero offset: "));
-        Serial.println(sensor->getZeroOffset());
-        if (settings.useTxRxPinsForTerminal == true)
-          Serial1.println(sensor->getZeroOffset());
-
-        SerialPrintln(F("Place known weight on scale. Press a key when weight is in place and stable."));
-        waitForInput();
-
-        SerialPrint(F("Please enter the weight, without units, currently sitting on the scale (for example '4.25'): "));
-        waitForInput();
-
-        //Read user input
-        float weightOnScale = DSERIAL->parseFloat();
-        sensor->calculateCalibrationFactor(weightOnScale, 64); //Tell the library how much weight is currently on it. Average over 64 readings.
-
-        sensorConfig->calibrationFactor = sensor->getCalibrationFactor();
         sensorConfig->zeroOffset = sensor->getZeroOffset();
-
+        SerialPrint(F("New zero offset: "));
+        Serial.println(sensorConfig->zeroOffset);
+        if (settings.useTxRxPinsForTerminal == true)
+          Serial1.println(sensorConfig->zeroOffset);
         SerialPrintln(F(""));
       }
       else if (incoming == '3')
+      {
+        SerialPrint(F("Please enter the weight, without units, for scale calibration (4) - (for example '100.0'): "));
+        waitForInput();
+
+        //Read user input
+        sensorConfig->calibrationWeight = DSERIAL->parseFloat();
+
+        SerialPrintln(F(""));
+      }
+      else if (incoming == '4')
+      {
+        //Gives user the ability to set a known weight on the scale and calculate a calibration factor
+        SerialPrintln(F(""));
+        SerialPrintln(F("Scale calibration"));
+
+        SerialPrintln(F("Place calibration weight on scale. Press a key when weight is in place and stable."));
+        waitForInput();
+
+        sensor->calculateCalibrationFactor(sensorConfig->calibrationWeight, 64); //Tell the library how much weight is currently on it. Average over 64 readings.
+
+        sensorConfig->calibrationFactor = sensor->getCalibrationFactor();
+
+        SerialPrintln(F(""));
+      }
+      else if (incoming == '5')
       {
         SerialPrint(F("Enter number of decimal places to print (1 to 10): "));
         int places = getNumber(menuTimeout);
@@ -1001,7 +1087,7 @@ void menuConfigure_NAU7802(void *configPtr)
           sensorConfig->decimalPlaces = places;
         }
       }
-      else if (incoming == '4')
+      else if (incoming == '6')
       {
         SerialPrint(F("Enter number of readings to take per weight read (1 to 10): "));
         int amt = getNumber(menuTimeout);
@@ -1013,6 +1099,35 @@ void menuConfigure_NAU7802(void *configPtr)
         {
           sensorConfig->averageAmount = amt;
         }
+      }
+      else if (incoming == '7')
+      {
+        sensorConfig->gain += 1;
+        if (sensorConfig->gain == 8)
+          sensorConfig->gain = 0;
+
+        sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        SerialPrintln(F("\r\n\r\nGain updated. Please zero and calibrate the scale\r\n\r\n"));
+      }
+      else if (incoming == '8')
+      {
+        sensorConfig->sampleRate += 1;
+        if (sensorConfig->sampleRate == 4)
+          sensorConfig->sampleRate = 7;
+        if (sensorConfig->sampleRate == 8)
+          sensorConfig->sampleRate = 0;
+
+        sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        SerialPrintln(F("\r\n\r\nSample rate updated. Please zero and calibrate the scale\r\n\r\n"));
+      }
+      else if (incoming == '9')
+      {
+        sensorConfig->LDO += 1;
+        if (sensorConfig->LDO == 8)
+          sensorConfig->LDO = 4;
+
+        sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        SerialPrintln(F("\r\n\r\nLDO updated. Please zero and calibrate the scale\r\n\r\n"));
       }
       else if (incoming == 'x')
         break;

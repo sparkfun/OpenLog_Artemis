@@ -730,9 +730,12 @@ void configureDevice(node * temp)
         NAU7802 *sensor = (NAU7802 *)temp->classPtr;
         struct_NAU7802 *sensorSetting = (struct_NAU7802 *)temp->configPtr;
 
-        sensor->setSampleRate(NAU7802_SPS_320); //Sample rate can be set to 10, 20, 40, 80, or 320Hz
         sensor->setCalibrationFactor(sensorSetting->calibrationFactor);
         sensor->setZeroOffset(sensorSetting->zeroOffset);
+        sensor->setGain(sensorSetting->gain);
+        sensor->setSampleRate(sensorSetting->sampleRate);
+        sensor->setLDO(sensorSetting->LDO);
+        sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
       }
       break;
     case DEVICE_DISTANCE_VL53L1X:

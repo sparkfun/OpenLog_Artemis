@@ -104,10 +104,14 @@ struct struct_LPS28DFW {
 
 struct struct_NAU7802 {
   bool log = true;
-  float calibrationFactor = 0; //Value used to convert the load cell reading to lbs or kg
+  float calibrationFactor = 0.0; //Value used to convert the load cell reading to lbs or kg
   long zeroOffset = 1000; //Zero value that is found when scale is tared. Default to 1000 so we don't get inf.
   int decimalPlaces = 2;
   int averageAmount = 4; //Number of readings to take per getWeight call
+  float calibrationWeight = 100.0; //Default scale calibration weight. User can adjust via the menu
+  int sampleRate = 3; //Library says possible values are: 10(0), 20(1), 40(2), 80(3), 320(7)
+  int gain = 7; //Library says possible values are: 1(0), 2(1), 4(2), 8(3), 16(4), 32(5), 64(6), 128(7)
+  int LDO = 4; //LDO voltage. Only 3.3(4), 3.0(5), 2.7(6), 2.4(7) make sense here
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

@@ -523,6 +523,10 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "zeroOffset=" + nodeSetting->zeroOffset);
             settingsFile.println((String)base + "decimalPlaces=" + nodeSetting->decimalPlaces);
             settingsFile.println((String)base + "averageAmount=" + nodeSetting->averageAmount);
+            settingsFile.println((String)base + "calibrationWeight=" + nodeSetting->calibrationWeight);
+            settingsFile.println((String)base + "sampleRate=" + nodeSetting->sampleRate);
+            settingsFile.println((String)base + "gain=" + nodeSetting->gain);
+            settingsFile.println((String)base + "LDO=" + nodeSetting->LDO);
           }
           break;
         case DEVICE_DISTANCE_VL53L1X:
@@ -1026,6 +1030,14 @@ bool parseDeviceLine(char* str) {
             nodeSetting->decimalPlaces = d;
           else if (strcmp(deviceSettingName, "averageAmount") == 0)
             nodeSetting->averageAmount = d;
+          else if (strcmp(deviceSettingName, "calibrationWeight") == 0)
+            nodeSetting->calibrationWeight = d;
+          else if (strcmp(deviceSettingName, "sampleRate") == 0)
+            nodeSetting->sampleRate = d;
+          else if (strcmp(deviceSettingName, "gain") == 0)
+            nodeSetting->gain = d;
+          else if (strcmp(deviceSettingName, "LDO") == 0)
+            nodeSetting->LDO = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
