@@ -371,7 +371,8 @@ bool beginQwiicDevices()
           NAU7802 *tempDevice = (NAU7802 *)temp->classPtr;
           struct_NAU7802 *nodeSetting = (struct_NAU7802 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
-          temp->online = tempDevice->begin(qwiic); //Wire port
+          //temp->online = tempDevice->begin(qwiic); //Wire port
+          temp->online = tempDevice->begin(qwiic, false); //Wire port. Don't reset / calibrate AFE
         }
         break;
       case DEVICE_DISTANCE_VL53L1X:
@@ -730,12 +731,24 @@ void configureDevice(node * temp)
         NAU7802 *sensor = (NAU7802 *)temp->classPtr;
         struct_NAU7802 *sensorSetting = (struct_NAU7802 *)temp->configPtr;
 
+        ///*
+        // Needed if calibrate AFE is not performed by .begin
+        sensor->reset();
+        sensor->powerUp();
+        sensor->setRegister(NAU7802_ADC, 0x30); //Turn off CLK_CHP. From 9.1 power on sequencing.
+        sensor->setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
+        //*/
         sensor->setCalibrationFactor(sensorSetting->calibrationFactor);
         sensor->setZeroOffset(sensorSetting->zeroOffset);
         sensor->setGain(sensorSetting->gain);
         sensor->setSampleRate(sensorSetting->sampleRate);
         sensor->setLDO(sensorSetting->LDO);
-        sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+
+        //for (int i = 0; i < 10; i++)
+        //  sensor->getWeight(true, sensorSetting->averageAmount); //Flush
+
+        //sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        //calibrateNAU7802(sensor);
       }
       break;
     case DEVICE_DISTANCE_VL53L1X:
@@ -1371,8 +1384,9 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Confidence: High - Checks 8 bit revision code (0x0F)
         NAU7802 sensor;
-        if (sensor.begin(qwiic) == true) //Wire port
-          if (sensor.getRevisionCode() == 0x0F)
+        //if (sensor.begin(qwiic) == true) //Wire port
+        if (sensor.begin(qwiic, false) == true) //Wire port. Don't reset / calibrate AFE
+          //if (sensor.getRevisionCode() == 0x0F) // Comment this line if not resetting the chip / calibrating AFE during begin
             return (DEVICE_LOADCELL_NAU7802);
       }
       break;

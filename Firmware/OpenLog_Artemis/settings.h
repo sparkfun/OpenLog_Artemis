@@ -111,7 +111,7 @@ struct struct_NAU7802 {
   float calibrationWeight = 1.0; //Default scale calibration weight. User can adjust via the menu
   int sampleRate = 3; //Library says possible values are: 10(0), 20(1), 40(2), 80(3), 320(7)
   int gain = 7; //Library says possible values are: 1(0), 2(1), 4(2), 8(3), 16(4), 32(5), 64(6), 128(7)
-  int LDO = 4; //LDO voltage. Only 3.3(4), 3.0(5), 2.7(6), 2.4(7) make sense here
+  int LDO = 5; //LDO voltage. Only 3.3(4), 3.0(5), 2.7(6), 2.4(7) make sense here
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

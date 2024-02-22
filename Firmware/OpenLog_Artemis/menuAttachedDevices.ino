@@ -1041,6 +1041,9 @@ void menuConfigure_NAU7802(void *configPtr)
         SerialPrintln(F("Setup scale with no weight on it. Press a key when ready."));
         waitForInput();
 
+        for (int i = 0; i < 10; i++)
+          sensor->getWeight(true, sensorConfig->averageAmount); //Flush
+
         sensor->calculateZeroOffset(sensorConfig->averageAmount); //Zero or Tare the scale
         sensorConfig->zeroOffset = sensor->getZeroOffset();
         SerialPrint(F("New zero offset: "));
@@ -1068,6 +1071,9 @@ void menuConfigure_NAU7802(void *configPtr)
 
         SerialPrintln(F("Place calibration weight on scale. Press a key when weight is in place and stable."));
         waitForInput();
+
+        for (int i = 0; i < 10; i++)
+          sensor->getWeight(true, sensorConfig->averageAmount); //Flush
 
         sensor->calculateCalibrationFactor(sensorConfig->calibrationWeight, sensorConfig->averageAmount); //Tell the library how much weight is currently on it
 
@@ -1107,7 +1113,11 @@ void menuConfigure_NAU7802(void *configPtr)
         if (sensorConfig->gain == 8)
           sensorConfig->gain = 0;
 
-        sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        for (int i = 0; i < 10; i++)
+          sensor->getWeight(true, sensorConfig->averageAmount); //Flush
+
+        //sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        //calibrateNAU7802(sensor);
         SerialPrintln(F("\r\n\r\nGain updated. Please zero and calibrate the scale\r\n\r\n"));
       }
       else if (incoming == '8')
@@ -1118,7 +1128,11 @@ void menuConfigure_NAU7802(void *configPtr)
         if (sensorConfig->sampleRate == 8)
           sensorConfig->sampleRate = 0;
 
-        sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        for (int i = 0; i < 10; i++)
+          sensor->getWeight(true, sensorConfig->averageAmount); //Flush
+
+        //sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        //calibrateNAU7802(sensor);
         SerialPrintln(F("\r\n\r\nSample rate updated. Please zero and calibrate the scale\r\n\r\n"));
       }
       else if (incoming == '9')
@@ -1127,7 +1141,11 @@ void menuConfigure_NAU7802(void *configPtr)
         if (sensorConfig->LDO == 8)
           sensorConfig->LDO = 4;
 
-        sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        for (int i = 0; i < 10; i++)
+          sensor->getWeight(true, sensorConfig->averageAmount); //Flush
+
+        //sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+        //calibrateNAU7802(sensor);
         SerialPrintln(F("\r\n\r\nLDO updated. Please zero and calibrate the scale\r\n\r\n"));
       }
       else if (incoming == 'x')

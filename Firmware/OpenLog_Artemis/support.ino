@@ -2,6 +2,18 @@
 
 #include "Sensors.h"
 
+bool calibrateNAU7802(NAU7802 *sensor)
+{
+  int count = 0;
+  bool success = false;
+  do
+  {
+    success = sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+    count++;
+  } while ((!success) && (count < 10));
+  return (success);
+}
+
 bool useRTCmillis(void)
 {
   return (((settings.useGPIO11ForTrigger == false) && (settings.usBetweenReadings >= maxUsBeforeSleep))
