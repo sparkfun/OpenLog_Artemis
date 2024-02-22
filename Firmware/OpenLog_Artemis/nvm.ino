@@ -523,7 +523,7 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "zeroOffset=" + nodeSetting->zeroOffset);
             settingsFile.println((String)base + "decimalPlaces=" + nodeSetting->decimalPlaces);
             settingsFile.println((String)base + "averageAmount=" + nodeSetting->averageAmount);
-            settingsFile.println((String)base + "calibrationWeight=" + nodeSetting->calibrationWeight);
+            settingsFile.println((String)base + "calibrationWeight="); settingsFile.println(nodeSetting->calibrationWeight);
             settingsFile.println((String)base + "sampleRate=" + nodeSetting->sampleRate);
             settingsFile.println((String)base + "gain=" + nodeSetting->gain);
             settingsFile.println((String)base + "LDO=" + nodeSetting->LDO);
