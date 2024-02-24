@@ -371,8 +371,7 @@ bool beginQwiicDevices()
           NAU7802 *tempDevice = (NAU7802 *)temp->classPtr;
           struct_NAU7802 *nodeSetting = (struct_NAU7802 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
-          //temp->online = tempDevice->begin(qwiic); //Wire port
-          temp->online = tempDevice->begin(qwiic, false); //Wire port. Don't reset / calibrate AFE
+          temp->online = tempDevice->begin(qwiic, false); //Wire port. Skip the initialization. Let configureDevice do it
         }
         break;
       case DEVICE_DISTANCE_VL53L1X:
@@ -731,24 +730,32 @@ void configureDevice(node * temp)
         NAU7802 *sensor = (NAU7802 *)temp->classPtr;
         struct_NAU7802 *sensorSetting = (struct_NAU7802 *)temp->configPtr;
 
-        ///*
-        // Needed if calibrate AFE is not performed by .begin
+        // Here we should reset the chip again - to clear the offset calibration - and only call calibrateAFE if desired
+
         sensor->reset();
         sensor->powerUp();
-        sensor->setRegister(NAU7802_ADC, 0x30); //Turn off CLK_CHP. From 9.1 power on sequencing.
-        sensor->setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
-        //*/
-        sensor->setCalibrationFactor(sensorSetting->calibrationFactor);
-        sensor->setZeroOffset(sensorSetting->zeroOffset);
+        sensor->setLDO(sensorSetting->LDO);
         sensor->setGain(sensorSetting->gain);
         sensor->setSampleRate(sensorSetting->sampleRate);
-        sensor->setLDO(sensorSetting->LDO);
+        //Turn off CLK_CHP. From 9.1 power on sequencing.
+        uint8_t adc = sensor->getRegister(NAU7802_ADC);
+        adc |= 0x30;
+        sensor->setRegister(NAU7802_ADC, adc);
+        sensor->setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
+        sensor->clearBit(NAU7802_PGA_LDOMODE, NAU7802_PGA); //Ensure LDOMODE bit is clear - improved accuracy and higher DC gain, with ESR < 1 ohm
+        sensor->setCalibrationFactor(sensorSetting->calibrationFactor);
+        sensor->setZeroOffset(sensorSetting->zeroOffset);
 
-        //for (int i = 0; i < 10; i++)
-        //  sensor->getWeight(true, sensorSetting->averageAmount); //Flush
+        delay(sensor->getLDORampDelay()); // Wait for LDO to ramp
 
-        //sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
-        //calibrateNAU7802(sensor);
+        if (sensorSetting->useCalibrationInternal)
+        {
+          sensor->getWeight(true, 10); //Flush
+
+          sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate          
+        }
+
+        sensor->getWeight(true, 10); //Flush
       }
       break;
     case DEVICE_DISTANCE_VL53L1X:
@@ -1384,9 +1391,8 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Confidence: High - Checks 8 bit revision code (0x0F)
         NAU7802 sensor;
-        //if (sensor.begin(qwiic) == true) //Wire port
-        if (sensor.begin(qwiic, false) == true) //Wire port. Don't reset / calibrate AFE
-          //if (sensor.getRevisionCode() == 0x0F) // Comment this line if not resetting the chip / calibrating AFE during begin
+        if (sensor.begin(qwiic) == true) //Wire port. Note: this will reset the NAU7802 and call calibrateAFE but getRevisionCode fails otherwise
+          if (sensor.getRevisionCode() == 0x0F)
             return (DEVICE_LOADCELL_NAU7802);
       }
       break;
