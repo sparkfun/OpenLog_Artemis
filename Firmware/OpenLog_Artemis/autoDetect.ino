@@ -748,11 +748,16 @@ void configureDevice(node * temp)
 
         delay(sensor->getLDORampDelay()); // Wait for LDO to ramp
 
-        if (sensorSetting->useCalibrationInternal)
+        if (sensorSetting->calibrationMode == 1) //Internal calibration
         {
           sensor->getWeight(true, 10); //Flush
 
-          sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate          
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
+        }
+        else if (sensorSetting->calibrationMode == 2) //Use saved or default external calibration
+        {
+          sensor->set24BitRegister(NAU7802_OCAL1_B2, sensorSetting->offsetReg);
+          sensor->set32BitRegister(NAU7802_GCAL1_B3, sensorSetting->gainReg);
         }
 
         sensor->getWeight(true, 10); //Flush

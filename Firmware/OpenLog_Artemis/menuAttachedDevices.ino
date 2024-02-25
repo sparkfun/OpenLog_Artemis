@@ -937,6 +937,7 @@ void menuConfigure_NAU7802(void *configPtr)
       SerialPrintf2("\r\nScale calibration factor: %s\r\n", tempStr);
 
       SerialPrintf2("Scale zero offset: %d\r\n", sensorConfig->zeroOffset);
+      SerialPrintf2("Scale offset register: %d\r\n", sensor->get24BitRegister(NAU7802_OCAL1_B2));
 
       sensor->getWeight(true, 10); //Flush
       olaftoa(sensor->getWeight(true, sensorConfig->averageAmount), tempStr, sensorConfig->decimalPlaces, sizeof(tempStr) / sizeof(char));
@@ -1024,9 +1025,10 @@ void menuConfigure_NAU7802(void *configPtr)
       olaftoa(LDO, tempStr, 1, sizeof(tempStr) / sizeof(char));
       SerialPrintf2("9) LDO voltage: %s\r\n", tempStr);
     }
-    SerialPrint(F("10) Use internal calibration: "));
-    if (sensorConfig->useCalibrationInternal == true) SerialPrintln(F("Enabled"));
-    else SerialPrintln(F("Disabled"));
+    SerialPrint(F("10) Calibration mode: "));
+    if (sensorConfig->calibrationMode == 0) SerialPrintln(F("None"));
+    else if (sensorConfig->calibrationMode == 1) SerialPrintln(F("Internal"));
+    else SerialPrintln(F("External"));
 
     SerialPrintln(F("x) Exit"));
 
@@ -1048,6 +1050,16 @@ void menuConfigure_NAU7802(void *configPtr)
         waitForInput();
 
         sensor->getWeight(true, 10); //Flush
+
+        if (sensorConfig->calibrationMode == 2) //External calibration
+        {
+          sensor->calibrateAFE(NAU7802_CALMOD_OFFSET); //External offset calibration
+
+          sensorConfig->offsetReg = sensor->get24BitRegister(NAU7802_OCAL1_B2); // Save new offset
+          sensorConfig->gainReg = sensor->get32BitRegister(NAU7802_GCAL1_B3); // This should not have changed, but read it anyway
+
+          sensor->getWeight(true, 10); //Flush
+        }
 
         sensor->calculateZeroOffset(sensorConfig->averageAmount); //Zero or Tare the scale
 
@@ -1132,11 +1144,11 @@ void menuConfigure_NAU7802(void *configPtr)
 
         sensor->setGain(sensorConfig->gain);
 
-        if (sensorConfig->useCalibrationInternal)
+        if (sensorConfig->calibrationMode == 1) //Internal calibration
         {
           sensor->getWeight(true, 10); //Flush
 
-          sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
         }
 
         SerialPrintln(F("\r\n\r\nGain updated. Please zero and calibrate the scale\r\n\r\n"));
@@ -1151,13 +1163,14 @@ void menuConfigure_NAU7802(void *configPtr)
 
         sensor->setSampleRate(sensorConfig->sampleRate);
 
-        if (sensorConfig->useCalibrationInternal)
+        if (sensorConfig->calibrationMode == 1) //Internal calibration
         {
           sensor->getWeight(true, 10); //Flush
 
-          sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
         }
 
+        // Limit averageAmount (to prevent getWeight timing out after 1s)
         if ((sensorConfig->sampleRate) == 0 && (sensorConfig->averageAmount > 9))
           sensorConfig->averageAmount = 9;
         else if ((sensorConfig->sampleRate) == 1 && (sensorConfig->averageAmount > 19))
@@ -1179,20 +1192,22 @@ void menuConfigure_NAU7802(void *configPtr)
 
         sensor->setLDO(sensorConfig->LDO);
 
-        if (sensorConfig->useCalibrationInternal)
+        if (sensorConfig->calibrationMode == 1) //Internal calibration
         {
           delay(sensor->getLDORampDelay()); // Wait for LDO to ramp before attempting calibrateAFE
 
           sensor->getWeight(true, 10); //Flush
 
-          sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
         }
 
         SerialPrintln(F("\r\n\r\nLDO updated. Please zero and calibrate the scale\r\n\r\n"));
       }
       else if (incoming == 10)
       {
-        sensorConfig->useCalibrationInternal ^= 1;
+        sensorConfig->calibrationMode += 1;
+        if (sensorConfig->calibrationMode == 3)
+          sensorConfig->calibrationMode = 0;
 
         sensor->reset();
         sensor->powerUp();
@@ -1210,11 +1225,11 @@ void menuConfigure_NAU7802(void *configPtr)
 
         delay(sensor->getLDORampDelay()); // Wait for LDO to ramp before attempting calibrateAFE
 
-        if (sensorConfig->useCalibrationInternal)
+        if (sensorConfig->calibrationMode == 1) //Internal calibration
         {
           sensor->getWeight(true, 10); //Flush
 
-          sensor->calibrateAFE(); //Recalibrate after changing gain / sample rate
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
         }
 
         sensor->getWeight(true, 10); //Flush

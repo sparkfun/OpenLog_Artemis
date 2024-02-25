@@ -112,7 +112,9 @@ struct struct_NAU7802 {
   int sampleRate = 3; //Library says possible values are: 10(0), 20(1), 40(2), 80(3), 320(7)
   int gain = 7; //Library says possible values are: 1(0), 2(1), 4(2), 8(3), 16(4), 32(5), 64(6), 128(7)
   int LDO = 5; //LDO voltage. Only 3.3(4), 3.0(5), 2.7(6), 2.4(7) make sense here
-  bool useCalibrationInternal = true; //Use CALMOD / CALS (calibrateAFE)
+  int calibrationMode = 1; //0: None; 1: Use CALMOD / CALS (calibrateAFE) Internal; 2: Use CALMOD / CALS (calibrateAFE) External
+  int32_t offsetReg = 0; //Value for the NAU7802 offset register
+  uint32_t gainReg = 0x00800000; //Value for the NAU7802 gain register
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
