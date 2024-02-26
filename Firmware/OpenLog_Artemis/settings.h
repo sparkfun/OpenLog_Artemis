@@ -105,7 +105,7 @@ struct struct_LPS28DFW {
 struct struct_NAU7802 {
   bool log = true;
   float calibrationFactor = 1.0; //Value used to convert the load cell reading to lbs or kg. Default to 1 to avoid divide-by-zero
-  long zeroOffset = 0; //Zero value that is found when scale is tared. Default to 0 so we get raw readings
+  int32_t zeroOffset = 0; //Zero value that is found when scale is tared. Default to 0 so we get raw readings
   int decimalPlaces = 2;
   int averageAmount = 4; //Number of readings to take per getWeight call
   float calibrationWeight = 1.0; //Default scale calibration weight. User can adjust via the menu
