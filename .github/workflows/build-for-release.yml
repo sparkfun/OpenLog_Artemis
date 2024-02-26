@@ -154,7 +154,7 @@ jobs:
       - name: Rename binary
         run: |
           cd ./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/
-          mv ${{ env.FILENAME_PREFIX }}.ino.bin ${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}-NoPowerLossProtection.bin
+          mv ${{ env.FILENAME_PREFIX }}.ino.bin ${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinorX04 }}.bin
           echo "targetBinary=./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinorX04 }}.bin" >> "$GITHUB_ENV"
           rm *.axf
           rm *.hex
