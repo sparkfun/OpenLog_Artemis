@@ -144,8 +144,9 @@ jobs:
         run: sed -i 's|#define noPowerLossProtection|//#define noPowerLossProtection|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
 
       - name: X04 Hardware
-        run: sed -i 's|#define HARDWARE_VERSION_MAJOR 1|#define HARDWARE_VERSION_MAJOR 0|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
-        run: sed -i 's|#define HARDWARE_VERSION_MINOR 0|#define HARDWARE_VERSION_MINOR 4|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+        run: |
+          sed -i 's|#define HARDWARE_VERSION_MAJOR 1|#define HARDWARE_VERSION_MAJOR 0|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+          sed -i 's|#define HARDWARE_VERSION_MINOR 0|#define HARDWARE_VERSION_MINOR 4|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
 
       - name: Compile Sketch
         run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
@@ -163,8 +164,9 @@ jobs:
         run: mv ${{ env.targetBinary }} ./Binaries
 
       - name: V01 Hardware
-        run: sed -i 's|#define HARDWARE_VERSION_MAJOR 0|#define HARDWARE_VERSION_MAJOR 1|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
-        run: sed -i 's|#define HARDWARE_VERSION_MINOR 4|#define HARDWARE_VERSION_MINOR 0|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+        run: |
+          sed -i 's|#define HARDWARE_VERSION_MAJOR 0|#define HARDWARE_VERSION_MAJOR 1|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+          sed -i 's|#define HARDWARE_VERSION_MINOR 4|#define HARDWARE_VERSION_MINOR 0|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
 
       - uses: actions-js/push@master
         with:
