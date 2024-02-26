@@ -23,6 +23,7 @@ This document summarizes the units used for each sensor measurement.
 - [MS5837 depth and pressure sensor](#MS5837-depth-pressure-sensor)
 - [AHT20 humidity and temperature sensor](#AHT20-humidity-and-temperature-sensor)
 - [SHTC3 humidity and temperature sensor](#SHTC3-humidity-and-temperature-sensor)
+- [LPS28DFW absolute pressure sensor](#LPS28DFW-absolute-pressure-sensor)
 
 ### Differential Pressure:
 
@@ -36,6 +37,7 @@ This document summarizes the units used for each sensor measurement.
 - [SGP40 air quality (VOC index) sensor](#SGP40-air-quality-sensor)
 - [SCD30 CO2 humidity and temperature sensor](#SCD30-CO2-humidity-and-temperature-sensor)
 - [SN-GCJA5 Particle Sensor](#SN-GCJA5-Particle-Sensor)
+- [VEML7700 Ambient light sensor](#VEML7700-Ambient-light-sensor)
 
 ### Distance:
 
@@ -140,7 +142,15 @@ Carrier Solution:
 | []() | | |
 |---|---|---|
 | Pressure | pressure_hPa | hectoPascals |
-| Temperature | pressure_degC | Degrees Centigrade |
+| Temperature | temperature_degC | Degrees Centigrade |
+
+---
+## LPS28DFW absolute pressure sensor
+
+| []() | | |
+|---|---|---|
+| Pressure | pressure_hPa | hectoPascals |
+| Temperature | temperature_degC | Degrees Centigrade |
 
 ---
 ## MS8607 PHT sensor
@@ -224,6 +234,13 @@ VOC = Volatile Organic Compounds
 | UVA | uva |  |
 | UVB | uvb |  |
 | UV Index | uvIndex |  |
+
+---
+## VEML7700 Ambient light sensor
+
+| []() | | |
+|---|---|---|
+| Lux | lux |  |
 
 ---
 ## SGP30 air quality and VOC sensor

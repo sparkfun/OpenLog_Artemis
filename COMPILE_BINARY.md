@@ -69,6 +69,8 @@ Copy and paste the following into an empty sketch. Click on each link in turn to
 // http://librarymanager/All#SparkFun_MMC5983MA
 // http://librarymanager/All#SparkFun_ADS1015
 // http://librarymanager/All#SparkFun_KX13X
+// http://librarymanager/All#SparkFun_LPS28DFW_Arduino_Library
+// http://librarymanager/All#SparkFun_VEML7700
 ```
 
 ### Blue Robotics MS5837
@@ -105,6 +107,11 @@ Navigate to the `Extras` folder in the Zip file. Copy the `UartPower3.zip` file.
 
 ```
 C:\Users\<Your_User>\AppData\Local\Arduino15\packages\SparkFun\hardware\apollo3
+```
+
+On Linux machines, this is (usually):
+```
+/home/<Your_User>/.arduino15/packages/SparkFun/hardware/apollo3/
 ```
 
 Unzip it (Extract All files)

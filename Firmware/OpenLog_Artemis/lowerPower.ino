@@ -338,10 +338,6 @@ void goToSleep(uint32_t sysTicksToSleep)
   am_hal_gpio_pinconfig(PIN_IMU_INT , g_AM_HAL_GPIO_DISABLE); //ICM INT
   am_hal_gpio_pinconfig(PIN_MICROSD_CHIP_SELECT , g_AM_HAL_GPIO_DISABLE); //microSD CS
 
-  //Do disable qwiic SDA and SCL to minimise the current draw during deep sleep
-  am_hal_gpio_pinconfig(PIN_QWIIC_SDA , g_AM_HAL_GPIO_DISABLE);
-  am_hal_gpio_pinconfig(PIN_QWIIC_SCL , g_AM_HAL_GPIO_DISABLE);
-
   //If requested, disable pins 48 and 49 (UART0) to stop them back-feeding the CH340
   if (settings.serialTxRxDuringSleep == false)
   {
@@ -363,7 +359,12 @@ void goToSleep(uint32_t sysTicksToSleep)
 
   //Keep Qwiic bus powered on if user desires it
   if (settings.powerDownQwiicBusBetweenReads == true)
+  {
+    //Do disable qwiic SDA and SCL to minimise the current draw during deep sleep
+    am_hal_gpio_pinconfig(PIN_QWIIC_SDA , g_AM_HAL_GPIO_DISABLE);
+    am_hal_gpio_pinconfig(PIN_QWIIC_SCL , g_AM_HAL_GPIO_DISABLE);
     qwiicPowerOff();
+  }
   else
     qwiicPowerOn(); //Make sure pins stays as output
 
@@ -561,7 +562,16 @@ void wakeFromSleep()
     //loadDeviceSettingsFromFile(); //Apply device settings after the Qwiic bus devices have been detected and begin()'d
     configureQwiicDevices(); //Apply config settings to each device in the node list
   }
-
+  
+  // Late in the process to allow time for external device to generate unwanted signals
+  while(Serial.available())  // Flush the input buffer
+    Serial.read();
+  if (settings.useTxRxPinsForTerminal == true)
+  {
+    while(Serial1.available())  // Flush the input buffer
+      Serial1.read();
+  }
+  
   //When we wake up micros has been reset to zero so we need to let the main loop know to take a reading
   takeReading = true;
 }

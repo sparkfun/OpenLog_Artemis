@@ -159,6 +159,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_LPS25HB;
       }
       break;
+    case DEVICE_PRESSURE_LPS28DFW:
+      {
+        temp->classPtr = new LPS28DFW;
+        temp->configPtr = new struct_LPS28DFW;
+      }
+      break;
     case DEVICE_PRESSURE_MS5637:
       {
         temp->classPtr = new MS5637;
@@ -175,6 +181,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
       {
         temp->classPtr = new VEML6075;
         temp->configPtr = new struct_VEML6075;
+      }
+      break;
+    case DEVICE_LIGHT_VEML7700:
+      {
+        temp->classPtr = new VEML7700;
+        temp->configPtr = new struct_VEML7700;
       }
       break;
     case DEVICE_VOC_CCS811:
@@ -359,7 +371,7 @@ bool beginQwiicDevices()
           NAU7802 *tempDevice = (NAU7802 *)temp->classPtr;
           struct_NAU7802 *nodeSetting = (struct_NAU7802 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
-          temp->online = tempDevice->begin(qwiic); //Wire port
+          temp->online = tempDevice->begin(qwiic, false); //Wire port. Skip the initialization. Let configureDevice do it
         }
         break;
       case DEVICE_DISTANCE_VL53L1X:
@@ -406,6 +418,22 @@ bool beginQwiicDevices()
           temp->online = tempDevice->begin(qwiic, temp->address); //Wire port, Address
         }
         break;
+      case DEVICE_PRESSURE_LPS28DFW:
+        {
+          LPS28DFW *tempDevice = (LPS28DFW *)temp->classPtr;
+          struct_LPS28DFW *nodeSetting = (struct_LPS28DFW *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          temp->online = tempDevice->begin(temp->address, qwiic) == LPS28DFW_OK;
+          lps28dfw_md_t modeConfig =
+          {
+              .fs  = LPS28DFW_1260hPa,    // Full scale range
+              .odr = LPS28DFW_ONE_SHOT,        // Output data rate
+              .avg = LPS28DFW_4_AVG,      // Average filter
+              .lpf = LPS28DFW_LPF_DISABLE // Low-pass filter
+          };
+          tempDevice->setModeConfig(&modeConfig);
+        }
+        break;
       case DEVICE_PRESSURE_MS5637:
         {
           MS5637 *tempDevice = (MS5637 *)temp->classPtr;
@@ -427,6 +455,14 @@ bool beginQwiicDevices()
         {
           VEML6075 *tempDevice = (VEML6075 *)temp->classPtr;
           struct_VEML6075 *nodeSetting = (struct_VEML6075 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          temp->online = tempDevice->begin(qwiic); //Wire port
+        }
+        break;
+      case DEVICE_LIGHT_VEML7700:
+        {
+          VEML7700 *tempDevice = (VEML7700 *)temp->classPtr;
+          struct_VEML7700 *nodeSetting = (struct_VEML7700 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
         }
@@ -694,9 +730,37 @@ void configureDevice(node * temp)
         NAU7802 *sensor = (NAU7802 *)temp->classPtr;
         struct_NAU7802 *sensorSetting = (struct_NAU7802 *)temp->configPtr;
 
-        sensor->setSampleRate(NAU7802_SPS_320); //Sample rate can be set to 10, 20, 40, 80, or 320Hz
+        // Here we should reset the chip again - to clear the offset calibration - and only call calibrateAFE if desired
+
+        sensor->reset();
+        sensor->powerUp();
+        sensor->setLDO(sensorSetting->LDO);
+        sensor->setGain(sensorSetting->gain);
+        sensor->setSampleRate(sensorSetting->sampleRate);
+        //Turn off CLK_CHP. From 9.1 power on sequencing.
+        uint8_t adc = sensor->getRegister(NAU7802_ADC);
+        adc |= 0x30;
+        sensor->setRegister(NAU7802_ADC, adc);
+        sensor->setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
+        sensor->clearBit(NAU7802_PGA_LDOMODE, NAU7802_PGA); //Ensure LDOMODE bit is clear - improved accuracy and higher DC gain, with ESR < 1 ohm
         sensor->setCalibrationFactor(sensorSetting->calibrationFactor);
         sensor->setZeroOffset(sensorSetting->zeroOffset);
+
+        delay(sensor->getLDORampDelay()); // Wait for LDO to ramp
+
+        if (sensorSetting->calibrationMode == 1) //Internal calibration
+        {
+          sensor->getWeight(true, 10); //Flush
+
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
+        }
+        else if (sensorSetting->calibrationMode == 2) //Use saved or default external calibration
+        {
+          sensor->set24BitRegister(NAU7802_OCAL1_B2, sensorSetting->offsetReg);
+          sensor->set32BitRegister(NAU7802_GCAL1_B3, sensorSetting->gainReg);
+        }
+
+        sensor->getWeight(true, 10); //Flush
       }
       break;
     case DEVICE_DISTANCE_VL53L1X:
@@ -771,10 +835,16 @@ void configureDevice(node * temp)
     case DEVICE_PRESSURE_LPS25HB:
       //Nothing to configure
       break;
+    case DEVICE_PRESSURE_LPS28DFW:
+      //Nothing to configure
+      break;
     case DEVICE_PHT_BME280:
       //Nothing to configure
       break;
     case DEVICE_UV_VEML6075:
+      //Nothing to configure
+      break;
+    case DEVICE_LIGHT_VEML7700:
       //Nothing to configure
       break;
     case DEVICE_VOC_CCS811:
@@ -790,6 +860,13 @@ void configureDevice(node * temp)
       {
         SCD30 *sensor = (SCD30 *)temp->classPtr;
         struct_SCD30 *sensorSetting = (struct_SCD30 *)temp->configPtr;
+
+        //Apply one-off calibrations
+        if(sensorSetting->applyCalibrationConcentration)
+        {
+          sensor->setForcedRecalibrationFactor(sensorSetting->calibrationConcentration);
+          sensorSetting->applyCalibrationConcentration = false;
+        }
 
         sensor->setMeasurementInterval(sensorSetting->measurementInterval);
         sensor->setAltitudeCompensation(sensorSetting->altitudeCompensation);
@@ -904,28 +981,28 @@ void configureDevice(node * temp)
         struct_ISM330DHCX *sensorSetting = (struct_ISM330DHCX *)temp->configPtr;
 
         sensor->deviceReset();
-        
+
         // Wait for it to finish reseting
-        while( !sensor->getDeviceReset() ){ 
+        while( !sensor->getDeviceReset() ){
           delay(1);
-        } 
+        }
 
         sensor->setDeviceConfig();
         sensor->setBlockDataUpdate();
-        
+
         // Set the output data rate and precision of the accelerometer
         sensor->setAccelDataRate(sensorSetting->accelRate);
-        sensor->setAccelFullScale(sensorSetting->accelScale); 
-      
-        // Turn on the accelerometer's filter and apply settings. 
+        sensor->setAccelFullScale(sensorSetting->accelScale);
+
+        // Turn on the accelerometer's filter and apply settings.
         sensor->setAccelFilterLP2(sensorSetting->accelFilterLP2);
         sensor->setAccelSlopeFilter(sensorSetting->accelSlopeFilter);
-      
+
         // Set the output data rate and precision of the gyroscope
         sensor->setGyroDataRate(sensorSetting->gyroRate);
-        sensor->setGyroFullScale(sensorSetting->gyroScale); 
-      
-        // Turn on the gyroscope's filter and apply settings. 
+        sensor->setGyroFullScale(sensorSetting->gyroScale);
+
+        // Turn on the gyroscope's filter and apply settings.
         sensor->setGyroFilterLP1(sensorSetting->gyroFilterLP1);
         sensor->setGyroLP1Bandwidth(sensorSetting->gyroLP1BW);
       }
@@ -947,20 +1024,20 @@ void configureDevice(node * temp)
 
         sensor->softwareReset();
         delay(5);
-        
-        sensor->enableAccel(false); 
-      
+
+        sensor->enableAccel(false);
+
         if (sensorSetting->range8G) sensor->setRange(SFE_KX134_RANGE8G);
         else if (sensorSetting->range16G) sensor->setRange(SFE_KX134_RANGE16G);
         else if (sensorSetting->range32G) sensor->setRange(SFE_KX134_RANGE32G);
         else sensor->setRange(SFE_KX134_RANGE64G);
-      
+
         sensor->enableDataEngine();     // Enables the bit that indicates data is ready.
-        
+
         if (sensorSetting->highSpeed) sensor->setOutputDataRate(9); // 400Hz
         else sensor->setOutputDataRate(6); // Default is 50Hz
-        
-        sensor->enableAccel();          
+
+        sensor->enableAccel();
       }
       break;
     case DEVICE_ADS1015:
@@ -1038,11 +1115,17 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
     case DEVICE_PRESSURE_LPS25HB:
       ptr = (FunctionPointer)menuConfigure_LPS25HB;
       break;
+    case DEVICE_PRESSURE_LPS28DFW:
+      ptr = (FunctionPointer)menuConfigure_LPS28DFW;
+      break;
     case DEVICE_PHT_BME280:
       ptr = (FunctionPointer)menuConfigure_BME280;
       break;
     case DEVICE_UV_VEML6075:
       ptr = (FunctionPointer)menuConfigure_VEML6075;
+      break;
+    case DEVICE_LIGHT_VEML7700:
+      ptr = (FunctionPointer)menuConfigure_VEML7700;
       break;
     case DEVICE_VOC_CCS811:
       ptr = (FunctionPointer)menuConfigure_CCS811;
@@ -1229,6 +1312,7 @@ void swap(struct node * a, struct node * b)
 // Available Qwiic devices
 //We no longer use defines in the search table. These are just here for reference.
 #define ADR_VEML6075 0x10
+#define ADR_VEML7700 0x10
 #define ADR_MPR0025PA1 0x18
 #define ADR_KX134 0x1E //Alternate: 0x1F
 #define ADR_SDP3X 0x21 //Alternates: 0x22, 0x23
@@ -1247,6 +1331,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_SGP40 0x59
 #define ADR_CCS811 0x5B //Alternates: 0x5A
 #define ADR_LPS25HB 0x5D //Alternates: 0x5C
+#define ADR_LPS28DFW 0x5C //Alternates: 0x5D
 #define ADR_VCNL4040 0x60
 #define ADR_SCD30 0x61
 #define ADR_MCP9600 0x60 //0x60 to 0x67
@@ -1271,6 +1356,11 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         VEML6075 sensor;
         if (sensor.begin(qwiic) == true) //Wire port
           return (DEVICE_UV_VEML6075);
+
+        //Confidence: Low - just checks registers can be written to
+        VEML7700 sensor1;
+        if (sensor1.begin(qwiic) == true) //Wire port
+          return (DEVICE_LIGHT_VEML7700);
       }
       break;
     case 0x18:
@@ -1306,7 +1396,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
       {
         //Confidence: High - Checks 8 bit revision code (0x0F)
         NAU7802 sensor;
-        if (sensor.begin(qwiic) == true) //Wire port
+        if (sensor.begin(qwiic) == true) //Wire port. Note: this will reset the NAU7802 and call calibrateAFE but getRevisionCode fails otherwise
           if (sensor.getRevisionCode() == 0x0F)
             return (DEVICE_LOADCELL_NAU7802);
       }
@@ -1439,9 +1529,15 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
     case 0x5C:
     case 0x5D:
       {
+        // Same address, but different WHO_AM_I value.
+        LPS28DFW sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == LPS28DFW_OK) //Wire port, address
+          return (DEVICE_PRESSURE_LPS28DFW);
+
         LPS25HB sensor;
         if (sensor.begin(qwiic, i2cAddress) == true) //Wire port, address
           return (DEVICE_PRESSURE_LPS25HB);
+
       }
       break;
     case 0x60:
@@ -1502,7 +1598,7 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         SparkFun_ISM330DHCX sensor;
         if (sensor.begin(qwiic, i2cAddress))
           return(DEVICE_ISM330DHCX);
-          
+
         QwiicButton sensor1;
         if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_QWIIC_BUTTON);
@@ -1621,7 +1717,7 @@ deviceType_e testMuxDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portN
         if (multiplexerBegin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_MULTIPLEXER);
       }
-      break;    
+      break;
     case 0x71:
     case 0x72:
     case 0x73:
@@ -1802,11 +1898,17 @@ const char* getDeviceName(deviceType_e deviceNumber)
     case DEVICE_PRESSURE_LPS25HB:
       return "Pressure-LPS25HB";
       break;
+    case DEVICE_PRESSURE_LPS28DFW:
+      return "Pressure-LPS28DFW";
+      break;
     case DEVICE_PHT_BME280:
       return "PHT-BME280";
       break;
     case DEVICE_UV_VEML6075:
       return "UV-VEML6075";
+      break;
+    case DEVICE_LIGHT_VEML7700:
+      return "LIGHT-VEML7700";
       break;
     case DEVICE_VOC_CCS811:
       return "VOC-CCS811";

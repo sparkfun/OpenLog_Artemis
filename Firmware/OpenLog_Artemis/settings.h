@@ -32,6 +32,8 @@ typedef enum
   DEVICE_MMC5983MA,
   DEVICE_KX134,
   DEVICE_ADS1015,
+  DEVICE_PRESSURE_LPS28DFW,
+  DEVICE_LIGHT_VEML7700,
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -93,12 +95,26 @@ struct struct_LPS25HB {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
+struct struct_LPS28DFW {
+  bool log = true;
+  bool logPressure = true;
+  bool logTemperature = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
 struct struct_NAU7802 {
   bool log = true;
-  float calibrationFactor = 0; //Value used to convert the load cell reading to lbs or kg
-  long zeroOffset = 1000; //Zero value that is found when scale is tared. Default to 1000 so we don't get inf.
+  float calibrationFactor = 1.0; //Value used to convert the load cell reading to lbs or kg. Default to 1 to avoid divide-by-zero
+  int32_t zeroOffset = 0; //Zero value that is found when scale is tared. Default to 0 so we get raw readings
   int decimalPlaces = 2;
   int averageAmount = 4; //Number of readings to take per getWeight call
+  float calibrationWeight = 1.0; //Default scale calibration weight. User can adjust via the menu
+  int sampleRate = 3; //Library says possible values are: 10(0), 20(1), 40(2), 80(3), 320(7)
+  int gain = 7; //Library says possible values are: 1(0), 2(1), 4(2), 8(3), 16(4), 32(5), 64(6), 128(7)
+  int LDO = 5; //LDO voltage. Only 3.3(4), 3.0(5), 2.7(6), 2.4(7) make sense here
+  int calibrationMode = 1; //0: None; 1: Use CALMOD / CALS (calibrateAFE) Internal; 2: Use CALMOD / CALS (calibrateAFE) External
+  int32_t offsetReg = 0; //Value for the NAU7802 offset register
+  uint32_t gainReg = 0x00800000; //Value for the NAU7802 gain register
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
@@ -199,6 +215,11 @@ struct struct_VEML6075 {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
+struct struct_VEML7700 {
+  bool log = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
 struct struct_MS5637 {
   bool log = true;
   bool logPressure = true;
@@ -211,10 +232,12 @@ struct struct_SCD30 {
   bool logCO2 = true;
   bool logHumidity = true;
   bool logTemperature = true;
+  bool applyCalibrationConcentration = false;
   int measurementInterval = 2; //2 seconds
   int altitudeCompensation = 0; //0 m above sea level
   int ambientPressure = 1000; //mBar STP (Toto, I have a feeling we're not in Boulder anymore)
   int temperatureOffset = 0; //C - Be careful not to overwrite the value on the sensor
+  int calibrationConcentration = 400; //ppm CO2 - Must be applied 2+ minutes after sensor running in chamber of calibration gas 
   unsigned long powerOnDelayMillis = 5000; // Wait for at least this many millis before communicating with this device
 };
 

@@ -41,7 +41,7 @@ bool detectQwiicDevices()
   //setQwiicPullups(24); //Set pullups to 24k. If we don't have pullups, detectQwiicDevices() takes ~900ms to complete. We'll disable pullups if something is detected.
 
   waitForQwiicBusPowerDelay(); // Wait while the qwiic devices power up
-  
+
   // Note: The MCP9600 (Qwiic Thermocouple) is a fussy device. If we use beginTransmission + endTransmission more than once
   // the second and subsequent times will fail. The MCP9600 only ACKs the first time. The MCP9600 also appears to be able to
   // lock up the I2C bus if you don't discover it and then begin it in one go...
@@ -197,7 +197,7 @@ bool detectQwiicDevices()
             {
               // We don't need to do anything special for the MCP9600 here, because we can guarantee that beginTransmission + endTransmission
               // have only been used once for each MCP9600 address
-              
+
               somethingDetected = true;
 
               deviceType_e foundType = testDevice(address, muxNode->address, portNumber);
@@ -306,11 +306,17 @@ void menuAttachedDevices()
           case DEVICE_PRESSURE_LPS25HB:
             SerialPrintf3("%s LPS25HB Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_PRESSURE_LPS28DFW:
+            SerialPrintf3("%s LPS28DFW Pressure Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
           case DEVICE_PHT_BME280:
             SerialPrintf3("%s BME280 Pressure/Humidity/Temp (PHT) Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_UV_VEML6075:
             SerialPrintf3("%s VEML6075 UV Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
+          case DEVICE_LIGHT_VEML7700:
+            SerialPrintf3("%s VEML7700 Ambient Light Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
           case DEVICE_VOC_CCS811:
             SerialPrintf3("%s CCS811 tVOC and CO2 Sensor %s\r\n", strDeviceMenu, strAddress);
@@ -443,9 +449,9 @@ void menuAttachedDevices()
             settings.useGPIO32ForStopLogging = false;
             detachInterrupt(PIN_STOP_LOGGING); // Disable the interrupt
           }
-          
+
           recordSystemSettings(); //Record the new settings to EEPROM and config file now in case the user resets before exiting the menus
-                
+
           if (detectQwiicDevices() == true) //Detect the oximeter
           {
             beginQwiicDevices(); //Begin() each device in the node list
@@ -454,7 +460,7 @@ void menuAttachedDevices()
           }
 
           recordSystemSettings(); //Record the new settings to EEPROM and config file now in case the user resets before exiting the menus
-                
+
           if (detectQwiicDevices() == true) //Detect the oximeter
           {
             beginQwiicDevices(); //Begin() each device in the node list
@@ -843,6 +849,57 @@ void menuConfigure_LPS25HB(void *configPtr)
 
 }
 
+void menuConfigure_LPS28DFW(void *configPtr)
+{
+  struct_LPS28DFW *sensorSetting = (struct_LPS28DFW*)configPtr;
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure LPS28DFW Pressure Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    if (sensorSetting->log == true)
+    {
+      SerialPrint(F("2) Log Pressure: "));
+      if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("3) Log Temperature: "));
+      if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
+      else SerialPrintln(F("Disabled"));
+    }
+    SerialPrintln(F("x) Exit"));
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensorSetting->log ^= 1;
+    else if (sensorSetting->log == true)
+    {
+      if (incoming == '2')
+        sensorSetting->logPressure ^= 1;
+      else if (incoming == '3')
+        sensorSetting->logTemperature ^= 1;
+      else if (incoming == 'x')
+        break;
+      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+        break;
+      else
+        printUnknown(incoming);
+    }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+}
+
 void menuConfigure_NAU7802(void *configPtr)
 {
   //Search the list of nodes looking for the one with matching config pointer
@@ -868,10 +925,26 @@ void menuConfigure_NAU7802(void *configPtr)
   NAU7802 *sensor = (NAU7802 *)temp->classPtr;
   struct_NAU7802 *sensorConfig = (struct_NAU7802*)configPtr;
 
+  openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+
   while (1)
   {
     SerialPrintln(F(""));
     SerialPrintln(F("Menu: Configure NAU7802 Load Cell Amplifier"));
+
+    if (sensorConfig->log == true)
+    {
+      char tempStr[16];
+      olaftoa(sensorConfig->calibrationFactor, tempStr, 6, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("\r\nScale calibration factor: %s\r\n", tempStr);
+
+      SerialPrintf2("Scale zero offset: %d\r\n", sensorConfig->zeroOffset);
+      SerialPrintf2("Scale offset register: %d\r\n", sensor->get24BitRegister(NAU7802_OCAL1_B2));
+
+      sensor->getWeight(true, 10); //Flush
+      olaftoa(sensor->getWeight(true, sensorConfig->averageAmount), tempStr, sensorConfig->decimalPlaces, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("Weight currently on scale: %s\r\n\r\n", tempStr);
+    }
 
     SerialPrint(F("1) Sensor Logging: "));
     if (sensorConfig->log == true) SerialPrintln(F("Enabled"));
@@ -879,59 +952,148 @@ void menuConfigure_NAU7802(void *configPtr)
 
     if (sensorConfig->log == true)
     {
-      SerialPrintln(F("2) Calibrate Scale"));
+      SerialPrintln(F("2) Zero scale"));
       char tempStr[16];
-      olaftoa(sensorConfig->calibrationFactor, tempStr, 6, sizeof(tempStr) / sizeof(char));
-      SerialPrintf2("\tScale calibration factor: %s\r\n", tempStr);
-      SerialPrintf2("\tScale zero offset: %d\r\n", sensorConfig->zeroOffset);
-      olaftoa(sensor->getWeight(), tempStr, sensorConfig->decimalPlaces, sizeof(tempStr) / sizeof(char));
-      SerialPrintf2("\tWeight currently on scale: %s\r\n", tempStr);
-
-      SerialPrintf2("3) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
-      SerialPrintf2("4) Average number of readings to take per weight read: %d\r\n", sensorConfig->averageAmount);
+      olaftoa(sensorConfig->calibrationWeight, tempStr, 6, sizeof(tempStr) / sizeof(char));
+      SerialPrintln(F("3) Calibrate scale"));
+      SerialPrintf2("4) Calibration weight: %s\r\n", tempStr);
+      SerialPrintf2("5) Number of decimal places: %d\r\n", sensorConfig->decimalPlaces);
+      SerialPrintf2("6) Average number of readings to take per weight read: %d\r\n", sensorConfig->averageAmount);
+      int gain;
+      switch (sensorConfig->gain)
+      {
+        case 0:
+          gain = 1;
+          break;
+        case 1:
+          gain = 2;
+          break;
+        case 2:
+          gain = 4;
+          break;
+        case 3:
+          gain = 8;
+          break;
+        case 4:
+          gain = 16;
+          break;
+        case 5:
+          gain = 32;
+          break;
+        case 6:
+          gain = 64;
+          break;
+        case 7:
+          gain = 128;
+          break;
+      }
+      SerialPrintf2("7) Gain: %d\r\n", gain);
+      int rate;
+      switch (sensorConfig->sampleRate)
+      {
+        case 0:
+          rate = 10;
+          break;
+        case 1:
+          rate = 20;
+          break;
+        case 2:
+          rate = 40;
+          break;
+        case 3:
+          rate = 80;
+          break;
+        case 7:
+          rate = 320;
+          break;
+      }
+      SerialPrintf2("8) Sample rate: %d\r\n", rate);
+      float LDO;
+      switch (sensorConfig->LDO)
+      {
+        case 4:
+          LDO = 3.3;
+          break;
+        case 5:
+          LDO = 3.0;
+          break;
+        case 6:
+          LDO = 2.7;
+          break;
+        case 7:
+          LDO = 2.4;
+          break;
+      }
+      olaftoa(LDO, tempStr, 1, sizeof(tempStr) / sizeof(char));
+      SerialPrintf2("9) LDO voltage: %s\r\n", tempStr);
+      SerialPrint(F("10) Calibration mode: "));
+      if (sensorConfig->calibrationMode == 0) SerialPrintln(F("None"));
+      else if (sensorConfig->calibrationMode == 1) SerialPrintln(F("Internal"));
+      else SerialPrintln(F("External"));
     }
 
     SerialPrintln(F("x) Exit"));
 
-    byte incoming = getByteChoice(menuTimeout, true); //Timeout after x seconds and set DSERIAL & ZSERIAL
+    int incoming = getNumber(menuTimeout); //Timeout after 10 seconds
 
-    if (incoming == '1')
+    if (incoming == 1)
     {
       sensorConfig->log ^= 1;
     }
     else if (sensorConfig->log == true)
     {
-      if (incoming == '2')
+      if (incoming == 2)
+      {
+        //Gives user the ability to set a known weight on the scale and calculate a calibration factor
+        SerialPrintln(F(""));
+        SerialPrintln(F("Zero scale"));
+
+        SerialPrintln(F("Setup scale with no weight on it. Press a key when ready."));
+        waitForInput();
+
+        sensor->getWeight(true, 10); //Flush
+
+        if (sensorConfig->calibrationMode == 2) //External calibration
+        {
+          sensor->calibrateAFE(NAU7802_CALMOD_OFFSET); //External offset calibration
+
+          sensorConfig->offsetReg = sensor->get24BitRegister(NAU7802_OCAL1_B2); // Save new offset
+          sensorConfig->gainReg = sensor->get32BitRegister(NAU7802_GCAL1_B3); // This should not have changed, but read it anyway
+
+          sensor->getWeight(true, 10); //Flush
+        }
+
+        sensor->calculateZeroOffset(sensorConfig->averageAmount); //Zero or Tare the scale. With external calibration, this should be ~zero
+
+        sensorConfig->zeroOffset = sensor->getZeroOffset();
+      }
+      else if (incoming == 3)
       {
         //Gives user the ability to set a known weight on the scale and calculate a calibration factor
         SerialPrintln(F(""));
         SerialPrintln(F("Scale calibration"));
 
-        SerialPrintln(F("Setup scale with no weight on it. Press a key when ready."));
+        SerialPrintln(F("Place calibration weight on scale. Press a key when weight is in place and stable."));
         waitForInput();
 
-        sensor->calculateZeroOffset(64); //Zero or Tare the scale. Average over 64 readings.
-        SerialPrint(F("New zero offset: "));
-        Serial.println(sensor->getZeroOffset());
-        if (settings.useTxRxPinsForTerminal == true)
-          Serial1.println(sensor->getZeroOffset());
+        sensor->getWeight(true, 10); //Flush
 
-        SerialPrintln(F("Place known weight on scale. Press a key when weight is in place and stable."));
-        waitForInput();
-
-        SerialPrint(F("Please enter the weight, without units, currently sitting on the scale (for example '4.25'): "));
-        waitForInput();
-
-        //Read user input
-        float weightOnScale = DSERIAL->parseFloat();
-        sensor->calculateCalibrationFactor(weightOnScale, 64); //Tell the library how much weight is currently on it. Average over 64 readings.
+        sensor->calculateCalibrationFactor(sensorConfig->calibrationWeight, sensorConfig->averageAmount); //Tell the library how much weight is currently on it
 
         sensorConfig->calibrationFactor = sensor->getCalibrationFactor();
-        sensorConfig->zeroOffset = sensor->getZeroOffset();
+      }
+      else if (incoming == 4)
+      {
+        SerialPrint(F("Please enter the weight, without units, for scale calibration (3) - (for example '100.0'): "));
+
+        //Read user input
+        double newWeight = getDouble(menuTimeout); //Timeout after x seconds
+        if ((newWeight != STATUS_GETNUMBER_TIMEOUT) && (newWeight != STATUS_PRESSED_X))
+          sensorConfig->calibrationWeight = (float)newWeight;
 
         SerialPrintln(F(""));
       }
-      else if (incoming == '3')
+      else if (incoming == 5)
       {
         SerialPrint(F("Enter number of decimal places to print (1 to 10): "));
         int places = getNumber(menuTimeout);
@@ -944,11 +1106,31 @@ void menuConfigure_NAU7802(void *configPtr)
           sensorConfig->decimalPlaces = places;
         }
       }
-      else if (incoming == '4')
+      else if (incoming == 6)
       {
-        SerialPrint(F("Enter number of readings to take per weight read (1 to 10): "));
+        //Limit number of readings to the sample rate so that the getWeight doesn't time out
+        SerialPrint(F("Enter number of readings to take per weight read (>= 1, < Sample Rate): "));
+        int rate;
+        switch (sensorConfig->sampleRate)
+        {
+          case 0:
+            rate = 10;
+            break;
+          case 1:
+            rate = 20;
+            break;
+          case 2:
+            rate = 40;
+            break;
+          case 3:
+            rate = 80;
+            break;
+          case 7:
+            rate = 320;
+            break;
+        }
         int amt = getNumber(menuTimeout);
-        if (amt < 1 || amt > 10)
+        if (amt < 1 || amt >= rate)
         {
           SerialPrintln(F("Error: Average number of readings out of range"));
         }
@@ -957,16 +1139,116 @@ void menuConfigure_NAU7802(void *configPtr)
           sensorConfig->averageAmount = amt;
         }
       }
-      else if (incoming == 'x')
+      else if (incoming == 7)
+      {
+        sensorConfig->gain += 1;
+        if (sensorConfig->gain == 8)
+          sensorConfig->gain = 0;
+
+        sensor->setGain(sensorConfig->gain);
+
+        if (sensorConfig->calibrationMode == 1) //Internal calibration
+        {
+          sensor->getWeight(true, 10); //Flush
+
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
+        }
+
+        SerialPrintln(F("\r\n\r\nGain updated. Please zero and calibrate the scale\r\n\r\n"));
+      }
+      else if (incoming == 8)
+      {
+        sensorConfig->sampleRate += 1;
+        if (sensorConfig->sampleRate == 4)
+          sensorConfig->sampleRate = 7;
+        if (sensorConfig->sampleRate == 8)
+          sensorConfig->sampleRate = 0;
+
+        sensor->setSampleRate(sensorConfig->sampleRate);
+
+        if (sensorConfig->calibrationMode == 1) //Internal calibration
+        {
+          sensor->getWeight(true, 10); //Flush
+
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
+        }
+
+        // Limit averageAmount (to prevent getWeight timing out after 1s)
+        if ((sensorConfig->sampleRate) == 0 && (sensorConfig->averageAmount > 9))
+          sensorConfig->averageAmount = 9;
+        else if ((sensorConfig->sampleRate) == 1 && (sensorConfig->averageAmount > 19))
+          sensorConfig->averageAmount = 19;
+        else if ((sensorConfig->sampleRate) == 2 && (sensorConfig->averageAmount > 39))
+          sensorConfig->averageAmount = 39;
+        else if ((sensorConfig->sampleRate) == 3 && (sensorConfig->averageAmount > 79))
+          sensorConfig->averageAmount = 79;
+        else if (sensorConfig->averageAmount > 319)
+          sensorConfig->averageAmount = 319;
+
+        SerialPrintln(F("\r\n\r\nSample rate updated. Please zero and calibrate the scale\r\n\r\n"));
+      }
+      else if (incoming == 9)
+      {
+        sensorConfig->LDO += 1;
+        if (sensorConfig->LDO == 8)
+          sensorConfig->LDO = 4;
+
+        sensor->setLDO(sensorConfig->LDO);
+
+        if (sensorConfig->calibrationMode == 1) //Internal calibration
+        {
+          delay(sensor->getLDORampDelay()); // Wait for LDO to ramp before attempting calibrateAFE
+
+          sensor->getWeight(true, 10); //Flush
+
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
+        }
+
+        SerialPrintln(F("\r\n\r\nLDO updated. Please zero and calibrate the scale\r\n\r\n"));
+      }
+      else if (incoming == 10)
+      {
+        sensorConfig->calibrationMode += 1;
+        if (sensorConfig->calibrationMode == 3)
+          sensorConfig->calibrationMode = 0;
+
+        sensor->reset();
+        sensor->powerUp();
+        sensor->setLDO(sensorConfig->LDO);
+        sensor->setGain(sensorConfig->gain);
+        sensor->setSampleRate(sensorConfig->sampleRate);
+        //Turn off CLK_CHP. From 9.1 power on sequencing.
+        uint8_t adc = sensor->getRegister(NAU7802_ADC);
+        adc |= 0x30;
+        sensor->setRegister(NAU7802_ADC, adc);
+        sensor->setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
+        sensor->clearBit(NAU7802_PGA_LDOMODE, NAU7802_PGA); //Ensure LDOMODE bit is clear - improved accuracy and higher DC gain, with ESR < 1 ohm
+        sensor->setCalibrationFactor(sensorConfig->calibrationFactor);
+        sensor->setZeroOffset(sensorConfig->zeroOffset);
+
+        delay(sensor->getLDORampDelay()); // Wait for LDO to ramp before attempting calibrateAFE
+
+        if (sensorConfig->calibrationMode == 1) //Internal calibration
+        {
+          sensor->getWeight(true, 10); //Flush
+
+          sensor->calibrateAFE(NAU7802_CALMOD_INTERNAL); //Recalibrate after changing gain / sample rate          
+        }
+
+        sensor->getWeight(true, 10); //Flush
+
+        SerialPrintln(F("\r\n\r\nCalibration updated. Please zero and calibrate the scale\r\n\r\n"));
+      }
+      else if (incoming == STATUS_PRESSED_X)
         break;
-      else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      else if (incoming == STATUS_GETNUMBER_TIMEOUT)
         break;
       else
         printUnknown(incoming);
     }
-    else if (incoming == 'x')
+    else if (incoming == STATUS_PRESSED_X)
       break;
-    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+    else if (incoming == STATUS_GETNUMBER_TIMEOUT)
       break;
     else
       printUnknown(incoming);
@@ -1100,7 +1382,7 @@ void menuConfigure_ublox(void *configPtr)
         }
         else
           SerialPrintln(F("Reset GNSS aborted"));
-      } 
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -1146,6 +1428,8 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
     {
       case DEVICE_GPS_UBLOX:
         {
+          openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+
           setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
           SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
@@ -1184,6 +1468,8 @@ void gnssFactoryDefault(void)
     {
       case DEVICE_GPS_UBLOX:
         {
+          openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+          
           setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
           SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
@@ -1191,7 +1477,7 @@ void gnssFactoryDefault(void)
 
           //Reset the module to the factory defaults
           nodeDevice->factoryDefault();
-          
+
           delay(5000); //Blocking delay to allow module to reset
 
           nodeDevice->setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
@@ -1505,6 +1791,33 @@ void menuConfigure_VEML6075(void *configPtr)
 
 }
 
+void menuConfigure_VEML7700(void *configPtr)
+{
+  struct_VEML7700 *sensorSetting = (struct_VEML7700*)configPtr;
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure VEML7700 Ambient Light Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    SerialPrintln(F("x) Exit"));
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensorSetting->log ^= 1;
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+}
 
 void menuConfigure_MS5637(void *configPtr)
 {
@@ -1583,6 +1896,8 @@ void menuConfigure_SCD30(void *configPtr)
   SCD30 *sensor = (SCD30 *)temp->classPtr;
   struct_SCD30 *sensorSetting = (struct_SCD30*)configPtr;
 
+  openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+
   while (1)
   {
     SerialPrintln(F(""));
@@ -1610,6 +1925,7 @@ void menuConfigure_SCD30(void *configPtr)
       SerialPrintf2("6) Set Altitude Compensation: %d\r\n", sensorSetting->altitudeCompensation);
       SerialPrintf2("7) Set Ambient Pressure: %d\r\n", sensorSetting->ambientPressure);
       SerialPrintf2("8) Set Temperature Offset: %d\r\n", sensorSetting->temperatureOffset);
+      SerialPrintln(F("9) Set FRC Calibration CO2"));
     }
     SerialPrintln(F("x) Exit"));
 
@@ -1665,6 +1981,18 @@ void menuConfigure_SCD30(void *configPtr)
           sensorSetting->temperatureOffset = amt;
         else
           SerialPrintln(F("Error: Out of range"));
+      }
+      else if (incoming == '9')
+      {
+        SerialPrint(F("Enter Calibration CO2 in ppm (400 to 2000): "));
+        int amt = getNumber(menuTimeout); //x second timeout
+        if (amt < 400 || amt > 2000)
+          SerialPrintln(F("Error: Out of range"));
+        else
+        {
+          sensorSetting->calibrationConcentration = amt;
+          sensorSetting->applyCalibrationConcentration = true;
+        }
       }
       else if (incoming == 'x')
         break;
@@ -2346,7 +2674,7 @@ void menuConfigure_SGP40(void *configPtr)
       else SerialPrintln(F("Disabled"));
 
       SerialPrintf2("3) Sensor Compensation: Relative Humidity (%): %d\r\n", sensorSetting->RH);
-  
+
       SerialPrintf2("4) Sensor Compensation: Temperature (C): %d\r\n", sensorSetting->T);
     }
     SerialPrintln(F("x) Exit"));
@@ -2419,7 +2747,7 @@ void menuConfigure_SDP3X(void *configPtr)
       SerialPrint(F("4) Temperature Compensation: "));
       if (sensorSetting->massFlow == true) SerialPrintln(F("Mass Flow"));
       else SerialPrintln(F("Differential Pressure"));
-  
+
       SerialPrint(F("5) Measurement Averaging: "));
       if (sensorSetting->averaging == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
@@ -2468,7 +2796,7 @@ void menuConfigure_MS5837(void *configPtr)
     SerialPrint(F("Sensor Model: "));
     if (sensorSetting->model == 1) SerialPrintln(F("MS5837-02BA / BlueRobotics Bar02: 2 Bar Absolute / 10m Depth"));
     else SerialPrintln(F("MS5837-30BA / BlueRobotics Bar30: 30 Bar Absolute / 300m Depth"));
-      
+
     SerialPrint(F("1) Sensor Logging: "));
     if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
     else SerialPrintln(F("Disabled"));
@@ -2476,26 +2804,26 @@ void menuConfigure_MS5837(void *configPtr)
     if (sensorSetting->log == true)
     {
       char tempStr[16];
-      
+
       SerialPrint(F("2) Log Pressure: "));
       if (sensorSetting->logPressure == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("3) Log Temperature: "));
       if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("4) Log Depth: "));
       if (sensorSetting->logDepth == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("5) Log Altitude: "));
       if (sensorSetting->logAltitude == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       olaftoa(sensorSetting->fluidDensity, tempStr, 1, sizeof(tempStr) / sizeof(char));
       SerialPrintf2("6) Fluid Density (kg/m^3): %s\r\n", tempStr);
-      
+
       olaftoa(sensorSetting->conversion, tempStr, 3, sizeof(tempStr) / sizeof(char));
       SerialPrintf2("7) Pressure Conversion Factor: %s\r\n", tempStr);
     }
@@ -2520,13 +2848,13 @@ void menuConfigure_MS5837(void *configPtr)
         SerialPrint(F("Enter the Fluid Density (kg/m^3): "));
         double FD = getDouble(menuTimeout); //x second timeout
         sensorSetting->fluidDensity = (float)FD;
-      }        
+      }
       else if (incoming == 7)
       {
         SerialPrint(F("Enter the Pressure Conversion Factor: "));
         double PCF = getDouble(menuTimeout); //x second timeout
         sensorSetting->conversion = (float)PCF;
-      }        
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -2569,7 +2897,7 @@ void menuConfigure_QWIIC_BUTTON(void *configPtr)
       SerialPrint(F("4) Toggle LED on each click (and log the LED state): "));
       if (sensorSetting->toggleLEDOnClick == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-  
+
       SerialPrintf2("5) LED Brightness: %d\r\n", sensorSetting->ledBrightness);
     }
     SerialPrintln(F("x) Exit"));
@@ -2594,7 +2922,7 @@ void menuConfigure_QWIIC_BUTTON(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->ledBrightness = bright;
-      }        
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -2637,7 +2965,7 @@ void menuConfigure_BIO_SENSOR_HUB(void *configPtr)
       SerialPrint(F("4) Log Oxygen %: "));
       if (sensorSetting->logOxygen == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-  
+
       SerialPrint(F("5) Log Status: "));
       if (sensorSetting->logStatus == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
@@ -2708,11 +3036,11 @@ void menuConfigure_ISM330DHCX(void *configPtr)
       SerialPrint(F("3) Log Gyro: "));
       if (sensorSetting->logGyro == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("4) Log Data Ready: "));
       if (sensorSetting->logDataReady == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrintf2("5) Accel Scale: %d\r\n", sensorSetting->accelScale);
       SerialPrintf2("6) Accel Rate: %d\r\n", sensorSetting->accelRate);
       SerialPrint(F("7) Accel Filter LP2: "));
@@ -2724,7 +3052,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
       SerialPrint(F("11) Gyro Filter LP1: "));
       if (sensorSetting->gyroFilterLP1 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      SerialPrintf2("12) Gyro LP1 Bandwidth: %d\r\n", sensorSetting->gyroLP1BW);   
+      SerialPrintf2("12) Gyro LP1 Bandwidth: %d\r\n", sensorSetting->gyroLP1BW);
     }
     SerialPrintln(F("x) Exit"));
 
@@ -2752,7 +3080,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->accelScale = newNum;
-      }        
+      }
       else if (incoming == 6)
       {
         SerialPrintln(F("OFF   : 0"));
@@ -2773,7 +3101,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->accelRate = newNum;
-      }        
+      }
       else if (incoming == 7)
         sensorSetting->accelFilterLP2 ^= 1;
       else if (incoming == 8)
@@ -2807,7 +3135,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->accelSlopeFilter = newNum;
-      }        
+      }
       else if (incoming == 9)
       {
         SerialPrintln(F("125dps : 2"));
@@ -2822,7 +3150,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->gyroScale = newNum;
-      }        
+      }
       else if (incoming == 10)
       {
         SerialPrintln(F("OFF   : 0"));
@@ -2842,7 +3170,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->gyroRate = newNum;
-      }        
+      }
       else if (incoming == 11)
         sensorSetting->gyroFilterLP1 ^= 1;
       else if (incoming == 12)
@@ -2861,7 +3189,7 @@ void menuConfigure_ISM330DHCX(void *configPtr)
           SerialPrintln(F("Error: Out of range"));
         else
           sensorSetting->gyroLP1BW = newNum;
-      }        
+      }
       else if (incoming == STATUS_PRESSED_X)
         break;
       else if (incoming == STATUS_GETNUMBER_TIMEOUT)
@@ -3069,27 +3397,27 @@ void menuConfigure_ADS1015(void *configPtr)
       SerialPrint(F("10) Gain x2/3: "));
       if (sensorSetting->gain23 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("11) Gain x1: "));
       if (sensorSetting->gain1 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("12) Gain x2: "));
       if (sensorSetting->gain2 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("13) Gain x4: "));
       if (sensorSetting->gain4 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("14) Gain x8: "));
       if (sensorSetting->gain8 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
       SerialPrint(F("15) Gain x16: "));
       if (sensorSetting->gain16 == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
-      
+
     }
     SerialPrintln(F("x) Exit"));
 

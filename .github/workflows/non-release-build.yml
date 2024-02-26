@@ -73,6 +73,8 @@ jobs:
           "SparkFun ADS1015 Arduino Library"
           "SparkFun KX13X Arduino Library"
           "SparkFun SDP3x Arduino Library"
+          "SparkFun LPS28DFW Arduino Library"
+          "SparkFun VEML7700 Arduino Library"
 
       - name: Enable external libs
         run: arduino-cli config set library.enable_unsafe_install true
@@ -80,6 +82,9 @@ jobs:
       - name: Get Libraries
         run: arduino-cli lib install --git-url
           https://github.com/bluerobotics/BlueRobotics_MS5837_Library.git
+
+      - name: Enable ICM20948 DMP
+        run: sed -i 's|//#define ICM_20948_USE_DMP|#define ICM_20948_USE_DMP|g' /home/runner/Arduino/libraries/SparkFun_9DoF_IMU_Breakout_-_ICM_20948_-_Arduino_Library/src/util/ICM_20948_C.h
 
       - name: Patch Apollo3 Core
         run: |
@@ -94,7 +99,6 @@ jobs:
 
       - name: Compile Sketch
         run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
-          --build-property "compiler.cpp.extra_flags=\"-DICM_20948_USE_DMP\""
 
       - name: Rename binary
         run: |

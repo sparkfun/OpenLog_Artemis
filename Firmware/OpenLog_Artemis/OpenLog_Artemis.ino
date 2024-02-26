@@ -145,10 +145,16 @@
     Add Tony Whipple's PR #146 - thank you @whipple63
     Add support for the ISM330DHCX, MMC5983MA, KX134 and ADS1015
     Resolve issue #87
+
+  v2.6:
+    Add support for the LPS28DFW - thank you @gauteh #179
+    Only disable I2C SDA and SCL during sleep when I2C bus is being powered down - thank you @whipple63 #167
+    Add calibrationConcentration support for the SCD30 - thank you @hotstick #181
+    Add limited support for the VEML7700 light sensor
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 5;
+const int FIRMWARE_VERSION_MINOR = 6;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -158,7 +164,7 @@ const int FIRMWARE_VERSION_MINOR = 5;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x125 // Stored as 293 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x126 // Stored as 294 decimal in OLA_settings.txt
 
 //#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
 
@@ -318,6 +324,8 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFun_MMC5983MA_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MMC5983MA
 #include "SparkFun_ADS1015_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_ADS1015
 #include "SparkFun_KX13X.h" //Click here to get the library: http://librarymanager/All#SparkFun_KX13X
+#include "SparkFun_LPS28DFW_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_LPS28DFW_Arduino_Library
+#include "SparkFun_VEML7700_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_VEML7700
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -467,6 +475,10 @@ void setup() {
   Serial.begin(settings.serialTerminalBaudRate);
 
   SerialPrintf3("Artemis OpenLog v%d.%d\r\n", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR);
+
+#ifdef noPowerLossProtection
+  SerialPrintln(F("** No Power Loss Protection **"));
+#endif
 
   if (settings.useGPIO32ForStopLogging == true)
   {

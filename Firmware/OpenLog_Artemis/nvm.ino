@@ -523,6 +523,13 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "zeroOffset=" + nodeSetting->zeroOffset);
             settingsFile.println((String)base + "decimalPlaces=" + nodeSetting->decimalPlaces);
             settingsFile.println((String)base + "averageAmount=" + nodeSetting->averageAmount);
+            settingsFile.print((String)base + "calibrationWeight="); settingsFile.println(nodeSetting->calibrationWeight);
+            settingsFile.println((String)base + "sampleRate=" + nodeSetting->sampleRate);
+            settingsFile.println((String)base + "gain=" + nodeSetting->gain);
+            settingsFile.println((String)base + "LDO=" + nodeSetting->LDO);
+            settingsFile.println((String)base + "calibrationMode=" + nodeSetting->calibrationMode);
+            settingsFile.println((String)base + "offsetReg=" + nodeSetting->offsetReg);
+            settingsFile.println((String)base + "gainReg=" + nodeSetting->gainReg);
           }
           break;
         case DEVICE_DISTANCE_VL53L1X:
@@ -594,6 +601,14 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
           }
           break;
+        case DEVICE_PRESSURE_LPS28DFW:
+          {
+            struct_LPS28DFW *nodeSetting = (struct_LPS28DFW *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+            settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+          }
+          break;
         case DEVICE_PHT_BME280:
           {
             struct_BME280 *nodeSetting = (struct_BME280 *)temp->configPtr;
@@ -611,6 +626,12 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "logUVA=" + nodeSetting->logUVA);
             settingsFile.println((String)base + "logUVB=" + nodeSetting->logUVB);
             settingsFile.println((String)base + "logUVIndex=" + nodeSetting->logUVIndex);
+          }
+          break;
+        case DEVICE_LIGHT_VEML7700:
+          {
+            struct_VEML7700 *nodeSetting = (struct_VEML7700 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
           }
           break;
         case DEVICE_VOC_CCS811:
@@ -1012,6 +1033,20 @@ bool parseDeviceLine(char* str) {
             nodeSetting->decimalPlaces = d;
           else if (strcmp(deviceSettingName, "averageAmount") == 0)
             nodeSetting->averageAmount = d;
+          else if (strcmp(deviceSettingName, "calibrationWeight") == 0)
+            nodeSetting->calibrationWeight = d;
+          else if (strcmp(deviceSettingName, "sampleRate") == 0)
+            nodeSetting->sampleRate = d;
+          else if (strcmp(deviceSettingName, "gain") == 0)
+            nodeSetting->gain = d;
+          else if (strcmp(deviceSettingName, "LDO") == 0)
+            nodeSetting->LDO = d;
+          else if (strcmp(deviceSettingName, "calibrationMode") == 0)
+            nodeSetting->calibrationMode = d;
+          else if (strcmp(deviceSettingName, "offsetReg") == 0)
+            nodeSetting->offsetReg = d;
+          else if (strcmp(deviceSettingName, "gainReg") == 0)
+            nodeSetting->gainReg = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
@@ -1138,6 +1173,19 @@ bool parseDeviceLine(char* str) {
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
+      case DEVICE_PRESSURE_LPS28DFW:
+        {
+          struct_LPS28DFW *nodeSetting = (struct_LPS28DFW *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else if (strcmp(deviceSettingName, "logPressure") == 0)
+            nodeSetting->logPressure = d;
+          else if (strcmp(deviceSettingName, "logTemperature") == 0)
+            nodeSetting->logTemperature = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
       case DEVICE_PHT_BME280:
         {
           struct_BME280 *nodeSetting = (struct_BME280 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
@@ -1166,6 +1214,15 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logUVB = d;
           else if (strcmp(deviceSettingName, "logUVIndex") == 0)
             nodeSetting->logUVIndex = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
+      case DEVICE_LIGHT_VEML7700:
+        {
+          struct_VEML7700 *nodeSetting = (struct_VEML7700 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }

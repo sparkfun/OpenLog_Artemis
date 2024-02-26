@@ -30,7 +30,9 @@ jobs:
           echo "firmwareMinor=$(grep -Po "(?<=FIRMWARE_VERSION_MINOR = )([0-9])*(?=;$)" ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino)" >> "$GITHUB_ENV"
 
       - name: Get firmware version 2
-        run: echo "firmwareMajorMinor=-V10-v${{ env.firmwareMajor }}${{ env.firmwareMinor }}" >> "$GITHUB_ENV"
+        run: |
+          echo "firmwareMajorMinor=-V10-v${{ env.firmwareMajor }}${{ env.firmwareMinor }}" >> "$GITHUB_ENV"
+          echo "firmwareMajorMinorX04=-X04-v${{ env.firmwareMajor }}${{ env.firmwareMinor }}" >> "$GITHUB_ENV"
 
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
@@ -76,6 +78,8 @@ jobs:
           "SparkFun ADS1015 Arduino Library"
           "SparkFun KX13X Arduino Library"
           "SparkFun SDP3x Arduino Library"
+          "SparkFun LPS28DFW Arduino Library"
+          "SparkFun VEML7700 Arduino Library"
 
       - name: Enable external libs
         run: arduino-cli config set library.enable_unsafe_install true
@@ -83,6 +87,9 @@ jobs:
       - name: Get Libraries
         run: arduino-cli lib install --git-url
           https://github.com/bluerobotics/BlueRobotics_MS5837_Library.git
+
+      - name: Enable ICM20948 DMP
+        run: sed -i 's|//#define ICM_20948_USE_DMP|#define ICM_20948_USE_DMP|g' /home/runner/Arduino/libraries/SparkFun_9DoF_IMU_Breakout_-_ICM_20948_-_Arduino_Library/src/util/ICM_20948_C.h
 
       - name: Patch Apollo3 Core
         run: |
@@ -102,7 +109,6 @@ jobs:
 
       - name: Compile Sketch
         run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
-          --build-property "compiler.cpp.extra_flags=\"-DICM_20948_USE_DMP\""
 
       - name: Rename binary
         run: |
@@ -115,6 +121,52 @@ jobs:
 
       - name: Move binary
         run: mv ${{ env.targetBinary }} ./Binaries
+
+      - name: Enable Power Loss Protection
+        run: sed -i 's|//#define noPowerLossProtection|#define noPowerLossProtection|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: Compile Sketch
+        run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: Rename binary
+        run: |
+          cd ./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/
+          mv ${{ env.FILENAME_PREFIX }}.ino.bin ${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}-NoPowerLossProtection.bin
+          echo "targetBinary=./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}-NoPowerLossProtection.bin" >> "$GITHUB_ENV"
+          rm *.axf
+          rm *.hex
+          rm *.map
+
+      - name: Move binary
+        run: mv ${{ env.targetBinary }} ./Binaries
+
+      - name: Disable Power Loss Protection
+        run: sed -i 's|#define noPowerLossProtection|//#define noPowerLossProtection|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: X04 Hardware
+        run: |
+          sed -i 's|#define HARDWARE_VERSION_MAJOR 1|#define HARDWARE_VERSION_MAJOR 0|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+          sed -i 's|#define HARDWARE_VERSION_MINOR 0|#define HARDWARE_VERSION_MINOR 4|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: Compile Sketch
+        run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: Rename binary
+        run: |
+          cd ./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/
+          mv ${{ env.FILENAME_PREFIX }}.ino.bin ${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinorX04 }}.bin
+          echo "targetBinary=./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinorX04 }}.bin" >> "$GITHUB_ENV"
+          rm *.axf
+          rm *.hex
+          rm *.map
+
+      - name: Move binary
+        run: mv ${{ env.targetBinary }} ./Binaries
+
+      - name: V01 Hardware
+        run: |
+          sed -i 's|#define HARDWARE_VERSION_MAJOR 0|#define HARDWARE_VERSION_MAJOR 1|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+          sed -i 's|#define HARDWARE_VERSION_MINOR 4|#define HARDWARE_VERSION_MINOR 0|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
 
       - uses: actions-js/push@master
         with:

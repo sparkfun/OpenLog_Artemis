@@ -427,6 +427,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
     case DEVICE_UV_VEML6075:
       return "UV-VEML6075";
       break;
+    case DEVICE_LIGHT_VEML7700:
+      return "LIGHT-VEML7700";
+      break;
     case DEVICE_VOC_CCS811:
       return "VOC-CCS811";
       break;
