@@ -251,7 +251,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             if (nodeSetting->log == true)
             {
               float currentWeight = nodeDevice->getWeight(true, nodeSetting->averageAmount); //Allow negative weights, take average of X readings
-              olaftoa(currentWeight, tempData1, nodeSetting->decimalPlaces, sizeof(tempData) / sizeof(char));
+              olaftoa(currentWeight, tempData1, nodeSetting->decimalPlaces, sizeof(tempData1) / sizeof(char));
               sprintf(tempData, "%s,", tempData1);
               strlcat(sdOutputData, tempData, lenData);
             }
@@ -443,7 +443,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->readTempC(), tempData1, 4, sizeof(tempData) / sizeof(char)); //Resolution to 0.0078°C, accuracy of 0.1°C
+                olaftoa(nodeDevice->readTempC(), tempData1, 4, sizeof(tempData1) / sizeof(char)); //Resolution to 0.0078°C, accuracy of 0.1°C
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -459,13 +459,13 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->logPressure)
               {
-                olaftoa(nodeDevice->getPressure(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getPressure(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -480,13 +480,13 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->logPressure)
               {
-                olaftoa(nodeDevice->getPressure_hPa(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getPressure_hPa(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->getTemperature_degC(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getTemperature_degC(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -503,13 +503,13 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
 
               if (nodeSetting->logPressure)
               {
-                olaftoa(nodeDevice->data.pressure.hpa, tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->data.pressure.hpa, tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->data.heat.deg_c, tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->data.heat.deg_c, tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -524,25 +524,25 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->logPressure)
               {
-                olaftoa(nodeDevice->readFloatPressure(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readFloatPressure(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logHumidity)
               {
-                olaftoa(nodeDevice->readFloatHumidity(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readFloatHumidity(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logAltitude)
               {
-                olaftoa(nodeDevice->readFloatAltitudeMeters(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readFloatAltitudeMeters(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->readTempC(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readTempC(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -557,19 +557,19 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->logUVA)
               {
-                olaftoa(nodeDevice->uva(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->uva(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logUVB)
               {
-                olaftoa(nodeDevice->uvb(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->uvb(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logUVIndex)
               {
-                olaftoa(nodeDevice->index(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->index(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -582,7 +582,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             struct_VEML7700 *nodeSetting = (struct_VEML7700 *)temp->configPtr;
             if (nodeSetting->log == true)
             {
-              olaftoa(nodeDevice->getLux(), tempData1, 2, sizeof(tempData) / sizeof(char));
+              olaftoa(nodeDevice->getLux(), tempData1, 2, sizeof(tempData1) / sizeof(char));
               sprintf(tempData, "%s,", tempData1);
               strlcat(sdOutputData, tempData, lenData);
             }
@@ -654,13 +654,13 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               }
               if (nodeSetting->logHumidity)
               {
-                olaftoa(nodeDevice->getHumidity(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getHumidity(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -675,19 +675,19 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->logHumidity)
               {
-                olaftoa(nodeDevice->getHumidity(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getHumidity(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logPressure)
               {
-                olaftoa(nodeDevice->getPressure(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getPressure(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -702,13 +702,13 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->getThermocoupleTemp(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getThermocoupleTemp(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logAmbientTemperature)
               {
-                olaftoa(nodeDevice->getAmbientTemp(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getAmbientTemp(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -723,13 +723,13 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->logHumidity)
               {
-                olaftoa(nodeDevice->getHumidity(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getHumidity(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getTemperature(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -745,13 +745,13 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               nodeDevice->update();
               if (nodeSetting->logHumidity)
               {
-                olaftoa(nodeDevice->toPercent(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->toPercent(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->toDegC(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->toDegC(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -805,19 +805,19 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
 
               if (nodeSetting->logCentigrade)
               {
-                olaftoa(nodeDevice->readPT100Centigrade(), tempData1, 3, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readPT100Centigrade(), tempData1, 3, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logFahrenheit)
               {
-                olaftoa(nodeDevice->readPT100Fahrenheit(), tempData1, 3, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readPT100Fahrenheit(), tempData1, 3, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logInternalTemperature)
               {
-                olaftoa(nodeDevice->readInternalTemperature(), tempData1, 3, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readInternalTemperature(), tempData1, 3, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -837,43 +837,43 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->usePSI)
               {
-                olaftoa(nodeDevice->readPressure(), tempData1, 4, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readPressure(), tempData1, 4, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->usePA)
               {
-                olaftoa(nodeDevice->readPressure(PA), tempData1, 1, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readPressure(PA), tempData1, 1, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->useKPA)
               {
-                olaftoa(nodeDevice->readPressure(KPA), tempData1, 4, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readPressure(KPA), tempData1, 4, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->useTORR)
               {
-                olaftoa(nodeDevice->readPressure(TORR), tempData1, 3, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readPressure(TORR), tempData1, 3, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->useINHG)
               {
-                olaftoa(nodeDevice->readPressure(INHG), tempData1, 4, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readPressure(INHG), tempData1, 4, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->useATM)
               {
-                olaftoa(nodeDevice->readPressure(ATM), tempData1, 6, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readPressure(ATM), tempData1, 6, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->useBAR)
               {
-                olaftoa(nodeDevice->readPressure(BAR), tempData1, 6, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->readPressure(BAR), tempData1, 6, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -888,19 +888,19 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             {
               if (nodeSetting->logPM1)
               {
-                olaftoa(nodeDevice->getPM1_0(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getPM1_0(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logPM25)
               {
-                olaftoa(nodeDevice->getPM2_5(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getPM2_5(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logPM10)
               {
-                olaftoa(nodeDevice->getPM10(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->getPM10(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -986,13 +986,13 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               }
               if (nodeSetting->logPressure)
               {
-                olaftoa(pressure, tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(pressure, tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(temperature, tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(temperature, tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -1011,25 +1011,25 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               }
               if (nodeSetting->logPressure)
               {
-                olaftoa(nodeDevice->pressure(nodeSetting->conversion), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->pressure(nodeSetting->conversion), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logTemperature)
               {
-                olaftoa(nodeDevice->temperature(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->temperature(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logDepth)
               {
-                olaftoa(nodeDevice->depth(), tempData1, 3, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->depth(), tempData1, 3, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
               if (nodeSetting->logAltitude)
               {
-                olaftoa(nodeDevice->altitude(), tempData1, 2, sizeof(tempData) / sizeof(char));
+                olaftoa(nodeDevice->altitude(), tempData1, 2, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -1049,7 +1049,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               }
               if (nodeSetting->logPressed)
               {
-                olaftoa(((float)pressedPopped) / 1000.0, tempData1, 3, sizeof(tempData) / sizeof(char));
+                olaftoa(((float)pressedPopped) / 1000.0, tempData1, 3, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -1062,7 +1062,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               }
               if (nodeSetting->logClicked)
               {
-                olaftoa(((float)clickedPopped) / 1000.0, tempData1, 3, sizeof(tempData) / sizeof(char));
+                olaftoa(((float)clickedPopped) / 1000.0, tempData1, 3, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
@@ -1117,7 +1117,7 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
               }
               if (nodeSetting->logRValue)
               {
-                olaftoa(body.rValue, tempData1, 1, sizeof(tempData) / sizeof(char));
+                olaftoa(body.rValue, tempData1, 1, sizeof(tempData1) / sizeof(char));
                 sprintf(tempData, "%s,", tempData1);
                 strlcat(sdOutputData, tempData, lenData);
               }
