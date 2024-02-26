@@ -1061,7 +1061,7 @@ void menuConfigure_NAU7802(void *configPtr)
           sensor->getWeight(true, 10); //Flush
         }
 
-        sensor->calculateZeroOffset(sensorConfig->averageAmount); //Zero or Tare the scale
+        sensor->calculateZeroOffset(sensorConfig->averageAmount); //Zero or Tare the scale. With external calibration, this should be ~zero
 
         sensorConfig->zeroOffset = sensor->getZeroOffset();
       }
@@ -1106,6 +1106,7 @@ void menuConfigure_NAU7802(void *configPtr)
       }
       else if (incoming == 6)
       {
+        //Limit number of readings to the sample rate so that the getWeight doesn't time out
         SerialPrint(F("Enter number of readings to take per weight read (>= 1, < Sample Rate): "));
         int rate;
         switch (sensorConfig->sampleRate)
