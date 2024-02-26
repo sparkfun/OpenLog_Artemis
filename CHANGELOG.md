@@ -5,10 +5,17 @@ v2.6:
 ---------
 
 * Add workflow actions to automatically compile the firmware binaries
-* Add support for the LPS28DFW - thank you @gauteh #179
-* Only disable I2C SDA and SCL during sleep when I2C bus is being powered down - thank you @whipple63 #167
+* Add support for the LPS28DFW - thank you @gauteh #179 , resolves #177
+* Only disable I2C SDA and SCL during sleep when I2C bus is being powered down - thank you @whipple63 #167 , resolves #155
 * Add calibrationConcentration support for the SCD30 - thank you @hotstick #181
-* Add limited support for the VEML7700 light sensor
+* Add limited support for the VEML7700 light sensor - resolves #184
+* Adds much improved support for the NAU7802 scale
+  * Negative weights can now be logged - resolves #176
+  * The calibration mode can now be set to: None, Internal (default), or External
+  * The sample rate, gain and LDO voltage can be selected via the menu
+  * The scale can be zero'd and calibrated separately - there are separate menu entries for zero, calibrate and weight entry
+* Corrects a major bug which prevented mutiple NAU7802, SCD30 or u-blox GNSS from being configured correctly when connected through a mux
+* Corrects a minor bug - corrected array size checking for olaftoa
 
 v2.5:
 ---------
