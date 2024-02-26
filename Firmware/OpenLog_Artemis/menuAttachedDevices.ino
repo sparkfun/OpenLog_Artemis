@@ -925,6 +925,8 @@ void menuConfigure_NAU7802(void *configPtr)
   NAU7802 *sensor = (NAU7802 *)temp->classPtr;
   struct_NAU7802 *sensorConfig = (struct_NAU7802*)configPtr;
 
+  openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+
   while (1)
   {
     SerialPrintln(F(""));
@@ -1024,11 +1026,11 @@ void menuConfigure_NAU7802(void *configPtr)
       }
       olaftoa(LDO, tempStr, 1, sizeof(tempStr) / sizeof(char));
       SerialPrintf2("9) LDO voltage: %s\r\n", tempStr);
+      SerialPrint(F("10) Calibration mode: "));
+      if (sensorConfig->calibrationMode == 0) SerialPrintln(F("None"));
+      else if (sensorConfig->calibrationMode == 1) SerialPrintln(F("Internal"));
+      else SerialPrintln(F("External"));
     }
-    SerialPrint(F("10) Calibration mode: "));
-    if (sensorConfig->calibrationMode == 0) SerialPrintln(F("None"));
-    else if (sensorConfig->calibrationMode == 1) SerialPrintln(F("Internal"));
-    else SerialPrintln(F("External"));
 
     SerialPrintln(F("x) Exit"));
 
@@ -1426,6 +1428,8 @@ void getUbloxDateTime(int &year, int &month, int &day, int &hour, int &minute, i
     {
       case DEVICE_GPS_UBLOX:
         {
+          openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+
           setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
           SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
@@ -1464,6 +1468,8 @@ void gnssFactoryDefault(void)
     {
       case DEVICE_GPS_UBLOX:
         {
+          openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
+          
           setQwiicPullups(0); //Disable pullups to minimize CRC issues
 
           SFE_UBLOX_GNSS *nodeDevice = (SFE_UBLOX_GNSS *)temp->classPtr;
@@ -1889,6 +1895,8 @@ void menuConfigure_SCD30(void *configPtr)
 
   SCD30 *sensor = (SCD30 *)temp->classPtr;
   struct_SCD30 *sensorSetting = (struct_SCD30*)configPtr;
+
+  openConnection(temp->muxAddress, temp->portNumber); //Connect to this device through muxes as needed
 
   while (1)
   {
