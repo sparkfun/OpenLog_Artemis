@@ -30,7 +30,9 @@ jobs:
           echo "firmwareMinor=$(grep -Po "(?<=FIRMWARE_VERSION_MINOR = )([0-9])*(?=;$)" ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino)" >> "$GITHUB_ENV"
 
       - name: Get firmware version 2
-        run: echo "firmwareMajorMinor=-V10-v${{ env.firmwareMajor }}${{ env.firmwareMinor }}" >> "$GITHUB_ENV"
+        run: |
+          echo "firmwareMajorMinor=-V10-v${{ env.firmwareMajor }}${{ env.firmwareMinor }}" >> "$GITHUB_ENV"
+          echo "firmwareMajorMinorX04=-X04-v${{ env.firmwareMajor }}${{ env.firmwareMinor }}" >> "$GITHUB_ENV"
 
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
@@ -140,6 +142,29 @@ jobs:
 
       - name: Disable Power Loss Protection
         run: sed -i 's|#define noPowerLossProtection|//#define noPowerLossProtection|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: X04 Hardware
+        run: sed -i 's|#define HARDWARE_VERSION_MAJOR 1|#define HARDWARE_VERSION_MAJOR 0|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+        run: sed -i 's|#define HARDWARE_VERSION_MINOR 0|#define HARDWARE_VERSION_MINOR 4|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: Compile Sketch
+        run: arduino-cli compile -v -e -b SparkFun:apollo3:sfe_artemis_atp ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+
+      - name: Rename binary
+        run: |
+          cd ./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/
+          mv ${{ env.FILENAME_PREFIX }}.ino.bin ${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}-NoPowerLossProtection.bin
+          echo "targetBinary=./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinorX04 }}.bin" >> "$GITHUB_ENV"
+          rm *.axf
+          rm *.hex
+          rm *.map
+
+      - name: Move binary
+        run: mv ${{ env.targetBinary }} ./Binaries
+
+      - name: V01 Hardware
+        run: sed -i 's|#define HARDWARE_VERSION_MAJOR 0|#define HARDWARE_VERSION_MAJOR 1|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
+        run: sed -i 's|#define HARDWARE_VERSION_MINOR 4|#define HARDWARE_VERSION_MINOR 0|g' ./Firmware/${{ env.FILENAME_PREFIX }}/${{ env.FILENAME_PREFIX }}.ino
 
       - uses: actions-js/push@master
         with:
