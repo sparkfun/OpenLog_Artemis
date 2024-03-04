@@ -468,7 +468,8 @@ void setup() {
   else
   {
     Serial1.flush(); //Complete any previous prints
-    Serial1.end(); // Stop the SerialLog port
+    if (settings.logSerial == false)
+      Serial1.end(); // Stop the SerialLog port - but only if not logging serial, otherwise incoming data can cause a crash!
   }
 
   Serial.flush(); //Complete any previous prints
