@@ -151,10 +151,13 @@
     Only disable I2C SDA and SCL during sleep when I2C bus is being powered down - thank you @whipple63 #167
     Add calibrationConcentration support for the SCD30 - thank you @hotstick #181
     Add limited support for the VEML7700 light sensor
+
+  v2.7:
+    Resolve serial logging issue - crash on startup - #182
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 6;
+const int FIRMWARE_VERSION_MINOR = 7;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -164,7 +167,7 @@ const int FIRMWARE_VERSION_MINOR = 6;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x126 // Stored as 294 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x127 // Stored as 294 decimal in OLA_settings.txt
 
 //#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
 
