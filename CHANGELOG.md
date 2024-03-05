@@ -1,6 +1,11 @@
 Change Log
 ======================
 
+v2.7:
+---------
+
+* Corrects the crash on startup when logging serial data - resolves #182
+
 v2.6:
 ---------
 
