@@ -154,10 +154,15 @@
 
   v2.7:
     Resolve serial logging issue - crash on startup - #182
+
+  v2.8:
+    Corrects the serial token timestamp printing - resolves #192
+    The charsReceived debug print ("Total chars received: ") now excludes the length of the timestamps
+
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 7;
+const int FIRMWARE_VERSION_MINOR = 8;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -167,7 +172,7 @@ const int FIRMWARE_VERSION_MINOR = 7;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x127 // Stored as 294 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x128 // Stored as 296 decimal in OLA_settings.txt
 
 //#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
 
@@ -353,7 +358,7 @@ unsigned long qwiicPowerOnDelayMillis; //Wait for this many milliseconds after t
 int lowBatteryReadings = 0; // Count how many times the battery voltage has read low
 const int lowBatteryReadingsLimit = 10; // Don't declare the battery voltage low until we have had this many consecutive low readings (to reject sampling noise)
 volatile static bool triggerEdgeSeen = false; //Flag to indicate if a trigger interrupt has been seen
-char serialTimestamp[40]; //Buffer to store serial timestamp, if needed
+char serialTimestamp[50]; //Buffer to store serial timestamp, if needed
 volatile static bool powerLossSeen = false; //Flag to indicate if a power loss event has been seen
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -615,14 +620,15 @@ void loop() {
 
           for (size_t i = 0; i < timestampCharsLeftToWrite; i++)
           {
-            serialTimestamp[i] = serialTimestamp[i+1]; // Shuffle the remaining chars along by one
+            serialTimestamp[i] = serialTimestamp[i+1]; // Shuffle the remaining chars along by one, including the NULL terminator
           }
 
-          timestampCharsLeftToWrite -= 1;
+          timestampCharsLeftToWrite -= 1; // Now decrement timestampCharsLeftToWrite
         }
         else
         {
           incomingBuffer[incomingBufferSpot++] = Serial1.read();
+          charsReceived++;
 
           //Get the RTC timestamp if we just received the timestamp token
           if (settings.timestampSerial && (incomingBuffer[incomingBufferSpot-1] == settings.timeStampToken))
@@ -631,6 +637,7 @@ void loop() {
             serialTimestamp[0] = 0x0A; // Add Line Feed at the start of the timestamp
             serialTimestamp[1] = '^'; // Add an up-arrow to indicate the timestamp relates to the preceeding data
             serialTimestamp[strlen(serialTimestamp) - 1] = 0x0A; // Change the final comma of the timestamp to a Line Feed
+            timestampCharsLeftToWrite = strlen(serialTimestamp); // Update timestampCharsLeftToWrite now, so timestamp is printed immediately (#192)
           }
         }
 
@@ -641,7 +648,6 @@ void loop() {
           digitalWrite(PIN_STAT_LED, LOW);
           incomingBufferSpot = 0;
         }
-        charsReceived++;
         checkBattery();
       }
 
