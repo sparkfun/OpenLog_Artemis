@@ -133,7 +133,15 @@ _PROTOTYPE(void bttyout , (int c ));
 #ifndef ARDUINO
 FILE *fout;
 #else
-extern SdFile fout;
+#if SD_FAT_TYPE == 1
+extern File32 fout;
+#elif SD_FAT_TYPE == 2
+extern ExFile fout;
+#elif SD_FAT_TYPE == 3
+extern FsFile fout;
+#else // SD_FAT_TYPE == 0
+extern File fout;
+#endif  // SD_FAT_TYPE
 #endif
 
 // Dylan (monte_carlo_ecm, bitflipper, etc.) - Moved this to a global variable to enable

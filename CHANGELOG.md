@@ -6,6 +6,7 @@ v2.8:
 
 * Corrects the serial token timestamp printing - resolves #192
 * The charsReceived debug print ("Total chars received: ") now excludes the length of the timestamps
+* Consistent use of File32/ExFile/FsFile/File. Don't use SdFile for temporary files
 
 v2.7:
 ---------

@@ -169,7 +169,7 @@ _PROTOTYPE(void bibi , (int n ));
 _PROTOTYPE(int wcs , (const char *oname));
 _PROTOTYPE(void saybibi, (void));
 
-int wctxpn(char *name,SdFile *file);
+int wctxpn(char *name);
 int wcrx();
 
 /* Ward Christensen / CP/M parameters - Don't change these! */

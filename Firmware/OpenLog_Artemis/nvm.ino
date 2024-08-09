@@ -197,10 +197,19 @@ bool loadSystemSettingsFromFile()
   {
     if (sd.exists("OLA_settings.txt"))
     {
-      SdFile settingsFile; //FAT32
+      #if SD_FAT_TYPE == 1
+      File32 settingsFile;
+      #elif SD_FAT_TYPE == 2
+      ExFile settingsFile;
+      #elif SD_FAT_TYPE == 3
+      FsFile settingsFile;
+      #else // SD_FAT_TYPE == 0
+      File settingsFile;
+      #endif  // SD_FAT_TYPE
+
       if (settingsFile.open("OLA_settings.txt", O_READ) == false)
       {
-        SerialPrintln(F("Failed to open settings file"));
+        SerialPrintln(F("Failed to open device settings file"));
         return (false);
       }
 

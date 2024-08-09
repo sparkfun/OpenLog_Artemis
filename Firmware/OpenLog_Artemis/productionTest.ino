@@ -488,7 +488,16 @@ void productionTest()
           if (sd.exists("OLA_prod_test.txt"))
             sd.remove("OLA_prod_test.txt");
       
-          SdFile testFile; //FAT32
+          #if SD_FAT_TYPE == 1
+          File32 testFile;
+          #elif SD_FAT_TYPE == 2
+          ExFile testFile;
+          #elif SD_FAT_TYPE == 3
+          FsFile testFile;
+          #else // SD_FAT_TYPE == 0
+          File testFile;
+          #endif  // SD_FAT_TYPE
+
           if (testFile.open("OLA_prod_test.txt", O_CREAT | O_APPEND | O_WRITE) == true)
           {
 #ifdef verboseProdTest

@@ -188,7 +188,15 @@ _PROTOTYPE(int zsendcmd , (char *buf , int blen ));
 #ifndef ARDUINO
 FILE *fout;
 #else
-extern SdFile fout;
+#if SD_FAT_TYPE == 1
+extern File32 fout;
+#elif SD_FAT_TYPE == 2
+extern ExFile fout;
+#elif SD_FAT_TYPE == 3
+extern FsFile fout;
+#else // SD_FAT_TYPE == 0
+extern File fout;
+#endif  // SD_FAT_TYPE
 #endif
 
 int wcs(const char *oname)
