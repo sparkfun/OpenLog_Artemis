@@ -129,7 +129,15 @@ V2.00
 extern int Filesleft;
 extern long Totalleft;
 
-extern SdFile fout;
+#if SD_FAT_TYPE == 1
+extern File32 fout;
+#elif SD_FAT_TYPE == 2
+extern ExFile fout;
+#elif SD_FAT_TYPE == 3
+extern FsFile fout;
+#else // SD_FAT_TYPE == 0
+extern File fout;
+#endif  // SD_FAT_TYPE
 
 static bool oneTime = false; // Display the Tera Term Change Directory note only once (so it does not get on people's nerves!)
 
@@ -171,9 +179,19 @@ void sdCardHelp(void)
   DSERIALprint(F("\r\n"));
 }
 
-SdFile root; // Copied from SdFat OpenNext example
-SdFile fout;
-//dir_t *dir ;
+#if SD_FAT_TYPE == 1
+File32 root;
+File32 fout;
+#elif SD_FAT_TYPE == 2
+ExFile root;
+ExFile fout;
+#elif SD_FAT_TYPE == 3
+FsFile root;
+FsFile fout;
+#else // SD_FAT_TYPE == 0
+File root;
+File fout;
+#endif  // SD_FAT_TYPE
 
 int count_files(int *file_count, long *byte_count)
 {

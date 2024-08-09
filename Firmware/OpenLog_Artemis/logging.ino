@@ -11,7 +11,16 @@ void msg(const char * message)
 //Updates EEPROM and then appends to the new log file.
 char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
 {
-  SdFile newFile; //This will contain the file for SD writing
+  //This will contain the file for SD writing
+  #if SD_FAT_TYPE == 1
+  File32 newFile;
+  #elif SD_FAT_TYPE == 2
+  ExFile newFile;
+  #elif SD_FAT_TYPE == 3
+  FsFile newFile;
+  #else // SD_FAT_TYPE == 0
+  File newFile;
+  #endif  // SD_FAT_TYPE
 
   if (newFileNumber < 2) //If the settings have been reset, let's warn the user that this could take a while!
   {
