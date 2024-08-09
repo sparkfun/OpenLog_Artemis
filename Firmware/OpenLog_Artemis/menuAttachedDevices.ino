@@ -3315,7 +3315,7 @@ void menuConfigure_KX134(void *configPtr)
         sensorSetting->range32G = false;
         sensorSetting->range64G = false;
       }
-      else if (incoming == 3)
+      else if (incoming == 4)
       {
         sensorSetting->range8G = false;
         sensorSetting->range16G = false;
