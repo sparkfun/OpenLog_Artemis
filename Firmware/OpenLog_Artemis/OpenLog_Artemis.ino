@@ -18,6 +18,7 @@
    10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
 
   TODO:
+  Add support for TMP102 temperature sensor (preferably while still working with the ADS1015 (also at address 0x48)
   (done) Create settings file for sensor. Load after qwiic bus is scanned.
   (done on larger Strings) Remove String dependencies.
   (done) Bubble sort list of devices.
@@ -160,10 +161,12 @@
     The charsReceived debug print ("Total chars received: ") now excludes the length of the timestamps
     Consistent use of File32/ExFile/FsFile/File. Don't use SdFile for temporary files
 
+  v2.9
+    Adds support for TMP102 low(er) cost temperature sensor
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 8;
+const int FIRMWARE_VERSION_MINOR = 9;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -315,6 +318,7 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFun_SGP30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SGP30
 #include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
 #include "SparkFun_MS5637_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MS5637
+#include "SparkFunTMP102.h" //Click here to get the library: http://librarymanager/All#SparkFun_TMP102
 #include "SparkFun_TMP117.h" //Click here to get the library: http://librarymanager/All#SparkFun_TMP117
 #include "SparkFun_u-blox_GNSS_Arduino_Library.h" //http://librarymanager/All#SparkFun_u-blox_GNSS
 #include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_NAU7802

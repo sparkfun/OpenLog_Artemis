@@ -8,6 +8,7 @@ typedef enum
   DEVICE_DISTANCE_VL53L1X,
   DEVICE_GPS_UBLOX,
   DEVICE_PROXIMITY_VCNL4040,
+  DEVICE_TEMPERATURE_TMP102,
   DEVICE_TEMPERATURE_TMP117,
   DEVICE_PRESSURE_MS5637,
   DEVICE_PRESSURE_LPS25HB,
@@ -170,12 +171,18 @@ struct struct_VL53L1X {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
+struct struct_TMP102 {
+  bool log = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+
 #define TMP117_MODE_CONTINUOUS 0
 #define TMP117_MODE_SHUTDOWN 1
 #define TMP117_MODE_ONESHOT 2
 struct struct_TMP117 {
   bool log = true;
-  bool logTemperature= true;
+  bool logTemperature= true;      // JWS : This value is set to true here, and then ever changed ever again???
   int conversionMode = TMP117_MODE_CONTINUOUS;
   int conversionAverageMode = 0; //Setup for 15.5ms reads
   int conversionCycle = 0;

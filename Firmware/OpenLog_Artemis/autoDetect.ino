@@ -147,6 +147,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_VCNL4040;
       }
       break;
+    case DEVICE_TEMPERATURE_TMP102:
+      {
+        temp->classPtr = new TMP102;
+        temp->configPtr = new struct_TMP102;
+      }
+      break;
     case DEVICE_TEMPERATURE_TMP117:
       {
         temp->classPtr = new TMP117;
@@ -400,6 +406,14 @@ bool beginQwiicDevices()
           struct_VCNL4040 *nodeSetting = (struct_VCNL4040 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
+        }
+        break;
+      case DEVICE_TEMPERATURE_TMP102:
+        {
+          TMP102 *tempDevice = (TMP102 *)temp->classPtr;
+          struct_TMP102 *nodeSetting = (struct_TMP102 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          temp->online = tempDevice->begin(temp->address, qwiic); //Address, Wire port
         }
         break;
       case DEVICE_TEMPERATURE_TMP117:
@@ -819,6 +833,18 @@ void configureDevice(node * temp)
         sensor->setAmbientIntegrationTime(sensorSetting->ambientIntegrationTime);
       }
       break;
+
+    case DEVICE_TEMPERATURE_TMP102:
+      {
+        TMP102 *sensor = (TMP102 *)temp->classPtr;
+        struct_TMP102 *sensorSetting = (struct_TMP102 *)temp->configPtr;
+
+        // JWS TODO replace with initalization code for TMP102 if needed?
+        //sensor->setConversionAverageMode(sensorSetting->conversionAverageMode);
+        //sensor->setConversionCycleBit(sensorSetting->conversionCycle);
+        //sensor->setContinuousConversionMode();
+      }
+      break;
     case DEVICE_TEMPERATURE_TMP117:
       {
         TMP117 *sensor = (TMP117 *)temp->classPtr;
@@ -1106,6 +1132,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
     case DEVICE_PROXIMITY_VCNL4040:
       ptr = (FunctionPointer)menuConfigure_VCNL4040;
       break;
+    case DEVICE_TEMPERATURE_TMP102:
+      ptr = (FunctionPointer)menuConfigure_TMP102;
+      break;
     case DEVICE_TEMPERATURE_TMP117:
       ptr = (FunctionPointer)menuConfigure_TMP117;
       break;
@@ -1324,6 +1353,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
 #define ADR_UBLOX 0x42 //But can be set to any address
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
+#define ADR_TMP102 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_ADS1015 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_BIO_SENSOR_HUB 0x55
@@ -1488,6 +1518,17 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_TMP117);
 
+        //Confidence: Low - only does a simple isConnected. Not a problem with TMP117, but it
+        // will probably detect a ADS1015 as a TMP102.  We need to figure out a way to discriminate between
+        // those two devices (when a TMP102 is misdetected as a ADS1015, all 4 values are always equal, maybe this will help?)
+        // For development purposes, listing before the ADS1015 so that I can develop/test and make my TMP102's work.
+        TMP102 sensor2;
+        if (sensor2.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_TEMPERATURE_TMP102);
+
+        // JWS WARNING - shadowed by above TMP102 test, need to find out a way to discriminate between the two chips via their behavior, OR
+        // allow user to select which it is via menu.
+        //
         //Confidence: Low - only does a simple isConnected
         ADS1015 sensor1;
         if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
@@ -1888,6 +1929,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_PROXIMITY_VCNL4040:
       return "Proximity-VCNL4040";
+      break;
+    case DEVICE_TEMPERATURE_TMP102:
+      return "Temperature-TMP102";
       break;
     case DEVICE_TEMPERATURE_TMP117:
       return "Temperature-TMP117";
