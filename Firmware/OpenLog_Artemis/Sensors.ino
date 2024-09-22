@@ -434,6 +434,20 @@ void gatherDeviceValues(char * sdOutputData, size_t lenData)
             }
           }
           break;
+        case DEVICE_TEMPERATURE_TMP102:
+          {
+            TMP102 *nodeDevice = (TMP102 *)temp->classPtr;
+            struct_TMP102 *nodeSetting = (struct_TMP102 *)temp->configPtr;
+
+            if (nodeSetting->log == true)
+            {
+                olaftoa(nodeDevice->readTempC(), tempData1, 4, sizeof(tempData1) / sizeof(char)); //Resolution to 0.0625°C, ACCURACY: 0.5°C (–25°C to +85°C)
+                sprintf(tempData, "%s,", tempData1);
+                strlcat(sdOutputData, tempData, lenData);
+              
+            }
+          }
+          break;     
         case DEVICE_TEMPERATURE_TMP117:
           {
             TMP117 *nodeDevice = (TMP117 *)temp->classPtr;
@@ -1465,6 +1479,15 @@ static void getHelperText(char* helperText, size_t lenText)
             }
           }
           break;
+        case DEVICE_TEMPERATURE_TMP102:
+          {
+            struct_TMP102 *nodeSetting = (struct_TMP102 *)temp->configPtr;
+            if (nodeSetting->log)
+            {
+                strlcat(helperText, "TMP102 degC,", lenText);
+            }
+          }
+          break;  
         case DEVICE_TEMPERATURE_TMP117:
           {
             struct_TMP117 *nodeSetting = (struct_TMP117 *)temp->configPtr;

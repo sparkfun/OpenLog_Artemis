@@ -49,6 +49,7 @@ This document summarizes the units used for each sensor measurement.
 - [MCP9600 thermocouple amplifier](#MCP9600-thermocouple-amplifier)
 - [Qwiic PT100 ADS122C04 platinum resistance sensor](#Qwiic-PT100-ADS122C04-platinum-resistance-sensor)
 - [TMP117 precision temperature sensor](#TMP117-precision-temperature-sensor)
+- [TMP102 temperature sensor](#TMP102-temperature-sensor)
 
 ### Weight:
 
@@ -349,6 +350,13 @@ Fan operational status:
 | Temperature (F) | degF | Degrees Fahrenheit |
 | Temperature Internal | degC | Degrees Centigrade |
 | Raw Voltage | V*2.048/2^23 | Volts * 2.048 / 2<sup>23</sup> |
+
+---
+## TMP102 temperature sensor
+
+| []() | | |
+|---|---|---|
+| Temperature | degC | Degrees Centigrade |
 
 ---
 ## TMP117 precision temperature sensor

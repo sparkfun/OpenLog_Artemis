@@ -147,6 +147,12 @@ bool addDevice(deviceType_e deviceType, uint8_t address, uint8_t muxAddress, uin
         temp->configPtr = new struct_VCNL4040;
       }
       break;
+    case DEVICE_TEMPERATURE_TMP102:
+      {
+        temp->classPtr = new TMP102;
+        temp->configPtr = new struct_TMP102;
+      }
+      break;
     case DEVICE_TEMPERATURE_TMP117:
       {
         temp->classPtr = new TMP117;
@@ -400,6 +406,14 @@ bool beginQwiicDevices()
           struct_VCNL4040 *nodeSetting = (struct_VCNL4040 *)temp->configPtr; //Create a local pointer that points to same spot as node does
           if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
           temp->online = tempDevice->begin(qwiic); //Wire port
+        }
+        break;
+      case DEVICE_TEMPERATURE_TMP102:
+        {
+          TMP102 *tempDevice = (TMP102 *)temp->classPtr;
+          struct_TMP102 *nodeSetting = (struct_TMP102 *)temp->configPtr; //Create a local pointer that points to same spot as node does
+          if (nodeSetting->powerOnDelayMillis > qwiicPowerOnDelayMillis) qwiicPowerOnDelayMillis = nodeSetting->powerOnDelayMillis; // Increase qwiicPowerOnDelayMillis if required
+          temp->online = tempDevice->begin(temp->address, qwiic); //Address, Wire port
         }
         break;
       case DEVICE_TEMPERATURE_TMP117:
@@ -819,6 +833,18 @@ void configureDevice(node * temp)
         sensor->setAmbientIntegrationTime(sensorSetting->ambientIntegrationTime);
       }
       break;
+
+    case DEVICE_TEMPERATURE_TMP102:
+      {
+        TMP102 *sensor = (TMP102 *)temp->classPtr;
+        struct_TMP102 *sensorSetting = (struct_TMP102 *)temp->configPtr;
+
+        // JWS - I did not initalize the TMP102 sensor, as they appear to
+        // work just fine with no special initalization code.
+       
+
+      }
+      break;
     case DEVICE_TEMPERATURE_TMP117:
       {
         TMP117 *sensor = (TMP117 *)temp->classPtr;
@@ -1106,6 +1132,9 @@ FunctionPointer getConfigFunctionPtr(uint8_t nodeNumber)
     case DEVICE_PROXIMITY_VCNL4040:
       ptr = (FunctionPointer)menuConfigure_VCNL4040;
       break;
+    case DEVICE_TEMPERATURE_TMP102:
+      ptr = (FunctionPointer)menuConfigure_TMP102;
+      break;
     case DEVICE_TEMPERATURE_TMP117:
       ptr = (FunctionPointer)menuConfigure_TMP117;
       break;
@@ -1324,6 +1353,7 @@ void swap(struct node * a, struct node * b)
 #define ADR_MS8607 0x40 //Humidity portion of the MS8607 sensor
 #define ADR_UBLOX 0x42 //But can be set to any address
 #define ADR_ADS122C04 0x45 //Alternates: 0x44, 0x41 and 0x40
+#define ADR_TMP102 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_TMP117 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_ADS1015 0x48 //Alternates: 0x49, 0x4A, and 0x4B
 #define ADR_BIO_SENSOR_HUB 0x55
@@ -1488,10 +1518,54 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_TMP117);
 
-        //Confidence: Low - only does a simple isConnected
+
+
+        
+        
+        // Confidence: Medium - does a simple isConnected check, and then tests that two bits are read/write to disambiguate
+        // from the TMP102 sensor, where those two bits are read only 11.
         ADS1015 sensor1;
-        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_ADS1015);
+        if (sensor1.begin(i2cAddress, qwiic) == true)   //Address, Wire port
+        {
+           //Peek at the current config register (same 01 pointer addr as the TMP102)
+           uint16_t config = sensor1.readRegister(ADS1015_POINTER_CONFIG);
+           
+           //Write zeros to the MUX[2:1] bits of the ADS1015 (read/write bits) which
+           // happen to be in the same place as the R1/R0 bits of the TMP102 (and
+           // are read only 11 on the TMP102
+           uint16_t newConfig = config & 0x9FFF;  // 0x9FFF is 1001 1111 1111 1111 so it zeros out those two bits
+
+           //SerialPrintf2("ADS1015 detect, newconfig is:: %x \r\n", newConfig);
+
+
+           sensor1.writeRegister(ADS1015_POINTER_CONFIG, newConfig);
+
+           //Read back to see if our changes were recorded (ADS1015) or not (TMP102)
+           newConfig = sensor1.readRegister(ADS1015_POINTER_CONFIG);
+
+
+           //SerialPrintf2("ADS105 detect, after write/read cycle, config is: %x \r\n", newConfig);
+
+
+           // Write the original config back to restore the correct state.
+           sensor1.writeRegister(ADS1015_POINTER_CONFIG, config);
+
+           //Check to see if the bits we wrote zero stayed at 00 (ADS1015) or returned as
+           // 1's because it's actually a TMP102 or some other chip with read only bits
+           // in that spot...
+           if( (newConfig & 0x6000) == 0 )  // 0x6000 is 0110 0000 0000 0000 so it zeros out all bits except the two we are interested in.
+           {
+               // Our cannary bits correctly stayed set at zero! Write successful, assume it is a ADS1015
+               return (DEVICE_ADS1015);
+
+           }
+           // Otherwise, fall through to the TMP102 test below, which just assumes anything on the correct address is in fact a TMP102 sensor...
+        } // end if there is a device on this address.
+
+        //Confidence: Low - only does a simple isConnected.
+        TMP102 sensor2;
+        if (sensor2.begin(i2cAddress, qwiic) == true) //Address, Wire port
+          return (DEVICE_TEMPERATURE_TMP102);
       }
       break;
     case 0x55:
@@ -1888,6 +1962,9 @@ const char* getDeviceName(deviceType_e deviceNumber)
       break;
     case DEVICE_PROXIMITY_VCNL4040:
       return "Proximity-VCNL4040";
+      break;
+    case DEVICE_TEMPERATURE_TMP102:
+      return "Temperature-TMP102";
       break;
     case DEVICE_TEMPERATURE_TMP117:
       return "Temperature-TMP117";

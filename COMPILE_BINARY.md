@@ -52,6 +52,7 @@ Copy and paste the following into an empty sketch. Click on each link in turn to
 // http://librarymanager/All#SparkFun_SGP30
 // http://librarymanager/All#SparkFun_VCNL4040
 // http://librarymanager/All#SparkFun_MS5637
+// http://librarymanager/All#SparkFun_TMP102
 // http://librarymanager/All#SparkFun_TMP117
 // http://librarymanager/All#SparkFun_u-blox_GNSS
 // http://librarymanager/All#SparkFun_NAU7802
@@ -160,7 +161,7 @@ The extra code prevents badness when the Artemis goes into deep sleep
 Open the following file:
 
 ```
-C:\Users\<Your_User>\Documents\Arduino\libraries\SparkFun_ICM-20948_ArduinoLibrary\src\util\ICM_20948_C.h
+C:\Users\<Your_User>\Documents\Arduino\libraries\SparkFun_9DOF_IMG_Breakout_-_ICM-20948_ArduinoLibrary\src\util\ICM_20948_C.h
 ```
 
 Uncomment the following line (29):
