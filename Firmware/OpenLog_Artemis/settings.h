@@ -182,7 +182,7 @@ struct struct_TMP102 {
 #define TMP117_MODE_ONESHOT 2
 struct struct_TMP117 {
   bool log = true;
-  bool logTemperature= true;      // JWS : This value is set to true here, and then ever changed ever again???
+  bool logTemperature= true;      // JWS : This value is set to true here, and then never changed ever again???
   int conversionMode = TMP117_MODE_CONTINUOUS;
   int conversionAverageMode = 0; //Setup for 15.5ms reads
   int conversionCycle = 0;

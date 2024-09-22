@@ -839,10 +839,10 @@ void configureDevice(node * temp)
         TMP102 *sensor = (TMP102 *)temp->classPtr;
         struct_TMP102 *sensorSetting = (struct_TMP102 *)temp->configPtr;
 
-        // JWS TODO replace with initalization code for TMP102 if needed?
-        //sensor->setConversionAverageMode(sensorSetting->conversionAverageMode);
-        //sensor->setConversionCycleBit(sensorSetting->conversionCycle);
-        //sensor->setContinuousConversionMode();
+        // JWS - I did not initalize the TMP102 sensor, as they appear to
+        // work just fine with no special initalization code.
+       
+
       }
       break;
     case DEVICE_TEMPERATURE_TMP117:
@@ -1518,21 +1518,54 @@ deviceType_e testDevice(uint8_t i2cAddress, uint8_t muxAddress, uint8_t portNumb
         if (sensor.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_TMP117);
 
-        //Confidence: Low - only does a simple isConnected. Not a problem with TMP117, but it
-        // will probably detect a ADS1015 as a TMP102.  We need to figure out a way to discriminate between
-        // those two devices (when a TMP102 is misdetected as a ADS1015, all 4 values are always equal, maybe this will help?)
-        // For development purposes, listing before the ADS1015 so that I can develop/test and make my TMP102's work.
+
+
+        
+        
+        // Confidence: Medium - does a simple isConnected check, and then tests that two bits are read/write to disambiguate
+        // from the TMP102 sensor, where those two bits are read only 11.
+        ADS1015 sensor1;
+        if (sensor1.begin(i2cAddress, qwiic) == true)   //Address, Wire port
+        {
+           //Peek at the current config register (same 01 pointer addr as the TMP102)
+           uint16_t config = sensor1.readRegister(ADS1015_POINTER_CONFIG);
+           
+           //Write zeros to the MUX[2:1] bits of the ADS1015 (read/write bits) which
+           // happen to be in the same place as the R1/R0 bits of the TMP102 (and
+           // are read only 11 on the TMP102
+           uint16_t newConfig = config & 0x9FFF;  // 0x9FFF is 1001 1111 1111 1111 so it zeros out those two bits
+
+           //SerialPrintf2("ADS1015 detect, newconfig is:: %x \r\n", newConfig);
+
+
+           sensor1.writeRegister(ADS1015_POINTER_CONFIG, newConfig);
+
+           //Read back to see if our changes were recorded (ADS1015) or not (TMP102)
+           newConfig = sensor1.readRegister(ADS1015_POINTER_CONFIG);
+
+
+           //SerialPrintf2("ADS105 detect, after write/read cycle, config is: %x \r\n", newConfig);
+
+
+           // Write the original config back to restore the correct state.
+           sensor1.writeRegister(ADS1015_POINTER_CONFIG, config);
+
+           //Check to see if the bits we wrote zero stayed at 00 (ADS1015) or returned as
+           // 1's because it's actually a TMP102 or some other chip with read only bits
+           // in that spot...
+           if( (newConfig & 0x6000) == 0 )  // 0x6000 is 0110 0000 0000 0000 so it zeros out all bits except the two we are interested in.
+           {
+               // Our cannary bits correctly stayed set at zero! Write successful, assume it is a ADS1015
+               return (DEVICE_ADS1015);
+
+           }
+           // Otherwise, fall through to the TMP102 test below, which just assumes anything on the correct address is in fact a TMP102 sensor...
+        } // end if there is a device on this address.
+
+        //Confidence: Low - only does a simple isConnected.
         TMP102 sensor2;
         if (sensor2.begin(i2cAddress, qwiic) == true) //Address, Wire port
           return (DEVICE_TEMPERATURE_TMP102);
-
-        // JWS WARNING - shadowed by above TMP102 test, need to find out a way to discriminate between the two chips via their behavior, OR
-        // allow user to select which it is via menu.
-        //
-        //Confidence: Low - only does a simple isConnected
-        ADS1015 sensor1;
-        if (sensor1.begin(i2cAddress, qwiic) == true) //Address, Wire port
-          return (DEVICE_ADS1015);
       }
       break;
     case 0x55:

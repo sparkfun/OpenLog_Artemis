@@ -18,7 +18,7 @@
    10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
 
   TODO:
-  Add support for TMP102 temperature sensor (preferably while still working with the ADS1015 (also at address 0x48)
+  (done) Add support for TMP102 temperature sensor (while differentating between it and the ADS1015 (which share the same 4 addresses starting at 0x48)
   (done) Create settings file for sensor. Load after qwiic bus is scanned.
   (done on larger Strings) Remove String dependencies.
   (done) Bubble sort list of devices.
