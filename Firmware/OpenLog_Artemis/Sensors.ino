@@ -1481,10 +1481,14 @@ static void getHelperText(char* helperText, size_t lenText)
           break;
         case DEVICE_TEMPERATURE_TMP102:
           {
+            
             struct_TMP102 *nodeSetting = (struct_TMP102 *)temp->configPtr;
             if (nodeSetting->log)
             {
-                strlcat(helperText, "TMP102 degC,", lenText);
+                 // Include unique ID's for bus/port/address for each TMP102 temp sensor
+                 char tempTxt[25];
+                 sprintf(tempTxt,"TMP102 %02X-%d-%02X DegC,", temp->muxAddress, temp->portNumber, temp->address);
+                 strlcat(helperText, tempTxt, lenText);
             }
           }
           break;  
