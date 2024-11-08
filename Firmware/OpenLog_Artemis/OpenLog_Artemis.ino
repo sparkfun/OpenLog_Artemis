@@ -18,7 +18,6 @@
    10Hz logging IMU, no Qwiic, SD, no USB, no Power LED: 9-27mA
 
   TODO:
-  (done) Add support for TMP102 temperature sensor (while differentating between it and the ADS1015 (which share the same 4 addresses starting at 0x48)
   (done) Create settings file for sensor. Load after qwiic bus is scanned.
   (done on larger Strings) Remove String dependencies.
   (done) Bubble sort list of devices.
@@ -109,6 +108,7 @@
   (done) Add a fix for issue #109 - check if a BME280 is connected before calling multiplexerBegin: https://github.com/sparkfun/OpenLog_Artemis/issues/109
   (done) Correct issue #104. enableSD was redundant. The microSD power always needs to be on if there is a card inserted, otherwise the card pulls
          the SPI lines low, preventing communication with the IMU:  https://github.com/sparkfun/OpenLog_Artemis/issues/104
+  (done) Add support for TMP102 temperature sensor (while differentating between it and the ADS1015 (which share the same 4 addresses starting at 0x48)
 
   v2.2:
     Use Apollo3 v2.2.1 with changes by paulvha to fix Issue 117 (Thank you Paul!)
