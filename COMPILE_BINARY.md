@@ -161,7 +161,7 @@ The extra code prevents badness when the Artemis goes into deep sleep
 Open the following file:
 
 ```
-C:\Users\<Your_User>\Documents\Arduino\libraries\SparkFun_9DOF_IMG_Breakout_-_ICM-20948_ArduinoLibrary\src\util\ICM_20948_C.h
+C:\Users\<Your_User>\Documents\Arduino\libraries\SparkFun_ICM-20948_ArduinoLibrary\src\util\ICM_20948_C.h
 ```
 
 Uncomment the following line (29):
