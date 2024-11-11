@@ -52,6 +52,7 @@ Copy and paste the following into an empty sketch. Click on each link in turn to
 // http://librarymanager/All#SparkFun_SGP30
 // http://librarymanager/All#SparkFun_VCNL4040
 // http://librarymanager/All#SparkFun_MS5637
+// http://librarymanager/All#SparkFun_TMP102
 // http://librarymanager/All#SparkFun_TMP117
 // http://librarymanager/All#SparkFun_u-blox_GNSS
 // http://librarymanager/All#SparkFun_NAU7802

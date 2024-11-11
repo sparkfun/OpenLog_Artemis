@@ -1,5 +1,7 @@
 Change Log
 ======================
+v2.9:
+* Adds support for the TMP102 temperature sensor
 
 v2.8:
 ---------

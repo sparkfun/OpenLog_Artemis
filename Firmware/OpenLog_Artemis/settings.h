@@ -34,6 +34,8 @@ typedef enum
   DEVICE_ADS1015,
   DEVICE_PRESSURE_LPS28DFW,
   DEVICE_LIGHT_VEML7700,
+  DEVICE_TEMPERATURE_TMP102,
+
 
   DEVICE_TOTAL_DEVICES, //Marks the end, used to iterate loops
   DEVICE_UNKNOWN_DEVICE,
@@ -170,12 +172,18 @@ struct struct_VL53L1X {
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 
+struct struct_TMP102 {
+  bool log = true;
+  unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
+};
+
+
 #define TMP117_MODE_CONTINUOUS 0
 #define TMP117_MODE_SHUTDOWN 1
 #define TMP117_MODE_ONESHOT 2
 struct struct_TMP117 {
   bool log = true;
-  bool logTemperature= true;
+  bool logTemperature= true;      // JWS : This value is set to true here, and then never changed ever again???
   int conversionMode = TMP117_MODE_CONTINUOUS;
   int conversionAverageMode = 0; //Setup for 15.5ms reads
   int conversionCycle = 0;
