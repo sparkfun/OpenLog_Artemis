@@ -587,11 +587,17 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "resolution=" + nodeSetting->resolution);
           }
           break;
+        case DEVICE_TEMPERATURE_TMP102:
+          {
+            struct_TMP102 *nodeSetting = (struct_TMP102 *)temp->configPtr;
+            settingsFile.println((String)base + "log=" + nodeSetting->log);
+          }
+          break;
         case DEVICE_TEMPERATURE_TMP117:
           {
             struct_TMP117 *nodeSetting = (struct_TMP117 *)temp->configPtr;
             settingsFile.println((String)base + "log=" + nodeSetting->log);
-            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+            settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature); // JWS: I don't think this value is ever changed?
           }
           break;
         case DEVICE_PRESSURE_MS5637:
@@ -1145,13 +1151,22 @@ bool parseDeviceLine(char* str) {
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
         break;
+      case DEVICE_TEMPERATURE_TMP102:
+        {
+          struct_TMP102 *nodeSetting = (struct_TMP102 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
+          if (strcmp(deviceSettingName, "log") == 0)
+            nodeSetting->log = d;
+          else
+            SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
+        }
+        break;
       case DEVICE_TEMPERATURE_TMP117:
         {
           struct_TMP117 *nodeSetting = (struct_TMP117 *)deviceConfigPtr; //Create a local pointer that points to same spot as node does
           if (strcmp(deviceSettingName, "log") == 0)
             nodeSetting->log = d;
           else if (strcmp(deviceSettingName, "logTemperature") == 0)
-            nodeSetting->logTemperature = d;
+            nodeSetting->logTemperature = d;  // JWS: I don't think this value is ever used??
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }

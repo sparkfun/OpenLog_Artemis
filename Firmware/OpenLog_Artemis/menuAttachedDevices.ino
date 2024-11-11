@@ -297,6 +297,9 @@ void menuAttachedDevices()
           case DEVICE_PROXIMITY_VCNL4040:
             SerialPrintf3("%s VCNL4040 Proximity Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
+          case DEVICE_TEMPERATURE_TMP102:
+            SerialPrintf3("%s TMP102 Temperature Sensor %s\r\n", strDeviceMenu, strAddress);
+            break;
           case DEVICE_TEMPERATURE_TMP117:
             SerialPrintf3("%s TMP117 High Precision Temperature Sensor %s\r\n", strDeviceMenu, strAddress);
             break;
@@ -1633,6 +1636,35 @@ void menuConfigure_VCNL4040(void *configPtr)
       else
         printUnknown(incoming);
     }
+    else if (incoming == 'x')
+      break;
+    else if (incoming == STATUS_GETBYTE_TIMEOUT)
+      break;
+    else
+      printUnknown(incoming);
+  }
+
+}
+
+
+void menuConfigure_TMP102(void *configPtr)
+{
+  struct_TMP102 *sensorSetting = (struct_TMP102*)configPtr;
+  while (1)
+  {
+    SerialPrintln(F(""));
+    SerialPrintln(F("Menu: Configure TMP102 Temperature Sensor"));
+
+    SerialPrint(F("1) Sensor Logging: "));
+    if (sensorSetting->log == true) SerialPrintln(F("Enabled"));
+    else SerialPrintln(F("Disabled"));
+
+    SerialPrintln(F("x) Exit"));
+
+    byte incoming = getByteChoice(menuTimeout); //Timeout after x seconds
+
+    if (incoming == '1')
+      sensorSetting->log ^= 1;
     else if (incoming == 'x')
       break;
     else if (incoming == STATUS_GETBYTE_TIMEOUT)

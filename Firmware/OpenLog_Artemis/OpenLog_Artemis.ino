@@ -108,6 +108,7 @@
   (done) Add a fix for issue #109 - check if a BME280 is connected before calling multiplexerBegin: https://github.com/sparkfun/OpenLog_Artemis/issues/109
   (done) Correct issue #104. enableSD was redundant. The microSD power always needs to be on if there is a card inserted, otherwise the card pulls
          the SPI lines low, preventing communication with the IMU:  https://github.com/sparkfun/OpenLog_Artemis/issues/104
+  (done) Add support for TMP102 temperature sensor (while differentating between it and the ADS1015 (which share the same 4 addresses starting at 0x48)
 
   v2.2:
     Use Apollo3 v2.2.1 with changes by paulvha to fix Issue 117 (Thank you Paul!)
@@ -160,10 +161,12 @@
     The charsReceived debug print ("Total chars received: ") now excludes the length of the timestamps
     Consistent use of File32/ExFile/FsFile/File. Don't use SdFile for temporary files
 
+  v2.9
+    Adds support for TMP102 low(er) cost temperature sensor
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 8;
+const int FIRMWARE_VERSION_MINOR = 9;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -315,6 +318,7 @@ icm_20948_DMP_data_t dmpData; // Global storage for the DMP data - extracted fro
 #include "SparkFun_SGP30_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_SGP30
 #include "SparkFun_VCNL4040_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_VCNL4040
 #include "SparkFun_MS5637_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_MS5637
+#include "SparkFunTMP102.h" //Click here to get the library: http://librarymanager/All#SparkFun_TMP102
 #include "SparkFun_TMP117.h" //Click here to get the library: http://librarymanager/All#SparkFun_TMP117
 #include "SparkFun_u-blox_GNSS_Arduino_Library.h" //http://librarymanager/All#SparkFun_u-blox_GNSS
 #include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" //Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
