@@ -57,6 +57,7 @@ The OpenLog Artemis automatically scans, detects, configures, and logs various Q
 * [ADS1015 ADC](https://www.sparkfun.com/products/15334)
 * [LPS28DFW Barometer](https://www.sparkfun.com/products/21221)
 * [VEML7700 Ambient Light Sensor](https://www.sparkfun.com/products/18981)
+* [TMP102 Temperature Sensor](https://www.sparkfun.com/sparkfun-digital-temperature-sensor-tmp102-qwiic.html)
 
 Very low power logging is supported. OpenLog Artemis can be configured to take readings at 500 times a second, or as slow as 1 reading every 24 hours. You choose! When there is more than 2 seconds between readings OLA will automatically power down itself and the sensors on the bus resulting in a sleep current of approximately 18uA. This means a normal [2Ah battery](https://www.sparkfun.com/products/13855) will enable logging for more than 4,000 days! OpenLog Artemis has built-in LiPo charging set at 450mA/hr.
 
