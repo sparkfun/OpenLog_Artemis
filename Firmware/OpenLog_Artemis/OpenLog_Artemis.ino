@@ -163,10 +163,13 @@
 
   v2.9
     Adds support for TMP102 low(er) cost temperature sensor
+
+  v2.10
+    Restructure the serial logging code in loop()
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 9;
+const int FIRMWARE_VERSION_MINOR = 10;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -176,7 +179,7 @@ const int FIRMWARE_VERSION_MINOR = 9;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x128 // Stored as 296 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x12A // Stored as 298 decimal in OLA_settings.txt
 
 //#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
 
@@ -291,7 +294,6 @@ Apollo3RTC myRTC; //Create instance of RTC class
 uint64_t lastSeriaLogSyncTime = 0;
 uint64_t lastAwakeTimeMillis;
 const int MAX_IDLE_TIME_MSEC = 500;
-bool newSerialData = false;
 char incomingBuffer[256 * 2]; //This size of this buffer is sensitive. Do not change without analysis using OpenLog_Serial.
 int incomingBufferSpot = 0;
 int charsReceived = 0; //Used for verifying/debugging serial reception
@@ -611,39 +613,19 @@ void loop() {
 
   if (settings.logSerial == true && online.serialLogging == true && settings.useTxRxPinsForTerminal == false)
   {
-    size_t timestampCharsLeftToWrite = strlen(serialTimestamp);
-    //SerialPrintf2("timestampCharsLeftToWrite is %d\r\n", timestampCharsLeftToWrite);
-    //SerialFlush();
+    // v2.10 - this code has been restructured....
 
-    if (Serial1.available() || (timestampCharsLeftToWrite > 0))
+    // The writing of the timestamp has the highest priority
+    if (strlen(serialTimestamp) > 0)
     {
-      while (Serial1.available() || (timestampCharsLeftToWrite > 0))
+      while (strlen(serialTimestamp) > 0) // Copy all timestamp chars into incomingBuffer
       {
-        if (timestampCharsLeftToWrite > 0) // Based on code written by @DennisMelamed in PR #70
+        incomingBuffer[incomingBufferSpot++] = serialTimestamp[0]; // Add a timestamp character to incomingBuffer
+
+        size_t timestampCharsLeftToWrite = strlen(serialTimestamp);
+        for (size_t i = 0; i < timestampCharsLeftToWrite; i++)
         {
-          incomingBuffer[incomingBufferSpot++] = serialTimestamp[0]; // Add a timestamp character to incomingBuffer
-
-          for (size_t i = 0; i < timestampCharsLeftToWrite; i++)
-          {
-            serialTimestamp[i] = serialTimestamp[i+1]; // Shuffle the remaining chars along by one, including the NULL terminator
-          }
-
-          timestampCharsLeftToWrite -= 1; // Now decrement timestampCharsLeftToWrite
-        }
-        else
-        {
-          incomingBuffer[incomingBufferSpot++] = Serial1.read();
-          charsReceived++;
-
-          //Get the RTC timestamp if we just received the timestamp token
-          if (settings.timestampSerial && (incomingBuffer[incomingBufferSpot-1] == settings.timeStampToken))
-          {
-            getTimeString(&serialTimestamp[2]);
-            serialTimestamp[0] = 0x0A; // Add Line Feed at the start of the timestamp
-            serialTimestamp[1] = '^'; // Add an up-arrow to indicate the timestamp relates to the preceeding data
-            serialTimestamp[strlen(serialTimestamp) - 1] = 0x0A; // Change the final comma of the timestamp to a Line Feed
-            timestampCharsLeftToWrite = strlen(serialTimestamp); // Update timestampCharsLeftToWrite now, so timestamp is printed immediately (#192)
-          }
+          serialTimestamp[i] = serialTimestamp[i+1]; // Shuffle the remaining chars along by one, including the NULL terminator
         }
 
         if (incomingBufferSpot == sizeof(incomingBuffer))
@@ -652,35 +634,68 @@ void loop() {
           serialDataFile.write(incomingBuffer, sizeof(incomingBuffer)); //Record the buffer to the card
           digitalWrite(PIN_STAT_LED, LOW);
           incomingBufferSpot = 0;
+
+          //If we are sleeping between readings then we cannot rely on millis() as it is powered down
+          //Use RTC instead
+          lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
+
+          checkBattery();
         }
-        checkBattery();
       }
-
-      //If we are sleeping between readings then we cannot rely on millis() as it is powered down
-      //Use RTC instead
-      lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
-      newSerialData = true;
     }
-    else if (newSerialData == true)
-    {
-      if ((rtcMillis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't received any characters recently then sync log file
-      {
-        if (incomingBufferSpot > 0)
-        {
-          //Write the remainder of the buffer
-          digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
-          serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
-          serialDataFile.sync();
-          if (settings.frequentFileAccessTimestamps == true)
-            updateDataFileAccess(&serialDataFile); // Update the file access time & date
-          digitalWrite(PIN_STAT_LED, LOW);
 
-          incomingBufferSpot = 0;
+    // Now check for incoming serial data. Process bytes until a timestamp token is detected
+    if (Serial1.available())
+    {
+      while ((Serial1.available()) && (strlen(serialTimestamp) == 0))
+      {
+        incomingBuffer[incomingBufferSpot++] = Serial1.read();
+        charsReceived++;
+
+        //Get the RTC timestamp if we just received the timestamp token
+        if (settings.timestampSerial && (incomingBuffer[incomingBufferSpot-1] == settings.timeStampToken))
+        {
+          getTimeString(&serialTimestamp[2]);
+          serialTimestamp[0] = 0x0A; // Add Line Feed at the start of the timestamp
+          serialTimestamp[1] = '^'; // Add an up-arrow to indicate the timestamp relates to the preceeding data
+          serialTimestamp[strlen(serialTimestamp) - 1] = 0x0A; // Change the final comma of the timestamp to a Line Feed
         }
 
-        newSerialData = false;
+        if (incomingBufferSpot == sizeof(incomingBuffer))
+        {
+          digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
+          serialDataFile.write(incomingBuffer, sizeof(incomingBuffer)); //Record the buffer to the card
+          digitalWrite(PIN_STAT_LED, LOW);
+          incomingBufferSpot = 0;
+
+          //If we are sleeping between readings then we cannot rely on millis() as it is powered down
+          //Use RTC instead
+          lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
+
+          checkBattery();
+        }
+      }
+    }
+
+    // Periodically sync data to SD
+    if ((rtcMillis() - lastSeriaLogSyncTime) > MAX_IDLE_TIME_MSEC) //If we haven't logged any characters recently then sync log file
+    {
+      if (incomingBufferSpot > 0)
+      {
+        //Write the remainder of the buffer
+        digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
+        serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
+        serialDataFile.sync();
+        if (settings.frequentFileAccessTimestamps == true)
+          updateDataFileAccess(&serialDataFile); // Update the file access time & date
+        digitalWrite(PIN_STAT_LED, LOW);
+
+        incomingBufferSpot = 0;
+
         lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
         printDebug("Total chars received: " + (String)charsReceived + "\r\n");
+
+        checkBattery();
       }
     }
   }
