@@ -311,7 +311,6 @@ void sdCardMenu(int numberOfSeconds)
 
         if (Filesleft > 0)
         {
-          //while (sd.vwd()->readDir(dir) == sizeof(*dir)) {
           while (fout.openNext(&root, O_RDONLY))
           {
             // read next directory entry in current working directory
@@ -320,7 +319,7 @@ void sdCardMenu(int numberOfSeconds)
               size_t fsize = 30;
               fout.getName(fname, fsize);
               fout.close();
-              if ((str_cmp_P(fname, PSTR("OLA_settings.txt"))) && (str_cmp_P(fname, PSTR("OLA_deviceSettings.txt"))))
+              if ((strcmp_P(fname, PSTR("OLA_settings.txt"))) && (strcmp_P(fname, PSTR("OLA_deviceSettings.txt"))))
                 sd.remove(fname);
             }
             else
