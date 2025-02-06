@@ -166,6 +166,7 @@
 
   v2.10
     Restructure the serial logging code in loop()
+    Where possible, write residual serial data to file before closing
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
@@ -812,6 +813,18 @@ void loop() {
         }
         if (online.serialLogging == true)
         {
+          if (incomingBufferSpot > 0)
+          {
+            //Write the remainder of the buffer
+            digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
+            serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
+            digitalWrite(PIN_STAT_LED, LOW);
+
+            incomingBufferSpot = 0;
+
+            lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
+          }
+
           serialDataFile.sync();
           updateDataFileAccess(&serialDataFile); // Update the file access time & date
           serialDataFile.close();

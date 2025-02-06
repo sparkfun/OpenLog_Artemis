@@ -81,6 +81,18 @@ void menuSerialLogging()
       {
         if (online.serialLogging)
         {
+          if (incomingBufferSpot > 0)
+          {
+            //Write the remainder of the buffer
+            digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
+            serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
+            digitalWrite(PIN_STAT_LED, LOW);
+
+            incomingBufferSpot = 0;
+
+            lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
+          }
+
           //Shut it all down
           updateDataFileAccess(&serialDataFile); // Update the file access time & date
           serialDataFile.close();
