@@ -300,7 +300,43 @@ void sdCardMenu(int numberOfSeconds)
     
     else if (!strcmp_P(cmd, PSTR("DEL")) || !strcmp_P(cmd, PSTR("RM"))) // ReMove / DELete file
     {
-      if (!sd.remove(param))
+      if (!strcmp_P(param, PSTR("*")))
+      {
+       
+        count_files(&Filesleft, &Totalleft);
+        DSERIALprint(F("\r\nDeleting ")); DSERIAL->print(Filesleft); DSERIALprint(F(" files (")); DSERIAL->print(Totalleft); DSERIALprintln(F(" bytes)")); 
+        
+        root.open("/"); // (re)open the root directory
+        root.rewind(); // rewind
+
+        if (Filesleft > 0)
+        {
+          //while (sd.vwd()->readDir(dir) == sizeof(*dir)) {
+          while (fout.openNext(&root, O_RDONLY))
+          {
+            // read next directory entry in current working directory
+            if (!fout.isDir()) {
+              char fname[30];
+              size_t fsize = 30;
+              fout.getName(fname, fsize);
+              fout.close();
+              sd.remove(fname);
+            }
+            else
+            {
+              fout.close();
+            }
+          }
+          DSERIALprintln(F("\r\nFiles deleted!\r\n"));
+        }
+        else
+        {
+          DSERIALprintln(F("\r\nNo files to delete\r\n"));
+        }
+
+        root.close();
+      }
+      else if (!sd.remove(param))
       {
         DSERIALprint(F("\r\nFailed to delete file "));
         DSERIAL->flush(); DSERIAL->println(param); DSERIAL->flush();
