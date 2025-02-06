@@ -183,6 +183,18 @@ void resetArtemis(void)
   }
   if (online.serialLogging == true)
   {
+    if (incomingBufferSpot > 0)
+    {
+      //Write the remainder of the buffer
+      digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
+      serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
+      digitalWrite(PIN_STAT_LED, LOW);
+
+      incomingBufferSpot = 0;
+
+      lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
+    }
+
     serialDataFile.sync();
     updateDataFileAccess(&serialDataFile); // Update the file access time & date
     serialDataFile.close();
@@ -281,6 +293,18 @@ void goToSleep(uint32_t sysTicksToSleep)
   }
   if (online.serialLogging == true)
   {
+    if (incomingBufferSpot > 0)
+    {
+      //Write the remainder of the buffer
+      digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
+      serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
+      digitalWrite(PIN_STAT_LED, LOW);
+
+      incomingBufferSpot = 0;
+
+      lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
+    }
+
     serialDataFile.sync();
     updateDataFileAccess(&serialDataFile); // Update the file access time & date
     serialDataFile.close();
@@ -589,6 +613,18 @@ void stopLogging(void)
   }
   if (online.serialLogging == true)
   {
+    if (incomingBufferSpot > 0)
+    {
+      //Write the remainder of the buffer
+      digitalWrite(PIN_STAT_LED, HIGH); //Toggle stat LED to indicating log recording
+      serialDataFile.write(incomingBuffer, incomingBufferSpot); //Record the buffer to the card
+      digitalWrite(PIN_STAT_LED, LOW);
+
+      incomingBufferSpot = 0;
+
+      lastSeriaLogSyncTime = rtcMillis(); //Reset the last sync time to now
+    }
+
     serialDataFile.sync();
     updateDataFileAccess(&serialDataFile); // Update the file access time & date
     serialDataFile.close();

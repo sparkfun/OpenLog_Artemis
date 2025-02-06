@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@main
 
       - name: Get firmware version 1
         run: |
@@ -108,7 +108,7 @@ jobs:
           echo "targetBinary=./Firmware/${{ env.FILENAME_PREFIX }}/build/SparkFun.apollo3.sfe_artemis_atp/${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}.bin" >> "$GITHUB_ENV"
 
       - name: Upload binary to action
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with: 
           name: ${{ env.FILENAME_PREFIX }}${{ env.firmwareMajorMinor }}.bin
           path: ${{ env.targetBinary }}
