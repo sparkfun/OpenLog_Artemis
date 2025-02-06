@@ -320,7 +320,8 @@ void sdCardMenu(int numberOfSeconds)
               size_t fsize = 30;
               fout.getName(fname, fsize);
               fout.close();
-              sd.remove(fname);
+              if ((str_cmp_P(fname, PSTR("OLA_settings.txt"))) && (str_cmp_P(fname, PSTR("OLA_deviceSettings.txt"))))
+                sd.remove(fname);
             }
             else
             {
