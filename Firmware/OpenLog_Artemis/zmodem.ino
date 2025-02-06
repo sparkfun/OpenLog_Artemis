@@ -171,7 +171,7 @@ void sdCardHelp(void)
   DSERIALprintln(F("Available Commands:")); DSERIAL->flush();
   DSERIALprintln(F("HELP     - Print this list of commands")); DSERIAL->flush();
   DSERIALprintln(F("DIR      - List files in current working directory - alternate LS")); DSERIAL->flush();
-  DSERIALprintln(F("DEL file - Delete file - alternate RM")); DSERIAL->flush();
+  DSERIALprintln(F("DEL file - Delete file - alternate RM (\"DEL *\" will delete all files)")); DSERIAL->flush();
   DSERIALprintln(F("SZ  file - Send file from OLA to terminal using ZModem (\"SZ *\" will send all files)")); DSERIAL->flush();
   DSERIALprintln(F("SS  file - Send file from OLA using serial TX pin")); DSERIAL->flush();
   DSERIALprintln(F("CAT file - Type file to this terminal - alternate TYPE")); DSERIAL->flush();
@@ -304,7 +304,7 @@ void sdCardMenu(int numberOfSeconds)
       {
        
         count_files(&Filesleft, &Totalleft);
-        DSERIALprint(F("\r\nDeleting ")); DSERIAL->print(Filesleft); DSERIALprint(F(" files (")); DSERIAL->print(Totalleft); DSERIALprintln(F(" bytes)")); 
+        DSERIALprint(F("\r\nDeleting at most ")); DSERIAL->print(Filesleft); DSERIALprint(F(" files (")); DSERIAL->print(Totalleft); DSERIALprintln(F(" bytes)")); 
         
         root.open("/"); // (re)open the root directory
         root.rewind(); // rewind
