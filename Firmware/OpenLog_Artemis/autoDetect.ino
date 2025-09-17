@@ -440,7 +440,7 @@ bool beginQwiicDevices()
           temp->online = tempDevice->begin(temp->address, qwiic) == LPS28DFW_OK;
           lps28dfw_md_t modeConfig =
           {
-              .fs  = LPS28DFW_1260hPa,    // Full scale range
+              .fs  = (nodeSetting->mode == 2) ? LPS28DFW_4000hPa : LPS28DFW_1260hPa,    // Full scale range
               .odr = LPS28DFW_ONE_SHOT,        // Output data rate
               .avg = LPS28DFW_4_AVG,      // Average filter
               .lpf = LPS28DFW_LPF_DISABLE // Low-pass filter

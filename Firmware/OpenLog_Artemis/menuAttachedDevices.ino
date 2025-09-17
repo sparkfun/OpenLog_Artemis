@@ -873,6 +873,10 @@ void menuConfigure_LPS28DFW(void *configPtr)
       SerialPrint(F("3) Log Temperature: "));
       if (sensorSetting->logTemperature == true) SerialPrintln(F("Enabled"));
       else SerialPrintln(F("Disabled"));
+
+      SerialPrint(F("4) Toggle Pressure Range: "));
+      if (sensorSetting->mode == 1) SerialPrintln(F("Mode 1 (260 - 1260 hPa)"));
+      else SerialPrintln(F("Mode 2 (260 - 4000 hPa)"));
     }
     SerialPrintln(F("x) Exit"));
 
@@ -886,6 +890,13 @@ void menuConfigure_LPS28DFW(void *configPtr)
         sensorSetting->logPressure ^= 1;
       else if (incoming == '3')
         sensorSetting->logTemperature ^= 1;
+      else if (incoming == '4')               // <-- NEW: Mode toggle
+      {
+        if (sensorSetting->mode == 1) 
+            sensorSetting->mode = 2;
+        else 
+            sensorSetting->mode = 1;
+      }
       else if (incoming == 'x')
         break;
       else if (incoming == STATUS_GETBYTE_TIMEOUT)
