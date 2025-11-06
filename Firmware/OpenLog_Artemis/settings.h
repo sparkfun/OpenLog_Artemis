@@ -101,6 +101,7 @@ struct struct_LPS28DFW {
   bool log = true;
   bool logPressure = true;
   bool logTemperature = true;
+  uint8_t mode = 1; //Allow selection of pressure mode 1 (260-1060 hPa) or mode 2 (260-4000 hPa)
   unsigned long powerOnDelayMillis = minimumQwiicPowerOnDelay; // Wait for at least this many millis before communicating with this device. Increase if required!
 };
 

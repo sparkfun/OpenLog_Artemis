@@ -622,6 +622,7 @@ void recordDeviceSettingsToFile()
             settingsFile.println((String)base + "log=" + nodeSetting->log);
             settingsFile.println((String)base + "logPressure=" + nodeSetting->logPressure);
             settingsFile.println((String)base + "logTemperature=" + nodeSetting->logTemperature);
+            settingsFile.println((String)base + "mode=" + nodeSetting->mode);
           }
           break;
         case DEVICE_PHT_BME280:
@@ -1206,6 +1207,8 @@ bool parseDeviceLine(char* str) {
             nodeSetting->logPressure = d;
           else if (strcmp(deviceSettingName, "logTemperature") == 0)
             nodeSetting->logTemperature = d;
+          else if (strcmp(deviceSettingName, "mode") == 0)
+            nodeSetting->mode = d;
           else
             SerialPrintf2("Unknown device setting: %s\r\n", deviceSettingName);
         }
