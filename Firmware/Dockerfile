@@ -90,13 +90,15 @@ RUN sed -i 's|//#define ICM|#define ICM|g' /root/Arduino/libraries/SparkFun_9DoF
 # echo "compiler.cxx.extra_flags=-MMD -g3" >> /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/platform.local.txt
 
 # Disable Power Loss Protection
-RUN cd ./OpenLog_Artemis \
-    && sed -i 's|#define noPowerLossProtection|//#define noPowerLossProtection|g' OpenLog_Artemis.ino
+# Uncomment to disable power loss protection
+#RUN cd ./OpenLog_Artemis \
+#    && sed -i 's|#define noPowerLossProtection|//#define noPowerLossProtection|g' OpenLog_Artemis.ino
 
 # X04 Hardware
-RUN cd ./OpenLog_Artemis \
-    && sed -i 's|#define HARDWARE_VERSION_MAJOR 1|#define HARDWARE_VERSION_MAJOR 0|g' OpenLog_Artemis.ino \
-    && sed -i 's|#define HARDWARE_VERSION_MINOR 0|#define HARDWARE_VERSION_MINOR 4|g' OpenLog_Artemis.ino
+# Uncomment to compile for the original X04 SparkX OLA
+#RUN cd ./OpenLog_Artemis \
+#    && sed -i 's|#define HARDWARE_VERSION_MAJOR 1|#define HARDWARE_VERSION_MAJOR 0|g' OpenLog_Artemis.ino \
+#    && sed -i 's|#define HARDWARE_VERSION_MINOR 0|#define HARDWARE_VERSION_MINOR 4|g' OpenLog_Artemis.ino
 
 # Compile
 RUN cd ./OpenLog_Artemis \
