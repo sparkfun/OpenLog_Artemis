@@ -1,7 +1,25 @@
 Change Log
 ======================
+
+v2.11:
+---------
+
+* Adds support for LPS28DFW Mode 2 (4060 hPa) - thank you @thebrownhobbit-commits #221
+* Updates the Dockerfile to include the required library versions
+* Adds `compile_with_docker.bat` to automatically generate the firmware binary - see [COMPILE_BINARY.md](./COMPILE_BINARY.md) for details
+* Updates the workflows to use the Dockerfile to generate the firmware binary
+
+v2.10:
+---------
+
+* Restructures the serial logging code in loop()
+* Where possible, residual serial data is written to file before closing
+* Allows all log files to be deleted via `RM *` or `DEL *` in the SD menu
+
 v2.9:
-* Adds support for the TMP102 temperature sensor
+---------
+
+* Adds support for the TMP102 temperature sensor - thank you @summetj #200
 
 v2.8:
 ---------
@@ -9,6 +27,7 @@ v2.8:
 * Corrects the serial token timestamp printing - resolves #192
 * The charsReceived debug print ("Total chars received: ") now excludes the length of the timestamps
 * Consistent use of File32/ExFile/FsFile/File. Don't use SdFile for temporary files
+* Corrects the KX134 32G menu option - resolves #197
 
 v2.7:
 ---------

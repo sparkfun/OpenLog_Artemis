@@ -167,10 +167,13 @@
   v2.10
     Restructure the serial logging code in loop()
     Where possible, write residual serial data to file before closing
+
+  v2.11
+    Add support for LPS28DFW Mode 2 (4060 hPa) - thank you @thebrownhobbit-commits #221
 */
 
 const int FIRMWARE_VERSION_MAJOR = 2;
-const int FIRMWARE_VERSION_MINOR = 10;
+const int FIRMWARE_VERSION_MINOR = 11;
 
 //Define the OLA board identifier:
 //  This is an int which is unique to this variant of the OLA and which allows us
@@ -180,7 +183,7 @@ const int FIRMWARE_VERSION_MINOR = 10;
 //    the variant * 0x100 (OLA = 1; GNSS_LOGGER = 2; GEOPHONE_LOGGER = 3)
 //    the major firmware version * 0x10
 //    the minor firmware version
-#define OLA_IDENTIFIER 0x12A // Stored as 298 decimal in OLA_settings.txt
+#define OLA_IDENTIFIER 0x12B // Stored as 299 decimal in OLA_settings.txt
 
 //#define noPowerLossProtection // Uncomment this line to disable the sleep-on-power-loss functionality
 
