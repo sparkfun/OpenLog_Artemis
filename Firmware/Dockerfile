@@ -83,19 +83,19 @@ RUN cd ./Extras \
     && cp SPI.cpp /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/libraries/SPI/src/SPI.cpp
 
 # Enable DMP on ICM 20948
-RUN sed -i 's|//#define ICM|#define ICM|g' /root/Arduino/libraries/SparkFun_9DoF_IMU_Breakout_-_ICM_20948_-_Arduino_Library/src/util/ICM_20948_C.h
+RUN sed -i 's|//#define ICM_20948_USE_DMP|#define ICM_20948_USE_DMP|g' /root/Arduino/libraries/SparkFun_9DoF_IMU_Breakout_-_ICM_20948_-_Arduino_Library/src/util/ICM_20948_C.h
 
 # Enable debug symbols
 # echo "compiler.c.extra_flags=-MMD -g3" >> /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/platform.local.txt
 # echo "compiler.cxx.extra_flags=-MMD -g3" >> /root/.arduino15/packages/SparkFun/hardware/apollo3/2.2.1/platform.local.txt
 
 # Disable Power Loss Protection
-# Uncomment to disable power loss protection
+# Uncomment the next two lines to disable power loss protection
 #RUN cd ./OpenLog_Artemis \
-#    && sed -i 's|#define noPowerLossProtection|//#define noPowerLossProtection|g' OpenLog_Artemis.ino
+#    && sed -i 's|//#define noPowerLossProtection|#define noPowerLossProtection|g' OpenLog_Artemis.ino
 
 # X04 Hardware
-# Uncomment to compile for the original X04 SparkX OLA
+# Uncomment the next three lines to compile for the original X04 SparkX OLA
 #RUN cd ./OpenLog_Artemis \
 #    && sed -i 's|#define HARDWARE_VERSION_MAJOR 1|#define HARDWARE_VERSION_MAJOR 0|g' OpenLog_Artemis.ino \
 #    && sed -i 's|#define HARDWARE_VERSION_MINOR 0|#define HARDWARE_VERSION_MINOR 4|g' OpenLog_Artemis.ino
