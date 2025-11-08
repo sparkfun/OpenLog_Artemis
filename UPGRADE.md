@@ -7,7 +7,7 @@ Which is handy if you want to quickly update the firmware in the field, or are n
 
 The firmware is customized for the different versions of the OLA hardware. You will find versions for the **X04 SparkX (Black) OLA** and **V10 SparkFun (Red) OLA** plus any subsequent revisions. The filename tells you which hardware the firmware is for and what version it is:
 
-* **OpenLog_Artemis-V10-v210.bin** - is the _stable_ version (2.10) for the **V10 SparkFun (Red) OLA**
+* **OpenLog_Artemis-V10-v211.bin** - is the _stable_ version (2.11) for the **V10 SparkFun (Red) OLA**
 * **OpenLog_Artemis-X04-v210.bin** - is the _stable_ version (2.10) for the **X04 SparkX (Black) OLA**
 
 <table class="table table-hover table-striped table-bordered">
@@ -24,7 +24,7 @@ The firmware is customized for the different versions of the OLA hardware. You w
 * From time to time, you may also see versions with names like **OpenLog_Artemis-V10-v17_BETA.bin**
   * These are _beta_ versions containing new features and improvements which are still being tested and documented
 
-* **OpenLog_Artemis-V10-v210-NoPowerLossProtection.bin** is a special build of v2.8 which has no power loss protection
+* **OpenLog_Artemis-V10-v210-NoPowerLossProtection.bin** is a special build of v2.10 which has no power loss protection
   * With the normal firmware, the OLA goes into deep sleep if the power fails or is disconnected. This allows the Real Time Clock to keep running, but it does mean that a reset is required to wake the OLA again.
   * With the **NoPowerLossProtection** firmware, the code does not go into deep sleep when the power is lost, meaning that it will restart automatically as soon as power is reconnected.
   * This can be useful for embedded OLA systems which are hard to access. The downside is that the Real Time Clock setting is lost when the OLA restarts.
