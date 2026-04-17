@@ -40,7 +40,7 @@ RUN arduino-cli lib install "SparkFun SGP30 Arduino Library"@1.0.5
 RUN arduino-cli lib install "SparkFun VCNL4040 Proximity Sensor Library"@1.0.4
 RUN arduino-cli lib install "SparkFun MS5637 Barometric Pressure Library"@1.0.2
 RUN arduino-cli lib install "SparkFun High Precision Temperature Sensor TMP117 Qwiic"@1.2.5
-RUN arduino-cli lib install "SparkFun u-blox GNSS Arduino Library"@2.2.26
+RUN arduino-cli lib install "SparkFun u-blox GNSS v3"@3.1.10
 RUN arduino-cli lib install "SparkFun 6DoF ISM330DHCX"@1.0.6
 RUN arduino-cli lib install "SparkFun Qwiic Scale NAU7802 Arduino Library"@1.0.6
 RUN arduino-cli lib install "SparkFun SCD30 Arduino Library"@1.0.20

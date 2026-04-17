@@ -1,3 +1,5 @@
+::Uncomment "docker builder prune -f" below to clear the build cache
+::docker builder prune -f
 docker build -t openlog_artemis_firmware --progress=plain --no-cache-filter deployment .
 docker create --name=openlog_artemis_container openlog_artemis_firmware:latest
 docker cp openlog_artemis_container:/OpenLog_Artemis.ino.bin .
