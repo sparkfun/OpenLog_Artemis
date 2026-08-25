@@ -141,7 +141,7 @@
       },
       "rules": {
         "max_error": 0.005,
-        "min_clearance": 0.1524,
+        "min_clearance": 0.127,
         "min_connection": 0.0,
         "min_copper_edge_clearance": 0.1016,
         "min_groove_width": 0.0,
@@ -528,7 +528,7 @@
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.1524,
         "tuning_profile": "",
-        "via_diameter": 0.6096,
+        "via_diameter": 0.5588,
         "via_drill": 0.3048,
         "wire_width": 6
       }
@@ -555,6 +555,7 @@
       "netlist": "",
       "plot": "",
       "specctra_dsn": "",
+      "step": "",
       "vrml": ""
     },
     "page_layout_descr_file": ""
@@ -618,6 +619,18 @@
         },
         {
           "group_by": true,
+          "label": "Exclude from Simulation",
+          "name": "${EXCLUDE_FROM_SIM}",
+          "show": true
+        },
+        {
+          "group_by": true,
+          "label": "Exclude from Position Files",
+          "name": "${EXCLUDE_FROM_POS_FILES}",
+          "show": true
+        },
+        {
+          "group_by": true,
           "label": "Footprint",
           "name": "Footprint",
           "show": true
@@ -674,7 +687,7 @@
       {
         "filename": "SparkFun_Artemis_OpenLog.kicad_sch",
         "name": "SparkFun_Artemis_OpenLog_1",
-        "uuid": "5a001d47-31de-450b-b3d0-aae56bb819ff"
+        "uuid": "8a52f352-b704-43fc-a4be-db559a771534"
       }
     ],
     "used_designators": "",
@@ -682,7 +695,7 @@
   },
   "sheets": [
     [
-      "5a001d47-31de-450b-b3d0-aae56bb819ff",
+      "8a52f352-b704-43fc-a4be-db559a771534",
       "SparkFun_Artemis_OpenLog_1"
     ]
   ],
