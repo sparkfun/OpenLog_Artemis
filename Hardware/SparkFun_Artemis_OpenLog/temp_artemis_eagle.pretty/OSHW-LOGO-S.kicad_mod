@@ -1,0 +1,79 @@
+(footprint "OSHW-LOGO-S"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Open-Source Hardware (OSHW) Logo - Small - Silkscreen\n\nSilkscreen logo for open-source hardware designs.\n\nDevices using:\n\n• OSHW_LOGO")
+	(property "Reference" "REF**"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "c59efe77-406e-4770-995e-71fb3ad889d0")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Value" "OSHW-LOGOS"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "21f5392d-c522-46ea-830c-00dc7d2afb41")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "f024b7cb-1af3-40f0-bbea-69e35f546155")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "ad76808a-70dd-4f2e-bd2e-3b7d3c0b0eaf")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_poly
+		(pts
+			(xy 0.301646 -1.06135) (xy 0.42347 -1.022344) (xy 0.537176 -0.963768) (xy 0.92862 -1.282946) (xy 1.282946 -0.92862)
+			(xy 0.961034 -0.533823) (xy 1.057045 -0.302084) (xy 1.5638 -0.250561) (xy 1.5638 0.250561) (xy 1.057045 0.302084)
+			(xy 0.961034 0.533823) (xy 1.282946 0.92862) (xy 0.92862 1.282946) (xy 0.537177 0.963769) (xy 0.356601 1.056794)
+			(xy 0.088679 0.410073) (xy 0.326262 0.217599) (xy 0.373649 0.121467) (xy 0.392728 0.010339) (xy 0.379464 -0.101633)
+			(xy 0.334947 -0.205228) (xy 0.262841 -0.291917) (xy 0.169087 -0.35456) (xy 0.061406 -0.387998) (xy -0.051341 -0.38948)
+			(xy -0.159867 -0.358881) (xy -0.255233 -0.298724) (xy -0.329589 -0.213961) (xy -0.376813 -0.111569)
+			(xy -0.392175 -0.005766) (xy -0.322922 0.222564) (xy -0.249312 0.303772) (xy 0.091677 0.5081) (xy -0.12929 0.5081)
+			(xy -0.355332 1.053732) (xy -0.506597 0.983577) (xy -0.538921 0.965192) (xy -0.92862 1.282946) (xy -1.282946 0.92862)
+			(xy -0.961034 0.533823) (xy -1.057045 0.302084) (xy -1.5638 0.250561) (xy -1.5638 -0.250561) (xy -1.057045 -0.302084)
+			(xy -0.961034 -0.533823) (xy -1.282946 -0.92862) (xy -0.92862 -1.282946) (xy -0.533823 -0.961034)
+			(xy -0.302084 -1.057045) (xy -0.250561 -1.5638) (xy 0.250561 -1.5638)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill yes)
+		(layer "F.SilkS")
+		(uuid "7caaf097-e46d-4306-ab27-145c467e931f")
+	)
+	(embedded_fonts no)
+)

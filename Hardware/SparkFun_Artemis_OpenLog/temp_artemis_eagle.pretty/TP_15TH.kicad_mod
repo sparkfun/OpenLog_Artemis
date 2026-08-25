@@ -1,0 +1,78 @@
+(footprint "TP_15TH"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Electrically Conductive Via 0.015\" Drill Used as a test point connection for pogo pins or other debugging tools.\n\nSpecifications:\n• Area:0.015\"\n\nExample device(s):\n\n• TEST_POINT")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "12f85594-2cec-4e68-8380-1fad169b882f")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Value" "TEST-POINTTP_15TH_THRU"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "0823ca4d-f044-4908-93cf-43193b5c6475")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "f20bb0aa-0796-4681-b72a-40dcafad5367")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "395446c1-d277-46e0-aaac-5c79f4ce5694")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_circle
+		(center 0 0)
+		(end 0.1905 0)
+		(stroke
+			(width 0.381)
+			(type solid)
+		)
+		(fill yes)
+		(layer "B.Mask")
+		(uuid "261a0c85-1c35-44ce-ac30-57b1f7a42b32")
+	)
+	(pad "P$1" thru_hole circle
+		(at 0 0)
+		(size 0.6096 0.6096)
+		(drill 0.381)
+		(layers "*.Cu")
+		(remove_unused_layers no)
+		(solder_mask_margin 0.0635)
+		(thermal_bridge_angle 0)
+		(uuid "1ab9cc1e-e7e6-459c-8518-7c1ea04eb3cd")
+	)
+	(embedded_fonts no)
+)

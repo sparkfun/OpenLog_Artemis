@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "temp_artemis_eagle") (type "KiCad") (uri "${KIPRJMOD}/temp_artemis_eagle.pretty") (options "") (descr ""))
+)

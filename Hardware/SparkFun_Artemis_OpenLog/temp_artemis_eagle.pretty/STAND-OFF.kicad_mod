@@ -1,0 +1,79 @@
+(footprint "STAND-OFF"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Standoff (#4 Screw)\n\nThis is the mechanical footprint for a #4 phillips button head screw. Use the keepout ring to avoid running the screw head into surrounding components.\n\nDevices Using\n\n• STAND-OFF")
+	(property "Reference" "REF**"
+		(at 0 -2.032 180)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "c7cfa612-d4ea-437e-8599-bf471186ab5d")
+		(effects
+			(font
+				(size 0.48768 0.48768)
+				(thickness 0.12192)
+			)
+			(justify bottom)
+		)
+	)
+	(property "Value" "STAND-OFF"
+		(at 0 2.032 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "f20d142a-6376-4d6f-a049-6b13705e7af0")
+		(effects
+			(font
+				(size 0.48768 0.48768)
+				(thickness 0.12192)
+			)
+			(justify top)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "27b957e9-d031-4616-b4cb-f856a6d7adad")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "c529a0c4-d32c-4337-b908-b5772601f691")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_circle
+		(center 0 0)
+		(end 2.794 0)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "36c237a0-41ae-4376-a5ca-7a09d204ade9")
+	)
+	(pad "" np_thru_hole circle
+		(at 0 0 180)
+		(size 3.302 3.302)
+		(drill 3.302)
+		(layers "*.Mask" "F.Cu" "B.Cu" "In1.Cu" "In2.Cu")
+		(uuid "8df79904-4cb3-4566-8281-d02c0e1ed692")
+	)
+	(embedded_fonts no)
+)

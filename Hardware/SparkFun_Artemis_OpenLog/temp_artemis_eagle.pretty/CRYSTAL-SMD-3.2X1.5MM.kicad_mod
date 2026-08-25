@@ -1,0 +1,139 @@
+(footprint "CRYSTAL-SMD-3.2X1.5MM"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "3.2 x 1.5mm SMD Crystal Package\n\nExample: http://www.sii.co.jp/en/quartz/files/2013/03/file_PRODUCT_MASTER_50812_GRAPHIC03.pdf SX-32S")
+	(property "Reference" "REF**"
+		(at 0 -1.043 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "49be0cee-1e52-458a-91dc-a6498239d8e3")
+		(effects
+			(font
+				(size 0.512064 0.512064)
+				(thickness 0.097536)
+			)
+			(justify top)
+		)
+	)
+	(property "Value" "32.768kHz"
+		(at 0 1.043 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "d0dfba16-57fd-4b53-bfd1-5eafb3906a27")
+		(effects
+			(font
+				(size 0.512064 0.512064)
+				(thickness 0.097536)
+			)
+			(justify bottom)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "09cdde27-dab8-4d0d-8c6e-f93adff49b55")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "23897898-ff49-4a49-a77e-4e259edcedb1")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start 0.5 0.85)
+		(end -0.5 0.85)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "716b27d2-4bc0-417a-8f9b-b4859264a3c6")
+	)
+	(fp_line
+		(start -0.5 -0.85)
+		(end 0.5 -0.85)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "d72f829c-7445-4710-971b-fb1fe82d7b7e")
+	)
+	(fp_line
+		(start 1.6 0.75)
+		(end -1.6 0.75)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "23a78590-b877-4a9a-89d4-75a80920a1f9")
+	)
+	(fp_line
+		(start 1.6 -0.75)
+		(end 1.6 0.75)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "1ab57479-fde3-4ddc-9485-2e59594013aa")
+	)
+	(fp_line
+		(start -1.6 0.75)
+		(end -1.6 -0.75)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "760c2d4f-c20b-43a2-a434-a519c0a0c66d")
+	)
+	(fp_line
+		(start -1.6 -0.75)
+		(end 1.6 -0.75)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "127e2ca9-84f0-43b7-bacc-aeaabc9697c5")
+	)
+	(pad "P$1" smd roundrect
+		(at -1.25 0 180)
+		(size 1 1.8)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.0508)
+		(solder_mask_margin 0.0635)
+		(solder_paste_margin 0)
+		(thermal_bridge_angle 0)
+		(uuid "8cc04bc7-de07-401f-ad15-c1c5e0c86f99")
+	)
+	(pad "P$2" smd roundrect
+		(at 1.25 0 180)
+		(size 1 1.8)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.0508)
+		(solder_mask_margin 0.0635)
+		(solder_paste_margin 0)
+		(thermal_bridge_angle 0)
+		(uuid "78c28a63-6266-4290-97a0-e5cd65b1a250")
+	)
+	(embedded_fonts no)
+)

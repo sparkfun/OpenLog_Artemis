@@ -1,0 +1,93 @@
+(footprint "CREATIVE_COMMONS"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Creative Commons License Template\n\nCC BY-SA 4.0 License with https://creativecommons.org/licenses/by-sa/4.0/ link to license and placeholder for designer name.\n\nDevices using:\n\n• FRAME_LEDGER\n• FRAME_LETTER")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "e96bc23a-3421-491e-a86b-54697de37ab3")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Value" "FRAME-LEDGER"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "1553181e-b5da-40d1-84a3-c4878ce77a8b")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "2ffbb7a5-c2bd-4069-837c-bc99110a0b06")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "90ffd033-e5b2-4f99-9ee4-2cd94edf560a")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_text user "Released under the Creative Commons Attribution Share-Alike 4.0 License"
+		(at -20.32 -5.08 0)
+		(layer "F.Fab")
+		(uuid "645842aa-afd7-4790-8e36-d2d56e371a6b")
+		(effects
+			(font
+				(size 1.63576 1.63576)
+				(thickness 0.14224)
+			)
+			(justify left bottom)
+		)
+	)
+	(fp_text user " https://creativecommons.org/licenses/by-sa/4.0/"
+		(at 0 -2.54 0)
+		(layer "F.Fab")
+		(uuid "6d021aee-b91d-4f24-83d6-88ff31fcb48d")
+		(effects
+			(font
+				(size 1.63576 1.63576)
+				(thickness 0.14224)
+			)
+			(justify left bottom)
+		)
+	)
+	(fp_text user "Designed by:"
+		(at 11.43 0 0)
+		(layer "F.Fab")
+		(uuid "8b975d28-0760-4ae9-98eb-9ce3ade03446")
+		(effects
+			(font
+				(size 1.63576 1.63576)
+				(thickness 0.14224)
+			)
+			(justify left bottom)
+		)
+	)
+	(embedded_fonts no)
+)

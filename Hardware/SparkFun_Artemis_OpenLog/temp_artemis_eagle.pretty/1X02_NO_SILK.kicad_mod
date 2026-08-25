@@ -1,0 +1,103 @@
+(footprint "1X02_NO_SILK"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Plated Through Hole - No Silk Outline\n\nSpecifications:\n\n• Pin count:2\n• Pin pitch:0.1\"\n\nExample device(s):\n\n• CONN_02")
+	(property "Reference" "REF**"
+		(at 0.635 1.397 180)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "c02eec71-4ef5-4a3d-bff0-9d8c522b72ca")
+		(effects
+			(font
+				(size 0.512064 0.512064)
+				(thickness 0.097536)
+			)
+			(justify right top)
+		)
+	)
+	(property "Value" ""
+		(at -1.27 2.032 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "3a7b4e33-8931-461b-a76c-9c1f673476a3")
+		(effects
+			(font
+				(size 0.512064 0.512064)
+				(thickness 0.097536)
+			)
+			(justify right top)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "5947f785-f3e5-4b26-b9be-eef39b3c8bf3")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "4b859ab7-8aed-4996-869b-c59041c19447")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_poly
+		(pts
+			(xy -0.254 0.254) (xy 0.254 0.254) (xy 0.254 -0.254) (xy -0.254 -0.254)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill yes)
+		(layer "F.Fab")
+		(uuid "07fa90c9-8d83-4efb-bb85-0465cf3f42ab")
+	)
+	(fp_poly
+		(pts
+			(xy 2.286 0.254) (xy 2.794 0.254) (xy 2.794 -0.254) (xy 2.286 -0.254)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill yes)
+		(layer "F.Fab")
+		(uuid "740c283b-7dff-400b-a0fc-c8ce88edd7e6")
+	)
+	(pad "1" thru_hole circle
+		(at 0 0 90)
+		(size 1.8796 1.8796)
+		(drill 1.016)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(solder_mask_margin 0.0635)
+		(thermal_bridge_angle 0)
+		(uuid "e087afab-590a-4de8-8058-382a35e958e4")
+	)
+	(pad "2" thru_hole circle
+		(at 2.54 0 90)
+		(size 1.8796 1.8796)
+		(drill 1.016)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(solder_mask_margin 0.0635)
+		(thermal_bridge_angle 0)
+		(uuid "855cac9d-6377-46fb-98e8-bf2fefccd2b4")
+	)
+	(embedded_fonts no)
+)
