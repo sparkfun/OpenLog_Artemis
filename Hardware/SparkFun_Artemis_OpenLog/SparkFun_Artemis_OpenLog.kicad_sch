@@ -56244,6 +56244,16 @@
 	)
 	(wire
 		(pts
+			(xy 353.06 193.04) (xy 353.06 198.12)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "c3bdb94f-d029-4edc-9fb7-e63ae5bde453")
+	)
+	(wire
+		(pts
 			(xy 294.64 236.22) (xy 292.1 236.22)
 		)
 		(stroke
@@ -56431,16 +56441,6 @@
 			(type solid)
 		)
 		(uuid "d1e19e29-fa5b-4fd7-8f58-dc10a6029193")
-	)
-	(wire
-		(pts
-			(xy 353.06 195.58) (xy 353.06 193.04)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "d27ecaa1-6bb5-4b65-bed8-505b4b9c9c61")
 	)
 	(wire
 		(pts
@@ -72410,7 +72410,7 @@
 	)
 	(symbol
 		(lib_id "SparkFun-PowerSymbol:GND")
-		(at 353.06 195.58 0)
+		(at 353.06 198.12 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -72420,7 +72420,7 @@
 		(dnp no)
 		(uuid "ffec8ffc-4e5d-45c0-896f-1844afc7b2a3")
 		(property "Reference" "#PWR9"
-			(at 353.06 201.93 0)
+			(at 353.06 204.47 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -72431,7 +72431,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 353.06 199.39 0)
+			(at 353.06 201.93 0)
 			(show_name no)
 			(do_not_autoplace yes)
 			(effects
@@ -72441,7 +72441,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 353.06 195.58 0)
+			(at 353.06 198.12 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -72452,7 +72452,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 353.06 195.58 0)
+			(at 353.06 198.12 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -72463,7 +72463,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 353.06 204.47 0)
+			(at 353.06 207.01 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
