@@ -15,6 +15,8 @@ AP2112K VREG for Qwiic
 
 Changed 220K to 100K (R29) on Artemis Boot
 
+Updated Fiducials to smaller sizes.
+
 Needs to be added to SparkFun KiCad libraries
     * MicroSD
     * Artemis Module

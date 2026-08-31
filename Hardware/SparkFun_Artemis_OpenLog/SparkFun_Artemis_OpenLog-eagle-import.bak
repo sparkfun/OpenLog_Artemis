@@ -18459,6 +18459,484 @@
 		)
 		(embedded_fonts no)
 	)
+	(symbol "BNO086"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "U"
+			(at -17.78 20.828 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Value" "BNO086"
+			(at -17.78 -22.606 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Footprint" "SparkFun_Artemis_OpenLog:LGA-28"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Hillcrest Labs BNO086 - High Precision IMU (VR)\n\nThe VR IMU uses the impressive BNO086 IMU. This IC has a combination triple axis accelerometer/gyro/magnetometer packaged with an ARM Cortex M0+ running powerful algorithms. The BNO080 Inertial Measurement Unit (IMU) produces accurate rotation vector headings, excellently suited for VR and other heading applications with a static rotation error of 2 degrees or less. It’s what we’ve been waiting for: all the sensor data is combined and drift corrected into meaningful, accurate IMU information.\n\nSparkFun Products:\n\n• VR IMU (BNO086)"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "PROD_ID" "IC-19164"
+			(at 0 -24.13 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_locked" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "BNO086_1_0"
+			(polyline
+				(pts
+					(xy -17.78 20.32) (xy -17.78 -20.32)
+				)
+				(stroke
+					(width 0.254)
+					(type solid)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -17.78 -20.32) (xy 15.24 -20.32)
+				)
+				(stroke
+					(width 0.254)
+					(type solid)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 15.24 20.32) (xy -17.78 20.32)
+				)
+				(stroke
+					(width 0.254)
+					(type solid)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 15.24 -20.32) (xy 15.24 20.32)
+				)
+				(stroke
+					(width 0.254)
+					(type solid)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 -15.24 0)
+				(length 2.54)
+				(name "GND"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 17.78 0)
+				(length 2.54)
+				(name "VDD"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 -2.54 0)
+				(length 2.54)
+				(name "~{BOOT}"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "4"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 -10.16 0)
+				(length 2.54)
+				(name "PS1"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "5"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 -7.62 0)
+				(length 2.54)
+				(name "PS0/WAKE"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "6"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 17.78 -17.78 180)
+				(length 2.54)
+				(name "CAP"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "9"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 12.7 0)
+				(length 2.54)
+				(name "CLKSEL0"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "10"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 17.78 17.78 180)
+				(length 2.54)
+				(name "~{RST}"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "11"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 2.54 0)
+				(length 2.54)
+				(name "~{H_INT}"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "14"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 17.78 5.08 180)
+				(length 2.54)
+				(name "S_SCL"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "15"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 17.78 7.62 180)
+				(length 2.54)
+				(name "S_SDA"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "16"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 10.16 0)
+				(length 2.54)
+				(name "H_SA0/MOSI"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "17"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 0 0)
+				(length 2.54)
+				(name "~{H_CS}"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "18"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 5.08 0)
+				(length 2.54)
+				(name "H_SCL/SCLK/RX"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "19"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 7.62 0)
+				(length 2.54)
+				(name "H_SDA/MISO/TX"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "20"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 -17.78 0)
+				(length 2.54)
+				(name "GNDIO"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "25"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 17.78 -10.16 180)
+				(length 2.54)
+				(name "CLKSEL1"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "26"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 17.78 -7.62 180)
+				(length 2.54)
+				(name "XIN32"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "27"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -20.32 15.24 0)
+				(length 2.54)
+				(name "VDDIO"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+				(number "28"
+					(effects
+						(font
+							(size 1.524 1.524)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
 	(symbol "CH340E_MSOP10"
 		(exclude_from_sim no)
 		(in_bom yes)

@@ -261,7 +261,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": ""
+      "sch_revision": "v11"
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -700,7 +700,7 @@
         "uuid": "8a52f352-b704-43fc-a4be-db559a771534"
       }
     ],
-    "used_designators": "VE1,TP1,S1,Q1,J1-9,Y1-2,QWIIC_3.3V1,#PWR1-58,BT1,GND1,LOGO1-5,C1-22,U1-7,SDA1,#SUPPLY1-7,D1-7,R1-20,FRAME1,SCL1,FD1-4,JP1,H1-4,LED1",
+    "used_designators": "#SUPPLY1-7,D1-7,SDA1,U1-7,C1-22,S1,GND1,LOGO1-5,J1-9,VE1,#PWR1-58,Y1-2,QWIIC_3.3V1,FRAME1,R1-20,TP1,JP1,Q1,FD1-4,SCL1,LED1,H1-4,BT1",
     "variants": []
   },
   "sheets": [
