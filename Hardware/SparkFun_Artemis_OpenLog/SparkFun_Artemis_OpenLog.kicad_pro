@@ -700,7 +700,7 @@
         "uuid": "8a52f352-b704-43fc-a4be-db559a771534"
       }
     ],
-    "used_designators": "G1-2,#SUPPLY1-7,D1-7,SDA1,U1-7,C1-22,S1,GND1,LOGO1-5,J1-9,VE1,#PWR1-58,Y1-2,QWIIC_3.3V1,FRAME1,R1-20,TP1,JP1,Q1,FD1-4,SCL1,LED1,H1-4,BT1",
+    "used_designators": "TP1,JP1,LED1,H1-4,S1,QWIIC_3.3V1,#PWR1-58,Y1-2,GND1,LOGO1-5,BT1,C1-22,#SUPPLY1-7,D1-7,SDA1,U1-7,Q1,SCL1,FD1-4,G1-2,FRAME1,R1-20,J1-9,VE1",
     "variants": []
   },
   "sheets": [
