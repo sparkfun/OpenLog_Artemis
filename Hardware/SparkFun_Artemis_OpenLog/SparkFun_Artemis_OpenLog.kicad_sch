@@ -2974,6 +2974,182 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "SparkFun-Clock:Crystal_32.768kHz_3.2x1.5mm"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "Y"
+				(at 0 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "32.768kHz"
+				(at 0 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "SparkFun-Clock:Crystal_SMD_3.2x1.5mm"
+				(at 0 -7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://abracon.com/Resonators/ABS07.pdf"
+				(at 0 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Crystal"
+				(at 0 -12.7 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "PROD_ID" "XTAL-25022"
+				(at 0 -10.16 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "quartz ceramic resonator oscillator"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Crystal*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Crystal_32.768kHz_3.2x1.5mm_0_1"
+				(polyline
+					(pts
+						(xy -1.27 -0.762) (xy -1.27 0.762)
+					)
+					(stroke
+						(width 0.381)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -0.762 -1.524)
+					(end 0.762 1.524)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -0.762) (xy 1.27 0.762)
+					)
+					(stroke
+						(width 0.381)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Crystal_32.768kHz_3.2x1.5mm_1_1"
+				(pin passive line
+					(at -2.54 0 0)
+					(length 1.27)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 0 180)
+					(length 1.27)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "SparkFun-Connector:Conn_01x01_P2.54mm"
 			(pin_names
 				(offset 1.016)
@@ -7881,6 +8057,160 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "SparkFun-IC-Power:MAX810TTRG"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "U"
+				(at 1.524 7.874 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left bottom)
+				)
+			)
+			(property "Value" "MAX810TTRG"
+				(at 1.524 -9.398 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left bottom)
+				)
+			)
+			(property "Footprint" "SparkFun-Semiconductor-Standard:SOT23-3"
+				(at 0.508 -33.528 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.farnell.com/datasheets/89200.pdf"
+				(at -1.016 -24.384 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "The MAX809 and MAX810 are cost−effective system supervisor circuits designed to monitor VCC in digital systems and provide a reset signal to the host processor when necessary. No external components are required."
+				(at 0.762 -21.59 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "PROD_ID" "IC-14809"
+				(at 0 -31.75 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "Supervisor, "
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "MAX810TTRG_1_0"
+				(pin input line
+					(at 0 -10.16 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.524 1.524)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 6.35 0 180)
+					(length 2.54)
+					(name "VOUT"
+						(effects
+							(font
+								(size 1.524 1.524)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 0 10.16 270)
+					(length 2.54)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.524 1.524)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+			)
+			(symbol "MAX810TTRG_1_1"
+				(rectangle
+					(start -3.81 7.62)
+					(end 3.81 -7.62)
+					(stroke
+						(width 0)
+						(type solid)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "SparkFun-IC-Power:MCP73831"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -11816,242 +12146,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "SparkFun_Artemis_OpenLog-eagle-import:CRYSTAL-32.768KHZSMD-3.2X1.5"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "Y"
-				(at 0 2.032 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.778)
-					)
-					(justify bottom)
-				)
-			)
-			(property "Value" "32.768kHz"
-				(at 0 -2.032 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.778)
-					)
-					(justify top)
-				)
-			)
-			(property "Footprint" "SparkFun_Artemis_OpenLog:CRYSTAL-SMD-3.2X1.5MM"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "32.768kHz Crystal\n\n• Frequency: 32.768kHz\n• Frequency Stability: &plusmn;20ppm\n• Load Capacitance: 12.5pF (PTH-2X6 & SMD-3.2X1.5), 6pF (SMD-2X6)\n\nSparkFun Products:\n\n• SparkFun BigTime Watch Kit\n• SparkFun nRF52832 Breakout\n• SparkFun Real Time Clock Module"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "PROD_ID" "XTAL-13062"
-				(at 0 -3.556 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "CRYSTAL-32.768KHZSMD-3.2X1.5_1_0"
-				(polyline
-					(pts
-						(xy -2.54 0) (xy -1.016 0)
-					)
-					(stroke
-						(width 0.1524)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.016 1.778) (xy -1.016 -1.778)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.381 1.524) (xy -0.381 -1.524)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.381 -1.524) (xy 0.381 -1.524)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.381 1.524) (xy -0.381 1.524)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.381 -1.524) (xy 0.381 1.524)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.016 1.778) (xy 1.016 -1.778)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.016 0) (xy 2.54 0)
-					)
-					(stroke
-						(width 0.1524)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(text "1"
-					(at -2.159 -1.143 0)
-					(effects
-						(font
-							(size 0.8636 0.734)
-						)
-						(justify left bottom)
-					)
-				)
-				(text "2"
-					(at 1.524 -1.143 0)
-					(effects
-						(font
-							(size 0.8636 0.734)
-						)
-						(justify left bottom)
-					)
-				)
-				(pin passive line
-					(at -2.54 0 0)
-					(length 0)
-					(name "1"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "P$1"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 0 180)
-					(length 0)
-					(name "2"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "P$2"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "SparkFun_Artemis_OpenLog-eagle-import:VCC_1"
 			(power global)
 			(exclude_from_sim no)
@@ -12278,194 +12372,6 @@
 						)
 					)
 					(number "1"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "SparkFun_Artemis_OpenLog-eagle-import:V_SUPERVISOR"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "U"
-				(at -5.08 5.588 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.5113)
-					)
-					(justify left bottom)
-				)
-			)
-			(property "Value" ""
-				(at -5.08 -7.62 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.5113)
-					)
-					(justify left bottom)
-				)
-			)
-			(property "Footprint" "SparkFun_Artemis_OpenLog:SOT23-3"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "BD48xxx - Voltage Detector IC\n\nROHM’s BD48xxx and BD49xxx series are highly accurate, low-current Voltage Detector IC series. The family includes BD48xxx devices with N-channel open drain output and BD49xxx devices with CMOS output. The devices are available for specific detection voltages ranging from 2.3V to 6.0V in increments of 0.1V."
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "PROD_ID" "IC-14809"
-				(at 0 -9.144 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "V_SUPERVISOR_1_0"
-				(polyline
-					(pts
-						(xy -5.08 5.08) (xy -5.08 -5.08)
-					)
-					(stroke
-						(width 0.4064)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -5.08 -5.08) (xy 5.08 -5.08)
-					)
-					(stroke
-						(width 0.4064)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 5.08) (xy -5.08 5.08)
-					)
-					(stroke
-						(width 0.4064)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 -5.08) (xy 5.08 5.08)
-					)
-					(stroke
-						(width 0.4064)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin input line
-					(at -7.62 -2.54 0)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.524 1.524)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 7.62 0 180)
-					(length 2.54)
-					(name "VOUT"
-						(effects
-							(font
-								(size 1.524 1.524)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -7.62 2.54 0)
-					(length 2.54)
-					(name "VCC"
-						(effects
-							(font
-								(size 1.524 1.524)
-							)
-						)
-					)
-					(number "3"
 						(effects
 							(font
 								(size 0 0)
@@ -14445,16 +14351,6 @@
 	)
 	(wire
 		(pts
-			(xy 72.39 143.51) (xy 69.85 143.51)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "62ca9d96-fd4a-40d8-b80e-dbc038a64275")
-	)
-	(wire
-		(pts
 			(xy 76.2 287.02) (xy 78.74 287.02)
 		)
 		(stroke
@@ -15105,16 +15001,6 @@
 	)
 	(wire
 		(pts
-			(xy 69.85 148.59) (xy 69.85 151.13)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "9af651e6-b65f-40fc-a9b3-eab3d5970026")
-	)
-	(wire
-		(pts
 			(xy 264.16 55.88) (xy 264.16 60.96)
 		)
 		(stroke
@@ -15715,7 +15601,7 @@
 	)
 	(wire
 		(pts
-			(xy 69.85 140.97) (xy 69.85 143.51)
+			(xy 81.28 134.62) (xy 81.28 135.89)
 		)
 		(stroke
 			(width 0.1524)
@@ -15752,6 +15638,16 @@
 			(type solid)
 		)
 		(uuid "c466abf7-20ec-4a4c-a468-60dc6bab6513")
+	)
+	(wire
+		(pts
+			(xy 81.28 156.21) (xy 81.28 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c46b8c43-594f-40e1-b07c-8f5c19f2ed7b")
 	)
 	(wire
 		(pts
@@ -16292,16 +16188,6 @@
 			(type solid)
 		)
 		(uuid "f35325e8-2607-4f00-b07d-81ffc4c6bc49")
-	)
-	(wire
-		(pts
-			(xy 72.39 148.59) (xy 69.85 148.59)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "f391e91d-3bd2-4aa5-80cc-e6000365f8c5")
 	)
 	(wire
 		(pts
@@ -18348,7 +18234,7 @@
 	)
 	(symbol
 		(lib_id "SparkFun-PowerSymbol:GND")
-		(at 69.85 151.13 0)
+		(at 81.28 157.48 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -18358,7 +18244,7 @@
 		(dnp no)
 		(uuid "00b3052b-d752-44b7-8f67-42f7c69df633")
 		(property "Reference" "#PWR8"
-			(at 69.85 157.48 0)
+			(at 81.28 163.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18369,7 +18255,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 69.85 154.94 0)
+			(at 81.28 161.29 0)
 			(show_name no)
 			(do_not_autoplace yes)
 			(effects
@@ -18379,7 +18265,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 69.85 151.13 0)
+			(at 81.28 157.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18390,7 +18276,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 69.85 151.13 0)
+			(at 81.28 157.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18401,7 +18287,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 69.85 160.02 0)
+			(at 81.28 166.37 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18424,7 +18310,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:CRYSTAL-32.768KHZSMD-3.2X1.5")
+		(lib_id "SparkFun-Clock:Crystal_32.768kHz_3.2x1.5mm")
 		(at 304.8 250.19 90)
 		(unit 1)
 		(body_style 1)
@@ -18435,29 +18321,27 @@
 		(dnp no)
 		(uuid "01850962-3a45-4590-8673-70953adc450d")
 		(property "Reference" "Y1"
-			(at 308.356 249.682 90)
+			(at 302.26 250.19 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify top)
 			)
 		)
 		(property "Value" "32.768kHz"
-			(at 310.388 253.238 90)
+			(at 307.34 250.19 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
-					(size 1.27 1.0795)
+					(size 1.27 1.27)
 				)
-				(justify top)
 			)
 		)
-		(property "Footprint" "SparkFun_Artemis_OpenLog:CRYSTAL-SMD-3.2X1.5MM"
-			(at 304.8 250.19 0)
+		(property "Footprint" "SparkFun-Clock:Crystal_SMD_3.2x1.5mm"
+			(at 312.42 250.19 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18467,8 +18351,8 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
-			(at 304.8 250.19 0)
+		(property "Datasheet" "https://abracon.com/Resonators/ABS07.pdf"
+			(at 309.88 250.19 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18478,8 +18362,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 304.8 250.19 0)
+		(property "Description" "Crystal"
+			(at 317.5 250.19 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18489,8 +18373,8 @@
 				)
 			)
 		)
-		(property "PROD_ID" "XTAL-13062"
-			(at 304.8 255.27 0)
+		(property "PROD_ID" "XTAL-25022"
+			(at 314.96 250.19 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18500,10 +18384,10 @@
 				)
 			)
 		)
-		(pin "P$1"
+		(pin "1"
 			(uuid "a58bcf19-e03e-40b1-9682-b376bcab97c9")
 		)
-		(pin "P$2"
+		(pin "2"
 			(uuid "13911193-5113-486b-9576-a02935b4cb64")
 		)
 		(instances
@@ -20187,8 +20071,8 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:V_SUPERVISOR")
-		(at 80.01 146.05 0)
+		(lib_id "SparkFun-IC-Power:MAX810TTRG")
+		(at 81.28 146.05 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -20198,29 +20082,29 @@
 		(dnp no)
 		(uuid "2753e558-601e-4990-ad09-617e0e77b72b")
 		(property "Reference" "U1"
-			(at 74.93 140.462 0)
+			(at 82.804 138.176 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
 				(justify left bottom)
 			)
 		)
-		(property "Value" "3.0V Supervisor"
-			(at 74.93 153.67 0)
+		(property "Value" "MAX810TTRG"
+			(at 82.804 155.448 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
 				(justify left bottom)
 			)
 		)
-		(property "Footprint" "SparkFun_Artemis_OpenLog:SOT23-3"
-			(at 80.01 146.05 0)
+		(property "Footprint" "SparkFun-Semiconductor-Standard:SOT23-3"
+			(at 81.788 179.578 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20230,8 +20114,8 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
-			(at 80.01 146.05 0)
+		(property "Datasheet" "https://www.farnell.com/datasheets/89200.pdf"
+			(at 80.264 170.434 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20241,8 +20125,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 80.01 146.05 0)
+		(property "Description" "The MAX809 and MAX810 are cost−effective system supervisor circuits designed to monitor VCC in digital systems and provide a reset signal to the host processor when necessary. No external components are required."
+			(at 82.042 167.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20253,7 +20137,7 @@
 			)
 		)
 		(property "PROD_ID" "IC-14809"
-			(at 80.01 156.718 0)
+			(at 81.28 177.8 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20980,7 +20864,7 @@
 	)
 	(symbol
 		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
-		(at 69.85 140.97 0)
+		(at 81.28 134.62 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -20990,7 +20874,7 @@
 		(dnp no)
 		(uuid "3647c219-086f-4028-b054-534e93f2f139")
 		(property "Reference" "#SUPPLY4"
-			(at 69.85 140.97 0)
+			(at 81.28 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21001,7 +20885,7 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 69.85 138.176 0)
+			(at 81.28 131.826 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -21012,7 +20896,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 69.85 140.97 0)
+			(at 81.28 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21023,7 +20907,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 69.85 140.97 0)
+			(at 81.28 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21034,7 +20918,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 69.85 140.97 0)
+			(at 81.28 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29156,7 +29040,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:CRYSTAL-32.768KHZSMD-3.2X1.5")
+		(lib_id "SparkFun-Clock:Crystal_32.768kHz_3.2x1.5mm")
 		(at 55.88 245.11 270)
 		(unit 1)
 		(body_style 1)
@@ -29167,29 +29051,27 @@
 		(dnp no)
 		(uuid "d46aee00-cbfa-4538-ad73-85b2c830db16")
 		(property "Reference" "Y3"
-			(at 55.88 241.554 90)
+			(at 58.42 245.11 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Value" "32.768kHz"
-			(at 65.532 244.602 90)
+			(at 53.34 245.11 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
-		(property "Footprint" "SparkFun_Artemis_OpenLog:CRYSTAL-SMD-3.2X1.5MM"
-			(at 55.88 245.11 0)
+		(property "Footprint" "SparkFun-Clock:Crystal_SMD_3.2x1.5mm"
+			(at 48.26 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29199,8 +29081,8 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
-			(at 55.88 245.11 0)
+		(property "Datasheet" "https://abracon.com/Resonators/ABS07.pdf"
+			(at 50.8 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29210,8 +29092,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 55.88 245.11 0)
+		(property "Description" "Crystal"
+			(at 43.18 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29221,8 +29103,8 @@
 				)
 			)
 		)
-		(property "PROD_ID" "XTAL-13062"
-			(at 55.88 250.19 0)
+		(property "PROD_ID" "XTAL-25022"
+			(at 45.72 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29232,10 +29114,10 @@
 				)
 			)
 		)
-		(pin "P$1"
+		(pin "2"
 			(uuid "7478ccac-aa57-4318-9437-48482c7f27b2")
 		)
-		(pin "P$2"
+		(pin "1"
 			(uuid "f58d0c14-035b-4b1f-b16a-8e03b4457c2f")
 		)
 		(instances
