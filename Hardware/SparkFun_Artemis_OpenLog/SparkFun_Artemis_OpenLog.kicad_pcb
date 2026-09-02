@@ -8998,18 +8998,6 @@
 		(path "/3216b14c-ad2b-4a5a-ac08-f2ff1463fbdb")
 		(sheetname "/")
 		(sheetfile "SparkFun_Artemis_OpenLog.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "VDD@37" "VDD@36" "~RST" "BOOT" "TXO-0" "RXI-0" "SWDIO" "SWDCK"
-					"XI" "XO" "~AD11" "~AD12" "~AD13" "AD16" "~AD29" "~AD31" "~AD32" "~AD33/SWO"
-					"AD34" "~AD35" "GND@1" "GND@22" "GND@38" "GND@39" "GND@47" "GND@59"
-					"D0" "D1" "D2" "D3" "~D4" "~D5" "~D6" "D7" "D8" "D9" "D10" "D14" "D15"
-					"D17" "~D18" "~D19" "~D22" "~D23" "~D24" "~D25" "~D26" "~D27" "~D28"
-					"D36" "~D37" "D38" "~D39" "D40" "D41" "~D42" "~D43" "~D44" "~D45"
-				)
-			)
-		)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -6.5 -5.375)
@@ -16571,12 +16559,6 @@
 		(path "/0ff0ae04-658f-4280-8a16-441eeffd272e")
 		(sheetname "/")
 		(sheetfile "SparkFun_Artemis_OpenLog.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "4" "2" "1" "8" "7" "5" "3" "11" "12" "9" "6" "10")
-			)
-		)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 7 13.6)
@@ -16893,6 +16875,17 @@
 			(uuid "f8bc1266-a66a-415b-9571-f92cad653af6")
 		)
 		(embedded_fonts no)
+		(model "${SPARKFUN_KICAD_LIBRARY}/3dmodels/Connector.3dshapes/microSD_Socket.step"
+			(offset
+				(xyz -7 8 1.75)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz -0 -90 -180)
+			)
+		)
 	)
 	(footprint "SparkFun-Resistor:R_0402_1005Metric"
 		(layer "B.Cu")
