@@ -9632,6 +9632,142 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "SparkFun-PowerSymbol:3.3V"
+			(power global)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "3.3V"
+				(at 0 3.81 0)
+				(show_name no)
+				(do_not_autoplace yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"3.3V\""
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "SparkFun global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "3.3V_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "3.3V_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(hide yes)
+					(name "3.3V"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "SparkFun-PowerSymbol:5V"
 			(power global)
 			(pin_names
@@ -9863,6 +9999,278 @@
 					(length 0)
 					(hide yes)
 					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "SparkFun-PowerSymbol:VBATT"
+			(power global)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "VBATT"
+				(at 0 3.81 0)
+				(show_name no)
+				(do_not_autoplace yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"VBATT\""
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "SparkFun global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "VBATT_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "VBATT_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(hide yes)
+					(name "VBATT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "SparkFun-PowerSymbol:VCC"
+			(power global)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "VCC"
+				(at 0 3.81 0)
+				(show_name no)
+				(do_not_autoplace yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"VCC\""
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "SparkFun global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "VCC_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "VCC_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(hide yes)
+					(name "VCC"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -12039,360 +12447,6 @@
 						(effects
 							(font
 								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "SparkFun_Artemis_OpenLog-eagle-import:3.3V"
-			(power global)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "#SUPPLY"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" ""
-				(at 0 2.794 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.778)
-					)
-					(justify bottom)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "3.3V Supply Symbol\n\nPower supply symbol for a specifically-stated 3.3V source."
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "3.3V_1_0"
-				(polyline
-					(pts
-						(xy 0 2.54) (xy -0.762 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin power_in line
-					(at 0 0 90)
-					(length 2.54)
-					(name "3.3V"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "SparkFun_Artemis_OpenLog-eagle-import:VCC_1"
-			(power global)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "#SUPPLY"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" ""
-				(at 0 2.794 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.5113)
-					)
-					(justify bottom)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "VCC1 Voltage Supply\n\nPrimary VCC voltage supply - Useful for a system with multiple VCC supplies."
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "VCC_1_1_0"
-				(polyline
-					(pts
-						(xy 0 2.54) (xy -0.762 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin power_in line
-					(at 0 0 90)
-					(length 2.54)
-					(name "VCC_1"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "SparkFun_Artemis_OpenLog-eagle-import:V_BATT"
-			(power global)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "#SUPPLY"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" ""
-				(at 0 2.794 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.5113)
-					)
-					(justify bottom)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Battery Voltage Supply\n\nGeneric symbol for the battery input to a system."
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "V_BATT_1_0"
-				(polyline
-					(pts
-						(xy 0 2.54) (xy -0.762 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin power_in line
-					(at 0 0 90)
-					(length 2.54)
-					(name "V_BATT"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 0 0)
 							)
 						)
 					)
@@ -19077,7 +19131,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 241.3 241.3 0)
 		(unit 1)
 		(body_style 1)
@@ -19087,8 +19141,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "12e9eeda-1e2e-4030-819e-4220e38d9cd0")
-		(property "Reference" "#SUPPLY015"
-			(at 241.3 241.3 0)
+		(property "Reference" "#PWR15"
+			(at 241.3 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19099,14 +19153,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 241.3 238.506 0)
+			(at 241.3 237.49 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -19131,8 +19184,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 241.3 241.3 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 241.3 247.65 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19148,7 +19201,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY015")
+					(reference "#PWR15")
 					(unit 1)
 				)
 			)
@@ -19230,7 +19283,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 256.54 219.71 0)
 		(unit 1)
 		(body_style 1)
@@ -19240,8 +19293,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "16aafba7-1b08-44c5-af80-a4e67e723ab3")
-		(property "Reference" "#SUPPLY017"
-			(at 256.54 219.71 0)
+		(property "Reference" "#PWR17"
+			(at 256.54 223.52 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19252,14 +19305,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 256.54 216.916 0)
+			(at 256.54 215.9 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -19284,8 +19336,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 256.54 219.71 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 256.54 226.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19301,7 +19353,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY017")
+					(reference "#PWR17")
 					(unit 1)
 				)
 			)
@@ -19811,7 +19863,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 120.65 33.02 0)
 		(unit 1)
 		(body_style 1)
@@ -19821,8 +19873,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "2213b3b3-b789-4469-a88c-c6a9712eb0d2")
-		(property "Reference" "#SUPPLY010"
-			(at 120.65 33.02 0)
+		(property "Reference" "#PWR10"
+			(at 120.65 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19833,14 +19885,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 120.65 30.226 0)
+			(at 120.65 29.21 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -19865,8 +19916,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 120.65 33.02 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 120.65 39.37 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19882,7 +19933,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY010")
+					(reference "#PWR10")
 					(unit 1)
 				)
 			)
@@ -20891,7 +20942,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 81.28 134.62 0)
 		(unit 1)
 		(body_style 1)
@@ -20901,8 +20952,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3647c219-086f-4028-b054-534e93f2f139")
-		(property "Reference" "#SUPPLY08"
-			(at 81.28 134.62 0)
+		(property "Reference" "#PWR8"
+			(at 81.28 138.43 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20913,14 +20964,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 81.28 131.826 0)
+			(at 81.28 130.81 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -20945,8 +20995,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 81.28 134.62 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 81.28 140.97 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20962,7 +21012,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY08")
+					(reference "#PWR8")
 					(unit 1)
 				)
 			)
@@ -21491,7 +21541,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:VCC_1")
+		(lib_id "SparkFun-PowerSymbol:VCC")
 		(at 76.2 201.93 0)
 		(unit 1)
 		(body_style 1)
@@ -21501,8 +21551,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "44b3fc13-6ec0-491a-b319-7f152747016e")
-		(property "Reference" "#SUPPLY06"
-			(at 76.2 201.93 0)
+		(property "Reference" "#PWR6"
+			(at 76.2 205.74 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21512,15 +21562,14 @@
 				)
 			)
 		)
-		(property "Value" "VCC_1"
-			(at 76.2 199.136 0)
+		(property "Value" "VCC"
+			(at 76.2 198.12 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -21545,8 +21594,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 76.2 201.93 0)
+		(property "Description" "Power symbol creates a global label with name \"VCC\""
+			(at 76.2 208.28 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21562,7 +21611,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY06")
+					(reference "#PWR6")
 					(unit 1)
 				)
 			)
@@ -21646,7 +21695,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:VCC_1")
+		(lib_id "SparkFun-PowerSymbol:VCC")
 		(at 40.64 210.82 0)
 		(unit 1)
 		(body_style 1)
@@ -21656,8 +21705,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "4b22ce6e-e2b4-450f-a63f-17e2ae490368")
-		(property "Reference" "#SUPPLY03"
-			(at 40.64 210.82 0)
+		(property "Reference" "#PWR3"
+			(at 40.64 214.63 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21667,15 +21716,14 @@
 				)
 			)
 		)
-		(property "Value" "VCC_1"
-			(at 40.64 208.026 0)
+		(property "Value" "VCC"
+			(at 40.64 207.01 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -21700,8 +21748,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 40.64 210.82 0)
+		(property "Description" "Power symbol creates a global label with name \"VCC\""
+			(at 40.64 217.17 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21717,7 +21765,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY03")
+					(reference "#PWR3")
 					(unit 1)
 				)
 			)
@@ -21926,7 +21974,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:VCC_1")
+		(lib_id "SparkFun-PowerSymbol:VCC")
 		(at 30.48 210.82 0)
 		(unit 1)
 		(body_style 1)
@@ -21936,8 +21984,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "52abb868-a857-4776-856c-b932d53227a3")
-		(property "Reference" "#SUPPLY01"
-			(at 30.48 210.82 0)
+		(property "Reference" "#PWR1"
+			(at 30.48 214.63 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21947,15 +21995,14 @@
 				)
 			)
 		)
-		(property "Value" "VCC_1"
-			(at 30.48 208.026 0)
+		(property "Value" "VCC"
+			(at 30.48 207.01 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -21980,8 +22027,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 30.48 210.82 0)
+		(property "Description" "Power symbol creates a global label with name \"VCC\""
+			(at 30.48 217.17 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21997,14 +22044,14 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY01")
+					(reference "#PWR1")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 137.16 114.3 0)
 		(unit 1)
 		(body_style 1)
@@ -22014,8 +22061,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "55663900-4ad9-4043-aa29-9339d05d7a4b")
-		(property "Reference" "#SUPPLY011"
-			(at 137.16 114.3 0)
+		(property "Reference" "#PWR11"
+			(at 137.16 118.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22026,14 +22073,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 137.16 111.506 0)
+			(at 137.16 110.49 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -22058,8 +22104,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 137.16 114.3 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 137.16 120.65 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22075,14 +22121,14 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY011")
+					(reference "#PWR11")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:VCC_1")
+		(lib_id "SparkFun-PowerSymbol:VCC")
 		(at 293.37 128.27 0)
 		(unit 1)
 		(body_style 1)
@@ -22092,8 +22138,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "56425796-c887-4b38-8100-05e3f627ec0f")
-		(property "Reference" "#SUPPLY019"
-			(at 293.37 128.27 0)
+		(property "Reference" "#PWR19"
+			(at 293.37 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22103,15 +22149,14 @@
 				)
 			)
 		)
-		(property "Value" "VCC_1"
-			(at 293.37 125.476 0)
+		(property "Value" "VCC"
+			(at 293.37 124.46 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -22136,8 +22181,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 293.37 128.27 0)
+		(property "Description" "Power symbol creates a global label with name \"VCC\""
+			(at 293.37 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22153,7 +22198,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY019")
+					(reference "#PWR19")
 					(unit 1)
 				)
 			)
@@ -22572,7 +22617,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 299.72 208.28 0)
 		(unit 1)
 		(body_style 1)
@@ -22582,8 +22627,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "59dad5be-8463-4267-ba30-c0cb12906048")
-		(property "Reference" "#SUPPLY020"
-			(at 299.72 208.28 0)
+		(property "Reference" "#PWR20"
+			(at 299.72 212.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22594,14 +22639,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 299.72 205.486 0)
+			(at 299.72 204.47 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -22626,8 +22670,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 299.72 208.28 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 299.72 214.63 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22643,7 +22687,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY020")
+					(reference "#PWR20")
 					(unit 1)
 				)
 			)
@@ -22741,7 +22785,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 110.49 33.02 0)
 		(unit 1)
 		(body_style 1)
@@ -22751,8 +22795,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5ad74008-982d-4666-aa46-fc560c87929c")
-		(property "Reference" "#SUPPLY09"
-			(at 110.49 33.02 0)
+		(property "Reference" "#PWR9"
+			(at 110.49 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22763,14 +22807,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 110.49 30.226 0)
+			(at 110.49 29.21 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -22795,8 +22838,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 110.49 33.02 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 110.49 39.37 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22812,7 +22855,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY09")
+					(reference "#PWR9")
 					(unit 1)
 				)
 			)
@@ -23471,7 +23514,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 250.19 219.71 0)
 		(unit 1)
 		(body_style 1)
@@ -23481,8 +23524,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6e334597-e3fc-40b6-91db-7f9b3653ab80")
-		(property "Reference" "#SUPPLY016"
-			(at 250.19 219.71 0)
+		(property "Reference" "#PWR16"
+			(at 250.19 223.52 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23493,14 +23536,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 250.19 216.916 0)
+			(at 250.19 215.9 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -23525,8 +23567,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 250.19 219.71 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 250.19 226.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23542,7 +23584,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY016")
+					(reference "#PWR16")
 					(unit 1)
 				)
 			)
@@ -24333,7 +24375,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 389.89 40.64 0)
 		(unit 1)
 		(body_style 1)
@@ -24343,8 +24385,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "77f7210a-baa8-4b94-be86-a711b57a3375")
-		(property "Reference" "#SUPPLY023"
-			(at 389.89 40.64 0)
+		(property "Reference" "#PWR23"
+			(at 389.89 44.45 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24355,14 +24397,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 389.89 37.846 0)
+			(at 389.89 36.83 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -24387,8 +24428,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 389.89 40.64 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 389.89 46.99 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24404,7 +24445,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY023")
+					(reference "#PWR23")
 					(unit 1)
 				)
 			)
@@ -25048,7 +25089,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 287.02 45.72 0)
 		(unit 1)
 		(body_style 1)
@@ -25058,8 +25099,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "83ebc666-c99f-4307-afaa-86500c2174b1")
-		(property "Reference" "#SUPPLY018"
-			(at 287.02 45.72 0)
+		(property "Reference" "#PWR18"
+			(at 287.02 49.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25070,14 +25111,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 287.02 42.926 0)
+			(at 287.02 41.91 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -25102,8 +25142,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 287.02 45.72 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 287.02 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25119,7 +25159,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY018")
+					(reference "#PWR18")
 					(unit 1)
 				)
 			)
@@ -26392,7 +26432,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:VCC_1")
+		(lib_id "SparkFun-PowerSymbol:VCC")
 		(at 50.8 210.82 0)
 		(unit 1)
 		(body_style 1)
@@ -26402,8 +26442,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a39c784b-aa99-4d11-b32a-04a4d528560b")
-		(property "Reference" "#SUPPLY05"
-			(at 50.8 210.82 0)
+		(property "Reference" "#PWR5"
+			(at 50.8 214.63 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26413,15 +26453,14 @@
 				)
 			)
 		)
-		(property "Value" "VCC_1"
-			(at 50.8 208.026 0)
+		(property "Value" "VCC"
+			(at 50.8 207.01 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -26446,8 +26485,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 50.8 210.82 0)
+		(property "Description" "Power symbol creates a global label with name \"VCC\""
+			(at 50.8 217.17 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26463,7 +26502,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY05")
+					(reference "#PWR5")
 					(unit 1)
 				)
 			)
@@ -26600,7 +26639,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:VCC_1")
+		(lib_id "SparkFun-PowerSymbol:VCC")
 		(at 46.99 128.27 0)
 		(unit 1)
 		(body_style 1)
@@ -26610,8 +26649,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a735008e-19ac-4ad5-8097-865c51caa3fb")
-		(property "Reference" "#SUPPLY04"
-			(at 46.99 128.27 0)
+		(property "Reference" "#PWR4"
+			(at 46.99 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26622,14 +26661,13 @@
 			)
 		)
 		(property "Value" "VCC_1"
-			(at 46.99 125.476 0)
+			(at 46.99 124.46 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -26654,8 +26692,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 46.99 128.27 0)
+		(property "Description" "Power symbol creates a global label with name \"VCC\""
+			(at 46.99 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26671,7 +26709,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY04")
+					(reference "#PWR4")
 					(unit 1)
 				)
 			)
@@ -26935,7 +26973,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 137.16 157.48 0)
 		(unit 1)
 		(body_style 1)
@@ -26945,8 +26983,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "aa2734e6-7bf1-4e6b-b2bf-4f2b5b395780")
-		(property "Reference" "#SUPPLY012"
-			(at 137.16 157.48 0)
+		(property "Reference" "#PWR12"
+			(at 137.16 161.29 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26957,14 +26995,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 137.16 154.686 0)
+			(at 137.16 153.67 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -26989,8 +27026,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 137.16 157.48 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 137.16 163.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27006,7 +27043,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY012")
+					(reference "#PWR12")
 					(unit 1)
 				)
 			)
@@ -27768,7 +27805,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 312.42 208.28 0)
 		(unit 1)
 		(body_style 1)
@@ -27778,8 +27815,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b91d700a-b2a6-4e17-8c87-fcae304cff77")
-		(property "Reference" "#SUPPLY021"
-			(at 312.42 208.28 0)
+		(property "Reference" "#PWR21"
+			(at 312.42 212.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27790,14 +27827,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 312.42 205.486 0)
+			(at 312.42 204.47 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -27822,8 +27858,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 312.42 208.28 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 312.42 214.63 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27839,7 +27875,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY021")
+					(reference "#PWR21")
 					(unit 1)
 				)
 			)
@@ -29235,7 +29271,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 228.6 241.3 0)
 		(unit 1)
 		(body_style 1)
@@ -29245,8 +29281,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d97c3faa-dfef-4e71-b342-43b48b5afa6c")
-		(property "Reference" "#SUPPLY014"
-			(at 228.6 241.3 0)
+		(property "Reference" "#PWR14"
+			(at 228.6 245.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29257,14 +29293,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 228.6 238.506 0)
+			(at 228.6 237.49 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -29289,8 +29324,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 228.6 241.3 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 228.6 247.65 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29306,7 +29341,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY014")
+					(reference "#PWR14")
 					(unit 1)
 				)
 			)
@@ -29470,7 +29505,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 39.37 128.27 0)
 		(unit 1)
 		(body_style 1)
@@ -29480,8 +29515,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "dcbe89b0-9f79-40a0-886a-198698db6acd")
-		(property "Reference" "#SUPPLY02"
-			(at 39.37 128.27 0)
+		(property "Reference" "#PWR2"
+			(at 39.37 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29492,14 +29527,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 39.37 125.476 0)
+			(at 39.37 124.46 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -29524,8 +29558,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 39.37 128.27 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 39.37 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29541,7 +29575,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY02")
+					(reference "#PWR2")
 					(unit 1)
 				)
 			)
@@ -29660,7 +29694,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 81.28 41.91 0)
 		(unit 1)
 		(body_style 1)
@@ -29670,8 +29704,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "de733a25-f4a6-46f9-a9ee-ef9e7a0822ea")
-		(property "Reference" "#SUPPLY07"
-			(at 81.28 41.91 0)
+		(property "Reference" "#PWR7"
+			(at 81.28 45.72 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29682,14 +29716,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 81.28 39.116 0)
+			(at 81.28 38.1 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -29714,8 +29747,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 81.28 41.91 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 81.28 48.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29731,7 +29764,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY07")
+					(reference "#PWR7")
 					(unit 1)
 				)
 			)
@@ -30567,7 +30600,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:3.3V")
+		(lib_id "SparkFun-PowerSymbol:3.3V")
 		(at 320.04 208.28 0)
 		(unit 1)
 		(body_style 1)
@@ -30577,8 +30610,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e8e25da2-ca16-49d7-8bf2-04fe157cbf3e")
-		(property "Reference" "#SUPPLY022"
-			(at 320.04 208.28 0)
+		(property "Reference" "#PWR22"
+			(at 320.04 212.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30589,14 +30622,13 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 320.04 205.486 0)
+			(at 320.04 204.47 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -30621,8 +30653,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 320.04 208.28 0)
+		(property "Description" "Power symbol creates a global label with name \"3.3V\""
+			(at 320.04 214.63 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30638,7 +30670,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY022")
+					(reference "#PWR22")
 					(unit 1)
 				)
 			)
@@ -31700,7 +31732,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:V_BATT")
+		(lib_id "SparkFun-PowerSymbol:VBATT")
 		(at 184.15 38.1 0)
 		(mirror y)
 		(unit 1)
@@ -31711,8 +31743,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "fceaae46-6ac0-4213-b55c-70dff96dbd50")
-		(property "Reference" "#SUPPLY013"
-			(at 184.15 38.1 0)
+		(property "Reference" "#PWR13"
+			(at 184.15 41.91 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31723,14 +31755,13 @@
 			)
 		)
 		(property "Value" "V_BATT"
-			(at 184.15 35.306 0)
+			(at 184.15 34.29 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -31755,8 +31786,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 184.15 38.1 0)
+		(property "Description" "Power symbol creates a global label with name \"VBATT\""
+			(at 184.15 44.45 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31772,7 +31803,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY013")
+					(reference "#PWR13")
 					(unit 1)
 				)
 			)
