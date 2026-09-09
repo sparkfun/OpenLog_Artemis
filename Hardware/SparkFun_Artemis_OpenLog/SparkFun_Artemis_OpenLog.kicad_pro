@@ -650,12 +650,84 @@
           "label": "Datasheet",
           "name": "Datasheet",
           "show": true
+        },
+        {
+          "group_by": false,
+          "label": "SF_ID",
+          "name": "SF_ID",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Tolerance",
+          "name": "Tolerance",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "VDrop",
+          "name": "VDrop",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "VForward",
+          "name": "VForward",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "VMax",
+          "name": "VMax",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Voltage",
+          "name": "Voltage",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "VReverse",
+          "name": "VReverse",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "PROD_ID",
+          "name": "PROD_ID",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Description",
+          "name": "Description",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Iq",
+          "name": "Iq",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "#",
+          "name": "${ITEM_NUMBER}",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "IMax",
+          "name": "IMax",
+          "show": false
         }
       ],
       "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": true,
-      "name": "Default Editing",
+      "name": "",
       "sort_asc": true,
       "sort_field": "Reference"
     },
@@ -700,7 +772,7 @@
         "uuid": "8a52f352-b704-43fc-a4be-db559a771534"
       }
     ],
-    "used_designators": "S1,BT1,VE1,LOGO1-5,GND1,#PWR1-58,Y1-2,QWIIC_3.3V1,SCL1,FD1-4,Q1,G1-2,C1-22,FRAME1,R1-20,JP1,TP1,LED1,H1-4,J1-9,U1-7,SDA1,D1-7,#SUPPLY1-7",
+    "used_designators": "SW1,FID1-4,G1-2,Q1,FD1-4,SCL1,C1-22,QWIIC_3.3V1,Y1-2,#PWR1-58,GND1,LOGO1-5,VE1,#SUPPLY1-23,D1-8,SDA1,U1-7,J1-9,BT1,H1-4,LED1,ST1-4,TP1-5,JP1-2,FRAME1,R1-20,S1",
     "variants": []
   },
   "sheets": [

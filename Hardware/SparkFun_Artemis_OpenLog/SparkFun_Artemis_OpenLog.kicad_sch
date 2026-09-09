@@ -9632,6 +9632,142 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "SparkFun-PowerSymbol:5V"
+			(power global)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "5V"
+				(at 0 3.81 0)
+				(show_name no)
+				(do_not_autoplace yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"5V\""
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "SparkFun global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "5V_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "5V_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(hide yes)
+					(name "5V"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "SparkFun-PowerSymbol:GND"
 			(power global)
 			(pin_names
@@ -12028,124 +12164,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "SparkFun_Artemis_OpenLog-eagle-import:5V"
-			(power global)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "#SUPPLY"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" ""
-				(at 0 2.794 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.5113)
-					)
-					(justify bottom)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "5V Supply Symbol\n\nPower supply symbol for a specifically-stated 5V source."
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "5V_1_0"
-				(polyline
-					(pts
-						(xy 0 2.54) (xy -0.762 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin power_in line
-					(at 0 0 90)
-					(length 2.54)
-					(name "5V"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "SparkFun_Artemis_OpenLog-eagle-import:VCC_1"
 			(power global)
 			(exclude_from_sim no)
@@ -12971,7 +12989,7 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 248.92) (xy 58.42 248.92)
+			(xy 55.88 248.92) (xy 73.66 248.92)
 		)
 		(stroke
 			(width 0.1524)
@@ -14161,16 +14179,6 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 243.84) (xy 58.42 243.84)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "54033d13-02d7-4f65-94e8-b8463546f1af")
-	)
-	(wire
-		(pts
 			(xy 107.95 58.42) (xy 109.22 58.42)
 		)
 		(stroke
@@ -14321,6 +14329,16 @@
 	)
 	(wire
 		(pts
+			(xy 73.66 243.84) (xy 78.74 243.84)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "5d6f20ff-a40d-475f-aded-92e4c872fc6e")
+	)
+	(wire
+		(pts
 			(xy 132.08 124.46) (xy 137.16 124.46)
 		)
 		(stroke
@@ -14348,6 +14366,16 @@
 			(type solid)
 		)
 		(uuid "618b59b6-2a85-4c15-bffd-df13300ffab5")
+	)
+	(wire
+		(pts
+			(xy 73.66 248.92) (xy 73.66 243.84)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "63e0e8c1-1961-4dd6-86ea-ff5a45ef8509")
 	)
 	(wire
 		(pts
@@ -14658,16 +14686,6 @@
 			(type default)
 		)
 		(uuid "7c276668-fac1-4e3d-8e88-538c4016a95d")
-	)
-	(wire
-		(pts
-			(xy 58.42 243.84) (xy 58.42 248.92)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "7cbb4fc7-5150-42d5-be55-480a2b57d39f")
 	)
 	(wire
 		(pts
@@ -18141,7 +18159,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "003795ba-90bb-477c-820e-2fce9689c5ae")
-		(property "Reference" "C4"
+		(property "Reference" "C8"
 			(at 188.214 53.594 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18236,7 +18254,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C4")
+					(reference "C8")
 					(unit 1)
 				)
 			)
@@ -18253,7 +18271,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "00b3052b-d752-44b7-8f67-42f7c69df633")
-		(property "Reference" "#PWR8"
+		(property "Reference" "#PWR012"
 			(at 81.28 163.83 0)
 			(hide yes)
 			(show_name no)
@@ -18313,7 +18331,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR8")
+					(reference "#PWR012")
 					(unit 1)
 				)
 			)
@@ -18330,7 +18348,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "01850962-3a45-4590-8673-70953adc450d")
-		(property "Reference" "Y1"
+		(property "Reference" "Y2"
 			(at 302.26 250.19 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18403,7 +18421,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "Y1")
+					(reference "Y2")
 					(unit 1)
 				)
 			)
@@ -18496,7 +18514,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "08a7703a-a3b6-4b43-bf20-387ebe507d3a")
-		(property "Reference" "#PWR1"
+		(property "Reference" "#PWR020"
 			(at 232.41 67.31 0)
 			(hide yes)
 			(show_name no)
@@ -18556,7 +18574,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR1")
+					(reference "#PWR020")
 					(unit 1)
 				)
 			)
@@ -18670,7 +18688,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "0d7989c6-41d2-4683-8d2d-28a37688307b")
-		(property "Reference" "D12"
+		(property "Reference" "D3"
 			(at 107.95 43.18 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18743,7 +18761,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "D12")
+					(reference "D3")
 					(unit 1)
 				)
 			)
@@ -18760,7 +18778,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "0e44bbb3-566b-4a85-86ab-9cf8293b33e2")
-		(property "Reference" "C31"
+		(property "Reference" "C3"
 			(at 57.15 212.852 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18855,7 +18873,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C31")
+					(reference "C3")
 					(unit 1)
 				)
 			)
@@ -18872,7 +18890,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "0f1df21e-0c23-434e-8414-08efd771adbf")
-		(property "Reference" "#PWR14"
+		(property "Reference" "#PWR024"
 			(at 256.54 269.24 0)
 			(hide yes)
 			(show_name no)
@@ -18932,7 +18950,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR14")
+					(reference "#PWR024")
 					(unit 1)
 				)
 			)
@@ -18949,7 +18967,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "0ff0ae04-658f-4280-8a16-441eeffd272e")
-		(property "Reference" "J6"
+		(property "Reference" "J9"
 			(at 422.91 53.34 0)
 			(show_name no)
 			(do_not_autoplace yes)
@@ -19052,7 +19070,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "J6")
+					(reference "J9")
 					(unit 1)
 				)
 			)
@@ -19069,7 +19087,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "12e9eeda-1e2e-4030-819e-4220e38d9cd0")
-		(property "Reference" "#SUPPLY19"
+		(property "Reference" "#SUPPLY015"
 			(at 241.3 241.3 0)
 			(hide yes)
 			(show_name no)
@@ -19130,7 +19148,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY19")
+					(reference "#SUPPLY015")
 					(unit 1)
 				)
 			)
@@ -19222,7 +19240,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "16aafba7-1b08-44c5-af80-a4e67e723ab3")
-		(property "Reference" "#SUPPLY5"
+		(property "Reference" "#SUPPLY017"
 			(at 256.54 219.71 0)
 			(hide yes)
 			(show_name no)
@@ -19283,7 +19301,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY5")
+					(reference "#SUPPLY017")
 					(unit 1)
 				)
 			)
@@ -19300,7 +19318,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1a91e23e-c56e-473c-88ec-12f633fc97e5")
-		(property "Reference" "R7"
+		(property "Reference" "R15"
 			(at 322.58 52.07 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19373,7 +19391,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R7")
+					(reference "R15")
 					(unit 1)
 				)
 			)
@@ -19390,7 +19408,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1b25854b-5a91-416e-9286-56897c5f0459")
-		(property "Reference" "C6"
+		(property "Reference" "C18"
 			(at 313.182 255.27 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19485,7 +19503,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C6")
+					(reference "C18")
 					(unit 1)
 				)
 			)
@@ -19502,7 +19520,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1da6f74a-a0e5-4a7d-a880-442b0aca9dde")
-		(property "Reference" "C10"
+		(property "Reference" "C11"
 			(at 243.84 243.586 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19597,7 +19615,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C10")
+					(reference "C11")
 					(unit 1)
 				)
 			)
@@ -19614,7 +19632,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1e83c665-80dd-4133-b5c2-cb387599b04e")
-		(property "Reference" "C5"
+		(property "Reference" "C22"
 			(at 427.99 124.46 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19709,7 +19727,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C5")
+					(reference "C22")
 					(unit 1)
 				)
 			)
@@ -19726,7 +19744,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "21f1224a-5f23-48ad-838e-d60a94388c5f")
-		(property "Reference" "#PWR7"
+		(property "Reference" "#PWR02"
 			(at 39.37 170.18 0)
 			(hide yes)
 			(show_name no)
@@ -19786,7 +19804,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR7")
+					(reference "#PWR02")
 					(unit 1)
 				)
 			)
@@ -19803,7 +19821,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "2213b3b3-b789-4469-a88c-c6a9712eb0d2")
-		(property "Reference" "#SUPPLY42"
+		(property "Reference" "#SUPPLY010"
 			(at 120.65 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -19864,7 +19882,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY42")
+					(reference "#SUPPLY010")
 					(unit 1)
 				)
 			)
@@ -19881,7 +19899,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "25437068-2890-421d-b451-a0b15b7e043b")
-		(property "Reference" "D1"
+		(property "Reference" "D5"
 			(at 200.66 38.1 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19984,7 +20002,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "D1")
+					(reference "D5")
 					(unit 1)
 				)
 			)
@@ -20001,7 +20019,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "2610429b-2e39-4384-b9fe-94d833bd1ad5")
-		(property "Reference" "R25"
+		(property "Reference" "R5"
 			(at 113.03 36.83 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20074,7 +20092,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R25")
+					(reference "R5")
 					(unit 1)
 				)
 			)
@@ -20186,7 +20204,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "2989a59f-bca5-4248-8eed-b3e2f2f06fb6")
-		(property "Reference" "J4"
+		(property "Reference" "J2"
 			(at 127 129.54 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20260,7 +20278,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "J4")
+					(reference "J2")
 					(unit 1)
 				)
 			)
@@ -20277,7 +20295,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "2a8a2ea4-780a-41ca-aff3-92c38c10e2ff")
-		(property "Reference" "#PWR47"
+		(property "Reference" "#PWR016"
 			(at 137.16 176.53 0)
 			(hide yes)
 			(show_name no)
@@ -20337,7 +20355,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR47")
+					(reference "#PWR016")
 					(unit 1)
 				)
 			)
@@ -20354,7 +20372,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "2fba12bf-0642-4dd1-be35-09543a1b0b7c")
-		(property "Reference" "#PWR57"
+		(property "Reference" "#PWR014"
 			(at 97.79 69.85 0)
 			(hide yes)
 			(show_name no)
@@ -20414,7 +20432,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR57")
+					(reference "#PWR014")
 					(unit 1)
 				)
 			)
@@ -20431,7 +20449,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3216b14c-ad2b-4a5a-ac08-f2ff1463fbdb")
-		(property "Reference" "U8"
+		(property "Reference" "U3"
 			(at 81.788 201.168 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20677,7 +20695,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "U8")
+					(reference "U3")
 					(unit 1)
 				)
 			)
@@ -20694,7 +20712,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "32788429-ee9c-4549-bbfe-8e58764c21da")
-		(property "Reference" "C3"
+		(property "Reference" "C10"
 			(at 235.458 54.61 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20789,7 +20807,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C3")
+					(reference "C10")
 					(unit 1)
 				)
 			)
@@ -20806,7 +20824,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "35b59273-341f-4e4b-8747-b7eaf8419edd")
-		(property "Reference" "#PWR56"
+		(property "Reference" "#PWR013"
 			(at 86.36 74.93 0)
 			(hide yes)
 			(show_name no)
@@ -20866,7 +20884,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR56")
+					(reference "#PWR013")
 					(unit 1)
 				)
 			)
@@ -20883,7 +20901,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3647c219-086f-4028-b054-534e93f2f139")
-		(property "Reference" "#SUPPLY4"
+		(property "Reference" "#SUPPLY08"
 			(at 81.28 134.62 0)
 			(hide yes)
 			(show_name no)
@@ -20944,7 +20962,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY4")
+					(reference "#SUPPLY08")
 					(unit 1)
 				)
 			)
@@ -20961,7 +20979,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3bc3e080-993b-4d7a-bad5-a2aba0504baa")
-		(property "Reference" "#PWR52"
+		(property "Reference" "#PWR05"
 			(at 50.8 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -21021,7 +21039,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR52")
+					(reference "#PWR05")
 					(unit 1)
 				)
 			)
@@ -21038,7 +21056,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3cbc3454-d1b4-434f-8e02-03f99dd6edc6")
-		(property "Reference" "J14"
+		(property "Reference" "J3"
 			(at 149.86 156.21 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21131,7 +21149,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "J14")
+					(reference "J3")
 					(unit 1)
 				)
 			)
@@ -21149,7 +21167,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3f17c826-d38a-4ca5-a0a8-d3b019a9bdb2")
-		(property "Reference" "R5"
+		(property "Reference" "R8"
 			(at 220.98 58.42 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21222,7 +21240,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R5")
+					(reference "R8")
 					(unit 1)
 				)
 			)
@@ -21239,7 +21257,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "41028c7c-0f60-43c5-ac98-2269ac2ab6bf")
-		(property "Reference" "#PWR44"
+		(property "Reference" "#PWR04"
 			(at 43.18 257.81 0)
 			(hide yes)
 			(show_name no)
@@ -21299,7 +21317,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR44")
+					(reference "#PWR04")
 					(unit 1)
 				)
 			)
@@ -21316,7 +21334,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "42e968fe-1032-4355-a4de-a147faa107db")
-		(property "Reference" "R2"
+		(property "Reference" "R11"
 			(at 266.7 53.34 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21389,7 +21407,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R2")
+					(reference "R11")
 					(unit 1)
 				)
 			)
@@ -21406,7 +21424,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "43738cdf-7aac-4038-a1f2-b51abe22d2f0")
-		(property "Reference" "#PWR12"
+		(property "Reference" "#PWR036"
 			(at 402.59 138.43 0)
 			(hide yes)
 			(show_name no)
@@ -21466,7 +21484,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR12")
+					(reference "#PWR036")
 					(unit 1)
 				)
 			)
@@ -21483,7 +21501,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "44b3fc13-6ec0-491a-b319-7f152747016e")
-		(property "Reference" "#SUPPLY6"
+		(property "Reference" "#SUPPLY06"
 			(at 76.2 201.93 0)
 			(hide yes)
 			(show_name no)
@@ -21544,7 +21562,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY6")
+					(reference "#SUPPLY06")
 					(unit 1)
 				)
 			)
@@ -21561,7 +21579,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "48b19fe6-424d-4e8c-ad72-e41a66d64776")
-		(property "Reference" "#PWR53"
+		(property "Reference" "#PWR07"
 			(at 67.31 86.36 0)
 			(hide yes)
 			(show_name no)
@@ -21621,7 +21639,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR53")
+					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -21638,7 +21656,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "4b22ce6e-e2b4-450f-a63f-17e2ae490368")
-		(property "Reference" "#SUPPLY8"
+		(property "Reference" "#SUPPLY03"
 			(at 40.64 210.82 0)
 			(hide yes)
 			(show_name no)
@@ -21699,7 +21717,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY8")
+					(reference "#SUPPLY03")
 					(unit 1)
 				)
 			)
@@ -21716,7 +21734,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "4c0d34de-e63f-4096-888e-ba88c2a555ac")
-		(property "Reference" "R28"
+		(property "Reference" "R12"
 			(at 295.91 135.89 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21789,7 +21807,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R28")
+					(reference "R12")
 					(unit 1)
 				)
 			)
@@ -21806,7 +21824,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5256f2c0-b173-4ce0-ba22-2e0666a81377")
-		(property "Reference" "C8"
+		(property "Reference" "C19"
 			(at 322.58 255.016 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21901,7 +21919,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C8")
+					(reference "C19")
 					(unit 1)
 				)
 			)
@@ -21918,7 +21936,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "52abb868-a857-4776-856c-b932d53227a3")
-		(property "Reference" "#SUPPLY9"
+		(property "Reference" "#SUPPLY01"
 			(at 30.48 210.82 0)
 			(hide yes)
 			(show_name no)
@@ -21979,7 +21997,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY9")
+					(reference "#SUPPLY01")
 					(unit 1)
 				)
 			)
@@ -21996,7 +22014,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "55663900-4ad9-4043-aa29-9339d05d7a4b")
-		(property "Reference" "#SUPPLY1"
+		(property "Reference" "#SUPPLY011"
 			(at 137.16 114.3 0)
 			(hide yes)
 			(show_name no)
@@ -22057,7 +22075,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY1")
+					(reference "#SUPPLY011")
 					(unit 1)
 				)
 			)
@@ -22074,7 +22092,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "56425796-c887-4b38-8100-05e3f627ec0f")
-		(property "Reference" "#SUPPLY11"
+		(property "Reference" "#SUPPLY019"
 			(at 293.37 128.27 0)
 			(hide yes)
 			(show_name no)
@@ -22135,7 +22153,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY11")
+					(reference "#SUPPLY019")
 					(unit 1)
 				)
 			)
@@ -22152,7 +22170,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "564a7483-f389-4731-ad27-7e9780c8fc58")
-		(property "Reference" "D6"
+		(property "Reference" "D1"
 			(at 36.83 133.35 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22255,7 +22273,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "D6")
+					(reference "D1")
 					(unit 1)
 				)
 			)
@@ -22272,8 +22290,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "571a4eae-d51c-4280-a724-c14d444398d1")
-		(property "Reference" "C30"
-			(at 49.53 237.49 90)
+		(property "Reference" "C4"
+			(at 49.53 232.41 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22284,7 +22302,7 @@
 			)
 		)
 		(property "Value" "15pF"
-			(at 49.53 240.03 90)
+			(at 49.53 237.49 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22339,7 +22357,7 @@
 			)
 		)
 		(property "Voltage" "50V"
-			(at 57.15 241.3 0)
+			(at 46.99 234.95 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22349,7 +22367,7 @@
 			)
 		)
 		(property "Tolerance" "5%"
-			(at 59.69 241.3 0)
+			(at 46.99 240.03 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22367,7 +22385,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C30")
+					(reference "C4")
 					(unit 1)
 				)
 			)
@@ -22384,7 +22402,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5778456d-e5bf-487e-af0c-0f15db50164a")
-		(property "Reference" "R9"
+		(property "Reference" "R13"
 			(at 302.26 214.63 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22457,7 +22475,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R9")
+					(reference "R13")
 					(unit 1)
 				)
 			)
@@ -22474,7 +22492,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "59b08c44-f35a-49e8-b0ef-48d04d2ccfa4")
-		(property "Reference" "R3"
+		(property "Reference" "R18"
 			(at 387.35 127 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22547,7 +22565,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R3")
+					(reference "R18")
 					(unit 1)
 				)
 			)
@@ -22564,7 +22582,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "59dad5be-8463-4267-ba30-c0cb12906048")
-		(property "Reference" "#SUPPLY12"
+		(property "Reference" "#SUPPLY020"
 			(at 299.72 208.28 0)
 			(hide yes)
 			(show_name no)
@@ -22625,7 +22643,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY12")
+					(reference "#SUPPLY020")
 					(unit 1)
 				)
 			)
@@ -22643,7 +22661,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5a2e5716-eb24-4515-ba1d-0cca74460ecb")
-		(property "Reference" "R29"
+		(property "Reference" "R10"
 			(at 252.73 146.05 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22716,7 +22734,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R29")
+					(reference "R10")
 					(unit 1)
 				)
 			)
@@ -22733,7 +22751,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5ad74008-982d-4666-aa46-fc560c87929c")
-		(property "Reference" "#SUPPLY41"
+		(property "Reference" "#SUPPLY09"
 			(at 110.49 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -22794,7 +22812,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY41")
+					(reference "#SUPPLY09")
 					(unit 1)
 				)
 			)
@@ -22812,7 +22830,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5b211aec-815d-4b1b-a423-e02c76d4d143")
-		(property "Reference" "#PWR6"
+		(property "Reference" "#PWR041"
 			(at 425.45 138.43 0)
 			(hide yes)
 			(show_name no)
@@ -22872,7 +22890,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR6")
+					(reference "#PWR041")
 					(unit 1)
 				)
 			)
@@ -22889,7 +22907,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "60a48c65-9647-4600-8cd0-76e0b99c1017")
-		(property "Reference" "C2"
+		(property "Reference" "C14"
 			(at 289.56 50.038 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22984,7 +23002,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C2")
+					(reference "C14")
 					(unit 1)
 				)
 			)
@@ -23001,7 +23019,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "62b74bd6-bc1a-4001-984d-0ac0ed21f8b8")
-		(property "Reference" "TP3"
+		(property "Reference" "TP5"
 			(at 410.21 148.59 0)
 			(show_name no)
 			(do_not_autoplace yes)
@@ -23061,7 +23079,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "TP3")
+					(reference "TP5")
 					(unit 1)
 				)
 			)
@@ -23078,7 +23096,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "63600781-39ab-48d7-adaa-84b3123bface")
-		(property "Reference" "#PWR5"
+		(property "Reference" "#PWR026"
 			(at 287.02 62.23 0)
 			(hide yes)
 			(show_name no)
@@ -23138,7 +23156,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR5")
+					(reference "#PWR026")
 					(unit 1)
 				)
 			)
@@ -23155,7 +23173,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "64e59819-dca4-4b87-baed-31a1636fd1fc")
-		(property "Reference" "#PWR18"
+		(property "Reference" "#PWR015"
 			(at 134.62 135.89 0)
 			(hide yes)
 			(show_name no)
@@ -23215,7 +23233,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR18")
+					(reference "#PWR015")
 					(unit 1)
 				)
 			)
@@ -23232,7 +23250,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "66c680e7-353f-41ae-aeb3-e177ecb54c61")
-		(property "Reference" "#PWR55"
+		(property "Reference" "#PWR011"
 			(at 81.28 74.93 0)
 			(hide yes)
 			(show_name no)
@@ -23292,7 +23310,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR55")
+					(reference "#PWR011")
 					(unit 1)
 				)
 			)
@@ -23309,7 +23327,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6aae22d4-1343-463f-b5c1-be91db625690")
-		(property "Reference" "#PWR72"
+		(property "Reference" "#PWR039"
 			(at 417.83 87.63 0)
 			(hide yes)
 			(show_name no)
@@ -23369,7 +23387,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR72")
+					(reference "#PWR039")
 					(unit 1)
 				)
 			)
@@ -23386,7 +23404,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6b8e1fac-929b-48c9-b310-3d714717e680")
-		(property "Reference" "#PWR17"
+		(property "Reference" "#PWR029"
 			(at 299.72 276.86 0)
 			(hide yes)
 			(show_name no)
@@ -23446,7 +23464,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR17")
+					(reference "#PWR029")
 					(unit 1)
 				)
 			)
@@ -23463,7 +23481,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6e334597-e3fc-40b6-91db-7f9b3653ab80")
-		(property "Reference" "#SUPPLY18"
+		(property "Reference" "#SUPPLY016"
 			(at 250.19 219.71 0)
 			(hide yes)
 			(show_name no)
@@ -23524,7 +23542,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY18")
+					(reference "#SUPPLY016")
 					(unit 1)
 				)
 			)
@@ -23541,7 +23559,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6eddb0f0-2568-4198-8d10-eb8f4d14159d")
-		(property "Reference" "#PWR16"
+		(property "Reference" "#PWR032"
 			(at 320.04 269.24 0)
 			(hide yes)
 			(show_name no)
@@ -23601,7 +23619,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR16")
+					(reference "#PWR032")
 					(unit 1)
 				)
 			)
@@ -23619,7 +23637,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6edff50a-2867-411e-a40b-911f4f3b82ef")
-		(property "Reference" "R27"
+		(property "Reference" "R4"
 			(at 73.406 76.962 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23692,7 +23710,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R27")
+					(reference "R4")
 					(unit 1)
 				)
 			)
@@ -23709,7 +23727,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6fd67421-896b-42fd-ba45-1e29ae35ceac")
-		(property "Reference" "#PWR13"
+		(property "Reference" "#PWR031"
 			(at 320.04 71.12 0)
 			(hide yes)
 			(show_name no)
@@ -23769,7 +23787,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR13")
+					(reference "#PWR031")
 					(unit 1)
 				)
 			)
@@ -23786,7 +23804,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "71278175-fbf3-4be1-aba9-0c67a44e770d")
-		(property "Reference" "C42"
+		(property "Reference" "C15"
 			(at 287.02 138.43 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -23881,7 +23899,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C42")
+					(reference "C15")
 					(unit 1)
 				)
 			)
@@ -23977,7 +23995,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "72e30055-9010-4261-8dee-ae705b8f45ce")
-		(property "Reference" "#PWR19"
+		(property "Reference" "#PWR021"
 			(at 241.3 256.54 0)
 			(hide yes)
 			(show_name no)
@@ -24037,7 +24055,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR19")
+					(reference "#PWR021")
 					(unit 1)
 				)
 			)
@@ -24055,7 +24073,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "738c7b9e-0cfd-474d-8c34-7c409afa2b9d")
-		(property "Reference" "U2"
+		(property "Reference" "U4"
 			(at 201.93 44.45 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24140,7 +24158,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "U2")
+					(reference "U4")
 					(unit 1)
 				)
 			)
@@ -24157,7 +24175,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "755857e5-ea8f-4371-ada3-afa206ce63e0")
-		(property "Reference" "#PWR54"
+		(property "Reference" "#PWR09"
 			(at 71.12 86.36 0)
 			(hide yes)
 			(show_name no)
@@ -24217,7 +24235,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR54")
+					(reference "#PWR09")
 					(unit 1)
 				)
 			)
@@ -24235,7 +24253,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "779fcb57-655c-4f56-8a98-2167a4dd37d4")
-		(property "Reference" "R22"
+		(property "Reference" "R19"
 			(at 397.51 217.17 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24308,7 +24326,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R22")
+					(reference "R19")
 					(unit 1)
 				)
 			)
@@ -24325,7 +24343,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "77f7210a-baa8-4b94-be86-a711b57a3375")
-		(property "Reference" "#SUPPLY15"
+		(property "Reference" "#SUPPLY023"
 			(at 389.89 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -24386,7 +24404,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY15")
+					(reference "#SUPPLY023")
 					(unit 1)
 				)
 			)
@@ -24403,7 +24421,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "79db48d2-011e-43bb-b6b2-d27cccf6d4b1")
-		(property "Reference" "#PWR67"
+		(property "Reference" "#PWR03"
 			(at 40.64 224.79 0)
 			(hide yes)
 			(show_name no)
@@ -24463,7 +24481,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR67")
+					(reference "#PWR03")
 					(unit 1)
 				)
 			)
@@ -24481,7 +24499,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "79de0b2a-c0e6-4ba9-9979-c062c5ca89d5")
-		(property "Reference" "J2"
+		(property "Reference" "J6"
 			(at 173.99 59.69 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24543,7 +24561,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "J2")
+					(reference "J6")
 					(unit 1)
 				)
 			)
@@ -24560,7 +24578,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7e8c5ed7-eda7-4341-8981-151a87b4722a")
-		(property "Reference" "U5"
+		(property "Reference" "U6"
 			(at 261.62 219.202 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24713,7 +24731,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "U5")
+					(reference "U6")
 					(unit 1)
 				)
 			)
@@ -24730,7 +24748,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7e96c378-626e-4b3c-8a9c-cbba73b76cd1")
-		(property "Reference" "C11"
+		(property "Reference" "C9"
 			(at 230.886 243.586 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24825,7 +24843,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C11")
+					(reference "C9")
 					(unit 1)
 				)
 			)
@@ -24842,7 +24860,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7f462ce3-a47f-4b29-9d0e-71a62ffd6901")
-		(property "Reference" "D3"
+		(property "Reference" "D2"
 			(at 44.196 148.844 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24945,7 +24963,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "D3")
+					(reference "D2")
 					(unit 1)
 				)
 			)
@@ -24963,7 +24981,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "8006166b-7415-4c82-8aad-158a771a3a61")
-		(property "Reference" "#PWR2"
+		(property "Reference" "#PWR017"
 			(at 207.01 74.93 0)
 			(hide yes)
 			(show_name no)
@@ -25023,7 +25041,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR2")
+					(reference "#PWR017")
 					(unit 1)
 				)
 			)
@@ -25040,7 +25058,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "83ebc666-c99f-4307-afaa-86500c2174b1")
-		(property "Reference" "#SUPPLY40"
+		(property "Reference" "#SUPPLY018"
 			(at 287.02 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -25101,7 +25119,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY40")
+					(reference "#SUPPLY018")
 					(unit 1)
 				)
 			)
@@ -25118,7 +25136,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "8c116818-fc31-4c30-a1c2-42d8bd52c12b")
-		(property "Reference" "#PWR50"
+		(property "Reference" "#PWR028"
 			(at 298.45 165.1 0)
 			(hide yes)
 			(show_name no)
@@ -25178,7 +25196,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR50")
+					(reference "#PWR028")
 					(unit 1)
 				)
 			)
@@ -25196,7 +25214,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "8d23277e-3691-4b1e-b29a-1c74d0400ca8")
-		(property "Reference" "#PWR65"
+		(property "Reference" "#PWR035"
 			(at 400.05 234.95 0)
 			(hide yes)
 			(show_name no)
@@ -25256,7 +25274,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR65")
+					(reference "#PWR035")
 					(unit 1)
 				)
 			)
@@ -25348,7 +25366,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "947b657f-56bf-48dc-a537-02f4625638e6")
-		(property "Reference" "D9"
+		(property "Reference" "D8"
 			(at 415.29 224.79 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25421,7 +25439,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "D9")
+					(reference "D8")
 					(unit 1)
 				)
 			)
@@ -25438,7 +25456,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "95f3b8e5-c17f-4401-a6ca-8d5cb9e6716e")
-		(property "Reference" "#PWR51"
+		(property "Reference" "#PWR027"
 			(at 293.37 165.1 0)
 			(hide yes)
 			(show_name no)
@@ -25498,7 +25516,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR51")
+					(reference "#PWR027")
 					(unit 1)
 				)
 			)
@@ -25592,7 +25610,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "979d83f8-1970-4744-a963-0a84c60a5f71")
-		(property "Reference" "D11"
+		(property "Reference" "D4"
 			(at 118.11 43.18 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25665,7 +25683,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "D11")
+					(reference "D4")
 					(unit 1)
 				)
 			)
@@ -25682,7 +25700,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "97c42537-9f9a-410f-9b60-214158feb6a8")
-		(property "Reference" "R26"
+		(property "Reference" "R3"
 			(at 64.77 76.962 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25755,7 +25773,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R26")
+					(reference "R3")
 					(unit 1)
 				)
 			)
@@ -25773,7 +25791,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9e1fd8e4-84d6-4595-af49-688211aecfb9")
-		(property "Reference" "J8"
+		(property "Reference" "J1"
 			(at 50.8 36.83 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25882,7 +25900,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "J8")
+					(reference "J1")
 					(unit 1)
 				)
 			)
@@ -25900,7 +25918,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "9e773221-0a27-45a8-aac3-424234a695b8")
-		(property "Reference" "D20"
+		(property "Reference" "D7"
 			(at 402.59 224.79 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25973,7 +25991,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "D20")
+					(reference "D7")
 					(unit 1)
 				)
 			)
@@ -25990,7 +26008,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "9ea8dcda-5063-48ef-9c8e-976f7837d168")
-		(property "Reference" "C33"
+		(property "Reference" "C2"
 			(at 42.672 213.106 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26085,7 +26103,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C33")
+					(reference "C2")
 					(unit 1)
 				)
 			)
@@ -26103,7 +26121,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "9f5d4970-475a-431d-9bed-9451a0cf4be3")
-		(property "Reference" "C32"
+		(property "Reference" "C1"
 			(at 27.686 212.852 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26198,7 +26216,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C32")
+					(reference "C1")
 					(unit 1)
 				)
 			)
@@ -26215,7 +26233,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a06c7c56-0867-40fc-8efe-e9254933ad49")
-		(property "Reference" "#PWR73"
+		(property "Reference" "#PWR034"
 			(at 389.89 72.39 0)
 			(hide yes)
 			(show_name no)
@@ -26275,7 +26293,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR73")
+					(reference "#PWR034")
 					(unit 1)
 				)
 			)
@@ -26384,7 +26402,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a39c784b-aa99-4d11-b32a-04a4d528560b")
-		(property "Reference" "#SUPPLY7"
+		(property "Reference" "#SUPPLY05"
 			(at 50.8 210.82 0)
 			(hide yes)
 			(show_name no)
@@ -26445,7 +26463,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY7")
+					(reference "#SUPPLY05")
 					(unit 1)
 				)
 			)
@@ -26462,7 +26480,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a4b48e46-2436-49e1-accd-40c8748572ad")
-		(property "Reference" "U3"
+		(property "Reference" "U5"
 			(at 278.13 36.83 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26575,7 +26593,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "U3")
+					(reference "U5")
 					(unit 1)
 				)
 			)
@@ -26592,7 +26610,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a735008e-19ac-4ad5-8097-865c51caa3fb")
-		(property "Reference" "#SUPPLY10"
+		(property "Reference" "#SUPPLY04"
 			(at 46.99 128.27 0)
 			(hide yes)
 			(show_name no)
@@ -26653,7 +26671,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY10")
+					(reference "#SUPPLY04")
 					(unit 1)
 				)
 			)
@@ -26671,7 +26689,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a95924e0-1a3c-4509-bf6f-e4f9fbea8155")
-		(property "Reference" "G1"
+		(property "Reference" "G2"
 			(at 435.61 256.54 0)
 			(hide yes)
 			(show_name no)
@@ -26729,7 +26747,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "G1")
+					(reference "G2")
 					(unit 1)
 				)
 			)
@@ -26746,7 +26764,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a9631595-4c1f-4d14-a7e7-e555f3f5258b")
-		(property "Reference" "R11"
+		(property "Reference" "R17"
 			(at 322.58 215.9 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26819,7 +26837,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R11")
+					(reference "R17")
 					(unit 1)
 				)
 			)
@@ -26837,7 +26855,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a98ae480-e396-4a08-8ef1-60fe7144aefc")
-		(property "Reference" "D2"
+		(property "Reference" "D6"
 			(at 226.06 52.07 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26910,7 +26928,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "D2")
+					(reference "D6")
 					(unit 1)
 				)
 			)
@@ -26927,7 +26945,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "aa2734e6-7bf1-4e6b-b2bf-4f2b5b395780")
-		(property "Reference" "#SUPPLY37"
+		(property "Reference" "#SUPPLY012"
 			(at 137.16 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -26988,7 +27006,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY37")
+					(reference "#SUPPLY012")
 					(unit 1)
 				)
 			)
@@ -27005,7 +27023,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "ad058f26-3792-4879-a6fb-777ecfea4401")
-		(property "Reference" "R8"
+		(property "Reference" "R2"
 			(at 45.72 77.47 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27078,7 +27096,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R8")
+					(reference "R2")
 					(unit 1)
 				)
 			)
@@ -27095,7 +27113,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "ae53add6-5243-4da7-87ed-0ad7116119b3")
-		(property "Reference" "ST3"
+		(property "Reference" "ST2"
 			(at 452.12 283.21 0)
 			(hide yes)
 			(show_name no)
@@ -27153,7 +27171,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "ST3")
+					(reference "ST2")
 					(unit 1)
 				)
 			)
@@ -27170,7 +27188,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "afbe7d76-dc67-4808-bc0b-2c2c17aed120")
-		(property "Reference" "TP4"
+		(property "Reference" "TP3"
 			(at 405.13 148.59 0)
 			(show_name no)
 			(do_not_autoplace yes)
@@ -27230,7 +27248,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "TP4")
+					(reference "TP3")
 					(unit 1)
 				)
 			)
@@ -27247,7 +27265,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b09535e6-4412-499f-8ce6-af634e90fd2f")
-		(property "Reference" "U10"
+		(property "Reference" "U2"
 			(at 91.44 45.72 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27344,7 +27362,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "U10")
+					(reference "U2")
 					(unit 1)
 				)
 			)
@@ -27361,7 +27379,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b3769c48-37ee-4d25-bffb-88afe2691c62")
-		(property "Reference" "JP0"
+		(property "Reference" "JP1"
 			(at 165.1 251.968 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27423,7 +27441,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "JP0")
+					(reference "JP1")
 					(unit 1)
 				)
 			)
@@ -27440,7 +27458,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b3e34b5b-9bbd-41d6-80ec-d3be47a18c23")
-		(property "Reference" "#PWR15"
+		(property "Reference" "#PWR030"
 			(at 311.15 269.24 0)
 			(hide yes)
 			(show_name no)
@@ -27500,7 +27518,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR15")
+					(reference "#PWR030")
 					(unit 1)
 				)
 			)
@@ -27517,7 +27535,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b4be4d2c-782e-4f15-b677-04fb3961e075")
-		(property "Reference" "TP0"
+		(property "Reference" "TP2"
 			(at 402.59 148.59 0)
 			(show_name no)
 			(do_not_autoplace yes)
@@ -27577,7 +27595,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "TP0")
+					(reference "TP2")
 					(unit 1)
 				)
 			)
@@ -27594,7 +27612,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b54e26ad-6d02-4369-b169-4adc39c040ab")
-		(property "Reference" "FID2"
+		(property "Reference" "FID3"
 			(at 444.5 280.67 0)
 			(hide yes)
 			(show_name no)
@@ -27652,7 +27670,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "FID2")
+					(reference "FID3")
 					(unit 1)
 				)
 			)
@@ -27669,7 +27687,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b5960c3f-f92b-49fe-acbb-7332b7a616ea")
-		(property "Reference" "SW3"
+		(property "Reference" "SW1"
 			(at 288.29 151.13 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27743,7 +27761,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "SW3")
+					(reference "SW1")
 					(unit 1)
 				)
 			)
@@ -27760,7 +27778,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b91d700a-b2a6-4e17-8c87-fcae304cff77")
-		(property "Reference" "#SUPPLY13"
+		(property "Reference" "#SUPPLY021"
 			(at 312.42 208.28 0)
 			(hide yes)
 			(show_name no)
@@ -27821,7 +27839,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY13")
+					(reference "#SUPPLY021")
 					(unit 1)
 				)
 			)
@@ -27838,7 +27856,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b9bb8731-b3b4-44f9-8531-191ebf8de18b")
-		(property "Reference" "C40"
+		(property "Reference" "C7"
 			(at 86.995 60.96 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27933,7 +27951,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C40")
+					(reference "C7")
 					(unit 1)
 				)
 			)
@@ -27950,7 +27968,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "ba70526b-c3b6-4200-b80c-4bd630e31c17")
-		(property "Reference" "C1"
+		(property "Reference" "C12"
 			(at 250.444 54.864 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -28045,7 +28063,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C1")
+					(reference "C12")
 					(unit 1)
 				)
 			)
@@ -28062,7 +28080,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "bbe4fd64-7c50-43a8-9356-349f60e287e2")
-		(property "Reference" "R4"
+		(property "Reference" "R7"
 			(at 198.12 59.69 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -28135,7 +28153,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R4")
+					(reference "R7")
 					(unit 1)
 				)
 			)
@@ -28152,7 +28170,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c05d4e22-fad3-461f-acde-f146406df8e8")
-		(property "Reference" "ST2"
+		(property "Reference" "ST3"
 			(at 454.66 280.67 0)
 			(hide yes)
 			(show_name no)
@@ -28210,7 +28228,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "ST2")
+					(reference "ST3")
 					(unit 1)
 				)
 			)
@@ -28227,7 +28245,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c30f5b14-43b0-403d-bd34-9c5b10a03f62")
-		(property "Reference" "R23"
+		(property "Reference" "R20"
 			(at 420.37 217.17 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -28300,7 +28318,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R23")
+					(reference "R20")
 					(unit 1)
 				)
 			)
@@ -28317,7 +28335,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c4ee8a3b-e4b1-4b0f-9665-f9c21846e3b8")
-		(property "Reference" "#PWR66"
+		(property "Reference" "#PWR01"
 			(at 30.48 224.79 0)
 			(hide yes)
 			(show_name no)
@@ -28377,7 +28395,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR66")
+					(reference "#PWR01")
 					(unit 1)
 				)
 			)
@@ -28395,7 +28413,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c844a884-077d-4d8c-9911-1c76c5a785fa")
-		(property "Reference" "G2"
+		(property "Reference" "G1"
 			(at 387.35 262.89 0)
 			(hide yes)
 			(show_name no)
@@ -28453,7 +28471,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "G2")
+					(reference "G1")
 					(unit 1)
 				)
 			)
@@ -28471,7 +28489,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c9a9ba05-0a51-49d4-b85f-b7a366dd972a")
-		(property "Reference" "J11"
+		(property "Reference" "J8"
 			(at 394.97 153.67 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -28556,7 +28574,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "J11")
+					(reference "J8")
 					(unit 1)
 				)
 			)
@@ -28573,7 +28591,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "ca955e04-8566-4110-9aeb-f34db36e5c23")
-		(property "Reference" "#PWR4"
+		(property "Reference" "#PWR025"
 			(at 271.78 83.82 0)
 			(hide yes)
 			(show_name no)
@@ -28633,7 +28651,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR4")
+					(reference "#PWR025")
 					(unit 1)
 				)
 			)
@@ -28650,7 +28668,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "cb25f707-b32c-4bb5-a10d-9c07b87a99f2")
-		(property "Reference" "R10"
+		(property "Reference" "R14"
 			(at 314.96 215.9 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -28723,7 +28741,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R10")
+					(reference "R14")
 					(unit 1)
 				)
 			)
@@ -28741,7 +28759,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "cbd3a6eb-f1f5-4ba9-a13d-e5fdd06af3f3")
-		(property "Reference" "#PWR49"
+		(property "Reference" "#PWR023"
 			(at 255.27 160.02 0)
 			(hide yes)
 			(show_name no)
@@ -28801,7 +28819,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR49")
+					(reference "#PWR023")
 					(unit 1)
 				)
 			)
@@ -28818,7 +28836,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "cc00b6fe-9b11-49fe-bca1-81b9b53e7337")
-		(property "Reference" "R24"
+		(property "Reference" "R6"
 			(at 123.19 36.83 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -28891,7 +28909,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R24")
+					(reference "R6")
 					(unit 1)
 				)
 			)
@@ -28908,7 +28926,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d1fc12e9-4a79-4671-9345-ad6d178548df")
-		(property "Reference" "TP2"
+		(property "Reference" "TP4"
 			(at 407.67 148.59 0)
 			(show_name no)
 			(do_not_autoplace yes)
@@ -28968,7 +28986,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "TP2")
+					(reference "TP4")
 					(unit 1)
 				)
 			)
@@ -29060,8 +29078,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d46aee00-cbfa-4538-ad73-85b2c830db16")
-		(property "Reference" "Y3"
-			(at 58.42 245.11 0)
+		(property "Reference" "Y1"
+			(at 59.69 245.11 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29071,7 +29089,7 @@
 			)
 		)
 		(property "Value" "32.768kHz"
-			(at 53.34 245.11 0)
+			(at 62.23 247.65 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29133,7 +29151,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "Y3")
+					(reference "Y1")
 					(unit 1)
 				)
 			)
@@ -29150,7 +29168,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d8c0473c-308c-4eaf-960b-d789c6f40009")
-		(property "Reference" "#PWR10"
+		(property "Reference" "#PWR038"
 			(at 415.29 138.43 0)
 			(hide yes)
 			(show_name no)
@@ -29210,7 +29228,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR10")
+					(reference "#PWR038")
 					(unit 1)
 				)
 			)
@@ -29227,7 +29245,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d97c3faa-dfef-4e71-b342-43b48b5afa6c")
-		(property "Reference" "#SUPPLY20"
+		(property "Reference" "#SUPPLY014"
 			(at 228.6 241.3 0)
 			(hide yes)
 			(show_name no)
@@ -29288,7 +29306,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY20")
+					(reference "#SUPPLY014")
 					(unit 1)
 				)
 			)
@@ -29305,7 +29323,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "da0d87ef-699d-4c23-988d-a6a9061b3ea1")
-		(property "Reference" "#PWR3"
+		(property "Reference" "#PWR022"
 			(at 247.65 67.31 0)
 			(hide yes)
 			(show_name no)
@@ -29365,7 +29383,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR3")
+					(reference "#PWR022")
 					(unit 1)
 				)
 			)
@@ -29383,7 +29401,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "dc1f79a7-b07d-47b7-aa6f-bb455c02e97d")
-		(property "Reference" "J3"
+		(property "Reference" "J7"
 			(at 246.38 71.12 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29445,7 +29463,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "J3")
+					(reference "J7")
 					(unit 1)
 				)
 			)
@@ -29462,7 +29480,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "dcbe89b0-9f79-40a0-886a-198698db6acd")
-		(property "Reference" "#SUPPLY3"
+		(property "Reference" "#SUPPLY02"
 			(at 39.37 128.27 0)
 			(hide yes)
 			(show_name no)
@@ -29523,7 +29541,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY3")
+					(reference "#SUPPLY02")
 					(unit 1)
 				)
 			)
@@ -29540,7 +29558,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "dcf55a35-ad65-4eb2-84f9-307d9b46b7da")
-		(property "Reference" "C46"
+		(property "Reference" "C20"
 			(at 392.938 58.928 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29635,7 +29653,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C46")
+					(reference "C20")
 					(unit 1)
 				)
 			)
@@ -29652,7 +29670,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "de733a25-f4a6-46f9-a9ee-ef9e7a0822ea")
-		(property "Reference" "#SUPPLY43"
+		(property "Reference" "#SUPPLY07"
 			(at 81.28 41.91 0)
 			(hide yes)
 			(show_name no)
@@ -29713,7 +29731,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY43")
+					(reference "#SUPPLY07")
 					(unit 1)
 				)
 			)
@@ -29730,8 +29748,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e038fc50-fe2f-409c-a652-8a7846cb3b3c")
-		(property "Reference" "C29"
-			(at 49.53 245.11 90)
+		(property "Reference" "C5"
+			(at 49.53 250.19 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29742,7 +29760,7 @@
 			)
 		)
 		(property "Value" "15pF"
-			(at 49.53 247.65 90)
+			(at 50.8 252.73 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -29797,23 +29815,25 @@
 			)
 		)
 		(property "Voltage" "50V"
-			(at 57.15 248.92 0)
+			(at 49.53 255.27 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Tolerance" "5%"
-			(at 59.69 248.92 0)
+			(at 49.53 257.81 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(pin "1"
@@ -29825,14 +29845,14 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C29")
+					(reference "C5")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:5V")
+		(lib_id "SparkFun-PowerSymbol:5V")
 		(at 232.41 45.72 0)
 		(mirror y)
 		(unit 1)
@@ -29843,8 +29863,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e0695c4e-e31a-47e8-8af4-e034248e8a5b")
-		(property "Reference" "#SUPPLY2"
-			(at 232.41 45.72 0)
+		(property "Reference" "#PWR019"
+			(at 232.41 49.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29855,14 +29875,13 @@
 			)
 		)
 		(property "Value" "5V"
-			(at 232.41 42.926 0)
+			(at 232.41 41.91 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -29887,8 +29906,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 232.41 45.72 0)
+		(property "Description" "Power symbol creates a global label with name \"5V\""
+			(at 232.41 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -29904,7 +29923,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY2")
+					(reference "#PWR019")
 					(unit 1)
 				)
 			)
@@ -29921,7 +29940,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e1f38baf-4a86-4c00-ae32-fc6bf2bd25c2")
-		(property "Reference" "C43"
+		(property "Reference" "C13"
 			(at 248.412 133.096 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30016,7 +30035,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C43")
+					(reference "C13")
 					(unit 1)
 				)
 			)
@@ -30033,7 +30052,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e42b2fdb-e1e1-4cbd-b4e7-809bc4928516")
-		(property "Reference" "U4"
+		(property "Reference" "U7"
 			(at 402.59 109.22 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30146,7 +30165,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "U4")
+					(reference "U7")
 					(unit 1)
 				)
 			)
@@ -30163,7 +30182,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e48e01fd-9c2d-44fd-a5ba-51c554aa96d3")
-		(property "Reference" "C44"
+		(property "Reference" "C16"
 			(at 300.99 151.384 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30258,7 +30277,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C44")
+					(reference "C16")
 					(unit 1)
 				)
 			)
@@ -30275,7 +30294,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e4d47320-fc4c-42bc-9e6b-42fe7bf94333")
-		(property "Reference" "R6"
+		(property "Reference" "R16"
 			(at 322.58 60.96 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30348,7 +30367,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R6")
+					(reference "R16")
 					(unit 1)
 				)
 			)
@@ -30366,7 +30385,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e6f2b717-2c09-42a4-a016-434a8af2db3d")
-		(property "Reference" "Q2"
+		(property "Reference" "Q1"
 			(at 392.43 49.53 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30464,7 +30483,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "Q2")
+					(reference "Q1")
 					(unit 1)
 				)
 			)
@@ -30481,7 +30500,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e724a0a1-0efe-499a-a49b-f2415b7bca00")
-		(property "Reference" "#PWR20"
+		(property "Reference" "#PWR018"
 			(at 228.6 256.54 0)
 			(hide yes)
 			(show_name no)
@@ -30541,7 +30560,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR20")
+					(reference "#PWR018")
 					(unit 1)
 				)
 			)
@@ -30558,7 +30577,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e8e25da2-ca16-49d7-8bf2-04fe157cbf3e")
-		(property "Reference" "#SUPPLY16"
+		(property "Reference" "#SUPPLY022"
 			(at 320.04 208.28 0)
 			(hide yes)
 			(show_name no)
@@ -30619,7 +30638,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY16")
+					(reference "#SUPPLY022")
 					(unit 1)
 				)
 			)
@@ -30636,7 +30655,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e9200ead-88b9-458e-a61e-9c393ff4627f")
-		(property "Reference" "#PWR68"
+		(property "Reference" "#PWR06"
 			(at 50.8 224.79 0)
 			(hide yes)
 			(show_name no)
@@ -30696,7 +30715,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR68")
+					(reference "#PWR06")
 					(unit 1)
 				)
 			)
@@ -30714,7 +30733,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e9651fbb-a697-4999-86e9-d9325acb23dd")
-		(property "Reference" "#PWR11"
+		(property "Reference" "#PWR037"
 			(at 410.21 172.72 0)
 			(hide yes)
 			(show_name no)
@@ -30774,7 +30793,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR11")
+					(reference "#PWR037")
 					(unit 1)
 				)
 			)
@@ -30791,7 +30810,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "ebb78247-2f1b-48ed-8505-50defc770c44")
-		(property "Reference" "#PWR48"
+		(property "Reference" "#PWR040"
 			(at 417.83 234.95 0)
 			(hide yes)
 			(show_name no)
@@ -30851,7 +30870,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR48")
+					(reference "#PWR040")
 					(unit 1)
 				)
 			)
@@ -30868,7 +30887,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "ebbb665b-d4f7-4f13-8c3b-617d0d4dc189")
-		(property "Reference" "#PWR69"
+		(property "Reference" "#PWR010"
 			(at 76.2 295.91 0)
 			(hide yes)
 			(show_name no)
@@ -30928,14 +30947,14 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR69")
+					(reference "#PWR010")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "SparkFun_Artemis_OpenLog-eagle-import:5V")
+		(lib_id "SparkFun-PowerSymbol:5V")
 		(at 68.58 41.91 0)
 		(unit 1)
 		(body_style 1)
@@ -30945,8 +30964,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "ed4e9ede-69da-4d3b-8cdd-7363da278de1")
-		(property "Reference" "#SUPPLY45"
-			(at 68.58 41.91 0)
+		(property "Reference" "#PWR08"
+			(at 68.58 45.72 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30957,14 +30976,13 @@
 			)
 		)
 		(property "Value" "5V"
-			(at 68.58 39.116 0)
+			(at 68.58 38.1 0)
 			(show_name no)
-			(do_not_autoplace no)
+			(do_not_autoplace yes)
 			(effects
 				(font
-					(size 1.778 1.5113)
+					(size 1.27 1.27)
 				)
-				(justify bottom)
 			)
 		)
 		(property "Footprint" ""
@@ -30989,8 +31007,8 @@
 				)
 			)
 		)
-		(property "Description" ""
-			(at 68.58 41.91 0)
+		(property "Description" "Power symbol creates a global label with name \"5V\""
+			(at 68.58 48.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31006,7 +31024,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY45")
+					(reference "#PWR08")
 					(unit 1)
 				)
 			)
@@ -31023,7 +31041,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "edf754be-0653-4d8c-bd03-d704fc796835")
-		(property "Reference" "R12"
+		(property "Reference" "R9"
 			(at 252.73 227.33 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31096,7 +31114,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "R12")
+					(reference "R9")
 					(unit 1)
 				)
 			)
@@ -31114,7 +31132,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f446541d-6c62-496d-9d12-9a784461cfff")
-		(property "Reference" "C41"
+		(property "Reference" "C6"
 			(at 80.645 60.96 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31209,7 +31227,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C41")
+					(reference "C6")
 					(unit 1)
 				)
 			)
@@ -31226,7 +31244,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f4fa7295-1596-41cd-a95f-5eed1173d9a2")
-		(property "Reference" "C9"
+		(property "Reference" "C17"
 			(at 302.26 264.414 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31321,7 +31339,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C9")
+					(reference "C17")
 					(unit 1)
 				)
 			)
@@ -31338,7 +31356,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f59c39e5-7787-477e-84d1-c86d77cd8f9b")
-		(property "Reference" "FID3"
+		(property "Reference" "FID2"
 			(at 441.96 283.21 0)
 			(hide yes)
 			(show_name no)
@@ -31396,7 +31414,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "FID3")
+					(reference "FID2")
 					(unit 1)
 				)
 			)
@@ -31413,7 +31431,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f70b918a-893b-4911-980b-36b480dd847e")
-		(property "Reference" "J7"
+		(property "Reference" "J4"
 			(at 168.91 123.19 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31472,7 +31490,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "J7")
+					(reference "J4")
 					(unit 1)
 				)
 			)
@@ -31580,7 +31598,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f7e3ca34-3f8a-49cd-a00c-9c7c322596ed")
-		(property "Reference" "C7"
+		(property "Reference" "C21"
 			(at 417.576 124.46 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31675,7 +31693,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "C7")
+					(reference "C21")
 					(unit 1)
 				)
 			)
@@ -31693,7 +31711,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "fceaae46-6ac0-4213-b55c-70dff96dbd50")
-		(property "Reference" "#SUPPLY14"
+		(property "Reference" "#SUPPLY013"
 			(at 184.15 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -31754,7 +31772,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#SUPPLY14")
+					(reference "#SUPPLY013")
 					(unit 1)
 				)
 			)
@@ -31771,7 +31789,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "ffec8ffc-4e5d-45c0-896f-1844afc7b2a3")
-		(property "Reference" "#PWR9"
+		(property "Reference" "#PWR033"
 			(at 384.81 138.43 0)
 			(hide yes)
 			(show_name no)
@@ -31831,7 +31849,7 @@
 		(instances
 			(project "SparkFun_Artemis_OpenLog"
 				(path "/8a52f352-b704-43fc-a4be-db559a771534"
-					(reference "#PWR9")
+					(reference "#PWR033")
 					(unit 1)
 				)
 			)
