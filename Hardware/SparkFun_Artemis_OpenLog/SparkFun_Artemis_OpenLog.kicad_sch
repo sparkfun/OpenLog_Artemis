@@ -12498,18 +12498,18 @@
 	)
 	(text "300uA Leakage"
 		(exclude_from_sim no)
-		(at 54.61 151.13 90)
+		(at 69.85 147.32 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "1df5474f-bd68-491f-a466-a0bc7679665f")
 	)
 	(text "0.65uA Leakage\n0.3V drop at 10mA"
 		(exclude_from_sim no)
-		(at 31.242 147.32 90)
+		(at 16.51 127 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12561,7 +12561,7 @@
 	)
 	(text "1mAhr Capacity"
 		(exclude_from_sim no)
-		(at 46.99 163.83 0)
+		(at 41.91 163.83 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12635,7 +12635,7 @@
 	)
 	(text "LiPo Range: 3.6-4.2V"
 		(exclude_from_sim no)
-		(at 165.1 25.4 0)
+		(at 157.48 33.02 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -13883,7 +13883,7 @@
 	)
 	(wire
 		(pts
-			(xy 299.72 217.17) (xy 299.72 219.71)
+			(xy 299.72 218.44) (xy 299.72 219.71)
 		)
 		(stroke
 			(width 0)
@@ -14413,16 +14413,6 @@
 	)
 	(wire
 		(pts
-			(xy 299.72 208.28) (xy 299.72 212.09)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "618b59b6-2a85-4c15-bffd-df13300ffab5")
-	)
-	(wire
-		(pts
 			(xy 73.66 248.92) (xy 73.66 243.84)
 		)
 		(stroke
@@ -14640,6 +14630,16 @@
 			(type solid)
 		)
 		(uuid "77150ef0-6465-4bbd-b05d-d6e0311fb65d")
+	)
+	(wire
+		(pts
+			(xy 299.72 213.36) (xy 299.72 212.09)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "77307931-f124-4e44-b5b7-ae4a1bd49f2b")
 	)
 	(wire
 		(pts
@@ -15173,7 +15173,7 @@
 	)
 	(wire
 		(pts
-			(xy 312.42 210.82) (xy 312.42 213.36)
+			(xy 312.42 212.09) (xy 312.42 213.36)
 		)
 		(stroke
 			(width 0)
@@ -15313,7 +15313,7 @@
 	)
 	(wire
 		(pts
-			(xy 320.04 210.82) (xy 320.04 213.36)
+			(xy 320.04 212.09) (xy 320.04 213.36)
 		)
 		(stroke
 			(width 0)
@@ -15483,16 +15483,6 @@
 	)
 	(wire
 		(pts
-			(xy 320.04 208.28) (xy 320.04 210.82)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "b6a82478-71d9-426d-ac68-8a5d8cc5193b")
-	)
-	(wire
-		(pts
 			(xy 78.74 236.22) (xy 77.47 236.22)
 		)
 		(stroke
@@ -15530,16 +15520,6 @@
 			(type default)
 		)
 		(uuid "b87dfce0-aec6-48a7-a317-caaab05da4c8")
-	)
-	(wire
-		(pts
-			(xy 312.42 208.28) (xy 312.42 210.82)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "b8ffbc34-6826-4429-813e-1bfdc35b3f58")
 	)
 	(wire
 		(pts
@@ -22216,7 +22196,7 @@
 		(dnp no)
 		(uuid "564a7483-f389-4731-ad27-7e9780c8fc58")
 		(property "Reference" "D1"
-			(at 36.83 133.35 0)
+			(at 34.29 129.54 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22226,7 +22206,7 @@
 			)
 		)
 		(property "Value" "BAT20J"
-			(at 43.18 133.35 0)
+			(at 34.29 132.08 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22280,7 +22260,7 @@
 			)
 		)
 		(property "IMax" "1A"
-			(at 45.72 133.35 0)
+			(at 34.29 134.62 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22290,7 +22270,7 @@
 			)
 		)
 		(property "VForward" "0.62V"
-			(at 48.26 133.35 0)
+			(at 34.29 137.16 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22300,7 +22280,7 @@
 			)
 		)
 		(property "VReverse" "23V"
-			(at 50.8 133.35 0)
+			(at 34.29 139.7 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22438,7 +22418,7 @@
 	)
 	(symbol
 		(lib_id "SparkFun-Resistor:100k_0402")
-		(at 299.72 214.63 90)
+		(at 299.72 215.9 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -22448,7 +22428,7 @@
 		(dnp no)
 		(uuid "5778456d-e5bf-487e-af0c-0f15db50164a")
 		(property "Reference" "R13"
-			(at 302.26 214.63 0)
+			(at 302.26 215.9 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22458,7 +22438,7 @@
 			)
 		)
 		(property "Value" "100k"
-			(at 297.18 214.63 0)
+			(at 297.18 215.9 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -22468,7 +22448,7 @@
 			)
 		)
 		(property "Footprint" "SparkFun-Resistor:R_0402_1005Metric"
-			(at 304.038 214.63 0)
+			(at 304.038 215.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22479,7 +22459,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.vishay.com/docs/20035/dcrcwe3.pdf"
-			(at 308.61 214.63 0)
+			(at 308.61 215.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22490,7 +22470,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 311.15 214.63 0)
+			(at 311.15 215.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22501,7 +22481,7 @@
 			)
 		)
 		(property "PROD_ID" "RES-25013"
-			(at 306.07 214.63 0)
+			(at 306.07 215.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22618,7 +22598,7 @@
 	)
 	(symbol
 		(lib_id "SparkFun-PowerSymbol:3.3V")
-		(at 299.72 208.28 0)
+		(at 299.72 212.09 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -22628,7 +22608,7 @@
 		(dnp no)
 		(uuid "59dad5be-8463-4267-ba30-c0cb12906048")
 		(property "Reference" "#PWR20"
-			(at 299.72 212.09 0)
+			(at 299.72 215.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22639,7 +22619,7 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 299.72 204.47 0)
+			(at 299.72 208.28 0)
 			(show_name no)
 			(do_not_autoplace yes)
 			(effects
@@ -22649,7 +22629,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 299.72 208.28 0)
+			(at 299.72 212.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22660,7 +22640,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 299.72 208.28 0)
+			(at 299.72 212.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -22671,7 +22651,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"3.3V\""
-			(at 299.72 214.63 0)
+			(at 299.72 218.44 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24902,7 +24882,7 @@
 		(dnp no)
 		(uuid "7f462ce3-a47f-4b29-9d0e-71a62ffd6901")
 		(property "Reference" "D2"
-			(at 44.196 148.844 0)
+			(at 50.8 140.97 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24912,7 +24892,7 @@
 			)
 		)
 		(property "Value" "BAT60A"
-			(at 44.196 143.51 0)
+			(at 50.8 143.51 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24966,7 +24946,7 @@
 			)
 		)
 		(property "IMax" "3A"
-			(at 49.53 139.7 0)
+			(at 50.8 146.05 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24976,7 +24956,7 @@
 			)
 		)
 		(property "VDrop" "0.28V"
-			(at 49.53 144.526 0)
+			(at 50.8 148.59 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -24986,7 +24966,7 @@
 			)
 		)
 		(property "VMax" "10V"
-			(at 49.53 149.606 0)
+			(at 50.8 151.13 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26660,7 +26640,7 @@
 				)
 			)
 		)
-		(property "Value" "VCC_1"
+		(property "Value" "VCC"
 			(at 46.99 124.46 0)
 			(show_name no)
 			(do_not_autoplace yes)
@@ -27806,7 +27786,7 @@
 	)
 	(symbol
 		(lib_id "SparkFun-PowerSymbol:3.3V")
-		(at 312.42 208.28 0)
+		(at 312.42 212.09 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -27816,7 +27796,7 @@
 		(dnp no)
 		(uuid "b91d700a-b2a6-4e17-8c87-fcae304cff77")
 		(property "Reference" "#PWR21"
-			(at 312.42 212.09 0)
+			(at 312.42 215.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27827,7 +27807,7 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 312.42 204.47 0)
+			(at 312.42 208.28 0)
 			(show_name no)
 			(do_not_autoplace yes)
 			(effects
@@ -27837,7 +27817,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 312.42 208.28 0)
+			(at 312.42 212.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27848,7 +27828,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 312.42 208.28 0)
+			(at 312.42 212.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -27859,7 +27839,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"3.3V\""
-			(at 312.42 214.63 0)
+			(at 312.42 218.44 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30601,7 +30581,7 @@
 	)
 	(symbol
 		(lib_id "SparkFun-PowerSymbol:3.3V")
-		(at 320.04 208.28 0)
+		(at 320.04 212.09 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -30611,7 +30591,7 @@
 		(dnp no)
 		(uuid "e8e25da2-ca16-49d7-8bf2-04fe157cbf3e")
 		(property "Reference" "#PWR22"
-			(at 320.04 212.09 0)
+			(at 320.04 215.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30622,7 +30602,7 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 320.04 204.47 0)
+			(at 320.04 208.28 0)
 			(show_name no)
 			(do_not_autoplace yes)
 			(effects
@@ -30632,7 +30612,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 320.04 208.28 0)
+			(at 320.04 212.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30643,7 +30623,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 320.04 208.28 0)
+			(at 320.04 212.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30654,7 +30634,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"3.3V\""
-			(at 320.04 214.63 0)
+			(at 320.04 218.44 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31541,7 +31521,7 @@
 		(dnp no)
 		(uuid "f7bd66b2-e2e0-4fe7-aaa7-3a309e44be5d")
 		(property "Reference" "R1"
-			(at 36.576 147.828 0)
+			(at 36.576 147.828 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -31551,7 +31531,7 @@
 			)
 		)
 		(property "Value" "2.2k"
-			(at 36.576 143.764 0)
+			(at 35.56 149.86 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects

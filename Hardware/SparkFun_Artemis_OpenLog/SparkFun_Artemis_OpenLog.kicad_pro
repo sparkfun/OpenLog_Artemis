@@ -76,7 +76,24 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        [
+          "courtyards_overlap|137571568|90146595|4c4208ff-7f58-4c78-8ff7-c21ea884aed1|9d56d3ce-1e8a-4753-a9c9-3ccf8a024bb3",
+          ""
+        ],
+        [
+          "courtyards_overlap|138346100|90141343|8d8215c9-29df-40c0-915b-7d106e55e433|fd485b0a-94a9-4427-892c-2ba05024b5d1",
+          ""
+        ],
+        [
+          "courtyards_overlap|140886100|117708600|d3792305-79ff-4f99-a683-79e6b0eee566|dc0c8dbd-e279-47c3-bda6-ef897c2ca80e",
+          ""
+        ],
+        [
+          "courtyards_overlap|159166293|118618438|6ff6681c-4e3f-4a58-ab26-0ae838495132|a97edfe0-9a71-4755-9e0b-67c0855fa643",
+          ""
+        ]
+      ],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
