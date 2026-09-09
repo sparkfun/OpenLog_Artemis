@@ -10845,6 +10845,170 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "SparkFun-Resistor:1M_0603"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "R"
+				(at 0 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "1M"
+				(at 0 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "SparkFun-Resistor:R_0603_1608Metric"
+				(at 0 -4.318 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.vishay.com/docs/20035/dcrcwe3.pdf"
+				(at 0 -8.89 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 -11.43 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "PROD_ID" "RES-07868"
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "SparkFun R res resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "1M_0603_0_1"
+				(polyline
+					(pts
+						(xy -1.524 0) (xy -1.143 1.016) (xy -0.762 0) (xy -0.381 -1.016) (xy 0 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0.381 1.016) (xy 0.762 0) (xy 1.143 -1.016) (xy 1.524 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "1M_0603_1_1"
+				(pin passive line
+					(at -2.54 0 0)
+					(length 1.016)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 0 180)
+					(length 1.016)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "SparkFun-Resistor:1k_0402"
 			(pin_numbers
 				(hide yes)
@@ -11173,7 +11337,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "SparkFun-Resistor:200k_0402"
+		(symbol "SparkFun-Resistor:2M_0603"
 			(pin_numbers
 				(hide yes)
 			)
@@ -11195,7 +11359,7 @@
 					)
 				)
 			)
-			(property "Value" "200k"
+			(property "Value" "2M"
 				(at 0 2.54 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -11205,7 +11369,7 @@
 					)
 				)
 			)
-			(property "Footprint" "SparkFun-Resistor:R_0402_1005Metric"
+			(property "Footprint" "SparkFun-Resistor:R_0603_1608Metric"
 				(at 0 -4.318 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -11238,7 +11402,7 @@
 					)
 				)
 			)
-			(property "PROD_ID" "RES-15347"
+			(property "PROD_ID" "RES-15186"
 				(at 0 -6.35 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -11271,7 +11435,7 @@
 					)
 				)
 			)
-			(symbol "200k_0402_0_1"
+			(symbol "2M_0603_0_1"
 				(polyline
 					(pts
 						(xy -1.524 0) (xy -1.143 1.016) (xy -0.762 0) (xy -0.381 -1.016) (xy 0 0)
@@ -11297,7 +11461,7 @@
 					)
 				)
 			)
-			(symbol "200k_0402_1_1"
+			(symbol "2M_0603_1_1"
 				(pin passive line
 					(at -2.54 0 0)
 					(length 1.016)
@@ -19340,7 +19504,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun-Resistor:200k_0402")
+		(lib_id "SparkFun-Resistor:2M_0603")
 		(at 320.04 52.07 90)
 		(unit 1)
 		(body_style 1)
@@ -19360,7 +19524,7 @@
 				)
 			)
 		)
-		(property "Value" "200k"
+		(property "Value" "2M"
 			(at 317.5 52.07 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19370,7 +19534,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SparkFun-Resistor:R_0402_1005Metric"
+		(property "Footprint" "SparkFun-Resistor:R_0603_1608Metric"
 			(at 324.358 52.07 0)
 			(hide yes)
 			(show_name no)
@@ -19403,7 +19567,7 @@
 				)
 			)
 		)
-		(property "PROD_ID" "RES-15347"
+		(property "PROD_ID" "RES-15186"
 			(at 326.39 52.07 0)
 			(hide yes)
 			(show_name no)
@@ -27406,7 +27570,7 @@
 				)
 			)
 		)
-		(property "Value" ""
+		(property "Value" "VE"
 			(at 165.1 256.54 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30297,7 +30461,7 @@
 		)
 	)
 	(symbol
-		(lib_id "SparkFun-Resistor:100k_0402")
+		(lib_id "SparkFun-Resistor:1M_0603")
 		(at 320.04 60.96 90)
 		(unit 1)
 		(body_style 1)
@@ -30317,7 +30481,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "1M"
 			(at 317.5 60.96 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30327,7 +30491,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SparkFun-Resistor:R_0402_1005Metric"
+		(property "Footprint" "SparkFun-Resistor:R_0603_1608Metric"
 			(at 324.358 60.96 0)
 			(hide yes)
 			(show_name no)
@@ -30360,7 +30524,7 @@
 				)
 			)
 		)
-		(property "PROD_ID" "RES-25013"
+		(property "PROD_ID" "RES-07868"
 			(at 326.39 60.96 0)
 			(hide yes)
 			(show_name no)

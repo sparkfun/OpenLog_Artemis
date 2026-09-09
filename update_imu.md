@@ -10,9 +10,6 @@ VIN Monitor divider is 2M and 1M
 AP2112K VREG    
 * Changed pull-up to 100k from 330k
 
-AP2112K VREG for Qwiic  
-* Changed 220K to 100K (R3)
-
 Changed 220K to 100K (R29) on Artemis Boot
 
 Updated Fiducials to smaller sizes.
