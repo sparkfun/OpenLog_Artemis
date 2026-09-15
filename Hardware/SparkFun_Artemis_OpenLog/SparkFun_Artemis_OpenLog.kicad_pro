@@ -60,13 +60,13 @@
           "hatch_smoothing_level": 0,
           "hatch_smoothing_value": 0.1,
           "hatch_thickness": 1.0,
-          "min_clearance": 0.5,
+          "min_clearance": 0.1524,
           "min_island_area": 9.9999993548,
-          "min_thickness": 0.25,
+          "min_thickness": 0.0762,
           "pad_connection": 1,
           "remove_islands": 0,
-          "thermal_relief_gap": 0.5,
-          "thermal_relief_spoke_width": 0.5
+          "thermal_relief_gap": 0.2024,
+          "thermal_relief_spoke_width": 0.2024
         }
       },
       "diff_pair_dimensions": [
@@ -278,7 +278,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": "v11"
+      "sch_revision": "v20"
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -789,7 +789,7 @@
         "uuid": "8a52f352-b704-43fc-a4be-db559a771534"
       }
     ],
-    "used_designators": "FID1-4,G1-2,SW1,SCL1,FD1-4,Q1,C1-23,QWIIC_3.3V1,Y1-2,#PWR1-58,GND1,LOGO1-5,VE1,S1,SDA1,U1-7,D1-8,#SUPPLY1-23,J1-9,BT1,H1-4,LED1,ST1-4,TP1-5,FRAME1,R1-20,JP1-2",
+    "used_designators": "FID1-4,G1-2,SW1,SCL1,FD1-4,Q1-2,C1-23,QWIIC_3.3V1,Y1-2,#PWR1-58,GND1,LOGO1-5,VE1,S1,SDA1,U1-7,D1-8,#SUPPLY1-23,J1-9,BT1,H1-4,LED1,ST1-4,TP1-5,FRAME1,R1-22,JP1-2",
     "variants": []
   },
   "sheets": [
